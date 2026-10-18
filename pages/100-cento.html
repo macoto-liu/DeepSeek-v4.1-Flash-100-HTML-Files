@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cento — Everything borrowed</title>
+<style>
+  :root{
+    --ivory:#f2e9d7;
+    --paper:#faf4e6;
+    --paper-2:#f6eedc;
+    --ink:#241d16;
+    --ink-soft:#5b5042;
+    --ink-faint:rgba(36,29,22,.17);
+    --oxblood:#6b1f24;
+    --oxblood-deep:#51161a;
+    --gold:#a9813f;
+    --gold-soft:rgba(169,129,63,.25);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;color:var(--ink);font-family:var(--serif);background:var(--ivory);
+    background-image:
+      radial-gradient(ellipse 60% 45% at 12% 8%, rgba(169,129,63,.075), transparent 60%),
+      radial-gradient(ellipse 55% 45% at 92% 40%, rgba(107,31,36,.045), transparent 65%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(169,129,63,.06), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(36,29,22,.012) 0 1px, transparent 1px 5px);
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(70,48,27,.09) 100%);
+  }
+  .page{position:relative;z-index:1;width:min(1280px,100% - 56px);margin:0 auto;padding:24px 0 0}
+  .skip{position:absolute;left:-9999px;top:0;background:var(--oxblood);color:var(--ivory);padding:10px 16px;z-index:99}
+  .skip:focus{left:0}
+
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;gap:18px;
+    border-bottom:1px solid var(--oxblood);padding-bottom:11px;
+    font-family:var(--sans);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft)}
+  .masthead .brand{font-family:var(--serif);font-size:16px;letter-spacing:.36em;color:var(--oxblood);font-weight:400}
+  .masthead .mid{flex:1;text-align:center;font-style:italic;text-transform:none;letter-spacing:.06em;
+    font-family:var(--serif);font-size:13px;color:var(--ink-soft)}
+  .masthead .right{text-align:right}
+
+  /* Hero */
+  .hero{position:relative;padding:52px 0 54px;border-bottom:1px solid var(--oxblood);overflow:hidden}
+  .hundred{
+    position:absolute;right:-1.5%;bottom:-12%;z-index:0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(14rem,30vw,28rem);line-height:.68;letter-spacing:-.08em;
+    color:rgba(169,129,63,.025);-webkit-text-stroke:1.4px rgba(107,31,36,.22);
+    pointer-events:none;user-select:none;
+  }
+  .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:46px;align-items:end}
+  .eyebrow{font-family:var(--sans);font-size:9px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--oxblood);margin:0 0 22px;display:flex;align-items:center;gap:12px}
+  .eyebrow::before{content:"";width:30px;height:1px;background:var(--gold)}
+  h1{margin:0;font-weight:400;font-size:clamp(4rem,10.2vw,9.1rem);line-height:.85;letter-spacing:-.055em;
+    color:var(--oxblood);max-width:10ch}
+  h1 em{font-style:italic;color:var(--oxblood-deep)}
+  .definition{position:relative;padding:20px 0 4px 24px;border-left:1px solid var(--gold);max-width:340px}
+  .definition .term-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .definition .term{font-size:27px;font-style:italic;color:var(--oxblood)}
+  .definition .pron{font-family:var(--sans);font-size:8.5px;letter-spacing:.12em;color:var(--ink-soft)}
+  .definition p{font-size:13.5px;line-height:1.68;color:var(--ink-soft);margin:12px 0 0}
+  .definition p em{color:var(--ink);font-style:italic}
+  .definition a{display:inline-flex;align-items:center;gap:9px;margin-top:18px;
+    font-family:var(--sans);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--oxblood);text-decoration:none;border-bottom:1px solid var(--gold);padding-bottom:4px}
+  .definition a:hover{color:var(--gold)}
+  .hero-foot{position:relative;z-index:1;display:flex;justify-content:space-between;gap:20px;margin-top:44px;
+    font-family:var(--sans);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .hero-foot .mark{color:var(--gold);letter-spacing:.3em}
+
+  /* Studio */
+  .studio{padding:44px 0 20px;scroll-margin-top:20px}
+  .studio-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:24px}
+  .studio-head h2{margin:0;font-weight:400;font-size:clamp(2rem,3.6vw,3rem);letter-spacing:-.03em;line-height:1;
+    display:flex;align-items:baseline;gap:14px}
+  .studio-head h2 .num{font-family:var(--sans);font-size:9px;letter-spacing:.22em;color:var(--gold);
+    text-transform:uppercase;transform:translateY(-4px)}
+  .studio-head p{margin:0;max-width:390px;font-family:var(--sans);font-size:9.5px;line-height:1.8;
+    letter-spacing:.09em;color:var(--ink-soft);text-transform:uppercase;text-align:right}
+  .studio-grid{display:grid;grid-template-columns:minmax(0,0.92fr) minmax(0,1.08fr);gap:36px;align-items:stretch}
+
+  /* Poem card */
+  .poem-col{min-width:0}
+  .poemcard{
+    position:sticky;top:22px;background:var(--paper);border:1px solid rgba(107,31,36,.55);
+    box-shadow:0 0 0 1px rgba(169,129,63,.35),0 14px 34px rgba(77,47,24,.10);
+    padding:22px 26px 20px;min-height:520px;display:flex;flex-direction:column;
+    background-image:linear-gradient(180deg,rgba(255,255,255,.4),transparent 18%);
+  }
+  .poemcard::before{content:"";position:absolute;inset:6px;border:1px solid rgba(107,31,36,.12);pointer-events:none}
+  .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    border-bottom:1px solid var(--ink-faint);padding-bottom:7px;
+    font-family:var(--sans);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .card-top .progress{color:var(--oxblood);letter-spacing:.14em;font-variant-numeric:tabular-nums}
+  .card-title{margin:22px 0 0;font-weight:400;font-size:clamp(2.1rem,3.6vw,2.9rem);line-height:.96;
+    letter-spacing:-.035em;color:var(--oxblood)}
+  .card-title em{font-style:italic}
+  .card-sub{margin:7px 0 0;font-style:italic;font-size:13.5px;color:var(--ink-soft)}
+  .poem-body{
+    margin-top:18px;flex:1;min-height:300px;max-height:430px;overflow-y:auto;padding-right:8px;
+    scrollbar-width:thin;scrollbar-color:rgba(107,31,36,.3) transparent;
+  }
+  .poem-body::-webkit-scrollbar{width:4px}
+  .poem-body::-webkit-scrollbar-thumb{background:rgba(107,31,36,.3);border-radius:2px}
+  .poem-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;
+    min-height:280px;text-align:center;color:var(--ink-soft);padding:24px 0}
+  .poem-empty .glyph{font-size:54px;line-height:1;color:var(--gold);opacity:.6;font-style:italic;margin-bottom:16px}
+  .poem-empty p{margin:0;font-size:16px;font-style:italic;line-height:1.6}
+  .poem-empty small{display:block;margin-top:9px;font-family:var(--sans);font-size:8px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-soft);opacity:.8}
+  .poem-line{
+    display:grid;grid-template-columns:33px minmax(0,1fr) 18px;gap:10px;align-items:baseline;width:100%;
+    appearance:none;border:0;border-bottom:1px solid rgba(36,29,22,.10);background:transparent;
+    padding:9px 0 8px;text-align:left;color:var(--ink);cursor:pointer;font-family:var(--serif);
+    animation:lineIn .45s cubic-bezier(.2,.75,.3,1) both;
+  }
+  @keyframes lineIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  .poem-line:hover{background:rgba(169,129,63,.08)}
+  .poem-line:focus-visible{outline:1px solid var(--oxblood);outline-offset:2px}
+  .poem-line .no{font-family:var(--mono);font-size:8.5px;letter-spacing:.03em;color:var(--gold);padding-top:4px}
+  .poem-line .text{font-size:16.5px;line-height:1.48;letter-spacing:-.005em}
+  .poem-line .x{font-family:var(--sans);font-size:13px;color:var(--oxblood);opacity:0;justify-self:end;
+    padding-top:2px;transition:opacity .18s}
+  .poem-line:hover .x,.poem-line:focus-visible .x{opacity:1}
+  .poem-actions{display:flex;align-items:center;gap:9px;margin-top:16px;padding-top:14px;
+    border-top:1px solid var(--ink-faint);flex-wrap:wrap}
+  .btn{
+    appearance:none;border:1px solid var(--oxblood);background:var(--oxblood);color:var(--paper);
+    font-family:var(--sans);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;
+    padding:11px 16px 10px;cursor:pointer;transition:background .2s,color .2s,border-color .2s;
+  }
+  .btn:hover{background:var(--oxblood-deep);border-color:var(--oxblood-deep)}
+  .btn.ghost{background:transparent;color:var(--oxblood);border-color:rgba(107,31,36,.45)}
+  .btn.ghost:hover{background:rgba(107,31,36,.07);border-color:var(--oxblood)}
+  .btn:focus-visible{outline:1px solid var(--gold);outline-offset:3px}
+  .studio-status{font-family:var(--sans);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold);margin-left:auto;text-align:right;min-height:1em}
+  .card-foot{margin-top:12px;display:flex;justify-content:space-between;gap:10px;
+    font-family:var(--sans);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+  .card-foot .red{color:var(--oxblood)}
+
+  /* Index */
+  .index-panel{min-width:0;border-top:1px solid var(--oxblood);padding-top:16px}
+  .index-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+  .index-head h3{margin:0;font-weight:400;font-size:30px;letter-spacing:-.02em}
+  .index-head h3 em{font-style:italic;color:var(--oxblood)}
+  .index-head .count{font-family:var(--sans);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .index-hint{margin:7px 0 16px;font-family:var(--sans);font-size:9px;line-height:1.7;letter-spacing:.06em;
+    color:var(--ink-soft);max-width:52ch}
+  .index-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+  .frag{
+    appearance:none;position:relative;aspect-ratio:1.14;display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(36,29,22,.20);background:rgba(255,252,244,.35);color:var(--ink-soft);
+    font-family:var(--serif);font-size:12.5px;font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+    cursor:pointer;transition:background .16s,color .16s,border-color .16s,transform .12s;
+  }
+  .frag:hover{border-color:var(--gold);background:rgba(169,129,63,.12);color:var(--oxblood)}
+  .frag:focus-visible{outline:1px solid var(--oxblood);outline-offset:2px;z-index:2}
+  .frag[aria-pressed="true"]{background:var(--oxblood);border-color:var(--oxblood);color:var(--paper)}
+  .frag[aria-pressed="true"]::after{content:"";position:absolute;top:3px;right:3px;width:3px;height:3px;
+    border-radius:50%;background:var(--gold)}
+  .frag:active{transform:scale(.96)}
+  .index-rule{height:1px;background:var(--gold);opacity:.55;margin:18px 0 0}
+  .preview{display:grid;grid-template-columns:86px minmax(0,1fr);gap:16px;align-items:start;
+    padding:13px 0 0;min-height:62px}
+  .preview .pno{font-family:var(--mono);font-size:19px;color:var(--gold);letter-spacing:.02em;padding-top:1px;
+    font-variant-numeric:tabular-nums}
+  .preview .ptext{margin:0;font-size:15.5px;line-height:1.5;font-style:italic;color:var(--ink);min-height:2.6em}
+  .preview .ptext.placeholder{color:var(--ink-soft);opacity:.8}
+  .preview .state{display:block;margin-top:5px;font-family:var(--sans);font-style:normal;font-size:7.5px;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--oxblood)}
+  .index-foot{display:flex;justify-content:space-between;gap:16px;margin-top:6px;
+    font-family:var(--sans);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+
+  /* Colophon */
+  .colophon{margin-top:46px;border-top:1px solid var(--oxblood);padding:30px 0 22px;position:relative}
+  .colo-head{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:24px}
+  .colo-head h2{margin:0;font-weight:400;font-size:clamp(2rem,3.4vw,2.8rem);letter-spacing:-.03em}
+  .colo-head .finis{font-family:var(--sans);font-size:8px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold)}
+  .colo-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:34px;border-top:1px solid var(--ink-faint);padding-top:22px}
+  .colo-grid h3{margin:0 0 8px;font-family:var(--sans);font-size:8px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--oxblood);font-weight:500}
+  .colo-grid p{margin:0;font-size:13px;line-height:1.7;color:var(--ink-soft);max-width:42ch}
+  .colo-grid p em{color:var(--ink);font-style:italic}
+  .colo-mark{position:absolute;right:0;top:18px;font-family:var(--serif);font-size:clamp(5rem,10vw,8rem);line-height:.7;
+    color:transparent;-webkit-text-stroke:1px rgba(169,129,63,.4);pointer-events:none;user-select:none}
+  .endfoot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;border-top:1px solid var(--oxblood);
+    padding:14px 0 22px;font-family:var(--sans);font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-soft)}
+  .endfoot .brand{color:var(--oxblood);font-family:var(--serif);letter-spacing:.3em;font-size:10px}
+  .endfoot .grow{flex:1;text-align:center}
+
+  @media (max-width:1080px){
+    .hero-grid{grid-template-columns:minmax(0,1fr) 300px;gap:30px}
+    .studio-grid{gap:26px}
+    .poemcard{padding:20px}
+  }
+  @media (max-width:900px){
+    .page{width:calc(100% - 40px)}
+    .hero-grid{grid-template-columns:1fr;gap:26px;align-items:start}
+    .definition{max-width:460px;padding-left:18px}
+    .masthead .mid{display:none}
+    .studio-grid{grid-template-columns:1fr;gap:38px}
+    .poemcard{position:static;min-height:0}
+    .poem-body{max-height:360px;min-height:220px}
+    .colo-grid{grid-template-columns:1fr 1fr;gap:24px}
+    .colo-grid > div:first-child{grid-column:1/-1}
+  }
+  @media (max-width:600px){
+    .page{width:calc(100% - 26px);padding-top:16px}
+    .masthead{font-size:7.5px;letter-spacing:.16em;padding-bottom:8px}
+    .masthead .brand{font-size:12px;letter-spacing:.24em}
+    .masthead .right{font-size:7px}
+    .hero{padding:32px 0 34px}
+    h1{font-size:clamp(3.1rem,15.4vw,4.7rem)}
+    .hundred{font-size:12.5rem;right:0;bottom:auto;top:146px;opacity:.8;-webkit-text-stroke-width:1px}
+    .hero-foot{margin-top:28px;font-size:6.5px;letter-spacing:.14em;flex-wrap:wrap;gap:8px}
+    .hero-foot span:nth-child(3){display:none}
+    .studio{padding-top:30px}
+    .studio-head{flex-direction:column;align-items:flex-start;gap:9px;margin-bottom:18px}
+    .studio-head p{text-align:left;font-size:8px}
+    .poemcard{padding:17px 16px 15px;min-height:0}
+    .poemcard::before{inset:4px}
+    .card-title{font-size:2.15rem;margin-top:17px}
+    .poem-body{min-height:200px;max-height:320px;margin-top:14px}
+    .poem-line{grid-template-columns:28px minmax(0,1fr) 14px;gap:7px}
+    .poem-line .text{font-size:15px}
+    .poem-actions{gap:7px}
+    .btn{padding:10px 12px 9px;font-size:7.5px;letter-spacing:.14em}
+    .studio-status{flex-basis:100%;text-align:left;margin-left:0;font-size:6.8px}
+    .card-foot{font-size:6px}
+    .index-head h3{font-size:25px}
+    .index-hint{font-size:8px;margin-bottom:12px}
+    .index-grid{gap:3px}
+    .frag{font-size:9.5px;aspect-ratio:1.1;border-color:rgba(36,29,22,.16)}
+    .preview{grid-template-columns:62px minmax(0,1fr);gap:10px}
+    .preview .pno{font-size:16px}
+    .preview .ptext{font-size:14px}
+    .index-foot{font-size:6px;letter-spacing:.12em}
+    .colophon{margin-top:34px;padding-top:24px}
+    .colo-grid{grid-template-columns:1fr;gap:18px;padding-top:16px}
+    .colo-grid > div:first-child{grid-column:auto}
+    .colo-mark{font-size:4.5rem;top:14px;opacity:.7}
+    .endfoot{font-size:6.2px;letter-spacing:.14em}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .poem-line{animation:none}
+    .frag,.btn{transition:none}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#studio">Skip to the studio</a>
+<div class="page">
+  <header class="masthead">
+    <span class="brand">Cento</span>
+    <span class="mid">One hundred borrowed lines, arranged by you</span>
+    <span class="right">No. 100 · MMXXVI</span>
+  </header>
+
+  <section class="hero" aria-labelledby="title">
+    <div class="hundred" aria-hidden="true">100</div>
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">The last page · a patchwork poem</p>
+        <h1 id="title">Everything<br><em>borrowed.</em></h1>
+      </div>
+      <aside class="definition">
+        <div class="term-row">
+          <span class="term">cento</span>
+          <span class="pron">/ˈtʃɛn.toʊ/ · noun</span>
+        </div>
+        <p>A poem composed entirely of lines borrowed from other poems. From the Latin <em>cento</em>, a patchwork cloak. One hundred fragments wait in the index below: choose them in any order, and the poem becomes yours.</p>
+        <a href="#studio">Enter the studio <span aria-hidden="true">↓</span></a>
+      </aside>
+    </div>
+    <div class="hero-foot">
+      <span class="mark">✦ 100 fragments · 10 × 10</span>
+      <span>Selection is the only original act</span>
+      <span>Oxblood · ivory · antique gold</span>
+    </div>
+  </section>
+
+  <main>
+    <section class="studio" id="studio" aria-labelledby="studio-title">
+      <div class="studio-head">
+        <h2 id="studio-title"><span class="num">Studio</span>Make the poem</h2>
+        <p>Borrow a line with a number. Return it with another click. The order you choose becomes the only version of this poem.</p>
+      </div>
+
+      <div class="studio-grid">
+        <div class="poem-col">
+          <article class="poemcard" aria-label="Your cento in progress">
+            <div class="card-top">
+              <span>Poem in progress</span>
+              <span class="progress" id="poemCount" aria-live="polite">00 / 100 lines</span>
+            </div>
+            <h2 class="card-title"><em>Cento</em></h2>
+            <p class="card-sub">after everyone</p>
+            <div class="poem-body" id="poemBody">
+              <div class="poem-empty" id="poemEmpty">
+                <span class="glyph" aria-hidden="true">—</span>
+                <p>The page is still blank.</p>
+                <small>Choose a fragment from the index</small>
+              </div>
+            </div>
+            <div class="poem-actions">
+              <button class="btn" id="draw" type="button">Draw six lines</button>
+              <button class="btn ghost" id="clear" type="button">Clear</button>
+              <span class="studio-status" id="studioStatus" aria-live="polite"></span>
+            </div>
+            <div class="card-foot">
+              <span>Each line remains <span class="red">borrowed</span></span>
+              <span id="cardCount">0 selected</span>
+            </div>
+          </article>
+        </div>
+
+        <section class="index-panel" aria-labelledby="index-title">
+          <div class="index-head">
+            <h3 id="index-title">The <em>index</em></h3>
+            <span class="count">Fragments 001 — 100</span>
+          </div>
+          <p class="index-hint">Click a number to borrow its line. Click again to return it to the index. Hover or focus to read before choosing.</p>
+          <div class="index-grid" id="indexGrid" role="group" aria-label="One hundred numbered fragments"></div>
+          <div class="index-rule"></div>
+          <div class="preview" aria-live="polite">
+            <span class="pno" id="previewNo">—</span>
+            <div>
+              <p class="ptext placeholder" id="previewText">Hover a number to read its line.</p>
+              <span class="state" id="previewState" hidden></span>
+            </div>
+          </div>
+          <div class="index-foot">
+            <span>One hundred ways in</span>
+            <span>No line is used twice</span>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="colophon" aria-labelledby="colophon-title">
+      <div class="colo-head">
+        <h2 id="colophon-title">Colophon</h2>
+        <span class="finis">Finis · 100</span>
+      </div>
+      <div class="colo-grid">
+        <div>
+          <h3>The form</h3>
+          <p>The cento is an old machine made of other people's parts: lines lifted whole from their poems and set beside strangers until a new argument appears. It is <em>composition by arrangement</em> — the opposite of theft, or its most honest form.</p>
+        </div>
+        <div>
+          <h3>This edition</h3>
+          <p>One hundred fragments were written for this page and released into a 10 × 10 index. Every line can be taken once. The poem you are making exists only in this browser, in this order, for as long as the page is open.</p>
+        </div>
+        <div>
+          <h3>The making</h3>
+          <p>Set in a public serif on warm ivory, with oxblood for the borrowed and antique gold for the index. Built as a single HTML page, without images, networks, or saved state. <em>Everything borrowed. Nothing lost.</em></p>
+        </div>
+      </div>
+      <div class="colo-mark" aria-hidden="true">100</div>
+    </section>
+  </main>
+
+  <footer class="endfoot">
+    <span class="brand">Cento</span>
+    <span class="grow">A patchwork of one hundred lines · arrange at will</span>
+    <span>Fin. MMXXVI</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LINES = [
+    "A door left open in the wheat.",
+    "The river keeps a second sky beneath its skin.",
+    "We learned the names of birds by losing them.",
+    "All afternoon the light rehearsed its leaving.",
+    "Somewhere a bell is being forgiven.",
+    "The house remembers every hand that painted it.",
+    "A field of starlings folds and unfolds.",
+    "What the fire could not finish, the rain began.",
+    "My shadow took the longer road home.",
+    "The sea writes and un-writes its one long sentence.",
+    "In the orchard, the ladder leans toward nothing.",
+    "Morning arrives like a borrowed coat.",
+    "The stone in my pocket is warm from another country.",
+    "A train of clouds crosses the ceiling.",
+    "What we called distance was only a quieter room.",
+    "The candle bows; the dark does not.",
+    "Every window keeps a little of the day.",
+    "The well says your name back in someone else's voice.",
+    "Snow falls upward in the mind of the drowned.",
+    "A kettle sings the end of winter.",
+    "The road unspools through the needle of the hills.",
+    "I have been faithful to the wrong horizon.",
+    "The orchard keeps its apples in the dark.",
+    "Old letters make a fire that gives no heat.",
+    "The moon is a coin no one thought to spend.",
+    "A heron lifts the river on its wing.",
+    "The roof remembers the weight of every summer.",
+    "We planted the gate and forgot the garden.",
+    "The wind has read all the books in this house.",
+    "A small rain taps the table for attention.",
+    "The map ends where the garden begins.",
+    "My hands are full of the sea's old grammar.",
+    "The lamp leans close to hear the page.",
+    "There is a country in the space between two words.",
+    "The morning train carries off the dark.",
+    "A pear falls and the orchard holds its breath.",
+    "The mirror practices being someone else.",
+    "We are the guests of our own patience.",
+    "The river turns the mill of the moon.",
+    "A dog barks at the shape of the wind.",
+    "The field is a letter the snow has not opened.",
+    "All the clocks agree to disagree.",
+    "The stairs remember who went up in a hurry.",
+    "A flame is a sentence spoken in the dark.",
+    "The garden gate swings toward the century.",
+    "What the thrush leaves out is also a song.",
+    "The roof is a slow instrument of rain.",
+    "I keep the key to a house that was never mine.",
+    "The horizon is a seam the light keeps mending.",
+    "A cup of tea holds the afternoon still.",
+    "The crows conduct the orchestra of wires.",
+    "The path forgets us as soon as we pass.",
+    "The night is a coat with too many pockets.",
+    "A book left open lets the room escape.",
+    "The mountain practices patience on the sky.",
+    "The tide brings back everything we said.",
+    "We lived an hour in the throat of a bell.",
+    "The window is a page the weather turns.",
+    "A slow train carries the town away.",
+    "The lilac keeps its perfume in a locked drawer.",
+    "The soul is a guest who arrives without luggage.",
+    "Midnight polishes the edges of the house.",
+    "The scarecrow has grown tired of the argument.",
+    "A river is a road that never learned to stay.",
+    "The frost writes a brief history of the grass.",
+    "The lamp is a small tame sun.",
+    "Someone is always leaving in the photograph.",
+    "The orchard is a choir with its mouth full.",
+    "The moon drags its silver anchor through the lake.",
+    "We mistook the echo for an answer.",
+    "A bee works the seam of the afternoon.",
+    "The gate is open, but the path has moved.",
+    "Snow quiets the argument of the roofs.",
+    "The heart is a room with a window facing elsewhere.",
+    "The river carries the bridge on its back.",
+    "A firefly signs its name and forgets it.",
+    "The old wall is a library of weather.",
+    "What the wind borrows, the leaves return.",
+    "The kettle keeps the house from silence.",
+    "A boat sleeps through the sermon of the waves.",
+    "The field changes its mind about the colour green.",
+    "The chimney writes a letter to the clouds.",
+    "We are made of the light that got away.",
+    "A spider repairs the geometry of morning.",
+    "The city wears its windows like medals.",
+    "The sea has no interest in our maps.",
+    "A bell is a stone that learned to sing.",
+    "The road names itself after the traveller.",
+    "The moon is a tenant who never pays rent.",
+    "All the unfinished letters become birds.",
+    "The garden argues with the fence.",
+    "A little dark is good for the eyes.",
+    "The tide is the moon's long handwriting.",
+    "The house is a shell that keeps our voices.",
+    "A feather falls with the weight of a whole bird.",
+    "The clock has one hand on the future.",
+    "The orchard stores the summer in its roots.",
+    "We carried the fire across the water in our hands.",
+    "The last page is a door with no handle.",
+    "Everything borrowed, nothing lost."
+  ];
+
+  var grid = document.getElementById("indexGrid");
+  var poemBody = document.getElementById("poemBody");
+  var poemEmpty = document.getElementById("poemEmpty");
+  var poemCount = document.getElementById("poemCount");
+  var cardCount = document.getElementById("cardCount");
+  var previewNo = document.getElementById("previewNo");
+  var previewText = document.getElementById("previewText");
+  var previewState = document.getElementById("previewState");
+  var studioStatus = document.getElementById("studioStatus");
+  var drawBtn = document.getElementById("draw");
+  var clearBtn = document.getElementById("clear");
+
+  var selected = [];
+  var chosen = new Set();
+  var statusTimer = 0;
+
+  function pad(n){ return String(n).padStart(3, "0"); }
+
+  // Build the 10 × 10 index
+  var fragButtons = [];
+  LINES.forEach(function(line, i){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "frag";
+    b.dataset.n = String(i);
+    b.textContent = pad(i + 1);
+    b.setAttribute("aria-pressed", "false");
+    b.setAttribute("aria-label", "Fragment " + pad(i + 1) + ": " + line);
+    b.addEventListener("click", function(){
+      if(chosen.has(i)) removeLine(i);
+      else addLine(i, 0);
+      showPreview(i);
+    });
+    grid.appendChild(b);
+    fragButtons.push(b);
+  });
+
+  function showPreview(i){
+    previewNo.textContent = pad(i + 1);
+    previewText.textContent = LINES[i];
+    previewText.classList.remove("placeholder");
+    previewState.hidden = false;
+    previewState.textContent = chosen.has(i) ? "In the poem · click to return" : "In the index · click to borrow";
+  }
+
+  function resetPreview(){
+    previewNo.textContent = "—";
+    previewText.textContent = "Hover a number to read its line.";
+    previewText.classList.add("placeholder");
+    previewState.hidden = true;
+  }
+
+  function updateCounts(){
+    var n = selected.length;
+    poemCount.textContent = String(n).padStart(2, "0") + " / 100 lines";
+    cardCount.textContent = n + " selected";
+  }
+
+  function updateEmpty(){
+    if(selected.length === 0){
+      if(!poemEmpty){
+        poemEmpty = document.createElement("div");
+        poemEmpty.className = "poem-empty";
+        poemEmpty.id = "poemEmpty";
+        poemEmpty.innerHTML = '<span class="glyph" aria-hidden="true">—</span><p>The page is still blank.</p><small>Choose a fragment from the index</small>';
+      }
+      if(!poemBody.contains(poemEmpty)) poemBody.appendChild(poemEmpty);
+    } else if(poemEmpty && poemBody.contains(poemEmpty)){
+      poemBody.removeChild(poemEmpty);
+    }
+  }
+
+  function addLine(i, delay){
+    if(chosen.has(i)) return;
+    chosen.add(i);
+    selected.push(i);
+    updateEmpty();
+
+    var line = document.createElement("button");
+    line.type = "button";
+    line.className = "poem-line";
+    line.dataset.n = String(i);
+    line.style.animationDelay = (delay || 0) + "ms";
+    line.setAttribute("aria-label", "Remove fragment " + pad(i + 1) + " from the poem: " + LINES[i]);
+    line.innerHTML = '<span class="no">' + pad(i + 1) + '</span>' +
+                     '<span class="text">' + LINES[i] + '</span>' +
+                     '<span class="x" aria-hidden="true">×</span>';
+    line.addEventListener("click", function(){
+      removeLine(i);
+      showPreview(i);
+    });
+    poemBody.appendChild(line);
+
+    fragButtons[i].setAttribute("aria-pressed", "true");
+    updateCounts();
+    poemBody.scrollTop = poemBody.scrollHeight;
+  }
+
+  function removeLine(i){
+    if(!chosen.has(i)) return;
+    chosen.delete(i);
+    var at = selected.indexOf(i);
+    if(at !== -1) selected.splice(at, 1);
+    var node = poemBody.querySelector('.poem-line[data-n="' + i + '"]');
+    if(node) node.parentNode.removeChild(node);
+    fragButtons[i].setAttribute("aria-pressed", "false");
+    updateEmpty();
+    updateCounts();
+  }
+
+  function clearAll(silent){
+    selected = [];
+    chosen.clear();
+    poemBody.innerHTML = "";
+    poemEmpty = null;
+    LINES.forEach(function(_, i){
+      fragButtons[i].setAttribute("aria-pressed", "false");
+    });
+    updateEmpty();
+    updateCounts();
+    resetPreview();
+    if(!silent){
+      studioStatus.textContent = "All lines returned to the index.";
+      flashStatus();
+    }
+  }
+
+  function flashStatus(){
+    window.clearTimeout(statusTimer);
+    statusTimer = window.setTimeout(function(){
+      studioStatus.textContent = "";
+    }, 3200);
+  }
+
+  // Deterministic generator for the draw action
+  var rngState = 20261018;
+  function random(){
+    rngState = (rngState + 0x6D2B79F5) | 0;
+    var t = Math.imul(rngState ^ (rngState >>> 15), 1 | rngState);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+
+  drawBtn.addEventListener("click", function(){
+    var pool = [];
+    for(var i=0;i<LINES.length;i++){ if(!chosen.has(i)) pool.push(i); }
+    if(!pool.length){
+      studioStatus.textContent = "Every line is already in the poem.";
+      flashStatus();
+      return;
+    }
+    var take = Math.min(6, pool.length);
+    var picked = [];
+    for(var k=0;k<take;k++){
+      var at = Math.floor(random() * pool.length);
+      picked.push(pool[at]);
+      pool.splice(at, 1);
+    }
+    picked.forEach(function(i, idx){
+      addLine(i, idx * 90);
+    });
+    showPreview(picked[picked.length - 1]);
+    studioStatus.textContent = "Six lines drawn. The order is yours.";
+    flashStatus();
+  });
+
+  clearBtn.addEventListener("click", function(){
+    clearAll(false);
+  });
+
+  grid.addEventListener("mouseover", function(e){
+    var b = e.target.closest ? e.target.closest(".frag") : null;
+    if(b) showPreview(Number(b.dataset.n));
+  });
+  grid.addEventListener("focusin", function(e){
+    var b = e.target.closest ? e.target.closest(".frag") : null;
+    if(b) showPreview(Number(b.dataset.n));
+  });
+  grid.addEventListener("mouseleave", function(){
+    resetPreview();
+  });
+
+  updateCounts();
+})();
+</script>
+</body>
+</html>

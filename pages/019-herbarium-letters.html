@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Herbarium of Letters</title>
+<style>
+  :root{
+    --paper:#eef0e5;
+    --paper-light:#f6f5eb;
+    --ink:#22331f;
+    --ink-soft:rgba(34,51,31,.62);
+    --ink-faint:rgba(34,51,31,.28);
+    --terracotta:#b45f3f;
+    --gold:#c9a24b;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --hand:"Bradley Hand","Snell Roundhand","Segoe Print","Comic Sans MS",cursive;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(rgba(34,51,31,.055) .55px, transparent .65px),
+      radial-gradient(rgba(180,95,63,.045) .55px, transparent .65px),
+      radial-gradient(120% 80% at 50% 0%, rgba(255,255,252,.55), transparent 60%);
+    background-size:4px 4px, 7px 7px, auto;
+    color:var(--ink);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    box-shadow:inset 0 0 120px rgba(34,51,31,.07);
+  }
+  button{font:inherit;color:inherit}
+  .sheet{
+    position:relative;z-index:1;max-width:1440px;margin:0 auto;
+    padding:clamp(20px,3.4vw,46px) clamp(18px,4vw,62px) 0;
+    min-height:100svh;display:flex;flex-direction:column;
+  }
+
+  .masthead{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;
+    padding-bottom:13px;border-bottom:1px solid var(--ink-faint);
+  }
+  .mast-left .kicker{
+    display:block;font-family:var(--mono);font-size:8px;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--terracotta);margin-bottom:7px;
+  }
+  .masthead h1{
+    margin:0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(24px,2.3vw,34px);letter-spacing:.005em;line-height:1;
+  }
+  .masthead h1 em{font-style:italic;color:var(--terracotta)}
+  .mast-right{
+    text-align:right;font-family:var(--mono);font-size:8px;line-height:1.9;
+    letter-spacing:.19em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;
+  }
+  .mast-right b{font-weight:400;color:var(--terracotta)}
+
+  .spread{
+    flex:1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+    gap:clamp(26px,4.4vw,68px);padding-top:clamp(22px,3vw,34px);
+    align-items:start;
+  }
+
+  .plate-column{min-width:0}
+  .plate{
+    position:relative;width:min(100%,calc((100svh - 220px) * .794));
+    max-width:600px;aspect-ratio:620 / 780;margin:0 auto;
+    background-color:var(--paper-light);
+    background-image:
+      radial-gradient(rgba(34,51,31,.045) .5px, transparent .6px),
+      linear-gradient(150deg, rgba(255,255,252,.6), transparent 55%);
+    background-size:4px 4px, auto;
+    border:1px solid rgba(34,51,31,.30);
+    box-shadow:0 22px 44px rgba(34,51,31,.10),0 2px 0 rgba(255,255,255,.6) inset;
+    overflow:hidden;
+  }
+  .plate::before{
+    content:"";position:absolute;inset:10px;border:1px solid rgba(34,51,31,.14);
+    pointer-events:none;z-index:2;
+  }
+  #botanical{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+  .plate-head{
+    position:absolute;top:17px;left:22px;right:22px;z-index:3;
+    display:flex;justify-content:space-between;
+    font-family:var(--mono);font-size:7px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .plate-head b{font-weight:400;color:var(--ink)}
+  .mount{
+    position:absolute;width:0;height:0;z-index:4;pointer-events:none;
+    border-style:solid;
+  }
+  .mount.tl{top:-1px;left:-1px;border-width:24px 24px 0 0;border-color:rgba(201,162,75,.62) transparent transparent transparent}
+  .mount.tr{top:-1px;right:-1px;border-width:0 24px 24px 0;border-color:transparent rgba(201,162,75,.62) transparent transparent}
+  .mount.bl{bottom:-1px;left:-1px;border-width:0 0 24px 24px;border-color:transparent transparent rgba(201,162,75,.62) transparent}
+  .mount.br{bottom:-1px;right:-1px;border-width:24px 0 0 24px;border-color:transparent transparent transparent rgba(201,162,75,.62)}
+
+  #bigLetter{
+    font-family:var(--serif);font-weight:400;
+    fill:var(--ink);opacity:.9;
+  }
+  #letterShadow{fill:rgba(34,51,31,.055)}
+
+  .stem{fill:none;stroke:var(--ink);stroke-linecap:round;stroke-linejoin:round}
+  .leaf{transform-box:fill-box;transform-origin:center}
+  .flower-inner{transform-box:fill-box;transform-origin:center}
+  @keyframes stemDraw{to{stroke-dashoffset:0}}
+  @keyframes leafIn{
+    from{opacity:0;transform:scale(.82) rotate(-2.5deg)}
+    to{opacity:1;transform:scale(1) rotate(0)}
+  }
+  @keyframes flowerIn{
+    from{opacity:0;transform:scale(.55) rotate(-14deg)}
+    to{opacity:1;transform:scale(1) rotate(0)}
+  }
+
+  .label{
+    position:absolute;left:7.5%;right:7.5%;bottom:5.2%;z-index:3;
+    padding-top:10px;padding-bottom:3px;border-top:1px solid rgba(34,51,31,.35);
+    background:linear-gradient(180deg, rgba(246,245,235,0), rgba(246,245,235,.92) 32%, rgba(246,245,235,.96));
+    transform:rotate(-.5deg);
+  }
+  .label-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .hand{
+    font-family:var(--hand);font-size:clamp(14px,1.35vw,19px);color:var(--terracotta);
+    letter-spacing:.02em;white-space:nowrap;
+  }
+  .latin{
+    font-family:var(--serif);font-style:italic;font-size:clamp(11px,1.08vw,15px);
+    color:var(--ink);line-height:1.3;
+  }
+  .authority{
+    font-family:var(--mono);font-size:6.5px;letter-spacing:.07em;color:var(--ink-soft);
+  }
+  .label-meta{
+    display:flex;justify-content:space-between;gap:14px;margin-top:5px;
+    font-family:var(--mono);font-size:6.4px;line-height:1.6;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+  .label-meta span:last-child{white-space:nowrap;color:var(--terracotta)}
+
+  .stamp{
+    position:absolute;right:7%;bottom:23%;z-index:5;width:clamp(82px,10vw,124px);aspect-ratio:1;
+    border:2px solid var(--terracotta);border-radius:50%;
+    color:var(--terracotta);display:grid;place-items:center;text-align:center;
+    transform:rotate(-13deg) scale(1.7);opacity:0;pointer-events:none;
+    mix-blend-mode:multiply;font-family:var(--mono);text-transform:uppercase;
+    transition:opacity .35s ease,transform .45s cubic-bezier(.2,1.5,.4,1);
+  }
+  .stamp.visible{opacity:.82;transform:rotate(-13deg) scale(1)}
+  .stamp::before{content:"";position:absolute;inset:5px;border:1px solid rgba(180,95,63,.65);border-radius:50%}
+  .stamp-inner{line-height:1.15;padding:9px}
+  .stamp-inner .s-small{font-size:clamp(4.8px,.47vw,6.2px);letter-spacing:.2em;display:block}
+  .stamp-inner strong{
+    display:block;font-family:var(--serif);font-weight:400;font-size:clamp(16px,1.9vw,24px);
+    line-height:1.15;letter-spacing:.02em;margin:2px 0;
+  }
+  .stamp-inner em{font-style:normal;font-size:clamp(5.5px,.55vw,7px);letter-spacing:.26em;display:block}
+  .stamp-inner .s-letter{
+    display:block;font-family:var(--serif);font-style:italic;font-size:clamp(12px,1.4vw,18px);
+    line-height:1.1;
+  }
+  .plate-caption{
+    margin:9px auto 0;max-width:600px;font-family:var(--mono);font-size:7px;
+    line-height:1.7;letter-spacing:.09em;color:var(--ink-faint);text-align:center;
+  }
+
+  .text-column{padding-top:clamp(2px,1vw,12px);max-width:560px}
+  .eyebrow{
+    margin:0 0 16px;font-family:var(--mono);font-size:8px;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--terracotta);
+  }
+  .title{
+    margin:0 0 18px;font-family:var(--serif);font-weight:400;
+    font-size:clamp(46px,5.3vw,78px);line-height:.92;letter-spacing:-.025em;
+  }
+  .title em{display:block;font-style:italic;color:var(--terracotta);padding-left:.06em}
+  .title em::after{
+    content:"";display:block;width:70px;height:1px;background:var(--gold);margin-top:15px;
+  }
+  .essay{
+    margin:0 0 22px;font-size:clamp(13px,1.1vw,15px);line-height:1.86;
+    color:rgba(34,51,31,.82);max-width:50ch;
+  }
+  .essay::first-letter{
+    float:left;font-size:3.25em;line-height:.78;padding:6px 8px 0 0;
+    color:var(--terracotta);font-family:var(--serif);
+  }
+  .essay em{font-style:italic;color:var(--ink)}
+
+  .index-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-bottom:7px;border-bottom:1px solid var(--ink-faint);
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+  .index-head span:last-child{color:var(--ink-faint)}
+  .letter-index{
+    display:grid;grid-template-columns:repeat(7,1fr);
+    border-left:1px solid rgba(34,51,31,.16);border-top:1px solid rgba(34,51,31,.16);
+  }
+  .letter-index button{
+    position:relative;aspect-ratio:1.18;background:transparent;border:0;
+    border-right:1px solid rgba(34,51,31,.16);border-bottom:1px solid rgba(34,51,31,.16);
+    cursor:pointer;font-family:var(--serif);font-size:clamp(14px,1.3vw,18px);
+    color:var(--ink);padding:0;transition:background .2s,color .2s;
+  }
+  .letter-index button sup{
+    position:absolute;top:4px;right:5px;font-family:var(--mono);font-size:5.5px;
+    font-weight:400;color:var(--ink-faint);letter-spacing:0;
+  }
+  .letter-index button:hover{background:rgba(180,95,63,.10);color:var(--terracotta)}
+  .letter-index button[aria-pressed="true"]{background:var(--ink);color:var(--paper-light)}
+  .letter-index button[aria-pressed="true"] sup{color:rgba(238,240,229,.5)}
+  .letter-index button:focus-visible{outline:1px solid var(--terracotta);outline-offset:-1px}
+
+  .actions{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px;
+  }
+  .press-btn{
+    display:inline-flex;align-items:center;gap:14px;
+    background:var(--ink);color:var(--paper-light);border:1px solid var(--ink);
+    padding:12px 18px 11px;font-family:var(--mono);font-size:8.5px;
+    letter-spacing:.18em;text-transform:uppercase;cursor:pointer;
+    transition:background .25s,border-color .25s,color .25s;
+  }
+  .press-btn .mark{color:var(--gold);font-size:12px;line-height:1}
+  .press-btn:hover:not(:disabled){background:var(--terracotta);border-color:var(--terracotta)}
+  .press-btn:focus-visible{outline:1px solid var(--terracotta);outline-offset:3px}
+  .press-btn:disabled{
+    background:transparent;color:var(--ink-soft);border-color:var(--ink-faint);cursor:default;
+  }
+  .press-btn:disabled .mark{color:var(--terracotta)}
+  .press-hint{font-family:var(--mono);font-size:7px;letter-spacing:.09em;color:var(--ink-faint);max-width:180px;line-height:1.6}
+
+  .herbarium{margin-top:22px;border-top:1px solid var(--ink-faint);padding-top:10px}
+  .herb-head{
+    display:flex;justify-content:space-between;font-family:var(--mono);font-size:7px;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;
+  }
+  .herb-head span:last-child{color:var(--terracotta)}
+  .herb-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+  .herb-list li.empty{
+    font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--ink-faint);
+    line-height:1.5;padding:3px 0;
+  }
+  .herb-item button{
+    display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;gap:9px;
+    width:100%;background:transparent;border:1px solid rgba(34,51,31,.14);
+    padding:5px 8px;text-align:left;cursor:pointer;transition:background .2s,border-color .2s;
+  }
+  .herb-item button:hover{background:rgba(180,95,63,.06);border-color:rgba(180,95,63,.3)}
+  .herb-item .hl{
+    font-family:var(--serif);font-size:14px;color:var(--terracotta);line-height:1;
+    border-right:1px solid rgba(34,51,31,.14);padding-right:7px;
+  }
+  .herb-item .hn{
+    font-family:var(--serif);font-style:italic;font-size:10px;color:var(--ink-soft);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .herb-item .hno{
+    font-family:var(--mono);font-size:6.5px;letter-spacing:.1em;color:var(--ink-faint);
+  }
+
+  footer{
+    margin-top:clamp(24px,4vw,48px);border-top:1px solid var(--ink-faint);
+    padding:11px 0 18px;display:flex;justify-content:space-between;gap:20px;
+    font-family:var(--mono);font-size:7px;line-height:1.8;letter-spacing:.15em;
+    text-transform:uppercase;color:var(--ink-faint);
+  }
+  footer .fright{color:rgba(34,51,31,.4);white-space:nowrap}
+
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+
+  @media (max-width: 1020px){
+    .spread{grid-template-columns:1fr;gap:30px}
+    .plate{width:min(100%,540px)}
+    .text-column{max-width:640px;margin:0 auto;width:100%}
+    .mast-right{display:none}
+    .title{font-size:clamp(44px,9vw,66px)}
+    .letter-index button{aspect-ratio:1.35}
+  }
+  @media (max-width: 600px){
+    .sheet{padding:16px 14px 0}
+    .masthead h1{font-size:22px}
+    .mast-left .kicker{font-size:7px;letter-spacing:.22em}
+    .plate{width:100%}
+    .plate-caption{font-size:6.5px;padding:0 8px}
+    .label{left:6%;right:6%;bottom:4.6%;padding-top:8px}
+    .label-top{gap:5px 8px}
+    .hand{font-size:14px}
+    .latin{font-size:10px}
+    .label-meta{font-size:5.8px;gap:8px;letter-spacing:.06em}
+    .label-meta span:first-child{max-width:62%}
+    .stamp{bottom:22%}
+    .title{font-size:44px}
+    .eyebrow{font-size:7px}
+    .essay{font-size:13px;line-height:1.8}
+    .letter-index button{font-size:15px;aspect-ratio:1.15}
+    .actions{align-items:flex-start}
+    .press-hint{max-width:100%}
+    .herb-item .hn{font-size:9px}
+    footer{flex-direction:column;gap:3px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .stem,.leaf,.flower-inner{animation:none !important;opacity:1 !important;stroke-dashoffset:0 !important}
+    .stamp{transition:none}
+    .letter-index button{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="masthead">
+    <div class="mast-left">
+      <span class="kicker">A specimen book · Vol. IV</span>
+      <h1>Herbarium <em>of</em> Letters</h1>
+    </div>
+    <div class="mast-right">
+      Alphabetum Press · MMXXVI<br>
+      Twenty-six plates · <b>Collected &amp; pressed</b>
+    </div>
+  </header>
+
+  <main class="spread">
+    <section class="plate-column">
+      <div class="plate" id="plate">
+        <span class="mount tl"></span><span class="mount tr"></span>
+        <span class="mount bl"></span><span class="mount br"></span>
+        <div class="plate-head">
+          <span>Plate <b id="plateNo">I</b></span>
+          <span>Folio <b id="folioNo">001</b></span>
+        </div>
+        <svg id="botanical" viewBox="0 0 620 780" role="img" aria-labelledby="plateTitle">
+          <title id="plateTitle">Pressed botanical arrangement surrounding the letter A</title>
+          <text id="letterShadow" x="310" y="462" text-anchor="middle" dominant-baseline="central" font-size="330" transform="translate(5 8)">A</text>
+          <g id="botanicalLayer"></g>
+          <text id="bigLetter" x="310" y="462" text-anchor="middle" dominant-baseline="central" font-size="330">A</text>
+          <g id="foregroundLayer"></g>
+        </svg>
+
+        <div class="label">
+          <div class="label-top">
+            <span class="hand">No. <span id="specNo">001</span></span>
+            <span class="latin" id="latinName">Littera silvestris</span>
+            <span class="authority" id="authority">(L.) Spreng.</span>
+          </div>
+          <div class="label-meta">
+            <span id="locality">Interleaved, pressed, forgotten.</span>
+            <span id="collectDate">x. MMXXVI</span>
+          </div>
+        </div>
+
+        <div class="stamp" id="stamp" aria-hidden="true">
+          <div class="stamp-inner">
+            <span class="s-small">Herbarium</span>
+            <strong>of Letters</strong>
+            <span class="s-letter" id="stampLetter">A</span>
+            <em>Pressed</em>
+          </div>
+        </div>
+      </div>
+      <p class="plate-caption">Each arrangement is grown from the character code of its letter; no two pressings are quite alike.</p>
+    </section>
+
+    <section class="text-column">
+      <p class="eyebrow">The alphabet as botany</p>
+      <h2 class="title">Letters,<em>pressed.</em></h2>
+      <p class="essay">
+        Every alphabet is a herbarium. A letter is gathered young — a curve, a stem, a serif like a
+        small leaf — then laid between the pages of a dictionary until it holds its shape. These
+        twenty-six specimens were not printed; they were grown. Each arrangement is raised from the
+        <em>character code</em> of its letter, so that A is never B, and no pressing is quite repeated.
+        Read the plate as a page from a field notebook: the Latin name is invented, the locality is
+        approximate, and the flower is always in season. Press one, and the book keeps it.
+      </p>
+
+      <div class="index-head"><span>The index</span><span>A–Z · 26 specimens</span></div>
+      <div class="letter-index" id="index" role="group" aria-label="Choose a letter"></div>
+
+      <div class="actions">
+        <button class="press-btn" id="pressBtn" type="button">
+          <span id="pressLabel">press this specimen</span><span class="mark">✳</span>
+        </button>
+        <span class="press-hint" id="pressHint">adds the letter to your herbarium</span>
+      </div>
+
+      <div class="herbarium">
+        <div class="herb-head"><span>My herbarium</span><span id="herbCount">0 pressed</span></div>
+        <ul class="herb-list" id="herbList">
+          <li class="empty">No specimens yet. The page is still a meadow.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Collected, pressed &amp; occasionally misnamed at the edge of the dictionary.</span>
+    <span class="fright">Herbarium of Letters · Vol. IV · Folios 001–026</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var SVG = "http://www.w3.org/2000/svg";
+  var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  var current = 0;
+  var pressed = new Set();
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var layer = document.getElementById("botanicalLayer");
+  var foreground = document.getElementById("foregroundLayer");
+  var bigLetter = document.getElementById("bigLetter");
+  var letterShadow = document.getElementById("letterShadow");
+  var plateTitle = document.getElementById("plateTitle");
+  var plateNo = document.getElementById("plateNo");
+  var folioNo = document.getElementById("folioNo");
+  var specNo = document.getElementById("specNo");
+  var latinName = document.getElementById("latinName");
+  var authority = document.getElementById("authority");
+  var locality = document.getElementById("locality");
+  var collectDate = document.getElementById("collectDate");
+  var stamp = document.getElementById("stamp");
+  var stampLetter = document.getElementById("stampLetter");
+  var indexEl = document.getElementById("index");
+  var pressBtn = document.getElementById("pressBtn");
+  var pressLabel = document.getElementById("pressLabel");
+  var pressHint = document.getElementById("pressHint");
+  var herbList = document.getElementById("herbList");
+  var herbCount = document.getElementById("herbCount");
+  var plateEl = document.getElementById("plate");
+
+  var genera = ["Littera", "Gramma", "Scriptoria", "Epistola", "Typographia", "Charta", "Nota", "Vox"];
+  var epithets = [
+    "silvestris", "marginata", "nocturna", "vermiculata", "umbratilis", "cancellata",
+    "aurea", "littoralis", "obscura", "radiata", "mansueta", "foliosissima",
+    "pallida", "litteralis", "sericea", "rubricata", "minuta", "palustris"
+  ];
+  var forms = ["var. angustifolia", "var. maculata", "f. italica", "subsp. borealis", "var. minima", "f. pressa"];
+  var authorList = ["(L.) Spreng.", "(Banks) Hook.f.", "L.f.", "(L.) Willd.", "Moench", "(Thunb.) DC.", "Huds.", "R.Br."];
+  var places = [
+    "Interleaved, pressed, forgotten.",
+    "Gathered from the margin of a dictionary.",
+    "Found between 'mustard' and 'murmur'.",
+    "At the edge of a paragraph, in shade.",
+    "Pressed in the gutter of a borrowed book.",
+    "Collected from the foot of page 41."
+  ];
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function el(name, attrs, parent) {
+    var node = document.createElementNS(SVG, name);
+    if (attrs) {
+      for (var key in attrs) {
+        if (Object.prototype.hasOwnProperty.call(attrs, key)) {
+          node.setAttribute(key, attrs[key]);
+        }
+      }
+    }
+    if (parent) parent.appendChild(node);
+    return node;
+  }
+
+  function roman(n) {
+    var map = [
+      [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]
+    ];
+    var out = "";
+    for (var i = 0; i < map.length; i++) {
+      while (n >= map[i][0]) { out += map[i][1]; n -= map[i][0]; }
+    }
+    return out;
+  }
+
+  function pad(n) {
+    return String(n).padStart(3, "0");
+  }
+
+  function cubic(p0, p1, p2, p3, t) {
+    var mt = 1 - t;
+    var a = mt * mt * mt;
+    var b = 3 * mt * mt * t;
+    var c = 3 * mt * t * t;
+    var d = t * t * t;
+    return {
+      x: a * p0.x + b * p1.x + c * p2.x + d * p3.x,
+      y: a * p0.y + b * p1.y + c * p2.y + d * p3.y
+    };
+  }
+
+  function cubicTangent(p0, p1, p2, p3, t) {
+    var mt = 1 - t;
+    var x = 3 * mt * mt * (p1.x - p0.x) + 6 * mt * t * (p2.x - p1.x) + 3 * t * t * (p3.x - p2.x);
+    var y = 3 * mt * mt * (p1.y - p0.y) + 6 * mt * t * (p2.y - p1.y) + 3 * t * t * (p3.y - p2.y);
+    var len = Math.sqrt(x * x + y * y) || 1;
+    return { x: x / len, y: y / len };
+  }
+
+  function leafD(base, dir, length, width) {
+    var tip = { x: base.x + dir.x * length, y: base.y + dir.y * length };
+    var perp = { x: -dir.y, y: dir.x };
+    var c1 = {
+      x: base.x + dir.x * length * 0.30 + perp.x * width,
+      y: base.y + dir.y * length * 0.30 + perp.y * width
+    };
+    var c2 = {
+      x: base.x + dir.x * length * 0.74 + perp.x * width * 0.86,
+      y: base.y + dir.y * length * 0.74 + perp.y * width * 0.86
+    };
+    var c3 = {
+      x: base.x + dir.x * length * 0.74 - perp.x * width * 0.86,
+      y: base.y + dir.y * length * 0.74 - perp.y * width * 0.86
+    };
+    var c4 = {
+      x: base.x + dir.x * length * 0.30 - perp.x * width,
+      y: base.y + dir.y * length * 0.30 - perp.y * width
+    };
+    var d = "M " + base.x.toFixed(2) + " " + base.y.toFixed(2) +
+      " C " + c1.x.toFixed(2) + " " + c1.y.toFixed(2) + ", " + c2.x.toFixed(2) + " " + c2.y.toFixed(2) + ", " + tip.x.toFixed(2) + " " + tip.y.toFixed(2) +
+      " C " + c3.x.toFixed(2) + " " + c3.y.toFixed(2) + ", " + c4.x.toFixed(2) + " " + c4.y.toFixed(2) + ", " + base.x.toFixed(2) + " " + base.y.toFixed(2) + " Z";
+    return { d: d, tip: tip, perp: perp };
+  }
+
+  function addLeaf(parent, base, angleDir, length, width, opts, delay) {
+    opts = opts || {};
+    var dir = { x: Math.cos(angleDir), y: Math.sin(angleDir) };
+    var geo = leafD(base, dir, length, width);
+    var g = el("g", { "class": "leaf" }, parent);
+    if (!reduced) {
+      g.style.opacity = "0";
+      g.style.animation = "leafIn .72s cubic-bezier(.2,.7,.2,1) " + delay + "ms forwards";
+    }
+    var path = el("path", {
+      d: geo.d,
+      fill: opts.fill || "#22331f",
+      "fill-opacity": opts.opacity == null ? 0.58 : opts.opacity,
+      stroke: "#22331f",
+      "stroke-width": 0.65,
+      "stroke-opacity": 0.48
+    }, g);
+    var mid = {
+      x: base.x + dir.x * length * 0.55 + geo.perp.x * width * 0.16,
+      y: base.y + dir.y * length * 0.55 + geo.perp.y * width * 0.16
+    };
+    el("path", {
+      d: "M " + base.x.toFixed(2) + " " + base.y.toFixed(2) + " Q " + mid.x.toFixed(2) + " " + mid.y.toFixed(2) + ", " + geo.tip.x.toFixed(2) + " " + geo.tip.y.toFixed(2),
+      fill: "none",
+      stroke: opts.vein || "#c9a24b",
+      "stroke-opacity": 0.55,
+      "stroke-width": 0.55
+    }, g);
+    return g;
+  }
+
+  function addFlower(parent, x, y, radius, fill, rot, delay) {
+    var outer = el("g", { transform: "translate(" + x.toFixed(2) + " " + y.toFixed(2) + ") rotate(" + rot.toFixed(1) + ")" }, parent);
+    var inner = el("g", { "class": "flower-inner" }, outer);
+    if (!reduced) {
+      inner.style.opacity = "0";
+      inner.style.animation = "flowerIn .78s cubic-bezier(.2,1,.3,1) " + delay + "ms forwards";
+    }
+    for (var i = 0; i < 5; i++) {
+      el("ellipse", {
+        cx: 0, cy: -radius * 0.56,
+        rx: (radius * 0.31).toFixed(2), ry: (radius * 0.62).toFixed(2),
+        transform: "rotate(" + (i * 72) + ")",
+        fill: fill,
+        "fill-opacity": 0.78,
+        stroke: "#22331f",
+        "stroke-opacity": 0.28,
+        "stroke-width": 0.5
+      }, inner);
+    }
+    el("circle", {
+      cx: 0, cy: 0, r: (radius * 0.17).toFixed(2),
+      fill: "#c9a24b", stroke: "#22331f", "stroke-opacity": 0.5, "stroke-width": 0.6
+    }, inner);
+    for (var k = 0; k < 6; k++) {
+      var a = (k / 6) * Math.PI * 2;
+      el("line", {
+        x1: (Math.cos(a) * radius * 0.18).toFixed(2),
+        y1: (Math.sin(a) * radius * 0.18).toFixed(2),
+        x2: (Math.cos(a) * radius * 0.40).toFixed(2),
+        y2: (Math.sin(a) * radius * 0.40).toFixed(2),
+        stroke: "#22331f", "stroke-opacity": 0.34, "stroke-width": 0.45
+      }, inner);
+    }
+    return outer;
+  }
+
+  function drawBotanical(code) {
+    layer.textContent = "";
+    foreground.textContent = "";
+
+    var rnd = mulberry32((code * 7919 + 137) % 2147483647);
+    var nStems = 6 + (code % 3);
+    var stemData = [];
+    var leafCount = 0;
+    var flowerCount = 0;
+
+    for (var i = 0; i < nStems; i++) {
+      var t = nStems === 1 ? 0.5 : i / (nStems - 1);
+      var base = {
+        x: 310 + (rnd() - 0.5) * 84,
+        y: 646 + (rnd() - 0.5) * 22
+      };
+      var endX = 58 + t * 504 + (rnd() - 0.5) * 36;
+      var endY = 390 - Math.sin(t * Math.PI) * 186 + (rnd() - 0.5) * 42;
+      var dirOut = t < 0.5 ? -1 : 1;
+      var p1 = {
+        x: base.x + (endX - base.x) * 0.16 + dirOut * (24 + rnd() * 42),
+        y: base.y - 168 - rnd() * 90
+      };
+      var p2 = {
+        x: base.x + (endX - base.x) * 0.70 + dirOut * (8 + rnd() * 34),
+        y: endY + 128 + rnd() * 74
+      };
+      var p3 = { x: endX, y: endY };
+
+      var d = "M " + base.x.toFixed(2) + " " + base.y.toFixed(2) +
+        " C " + p1.x.toFixed(2) + " " + p1.y.toFixed(2) + ", " + p2.x.toFixed(2) + " " + p2.y.toFixed(2) + ", " + p3.x.toFixed(2) + " " + p3.y.toFixed(2);
+      var stem = el("path", {
+        d: d,
+        "class": "stem",
+        "stroke-width": (1.1 + rnd() * 0.75).toFixed(2),
+        "stroke-opacity": 0.85
+      }, layer);
+      if (!reduced) {
+        var len = stem.getTotalLength();
+        stem.style.strokeDasharray = len + " " + len;
+        stem.style.strokeDashoffset = len;
+        stem.style.animation = "stemDraw 1.05s cubic-bezier(.35,.7,.2,1) " + (i * 55) + "ms forwards";
+      }
+
+      var leafT = 0.20 + rnd() * 0.05;
+      var side = rnd() > 0.5 ? 1 : -1;
+      while (leafT < 0.84) {
+        var pt = cubic(base, p1, p2, p3, leafT);
+        var tan = cubicTangent(base, p1, p2, p3, leafT);
+        var normal = { x: -tan.y, y: tan.x };
+        var angle = Math.atan2(tan.y * 0.64 + normal.y * side * 0.76, tan.x * 0.64 + normal.x * side * 0.76);
+        var lenLeaf = 26 + rnd() * 23;
+        var widLeaf = 5.5 + rnd() * 4.2;
+        var r = rnd();
+        var opts = { opacity: 0.44 + rnd() * 0.20 };
+        if (r > 0.95) { opts.fill = "#b45f3f"; opts.opacity = 0.56; opts.vein = "#eef0e5"; }
+        else if (r > 0.89) { opts.fill = "#c9a24b"; opts.opacity = 0.52; opts.vein = "#22331f"; }
+        addLeaf(layer, pt, angle, lenLeaf, widLeaf, opts, 180 + leafCount * 26);
+        leafCount++;
+        side *= -1;
+        leafT += 0.095 + rnd() * 0.045;
+      }
+
+      // a bud or a flower at the stem tip
+      if (i % 2 === 0 || rnd() > 0.55) {
+        var radius = 13 + rnd() * 9;
+        var flowerFill = (i + code) % 4 === 0 ? "#c9a24b" : "#b45f3f";
+        addFlower(layer, p3.x, p3.y, radius, flowerFill, rnd() * 360, 260 + flowerCount * 90);
+        flowerCount++;
+      } else {
+        var bud = el("path", {
+          d: "M " + p3.x + " " + (p3.y + 6) + " C " + (p3.x + 7) + " " + (p3.y - 2) + ", " + (p3.x + 5) + " " + (p3.y - 13) + ", " + p3.x + " " + (p3.y - 17) +
+             " C " + (p3.x - 5) + " " + (p3.y - 13) + ", " + (p3.x - 7) + " " + (p3.y - 2) + ", " + p3.x + " " + (p3.y + 6) + " Z",
+          fill: "#c9a24b", "fill-opacity": 0.72, stroke: "#22331f", "stroke-opacity": 0.35, "stroke-width": 0.5,
+          "class": "leaf"
+        }, layer);
+        if (!reduced) {
+          bud.style.opacity = "0";
+          bud.style.animation = "leafIn .7s ease " + (240 + flowerCount * 80) + "ms forwards";
+        }
+        flowerCount++;
+        el("path", {
+          d: "M " + p3.x + " " + (p3.y + 6) + " l 0 11",
+          stroke: "#22331f", "stroke-width": 0.7, "stroke-opacity": 0.5
+        }, layer);
+      }
+      stemData.push({ base: base, p1: p1, p2: p2, p3: p3 });
+    }
+
+    // fallen leaves and seed specks at the base
+    for (var f = 0; f < 4; f++) {
+      var fx = 244 + rnd() * 136;
+      var fy = 654 + rnd() * 24;
+      var fa = rnd() * Math.PI * 2;
+      addLeaf(layer, { x: fx, y: fy }, fa, 17 + rnd() * 12, 4.5 + rnd() * 2.5, { opacity: 0.3, fill: f === 0 ? "#b45f3f" : "#22331f" }, 700 + f * 55);
+    }
+    for (var s = 0; s < 16; s++) {
+      el("circle", {
+        cx: (240 + rnd() * 150).toFixed(1),
+        cy: (640 + rnd() * 34).toFixed(1),
+        r: (0.6 + rnd() * 1.1).toFixed(2),
+        fill: s % 3 === 0 ? "#b45f3f" : "#c9a24b",
+        "fill-opacity": 0.5
+      }, layer);
+    }
+
+    // one small leaf laid over the capital, as if it fell there
+    var fg = el("g", { "class": "leaf" }, foreground);
+    if (!reduced) {
+      fg.style.opacity = "0";
+      fg.style.animation = "leafIn .8s ease 940ms forwards";
+    }
+    var fdir = { x: -0.80, y: -0.60 };
+    var fgeo = leafD({ x: 462, y: 586 }, fdir, 36, 8.5);
+    el("path", {
+      d: fgeo.d, fill: "#b45f3f", "fill-opacity": 0.5, stroke: "#22331f", "stroke-opacity": 0.32, "stroke-width": 0.5
+    }, fg);
+    el("path", {
+      d: "M 462 586 Q " + (462 + fdir.x * 19) + " " + (586 + fdir.y * 19 - 2) + ", " + fgeo.tip.x + " " + fgeo.tip.y,
+      fill: "none", stroke: "#22331f", "stroke-opacity": 0.35, "stroke-width": 0.5
+    }, fg);
+  }
+
+  function buildIndex() {
+    for (var i = 0; i < 26; i++) {
+      (function (i) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+        b.setAttribute("aria-label", "Specimen " + alphabet.charAt(i) + ", number " + pad(i + 1));
+        b.textContent = alphabet.charAt(i);
+        var sup = document.createElement("sup");
+        sup.textContent = pad(i + 1);
+        b.appendChild(sup);
+        b.addEventListener("click", function () { selectLetter(i); });
+        indexEl.appendChild(b);
+      })(i);
+    }
+  }
+
+  function updateIndexSelection() {
+    var buttons = indexEl.querySelectorAll("button");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute("aria-pressed", i === current ? "true" : "false");
+    }
+  }
+
+  function updateStamp(animate) {
+    var letter = alphabet.charAt(current);
+    stampLetter.textContent = letter;
+    if (pressed.has(letter)) {
+      if (animate) {
+        stamp.classList.remove("visible");
+        void stamp.offsetWidth;
+      }
+      stamp.classList.add("visible");
+    } else {
+      stamp.classList.remove("visible");
+    }
+  }
+
+  function renderHerbarium() {
+    herbList.textContent = "";
+    if (pressed.size === 0) {
+      var empty = document.createElement("li");
+      empty.className = "empty";
+      empty.textContent = "No specimens yet. The page is still a meadow.";
+      herbList.appendChild(empty);
+      herbCount.textContent = "0 pressed";
+      return;
+    }
+    var ordered = Array.from(pressed).sort();
+    ordered.forEach(function (letter) {
+      var i = alphabet.indexOf(letter);
+      var li = document.createElement("li");
+      li.className = "herb-item";
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-label", "Open specimen " + letter);
+      var hl = document.createElement("span");
+      hl.className = "hl";
+      hl.textContent = letter;
+      var name = document.createElement("span");
+      name.className = "hn";
+      name.textContent = specimenName(i).name;
+      var no = document.createElement("span");
+      no.className = "hno";
+      no.textContent = "No. " + pad(i + 1);
+      b.appendChild(hl);
+      b.appendChild(name);
+      b.appendChild(no);
+      b.addEventListener("click", function () {
+        selectLetter(i);
+        plateEl.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+      });
+      li.appendChild(b);
+      herbList.appendChild(li);
+    });
+    herbCount.textContent = pressed.size + " pressed";
+  }
+
+  function specimenName(i) {
+    var code = alphabet.charCodeAt(i);
+    var genus = genera[code % genera.length];
+    var epithet = epithets[(code * 3 + i) % epithets.length];
+    var form = forms[(code + i * 5) % forms.length];
+    var auth = authorList[(code * 7 + i) % authorList.length];
+    return {
+      name: genus + " " + epithet + " " + form,
+      genus: genus,
+      authority: auth
+    };
+  }
+
+  function updateButton() {
+    var letter = alphabet.charAt(current);
+    var isPressed = pressed.has(letter);
+    pressBtn.disabled = isPressed;
+    pressLabel.textContent = isPressed ? "in your herbarium" : "press this specimen";
+    pressHint.textContent = isPressed
+      ? "this letter is pressed and filed · No. " + pad(current + 1)
+      : "adds the letter to your herbarium";
+  }
+
+  function selectLetter(i) {
+    current = i;
+    var letter = alphabet.charAt(i);
+    var code = letter.charCodeAt(0);
+    var spec = specimenName(i);
+
+    plateNo.textContent = roman(i + 1);
+    folioNo.textContent = pad(i + 1);
+    specNo.textContent = pad(i + 1);
+    latinName.textContent = spec.name;
+    authority.textContent = spec.authority;
+    locality.textContent = places[(code + i) % places.length];
+    collectDate.textContent = "x. MMXXVI";
+
+    bigLetter.textContent = letter;
+    letterShadow.textContent = letter;
+    plateTitle.textContent = "Pressed botanical arrangement surrounding the letter " + letter + ", " + spec.name;
+
+    drawBotanical(code);
+    updateIndexSelection();
+    updateButton();
+    updateStamp(false);
+
+    if (!reduced && bigLetter.animate) {
+      bigLetter.animate(
+        [{ opacity: 0, transform: "translateY(7px)" }, { opacity: 0.9, transform: "translateY(0)" }],
+        { duration: 700, easing: "cubic-bezier(.2,.7,.2,1)" }
+      );
+      letterShadow.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 700, easing: "ease" });
+    }
+
+    if (window.innerWidth < 1020) {
+      var rect = plateEl.getBoundingClientRect();
+      if (rect.top < -40 || rect.bottom > window.innerHeight + 40) {
+        plateEl.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+      }
+    }
+  }
+
+  pressBtn.addEventListener("click", function () {
+    var letter = alphabet.charAt(current);
+    if (pressed.has(letter)) return;
+    pressed.add(letter);
+    updateStamp(true);
+    updateButton();
+    renderHerbarium();
+    var liveEl = document.getElementById("plateStatus");
+    if (liveEl) liveEl.textContent = letter + " pressed and added to your herbarium.";
+  });
+
+  // hidden live region
+  var sr = document.createElement("p");
+  sr.className = "sr-only";
+  sr.id = "plateStatus";
+  sr.setAttribute("aria-live", "polite");
+  document.body.appendChild(sr);
+
+  buildIndex();
+  renderHerbarium();
+  selectLetter(0);
+})();
+</script>
+</body>
+</html>

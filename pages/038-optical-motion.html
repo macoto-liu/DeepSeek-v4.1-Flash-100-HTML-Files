@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optical Study 08 — Motion is a decision</title>
+<style>
+  :root{
+    --paper: #f6f3ea;
+    --paper-2: #eee9dc;
+    --ink: #0d0d0c;
+    --ink-2: #3a3935;
+    --red: #df331c;
+    --line: rgba(13,13,12,.9);
+    --hair: rgba(13,13,12,.22);
+    --mono: "SFMono-Regular", "Roboto Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --grotesk: "Helvetica Neue", Helvetica, "Arial Narrow", Arial, sans-serif;
+    --ease: cubic-bezier(.19,1,.22,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0; padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--grotesk);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .poster{
+    position:relative;
+    width:100%;
+    min-height:100svh;
+    overflow:hidden;
+    background:var(--paper);
+    isolation:isolate;
+    transition:background-color .55s var(--ease), color .55s var(--ease);
+  }
+  .poster::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    z-index:1;
+    background:
+      radial-gradient(ellipse at 82% 8%, rgba(255,255,255,.5), transparent 38%),
+      repeating-linear-gradient(0deg, rgba(20,18,14,.016) 0 1px, transparent 1px 4px);
+    mix-blend-mode:multiply;
+  }
+
+  /* ---------- interference field ---------- */
+  .field{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    -webkit-mask-image: radial-gradient(88% 92% at 69% 32%, #000 0%, #000 38%, rgba(0,0,0,.6) 62%, transparent 84%);
+    mask-image: radial-gradient(88% 92% at 69% 32%, #000 0%, #000 38%, rgba(0,0,0,.6) 62%, transparent 84%);
+    transition:filter .55s var(--ease);
+  }
+  .field svg{
+    display:block;
+    width:100%;
+    height:100%;
+    isolation:isolate;
+  }
+  .ring-group circle{
+    fill:none;
+    stroke:var(--ink);
+    transition:stroke .55s var(--ease);
+  }
+  .stripe-group path{
+    stroke:#ffffff;
+    fill:none;
+    opacity:.92;
+    mix-blend-mode:difference;
+  }
+  .poster.inverted{background:#0b0b0a; color:#f2eee2}
+  .poster.inverted .field{filter:invert(1)}
+  .poster.inverted .ring-group circle{stroke:#0b0b0a}
+  .poster.inverted .field svg{filter:contrast(1.02)}
+  .poster.inverted .title-block,
+  .poster.inverted .top,
+  .poster.inverted .foot{color:#f2eee2}
+  .poster.inverted .panel{background:rgba(11,11,10,.86); border-color:rgba(242,238,226,.85)}
+
+  /* ---------- masthead ---------- */
+  .top{
+    position:relative;
+    z-index:4;
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:start;
+    gap:24px;
+    padding:clamp(20px,2.4vw,34px) clamp(22px,3.2vw,48px);
+    background:linear-gradient(to bottom, var(--paper) 0%, var(--paper) 22%, rgba(246,243,234,.9) 52%, rgba(246,243,234,0) 100%);
+    padding-bottom:clamp(30px,3vw,44px);
+    transition:background .55s var(--ease);
+  }
+  .poster.inverted .top{background:linear-gradient(to bottom, #0b0b0a 0%, #0b0b0a 22%, rgba(11,11,10,.9) 52%, rgba(11,11,10,0) 100%)}
+  .brand{
+    display:flex; align-items:center; gap:12px;
+    font-family:var(--mono);
+    font-size:9px; line-height:1.55; letter-spacing:.16em; text-transform:uppercase;
+  }
+  .brand-mark{
+    width:22px; height:22px; flex:0 0 auto;
+    border:1.5px solid currentColor; border-radius:50%;
+    background:
+      repeating-radial-gradient(circle at 50% 50%, currentColor 0 .8px, transparent .8px 3.2px);
+  }
+  .top-mid{
+    text-align:center;
+    font-family:var(--mono);
+    font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+    line-height:1.8; opacity:.7;
+    padding-top:2px;
+  }
+  .index-label{
+    justify-self:end;
+    display:flex; align-items:flex-start; gap:9px;
+    color:var(--red);
+    font-family:var(--mono);
+    font-size:9px; letter-spacing:.16em; text-transform:uppercase;
+    line-height:1.2;
+  }
+  .index-label .num{
+    font-family:var(--grotesk);
+    font-size:46px; font-weight:700; line-height:.78; letter-spacing:-.05em;
+    margin-top:-2px;
+  }
+  .index-label .cap{text-align:left; padding-top:2px}
+  .index-label .cap b{display:block; font-weight:700}
+
+  /* ---------- typography ---------- */
+  .title-block{
+    position:absolute;
+    z-index:4;
+    left:clamp(22px,3.2vw,48px);
+    bottom:clamp(84px,10vh,112px);
+    max-width:min(70vw, 1000px);
+    color:var(--ink);
+  }
+  .title-rule{
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:clamp(12px,1.6vw,20px);
+    font-family:var(--mono);
+    font-size:8.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-2);
+  }
+  .title-rule .line{height:1px; width:clamp(30px,5vw,84px); background:currentColor; opacity:.55}
+  .title-rule .dot{
+    width:5px; height:5px; background:var(--ink); border-radius:50%;
+    flex:0 0 auto;
+  }
+  h1{
+    margin:0;
+    font-family:var(--grotesk);
+    font-weight:800;
+    font-size:clamp(56px, 9.35vw, 150px);
+    line-height:.795;
+    letter-spacing:-.058em;
+    text-transform:uppercase;
+    color:var(--ink);
+    text-wrap:nowrap;
+  }
+  h1 span{display:block; position:relative}
+  h1 span:nth-child(2){padding-left:.03em}
+  h1 span:nth-child(3){letter-spacing:-.062em}
+  .title-meta{
+    margin-top:clamp(16px,2.1vw,26px);
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:8.5px; letter-spacing:.17em; text-transform:uppercase;
+    color:var(--ink-2);
+  }
+  .title-meta .hook{display:inline-flex; align-items:center; gap:8px}
+  .title-meta .hook svg{width:19px; height:12px; overflow:visible}
+  .title-meta .sep{width:1px; height:12px; background:var(--hair)}
+
+  /* ---------- control panel ---------- */
+  .panel{
+    position:absolute;
+    z-index:5;
+    right:clamp(22px,3.2vw,48px);
+    bottom:clamp(84px,10vh,112px);
+    width:clamp(268px, 25vw, 318px);
+    padding:16px 18px 15px;
+    border:1px solid var(--line);
+    background:rgba(246,243,234,.9);
+    -webkit-backdrop-filter:blur(7px);
+    backdrop-filter:blur(7px);
+    transition:background .55s var(--ease), border-color .55s var(--ease);
+  }
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+    padding-bottom:11px;
+    border-bottom:1px solid var(--hair);
+    font-family:var(--mono);
+    font-size:8px; letter-spacing:.2em; text-transform:uppercase;
+  }
+  .panel-head .live{display:inline-flex; align-items:center; gap:6px}
+  .panel-head .live::before{
+    content:""; width:5px; height:5px; border-radius:50%;
+    background:var(--ink);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.18}}
+  .ctrl{margin-top:14px}
+  .ctrl .row-top{
+    display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+    font-family:var(--mono);
+    font-size:8.5px; letter-spacing:.15em; text-transform:uppercase;
+  }
+  .ctrl output{
+    font-family:var(--grotesk);
+    font-size:26px; font-weight:700; letter-spacing:-.04em; line-height:1;
+  }
+  .ctrl output small{
+    font-family:var(--mono); font-size:8px; font-weight:400;
+    letter-spacing:.1em; margin-left:3px; opacity:.6;
+  }
+  input[type="range"]{
+    -webkit-appearance:none; appearance:none;
+    width:100%; height:24px;
+    margin:8px 0 2px;
+    background:transparent;
+    cursor:ew-resize;
+  }
+  input[type="range"]::-webkit-slider-runnable-track{
+    height:1.5px; background:currentColor;
+  }
+  input[type="range"]::-moz-range-track{
+    height:1.5px; background:currentColor;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:11px; height:16px; margin-top:-7.25px;
+    background:currentColor; border:0; border-radius:0;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:11px; height:16px; background:currentColor; border:0; border-radius:0;
+  }
+  input[type="range"]:focus-visible{outline:1px dashed currentColor; outline-offset:4px}
+  .scale{
+    display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:7px; letter-spacing:.12em;
+    opacity:.45; margin-top:1px;
+  }
+  .btn-row{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:13px}
+  .op-btn{
+    appearance:none;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    min-height:40px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:currentColor;
+    font-family:var(--mono);
+    font-size:8px; letter-spacing:.1em; text-transform:uppercase;
+    text-align:left;
+    cursor:pointer;
+    transition:background .18s, color .18s, border-color .18s;
+  }
+  .op-btn .glyph{font-size:12px; line-height:1; letter-spacing:0}
+  .op-btn:hover,.op-btn[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
+  .poster.inverted .op-btn:hover,.poster.inverted .op-btn[aria-pressed="true"]{background:#f2eee2; color:#0b0b0a}
+  .op-btn:focus-visible{outline:2px solid var(--red); outline-offset:2px}
+  .state{
+    display:block;
+    font-size:7px; letter-spacing:.12em; opacity:.55; margin-top:2px;
+  }
+  .op-btn[aria-pressed="true"] .state{opacity:.75}
+  .panel-note{
+    margin:13px 0 0;
+    font-family:var(--mono);
+    font-size:7.5px; line-height:1.7; letter-spacing:.09em;
+    opacity:.5; text-transform:uppercase;
+  }
+
+  /* ---------- footer ---------- */
+  .foot{
+    position:absolute;
+    z-index:4;
+    left:clamp(22px,3.2vw,48px);
+    right:clamp(22px,3.2vw,48px);
+    bottom:clamp(18px,2.6vw,30px);
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding-top:10px;
+    border-top:1px solid var(--hair);
+    padding-top:12px;
+    font-family:var(--mono);
+    font-size:7.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink-2);
+    background:linear-gradient(to top, var(--paper) 0%, var(--paper) 26%, rgba(246,243,234,.82) 66%, rgba(246,243,234,0) 100%);
+  }
+  .poster.inverted .foot{background:linear-gradient(to top, #0b0b0a 0%, #0b0b0a 26%, rgba(11,11,10,.82) 66%, rgba(11,11,10,0) 100%)}
+  .foot .reg{display:flex; align-items:center; gap:12px}
+  .foot .reg svg{width:11px; height:11px; opacity:.6}
+  .foot .mid{opacity:.55}
+
+  /* registration tick at right edge */
+  .tick{
+    position:absolute; z-index:3;
+    right:clamp(22px,3.2vw,48px);
+    top:44%;
+    width:8px; height:8px; border:1px solid var(--ink); opacity:.35;
+  }
+  .tick::before,.tick::after{
+    content:""; position:absolute; background:var(--ink);
+  }
+  .tick::before{left:3px; top:-9px; width:1px; height:26px}
+  .tick::after{top:3px; left:-9px; height:1px; width:26px}
+
+  @media (max-width:1120px){
+    .poster{display:flex; flex-direction:column; min-height:100svh; overflow:visible}
+    .field{
+      position:absolute; inset:0 0 auto 0; height:64vh;
+      -webkit-mask-image: radial-gradient(90% 90% at 62% 30%, #000 0%, #000 36%, rgba(0,0,0,.55) 64%, transparent 86%);
+      mask-image: radial-gradient(90% 90% at 62% 30%, #000 0%, #000 36%, rgba(0,0,0,.55) 64%, transparent 86%);
+    }
+    .top{grid-template-columns:1fr auto}
+    .top-mid{display:none}
+    .title-block{
+      position:relative; left:auto; bottom:auto;
+      margin-top:clamp(280px, 50vh, 520px);
+      max-width:none;
+      padding:0 clamp(22px,4vw,44px);
+    }
+    h1{font-size:clamp(56px, 12.4vw, 118px)}
+    .panel{
+      position:relative; right:auto; bottom:auto;
+      width:auto;
+      margin:clamp(30px,5vw,44px) clamp(22px,4vw,44px) 0;
+    }
+    .panel .ctrl{padding-right:0}
+    .foot{
+      position:relative; left:auto; right:auto; bottom:auto;
+      margin:clamp(18px,3vw,26px) clamp(22px,4vw,44px) clamp(18px,3vw,26px);
+    }
+    .tick{display:none}
+  }
+  @media (min-width:1121px) and (max-height:780px){
+    h1{font-size:clamp(50px,8.2vw,116px)}
+    .title-block{bottom:88px}
+    .panel{bottom:88px}
+  }
+  @media (max-width:640px){
+    .brand{font-size:8px; letter-spacing:.13em}
+    .index-label .num{font-size:38px}
+    .index-label .cap{font-size:8px}
+    h1{font-size:clamp(50px, 15.2vw, 88px); letter-spacing:-.06em; line-height:.82}
+    .title-block{margin-top:clamp(250px, 46vh, 400px)}
+    .title-meta{gap:10px}
+    .title-meta .sep{display:none}
+    .title-meta{font-size:7.5px; letter-spacing:.12em}
+    .btn-row{grid-template-columns:1fr 1fr}
+    .panel{padding:14px 14px 13px}
+    .foot{flex-wrap:wrap; gap:8px; font-size:7px; letter-spacing:.12em}
+    .foot .mid{display:none}
+    .foot .reg svg{display:none}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<main class="poster" id="poster">
+
+  <div class="field" aria-hidden="true">
+    <svg id="optic" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+      <g id="ringGroup" class="ring-group"></g>
+      <g id="stripeGroup" class="stripe-group" style="mix-blend-mode:difference"></g>
+    </svg>
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Optical<br>Study 08</span>
+    </div>
+    <div class="top-mid">A kinetic poster in four states<br>Moiré / interference / field</div>
+    <div class="index-label" aria-label="Index number 08">
+      <span class="num">08</span>
+      <span class="cap"><b>Index</b>Plate<br>1968 / 2026</span>
+    </div>
+  </header>
+
+  <div class="tick" aria-hidden="true"></div>
+
+  <section class="title-block" aria-labelledby="posterTitle">
+    <div class="title-rule">
+      <span class="dot" aria-hidden="true"></span>
+      <span>Fig. 01 — Interference field</span>
+      <span class="line"></span>
+      <span>Screen edition</span>
+    </div>
+    <h1 id="posterTitle"><span>Motion</span><span>is a</span><span>decision.</span></h1>
+    <div class="title-meta">
+      <span class="hook">
+        <svg viewBox="0 0 22 12" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+          <path d="M1 6h17M14 2l5 4-5 4"/>
+        </svg>
+        Move the pointer
+      </span>
+      <span class="sep" aria-hidden="true"></span>
+      <span>Two fields, one eye</span>
+      <span class="sep" aria-hidden="true"></span>
+      <span>Black / white / red</span>
+    </div>
+  </section>
+
+  <aside class="panel" aria-label="Pattern controls">
+    <div class="panel-head">
+      <span>Control surface</span>
+      <span class="live" id="liveState">Live</span>
+    </div>
+
+    <div class="ctrl">
+      <div class="row-top">
+        <label for="frequency">Ring spacing</label>
+        <output id="freqValue" for="frequency">14<small>px</small></output>
+      </div>
+      <input id="frequency" type="range" min="8" max="30" step="1" value="14" aria-label="Ring spacing in pixels">
+      <div class="scale" aria-hidden="true"><span>8 / FINE</span><span>30 / BROAD</span></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="op-btn" id="invertBtn" type="button" aria-pressed="false">
+        <span>Invert field<span class="state" id="invertState">Positive</span></span>
+        <span class="glyph" aria-hidden="true">◐</span>
+      </button>
+      <button class="op-btn" id="freezeBtn" type="button" aria-pressed="false">
+        <span>Freeze motion<span class="state" id="freezeState">Rotating</span></span>
+        <span class="glyph" aria-hidden="true">Ⅱ</span>
+      </button>
+    </div>
+
+    <p class="panel-note">The pointer warps the field. The eye supplies the rest. No two passes resolve alike.</p>
+  </aside>
+
+  <footer class="foot">
+    <span class="reg">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+        <circle cx="6" cy="6" r="5"/><path d="M6 0v12M0 6h12"/>
+      </svg>
+      Printed Matter Press
+    </span>
+    <span class="mid">Kinetic poster no. 08 — dimension variable</span>
+    <span>Moiré study / screen / 2026</span>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  var poster = document.getElementById("poster");
+  var ringGroup = document.getElementById("ringGroup");
+  var stripeGroup = document.getElementById("stripeGroup");
+  var freq = document.getElementById("frequency");
+  var freqValue = document.getElementById("freqValue");
+  var invertBtn = document.getElementById("invertBtn");
+  var invertState = document.getElementById("invertState");
+  var freezeBtn = document.getElementById("freezeBtn");
+  var freezeState = document.getElementById("freezeState");
+  var liveState = document.getElementById("liveState");
+
+  var NS = "http://www.w3.org/2000/svg";
+  var CX = 1060, CY = 340;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function buildRings(spacing){
+    var frag = document.createDocumentFragment();
+    var maxR = 2250;
+    var stroke = Math.max(3.2, spacing * 0.52);
+    for (var r = spacing * 0.55; r < maxR; r += spacing){
+      var c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", CX);
+      c.setAttribute("cy", CY);
+      c.setAttribute("r", r.toFixed(2));
+      c.setAttribute("stroke-width", stroke.toFixed(2));
+      frag.appendChild(c);
+    }
+    while (ringGroup.firstChild) ringGroup.removeChild(ringGroup.firstChild);
+    ringGroup.appendChild(frag);
+  }
+
+  function buildStripes(){
+    var frag = document.createDocumentFragment();
+    // Stripe field extends well past the frame so rotation never exposes an edge.
+    for (var x = -760; x < 2200; x += 8.5){
+      var p = document.createElementNS(NS, "path");
+      p.setAttribute("d", "M" + x.toFixed(2) + " -920 V 1820");
+      p.setAttribute("stroke-width", "3.4");
+      frag.appendChild(p);
+    }
+    stripeGroup.appendChild(frag);
+  }
+
+  function applyFrequency(){
+    var spacing = parseInt(freq.value, 10);
+    freqValue.innerHTML = spacing + "<small>px</small>";
+    buildRings(spacing);
+  }
+
+  // initial art direction
+  buildStripes();
+  applyFrequency();
+
+  // pointer warp state
+  var px = 0, py = 0, targetPx = 0, targetPy = 0;
+  var baseAngle = -27;
+  var ambient = 0;
+  var frozen = false;
+  var rafId = 0;
+  var lastTime = 0;
+
+  poster.addEventListener("pointermove", function(e){
+    var r = poster.getBoundingClientRect();
+    targetPx = (e.clientX - r.left) / r.width - .5;
+    targetPy = (e.clientY - r.top) / r.height - .5;
+  }, {passive:true});
+  poster.addEventListener("pointerleave", function(){
+    targetPx = 0; targetPy = 0;
+  });
+
+  function render(now){
+    if (!lastTime) lastTime = now;
+    var dt = Math.min(48, now - lastTime);
+    lastTime = now;
+
+    px += (targetPx - px) * Math.min(1, dt * .006);
+    py += (targetPy - py) * Math.min(1, dt * .006);
+
+    if (!frozen && !reduced){
+      ambient += dt * 0.0042;
+      if (ambient > 360) ambient -= 360;
+    }
+
+    // Rings warp toward the pointer with a slight non-uniform scale.
+    var sx = 1 + px * .035;
+    var sy = 1 - py * .028;
+    var ringTx = px * 22;
+    var ringTy = py * 16;
+    ringGroup.setAttribute("transform",
+      "translate(" + ringTx.toFixed(2) + " " + ringTy.toFixed(2) + ") " +
+      "translate(" + CX + " " + CY + ") scale(" + sx.toFixed(3) + " " + sy.toFixed(3) + ") translate(" + (-CX) + " " + (-CY) + ")");
+
+    // Stripes counter-rotate: a tiny angular change is a large optical event.
+    var angle = baseAngle + ambient + px * 7.5 - py * 5.5;
+    var stripeTx = -px * 26;
+    var stripeTy = -py * 12;
+    stripeGroup.setAttribute("transform",
+      "rotate(" + angle.toFixed(3) + " " + CX + " " + CY + ") " +
+      "translate(" + stripeTx.toFixed(2) + " " + stripeTy.toFixed(2) + ")");
+
+    rafId = requestAnimationFrame(render);
+  }
+  rafId = requestAnimationFrame(render);
+
+  freq.addEventListener("input", applyFrequency);
+
+  invertBtn.addEventListener("click", function(){
+    var on = !poster.classList.contains("inverted");
+    poster.classList.toggle("inverted", on);
+    invertBtn.setAttribute("aria-pressed", String(on));
+    invertState.textContent = on ? "Negative" : "Positive";
+  });
+
+  freezeBtn.addEventListener("click", function(){
+    frozen = !frozen;
+    freezeBtn.setAttribute("aria-pressed", String(frozen));
+    freezeState.textContent = frozen ? "Held" : "Rotating";
+    liveState.textContent = frozen ? "Held" : "Live";
+  });
+
+  // Pause the loop when the tab is hidden; resume cleanly.
+  document.addEventListener("visibilitychange", function(){
+    if (document.hidden){
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+    } else if (!rafId){
+      lastTime = 0;
+      rafId = requestAnimationFrame(render);
+    }
+  });
+
+  // keep the poster composed when the window is resized (mask is CSS-driven)
+  window.addEventListener("resize", function(){
+    targetPx = 0; targetPy = 0;
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Year in Petals — A Meteorological Florilegium</title>
+<style>
+  :root{
+    --bg:#0c231c;
+    --bg-soft:#102a22;
+    --cream:#f1e8d6;
+    --cream-dim:rgba(241,232,214,.62);
+    --cream-faint:rgba(241,232,214,.34);
+    --line:rgba(241,232,214,.15);
+    --line-strong:rgba(241,232,214,.3);
+    --chart:#d3e568;
+    --coral:#e97a63;
+    --sky:#a8cfe0;
+    --serif:Georgia,"Times New Roman",Times,serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  html{background:var(--bg)}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--cream);
+    background:
+      radial-gradient(1100px 720px at 82% -12%,rgba(211,229,104,.07),transparent 62%),
+      radial-gradient(900px 760px at -8% 108%,rgba(233,122,99,.065),transparent 64%),
+      var(--bg);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .grain{
+    position:fixed;inset:0;width:100%;height:100%;
+    opacity:.045;pointer-events:none;z-index:0;
+  }
+
+  .page{
+    position:relative;z-index:2;
+    max-width:1500px;margin:0 auto;
+    padding:0 52px;
+    display:flex;flex-direction:column;min-height:100vh;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    padding:26px 0 18px;
+    border-bottom:1px solid var(--line-strong);
+    font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--cream-dim);
+  }
+  .brand{display:flex;align-items:center;gap:10px;color:var(--cream)}
+  .brand svg{width:18px;height:18px;display:block}
+  .brand span{font-size:11px;letter-spacing:.22em}
+  .masthead .mid{color:var(--cream-faint)}
+  .masthead .right{font-family:var(--serif);font-style:italic;text-transform:none;letter-spacing:.04em;font-size:13px;color:var(--cream-dim)}
+
+  /* ---------- main ---------- */
+  main{
+    flex:1;
+    display:grid;
+    grid-template-columns:minmax(300px,385px) minmax(0,1fr);
+    gap:clamp(44px,5vw,86px);
+    padding:clamp(44px,5.5vh,76px) 0 44px;
+    align-items:start;
+  }
+
+  /* ---------- intro column ---------- */
+  .intro{position:sticky;top:28px;display:flex;flex-direction:column}
+  .eyebrow{
+    display:flex;align-items:center;gap:12px;
+    margin:0 0 26px;
+    font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--chart);
+  }
+  .eyebrow::before{content:"";width:30px;height:1px;background:var(--chart);opacity:.7;display:block}
+  h1{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(52px,5.4vw,82px);
+    line-height:.93;letter-spacing:-.032em;
+    margin:0 0 28px;
+  }
+  h1 em{font-style:italic;color:var(--chart);display:inline-block;position:relative}
+  h1 em::after{
+    content:"";position:absolute;left:4%;right:-2%;bottom:-.12em;height:1px;
+    background:linear-gradient(90deg,var(--chart),transparent);
+    opacity:.55;
+  }
+  .lede{
+    font-family:var(--serif);
+    font-size:17px;line-height:1.62;color:var(--cream-dim);
+    margin:0 0 32px;max-width:34ch;
+  }
+  .lede b{font-weight:400;color:var(--cream)}
+
+  /* selected panel */
+  .selected{
+    border:1px solid var(--line-strong);
+    background:linear-gradient(160deg,rgba(241,232,214,.075),rgba(241,232,214,.018) 55%,rgba(211,229,104,.035));
+    padding:20px 22px 22px;
+    position:relative;
+  }
+  .selected::before,.selected::after{
+    content:"";position:absolute;width:5px;height:5px;border:1px solid var(--chart);opacity:.65;
+  }
+  .selected::before{left:-1px;top:-1px;border-right:0;border-bottom:0}
+  .selected::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+  .sel-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .sel-kicker{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--cream-faint)}
+  .sel-index{font-family:var(--serif);font-size:12px;font-style:italic;color:var(--chart)}
+  .sel-title{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:9px 0 16px}
+  .sel-title h2{
+    font-family:var(--serif);font-weight:400;font-size:40px;line-height:1;
+    letter-spacing:-.02em;margin:0;
+  }
+  .sel-season{
+    font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--coral);padding-bottom:6px;white-space:nowrap;
+  }
+  .stat-row{
+    display:grid;grid-template-columns:1fr auto;
+    align-items:baseline;gap:16px;
+    padding:10px 0 8px;
+    border-top:1px solid var(--line);
+  }
+  .stat-label{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cream-dim)}
+  .stat-value{font-family:var(--serif);font-size:24px;line-height:1;letter-spacing:-.01em}
+  .stat-value small{font-family:var(--sans);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--cream-faint);margin-left:4px}
+  .stat-bar{grid-column:1/-1;height:2px;background:rgba(241,232,214,.11);margin-top:3px;overflow:hidden}
+  .stat-bar i{display:block;height:100%;width:0;transition:width .7s cubic-bezier(.22,.7,.2,1)}
+  #bRain{background:linear-gradient(90deg,var(--coral),var(--sky))}
+  #bSun{background:linear-gradient(90deg,var(--chart),rgba(211,229,104,.45))}
+  #bTemp{background:linear-gradient(90deg,var(--sky),rgba(168,207,224,.4))}
+  .note{
+    font-family:var(--serif);font-style:italic;
+    font-size:15.5px;line-height:1.5;color:var(--cream-dim);
+    margin:16px 0 0;padding-top:15px;border-top:1px solid var(--line);
+  }
+  .note::before{content:"“";color:var(--chart);font-size:20px;margin-right:2px}
+  .note::after{content:"”";color:var(--chart);font-size:20px;margin-left:2px}
+
+  .selected.swap .sel-title h2,
+  .selected.swap .stat-value,
+  .selected.swap .note{animation:fadeUp .42s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+  /* ---------- chart column ---------- */
+  .chart{min-width:0}
+  .chart-head{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+    padding-bottom:14px;border-bottom:1px solid var(--line-strong);
+    margin-bottom:0;
+  }
+  .chart-title{font-size:10px;letter-spacing:.23em;text-transform:uppercase;color:var(--cream-dim)}
+  .chart-title b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:18px;letter-spacing:0;text-transform:none;color:var(--cream);margin-top:5px}
+
+  .controls{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+  .control-label{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--cream-faint)}
+  .toggle{display:inline-flex;border:1px solid var(--line-strong);padding:3px;background:rgba(12,35,28,.6)}
+  .toggle button{
+    appearance:none;border:0;background:transparent;color:var(--cream-dim);
+    font-family:var(--sans);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    padding:7px 14px;cursor:pointer;transition:background .25s,color .25s;
+  }
+  .toggle button:hover{color:var(--cream)}
+  .toggle button.active{background:var(--chart);color:#10251d}
+  .toggle button:focus-visible{outline:1px solid var(--cream);outline-offset:2px}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-top:0;
+  }
+  .flower{
+    appearance:none;
+    position:relative;
+    display:flex;flex-direction:column;
+    align-items:stretch;
+    min-width:0;
+    background:rgba(12,35,28,.82);
+    border:0;
+    padding:12px 13px 11px;
+    color:inherit;
+    cursor:pointer;
+    text-align:left;
+    overflow:hidden;
+    transition:background .35s ease, box-shadow .35s ease;
+  }
+  .flower::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 0 1px transparent;transition:box-shadow .3s;
+  }
+  .flower:hover{background:#122e25}
+  .flower:hover::after{box-shadow:inset 0 0 0 1px rgba(211,229,104,.18)}
+  .flower:focus-visible{outline:1px solid var(--chart);outline-offset:-3px}
+  .flower[aria-pressed="true"]{background:#132f26}
+  .flower[aria-pressed="true"]::after{box-shadow:inset 0 0 0 1px rgba(211,229,104,.55)}
+  .cell-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;position:relative;z-index:1}
+  .cell-name{font-size:9px;letter-spacing:.19em;text-transform:uppercase;color:var(--cream-dim)}
+  .cell-no{font-family:var(--serif);font-size:10px;font-style:italic;color:var(--cream-faint)}
+  .flower svg{
+    width:100%;height:auto;aspect-ratio:1/1;display:block;
+    margin:2px auto 0;
+    transform-origin:50% 52%;
+    transition:transform .45s cubic-bezier(.2,.8,.25,1),filter .45s;
+    filter:saturate(.95);
+  }
+  .flower:hover svg{transform:scale(1.07) rotate(1.5deg);filter:saturate(1.1)}
+  .flower[aria-pressed="true"] svg{filter:saturate(1.12)}
+  .cell-foot{
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+    margin-top:2px;padding-top:8px;border-top:1px solid rgba(241,232,214,.09);
+    font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cream-faint);
+    position:relative;z-index:1;
+  }
+  .cell-foot .v{font-family:var(--serif);font-style:italic;text-transform:none;font-size:11px;letter-spacing:.02em;color:var(--cream-dim)}
+  .flower[aria-pressed="true"] .cell-name{color:var(--chart)}
+  .flower[aria-pressed="true"] .cell-foot .v{color:var(--chart)}
+
+  .chart.redraw .flower svg{animation:petalRedraw .5s ease both}
+  @keyframes petalRedraw{from{opacity:.2}to{opacity:1}}
+
+  .legend{
+    display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;
+    padding:14px 0 0;
+    font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--cream-faint);
+  }
+  .legend .swatch{display:flex;align-items:center;gap:8px}
+  .legend .ramp{width:72px;height:2px;background:linear-gradient(90deg,var(--coral),#c8a5a2,var(--sky))}
+  .legend .rule{width:34px;height:1px;background:var(--cream-faint);display:inline-block;margin:0 2px 3px 0;vertical-align:middle}
+  .legend em{font-family:var(--serif);font-size:12px;text-transform:none;letter-spacing:.02em;color:var(--cream-dim)}
+
+  footer{
+    display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;
+    border-top:1px solid var(--line);
+    padding:15px 0 20px;
+    font-size:8.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--cream-faint);
+  }
+  footer .fmid{font-family:var(--serif);font-style:italic;font-size:12px;letter-spacing:.03em;text-transform:none;color:var(--cream-dim)}
+
+  @media (max-width:1180px){
+    .page{padding:0 36px}
+    main{grid-template-columns:315px minmax(0,1fr);gap:42px}
+    .masthead .mid{display:none}
+    .flower{padding:10px}
+  }
+  @media (max-width:980px){
+    .intro{position:static}
+    main{grid-template-columns:1fr;gap:44px;padding-top:38px}
+    h1{font-size:clamp(52px,9vw,78px);max-width:10ch}
+    .lede{max-width:48ch}
+    .intro{display:grid;grid-template-columns:1fr 1fr;column-gap:34px;align-items:start}
+    .eyebrow,h1,.lede{grid-column:1}
+    .selected{grid-column:2;grid-row:1/4;margin-top:4px}
+    .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media (max-width:760px){
+    .page{padding:0 20px}
+    .masthead{padding:18px 0 13px;font-size:9px;flex-wrap:wrap}
+    .masthead .right{display:none}
+    main{padding-top:32px;gap:38px}
+    .intro{display:flex}
+    .selected{margin-top:0}
+    h1{font-size:clamp(48px,13vw,72px);margin-bottom:22px}
+    .lede{font-size:15.5px;margin-bottom:26px}
+    .chart-head{align-items:flex-start;flex-direction:column;gap:16px;padding-bottom:16px}
+    .controls{align-items:flex-start;width:100%}
+    .toggle{width:100%}
+    .toggle button{flex:1;padding:8px 10px}
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .legend{gap:10px;line-height:1.8}
+    footer{gap:8px}
+    footer .fmid{width:100%;order:3}
+  }
+  @media (max-width:420px){
+    .sel-title h2{font-size:35px}
+    .cell-foot{font-size:7.5px;letter-spacing:.06em}
+    .cell-name{font-size:8px;letter-spacing:.13em}
+    .flower{padding:9px 9px 8px}
+    .stat-value{font-size:22px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+    .flower:hover svg{transform:none}
+  }
+</style>
+</head>
+<body>
+
+<svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <filter id="paperGrain"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+  <rect width="100%" height="100%" filter="url(#paperGrain)"/>
+</svg>
+
+<div class="page">
+  <header class="masthead">
+    <div class="brand">
+      <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <circle cx="9" cy="9" r="1.5" fill="#d3e568"/>
+        <g stroke="#d3e568" stroke-width=".9" opacity=".9">
+          <path d="M9 1v5M9 12v5M1 9h5M12 9h5M3.3 3.3l3.5 3.5M11.2 11.2l3.5 3.5M14.7 3.3l-3.5 3.5M6.8 11.2l-3.5 3.5"/>
+        </g>
+      </svg>
+      <span>Petal Almanac</span>
+    </div>
+    <div class="mid">Meteorological florilegium · Plate 045</div>
+    <div class="right">A year observed at 51°30′ N, 0°07′ W</div>
+  </header>
+
+  <main>
+    <section class="intro" aria-label="Introduction and selected month">
+      <p class="eyebrow">Weather, drawn as botany</p>
+      <h1>A year,<br><em>in petals.</em></h1>
+      <p class="lede">Twelve invented months, each grown into a flower. Every petal is one week; its reach is the week's <b>sunshine</b>, its colour the <b>rain</b>. Choose a bloom to read its weather.</p>
+
+      <article class="selected" id="selectedPanel" aria-live="polite">
+        <div class="sel-head">
+          <span class="sel-kicker">Selected month</span>
+          <span class="sel-index" id="selIndex">04 / 12</span>
+        </div>
+        <div class="sel-title">
+          <h2 id="selMonth">April</h2>
+          <span class="sel-season" id="selSeason">Spring</span>
+        </div>
+
+        <div class="stat-row">
+          <span class="stat-label">Rainfall</span>
+          <span class="stat-value"><span id="vRain">92</span><small>mm</small></span>
+          <div class="stat-bar"><i id="bRain"></i></div>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Sunshine</span>
+          <span class="stat-value"><span id="vSun">403</span><small>hrs</small></span>
+          <div class="stat-bar"><i id="bSun"></i></div>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Mean temperature</span>
+          <span class="stat-value"><span id="vTemp">11.4</span><small>°c</small></span>
+          <div class="stat-bar"><i id="bTemp"></i></div>
+        </div>
+
+        <p class="note" id="vNote">Showers cross in ranks, and the first petals fall.</p>
+      </article>
+    </section>
+
+    <section class="chart" aria-labelledby="chartHeading">
+      <div class="chart-head">
+        <div class="chart-title" id="chartHeading">The twelve months
+          <b>One flower per month, twelve weeks apiece</b>
+        </div>
+        <div class="controls">
+          <span class="control-label">Petal length by</span>
+          <div class="toggle" role="group" aria-label="Petal length encoding">
+            <button type="button" data-mode="sun" class="active" aria-pressed="true">Sunshine</button>
+            <button type="button" data-mode="rain" aria-pressed="false">Rainfall</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" id="grid" aria-label="Twelve flowers, one for each month"></div>
+
+      <div class="legend">
+        <span class="swatch"><span class="ramp" aria-hidden="true"></span>&nbsp;Petal colour · dry <span style="color:var(--coral)">coral</span> to wet <span style="color:var(--sky)">sky</span></span>
+        <span><span class="rule" aria-hidden="true"></span><em>petal length = <span id="legendMode">weekly sunshine</span></em></span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Petal Almanac · Vol. XII · An invented year</span>
+    <span class="fmid">Weather is a kind of handwriting; here it is botanical.</span>
+    <span>Drawn deterministically · MMXXVI</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var DATA = [
+    { name:"January", abbr:"Jan", season:"Winter", temp:4.8,
+      sun:[4,6,5,8,7,9,6,10,8,5,7,9],
+      rain:[18,12,15,9,21,14,11,16,8,19,13,10],
+      note:"The garden sleeps under a low, bright lid of sky." },
+    { name:"February", abbr:"Feb", season:"Winter", temp:5.6,
+      sun:[10,9,13,11,15,12,16,14,18,13,11,15],
+      rain:[14,11,9,15,12,8,13,10,16,9,12,11],
+      note:"Alder catkins hang like small copper lights." },
+    { name:"March", abbr:"Mar", season:"Spring", temp:8.1,
+      sun:[20,24,18,22,27,25,19,23,29,26,21,24],
+      rain:[10,8,12,7,9,11,6,13,8,10,7,9],
+      note:"Wind and rain rehearse; the hedges begin to green." },
+    { name:"April", abbr:"Apr", season:"Spring", temp:11.4,
+      sun:[30,28,35,32,37,29,33,40,36,31,38,34],
+      rain:[8,6,9,7,11,5,8,10,6,7,9,6],
+      note:"Showers cross in ranks, and the first petals fall." },
+    { name:"May", abbr:"May", season:"Spring", temp:15.2,
+      sun:[42,46,39,48,44,51,45,47,43,50,46,44],
+      rain:[6,5,8,4,7,9,3,6,5,8,4,7],
+      note:"The light arrives early now and stays to watch." },
+    { name:"June", abbr:"Jun", season:"Summer", temp:18.6,
+      sun:[52,49,56,53,58,51,55,60,54,57,50,53],
+      rain:[4,6,3,5,7,2,4,6,3,5,4,2],
+      note:"Long evenings, wet grass, and the smell of cut stems." },
+    { name:"July", abbr:"Jul", season:"Summer", temp:21.3,
+      sun:[58,61,55,60,63,57,62,59,64,56,61,58],
+      rain:[3,2,5,4,2,6,3,1,4,2,3,5],
+      note:"Heat gathers in the seed heads; the air holds still." },
+    { name:"August", abbr:"Aug", season:"Summer", temp:20.7,
+      sun:[54,57,52,59,55,58,53,60,56,51,57,54],
+      rain:[5,4,3,6,2,4,7,3,5,4,2,6],
+      note:"Dry weeks, dusty light, a slow drone of insects." },
+    { name:"September", abbr:"Sep", season:"Autumn", temp:17.2,
+      sun:[38,42,35,40,37,44,39,36,41,34,38,40],
+      rain:[7,9,6,8,5,10,7,6,9,5,8,7],
+      note:"Mornings sharpen; the garden begins to store itself." },
+    { name:"October", abbr:"Oct", season:"Autumn", temp:12.4,
+      sun:[26,22,29,24,27,21,25,28,23,26,20,24],
+      rain:[12,15,10,14,11,9,16,12,8,13,10,14],
+      note:"Leaves come down in weather, one week at a time." },
+    { name:"November", abbr:"Nov", season:"Autumn", temp:7.9,
+      sun:[12,15,10,14,11,9,13,16,12,10,14,11],
+      rain:[16,19,14,12,18,15,11,17,13,16,14,12],
+      note:"Bare branches write their own small diagrams." },
+    { name:"December", abbr:"Dec", season:"Winter", temp:5.2,
+      sun:[5,7,4,8,6,9,5,7,10,6,4,8],
+      rain:[20,15,18,13,22,16,14,19,12,21,17,15],
+      note:"Frost, low sun, and a hush that settles on the beds." }
+  ];
+
+  var mode = "sun";
+  var selected = 3;
+
+  var allSun = [], allRain = [];
+  DATA.forEach(function(m){
+    m.sun.forEach(function(v){ allSun.push(v); });
+    m.rain.forEach(function(v){ allRain.push(v); });
+  });
+  var minSun = Math.min.apply(null, allSun), maxSun = Math.max.apply(null, allSun);
+  var minRain = Math.min.apply(null, allRain), maxRain = Math.max.apply(null, allRain);
+  var maxRainTotal = Math.max.apply(null, DATA.map(function(m){ return sum(m.rain); }));
+  var maxSunTotal = Math.max.apply(null, DATA.map(function(m){ return sum(m.sun); }));
+
+  function sum(a){ return a.reduce(function(x,y){ return x + y; }, 0); }
+  function pad(n){ return n < 10 ? "0" + n : String(n); }
+  function clamp(v){ return Math.max(0, Math.min(1, v)); }
+  function norm(v,min,max){ return clamp((v - min) / (max - min)); }
+
+  function mix(a,b,t){
+    function hex(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
+    var A = hex(a), B = hex(b);
+    var c = A.map(function(x,i){ return Math.round(x + (B[i]-x)*t); });
+    return "rgb(" + c.join(",") + ")";
+  }
+
+  function petalPath(len){
+    var w = 6.2 + len * 0.062;
+    var tip = 100 - len;
+    return "M100 100 C" + (100-w) + " " + (100-len*.28) + " " + (100-w*1.3) + " " + (100-len*.69) + " " + (100-w*.42) + " " + tip +
+      " C" + (100-w*.14) + " " + (tip-2.4) + " " + (100+w*.14) + " " + (tip-2.4) + " " + (100+w*.42) + " " + tip +
+      " C" + (100+w*1.3) + " " + (100-len*.69) + " " + (100+w) + " " + (100-len*.28) + " 100 100 Z";
+  }
+
+  var CORAL = "#e97a63";
+  var SKY = "#a8cfe0";
+
+  function flowerMarkup(m, index){
+    var vals = mode === "sun" ? m.sun : m.rain;
+    var lo = mode === "sun" ? minSun : minRain;
+    var hi = mode === "sun" ? maxSun : maxRain;
+    var petals = "";
+    var offset = (index % 2) * 15;
+
+    for (var j = 0; j < 12; j++){
+      var len = 24 + norm(vals[j], lo, hi) * 58;
+      var wet = norm(m.rain[j], minRain, maxRain);
+      var color = mix(CORAL, SKY, wet);
+      var fillOp = (0.16 + wet * 0.28).toFixed(3);
+      var strokeOp = (0.64 + wet * 0.3).toFixed(3);
+      petals += '<path d="' + petalPath(len) + '" transform="rotate(' + (j*30 + offset) + ' 100 100)" ' +
+        'fill="' + color + '" fill-opacity="' + fillOp + '" stroke="' + color + '" stroke-opacity="' + strokeOp + '" stroke-width="1.05"/>';
+    }
+
+    var sunTotal = sum(m.sun);
+    var rainTotal = sum(m.rain);
+    var label = m.name + ", " + sunTotal + " hours of sunshine, " + rainTotal + " millimetres of rain";
+
+    return '<button type="button" class="flower" data-index="' + index + '" aria-pressed="' + (index === selected) + '" aria-label="' + label + '">' +
+      '<span class="cell-top"><span class="cell-name">' + m.name + '</span><span class="cell-no">' + pad(index+1) + '</span></span>' +
+      '<svg viewBox="0 0 200 200" role="img" aria-hidden="true" focusable="false">' +
+        '<circle cx="100" cy="100" r="88" fill="none" stroke="#f1e8d6" stroke-opacity=".055" stroke-width=".8" stroke-dasharray="1 5"/>' +
+        petals +
+        '<circle cx="100" cy="100" r="8.2" fill="none" stroke="#d3e568" stroke-opacity=".38" stroke-width=".8"/>' +
+        '<circle cx="100" cy="100" r="3.3" fill="#d3e568"/>' +
+        '<circle cx="100" cy="100" r="1.2" fill="#0c231c"/>' +
+      '</svg>' +
+      '<span class="cell-foot"><span>' + (mode === "sun" ? "Light" : "Rain") + '</span><span class="v">' + (mode === "sun" ? sunTotal + " h" : rainTotal + " mm") + '</span></span>' +
+    '</button>';
+  }
+
+  var grid = document.getElementById("grid");
+
+  function renderGrid(){
+    grid.innerHTML = DATA.map(flowerMarkup).join("");
+    Array.prototype.forEach.call(grid.querySelectorAll(".flower"), function(btn){
+      var idx = Number(btn.getAttribute("data-index"));
+      btn.addEventListener("click", function(){ selectMonth(idx); });
+      btn.addEventListener("mouseenter", function(){
+        // subtle light response: raise the selected petal contrast only on the hovered bloom
+        btn.classList.add("hovered");
+      });
+      btn.addEventListener("mouseleave", function(){ btn.classList.remove("hovered"); });
+    });
+  }
+
+  var panel = document.getElementById("selectedPanel");
+  var elMonth = document.getElementById("selMonth");
+  var elSeason = document.getElementById("selSeason");
+  var elIndex = document.getElementById("selIndex");
+  var elRain = document.getElementById("vRain");
+  var elSun = document.getElementById("vSun");
+  var elTemp = document.getElementById("vTemp");
+  var elNote = document.getElementById("vNote");
+  var bRain = document.getElementById("bRain");
+  var bSun = document.getElementById("bSun");
+  var bTemp = document.getElementById("bTemp");
+  var legendMode = document.getElementById("legendMode");
+
+  function updatePanel(animate){
+    var m = DATA[selected];
+    var rain = sum(m.rain), sun = sum(m.sun);
+
+    elMonth.textContent = m.name;
+    elSeason.textContent = m.season;
+    elIndex.textContent = pad(selected + 1) + " / 12";
+    elRain.textContent = rain;
+    elSun.textContent = sun;
+    elTemp.textContent = m.temp.toFixed(1);
+    elNote.textContent = m.note;
+
+    bRain.style.width = Math.max(4, (rain / maxRainTotal) * 100) + "%";
+    bSun.style.width = Math.max(4, (sun / maxSunTotal) * 100) + "%";
+    bTemp.style.width = Math.max(4, ((m.temp + 2) / 25) * 100) + "%";
+
+    if (animate){
+      panel.classList.remove("swap");
+      void panel.offsetWidth;
+      panel.classList.add("swap");
+    }
+  }
+
+  function selectMonth(index){
+    selected = index;
+    Array.prototype.forEach.call(grid.querySelectorAll(".flower"), function(btn){
+      var isSel = Number(btn.getAttribute("data-index")) === selected;
+      btn.setAttribute("aria-pressed", isSel ? "true" : "false");
+    });
+    updatePanel(true);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".toggle button"), function(btn){
+    btn.addEventListener("click", function(){
+      var next = btn.getAttribute("data-mode");
+      if (next === mode) return;
+      mode = next;
+
+      Array.prototype.forEach.call(document.querySelectorAll(".toggle button"), function(b){
+        var active = b.getAttribute("data-mode") === mode;
+        b.classList.toggle("active", active);
+        b.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      legendMode.textContent = mode === "sun" ? "weekly sunshine" : "weekly rainfall";
+
+      var intro = document.querySelector(".chart");
+      intro.classList.remove("redraw");
+      void intro.offsetWidth;
+      intro.classList.add("redraw");
+      renderGrid();
+    });
+  });
+
+  renderGrid();
+  updatePanel(false);
+})();
+</script>
+</body>
+</html>

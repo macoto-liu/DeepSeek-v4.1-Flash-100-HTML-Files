@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bauhaus Spiel — A Composition Playground</title>
+<style>
+  :root{
+    --paper:#f2e8d2;
+    --paper-2:#f7efdd;
+    --ink:#171512;
+    --red:#d8342a;
+    --blue:#1f4bb8;
+    --yellow:#f0bd2f;
+    --rule:rgba(23,21,18,.22);
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    z-index:0;
+    pointer-events:none;
+    opacity:.32;
+    background-image:
+      radial-gradient(rgba(23,21,18,.15) .55px, transparent .75px),
+      radial-gradient(rgba(23,21,18,.08) .5px, transparent .7px);
+    background-size:4px 4px, 6px 6px;
+    background-position:0 0, 2px 3px;
+  }
+  ::selection{background:var(--yellow);color:var(--ink)}
+  .page{
+    position:relative;
+    z-index:1;
+    max-width:1520px;
+    margin:0 auto;
+    padding:clamp(16px,2.4vw,30px) clamp(16px,3.2vw,46px) 26px;
+  }
+
+  /* ---------------- masthead ---------------- */
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:18px 34px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:11px;
+    margin-bottom:clamp(14px,2vw,22px);
+    flex-wrap:wrap;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    min-width:0;
+  }
+  .brand .mark{
+    width:48px;height:40px;
+    flex:none;
+    display:block;
+  }
+  .brand .mark svg{width:100%;height:100%;display:block;overflow:visible}
+  .brand h1{
+    margin:0;
+    font-size:clamp(1.15rem,2vw,1.6rem);
+    font-weight:800;
+    letter-spacing:-.025em;
+    text-transform:uppercase;
+    line-height:1;
+  }
+  .brand .kicker{
+    font-family:var(--mono);
+    font-size:.51rem;
+    letter-spacing:.17em;
+    text-transform:uppercase;
+    color:rgba(23,21,18,.55);
+    margin-bottom:4px;
+    display:block;
+  }
+  .tagline{
+    flex:1;
+    margin:0;
+    text-align:center;
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:clamp(.85rem,1.2vw,1.02rem);
+    color:rgba(23,21,18,.72);
+    max-width:42ch;
+  }
+  .meta{
+    font-family:var(--mono);
+    font-size:.5rem;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    line-height:1.7;
+    color:rgba(23,21,18,.48);
+    text-align:right;
+  }
+  .meta b{color:var(--ink);font-weight:400}
+
+  /* ---------------- workbench ---------------- */
+  .workbench{
+    display:grid;
+    grid-template-columns:224px minmax(0,1fr);
+    gap:clamp(14px,1.8vw,24px);
+    align-items:stretch;
+  }
+  .rail{
+    border:1.5px solid var(--ink);
+    background:var(--paper-2);
+    padding:15px 14px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:17px;
+    box-shadow:4px 4px 0 rgba(23,21,18,.9);
+    position:relative;
+    z-index:2;
+  }
+  .rail-block{border:0;padding:0;margin:0;min-width:0}
+  .rail-title{
+    display:flex;justify-content:space-between;align-items:baseline;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:.53rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-bottom:8px;
+    color:rgba(23,21,18,.62);
+  }
+  .rail-title span{opacity:.55}
+  .rail-title b{font-weight:400;letter-spacing:.06em;color:var(--ink)}
+  .shape-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  .tool{
+    appearance:none;
+    border:1.5px solid var(--ink);
+    background:transparent;
+    color:var(--ink);
+    padding:8px 6px 6px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    font-family:var(--mono);
+    font-size:.48rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    transition:background .18s ease,color .18s ease;
+    min-width:0;
+  }
+  .tool svg{width:23px;height:23px;display:block;overflow:visible}
+  .tool:hover{background:rgba(240,189,47,.28)}
+  .tool:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .tool.active{background:var(--ink);color:var(--paper)}
+  .tool.active svg *{fill:var(--paper)}
+  .tool.active svg .outline{fill:none;stroke:var(--paper)}
+
+  .color-row{display:flex;gap:7px}
+  .swatch{
+    appearance:none;
+    width:34px;height:34px;
+    padding:0;
+    border:1.5px solid var(--ink);
+    cursor:pointer;
+    position:relative;
+    transition:transform .15s ease;
+  }
+  .swatch:hover{transform:translateY(-2px)}
+  .swatch:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  .swatch.active::after{
+    content:"";
+    position:absolute;
+    inset:-5px;
+    border:1.5px solid var(--ink);
+    pointer-events:none;
+  }
+  .swatch[data-color="red"]{background:var(--red)}
+  .swatch[data-color="blue"]{background:var(--blue)}
+  .swatch[data-color="yellow"]{background:var(--yellow)}
+  .swatch[data-color="ink"]{background:var(--ink)}
+  .color-name{
+    font-family:var(--mono);
+    font-size:.48rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    margin-top:8px;
+    color:rgba(23,21,18,.55);
+  }
+
+  .recompose{
+    appearance:none;
+    border:1.5px solid var(--ink);
+    background:var(--yellow);
+    color:var(--ink);
+    font-family:var(--mono);
+    font-size:.57rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    padding:10px 9px;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    cursor:pointer;
+    box-shadow:2.5px 2.5px 0 var(--ink);
+    transition:transform .12s ease,box-shadow .12s ease,background .2s ease;
+    width:100%;
+  }
+  .recompose:hover{background:var(--red);color:var(--paper)}
+  .recompose:active{transform:translate(2.5px,2.5px);box-shadow:0 0 0 var(--ink)}
+  .recompose:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  .recompose .glyph{
+    font-size:1rem;line-height:1;
+    display:inline-block;
+    transition:transform .5s cubic-bezier(.2,.8,.3,1);
+  }
+  .recompose:hover .glyph{transform:rotate(180deg)}
+
+  .rail-note{
+    border-top:1px solid var(--rule);
+    padding-top:11px;
+    margin-top:2px;
+  }
+  .rail-note .quote{
+    display:block;
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:.84rem;
+    line-height:1.35;
+    color:rgba(23,21,18,.78);
+  }
+  .rail-note .src{
+    display:block;
+    font-family:var(--mono);
+    font-size:.43rem;
+    letter-spacing:.08em;
+    line-height:1.5;
+    text-transform:uppercase;
+    color:rgba(23,21,18,.42);
+    margin-top:6px;
+  }
+
+  .count-block{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:10px;
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    padding:9px 0 7px;
+    margin-top:auto;
+  }
+  .count-block .lbl{
+    font-family:var(--mono);
+    font-size:.51rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:rgba(23,21,18,.58);
+    line-height:1.5;
+  }
+  .count-block .n{
+    font-size:2.4rem;
+    font-weight:800;
+    line-height:.75;
+    letter-spacing:-.07em;
+    font-variant-numeric:tabular-nums;
+  }
+  .hints{
+    margin:0;
+    font-family:var(--mono);
+    font-size:.47rem;
+    line-height:1.65;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:rgba(23,21,18,.52);
+  }
+  .hints b{font-weight:400;color:var(--ink)}
+  .hints span{display:block}
+  .hints .sep{height:1px;background:var(--rule);margin:5px 0}
+
+  .stage-wrap{min-width:0}
+  .stage-toolbar{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    font-family:var(--mono);
+    font-size:.5rem;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:rgba(23,21,18,.52);
+    padding:0 2px 7px;
+  }
+  .stage-toolbar .live{display:flex;align-items:center;gap:7px;color:var(--ink)}
+  .stage-toolbar .live::before{
+    content:"";
+    width:6px;height:6px;border-radius:50%;
+    background:var(--red);
+    display:inline-block;
+  }
+
+  /* ---------------- stage ---------------- */
+  .stage{
+    position:relative;
+    height:clamp(480px,62vh,760px);
+    border:2px solid var(--ink);
+    background:
+      linear-gradient(90deg, rgba(23,21,18,.05) 1px, transparent 1px),
+      linear-gradient(rgba(23,21,18,.05) 1px, transparent 1px),
+      var(--paper-2);
+    background-size:48px 48px,48px 48px,auto;
+    overflow:hidden;
+    cursor:crosshair;
+    touch-action:manipulation;
+    user-select:none;
+    -webkit-user-select:none;
+    isolation:isolate;
+  }
+  .stage::before{
+    content:"";
+    position:absolute;inset:11px;
+    border:1px solid rgba(23,21,18,.16);
+    pointer-events:none;
+    z-index:5;
+  }
+  .stage::after{
+    content:"";
+    position:absolute;
+    left:-60px;bottom:-110px;
+    width:260px;height:260px;
+    border-radius:50%;
+    border:32px solid var(--yellow);
+    opacity:.2;
+    pointer-events:none;
+    z-index:0;
+  }
+  .stage-type{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    padding:clamp(18px,3vw,40px);
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    pointer-events:none;
+    transition:transform .7s cubic-bezier(.16,.8,.24,1);
+  }
+  .type-top,.type-bottom{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
+  }
+  .word-main{
+    font-size:clamp(3.4rem,11vw,9.2rem);
+    font-weight:800;
+    letter-spacing:-.075em;
+    line-height:.72;
+    text-transform:lowercase;
+    color:var(--ink);
+    display:block;
+    white-space:nowrap;
+  }
+  .word-script{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:clamp(2.7rem,8.4vw,7rem);
+    line-height:.8;
+    letter-spacing:-.045em;
+    color:var(--red);
+    display:block;
+    white-space:nowrap;
+    transition:color .5s ease;
+  }
+  .type-index{
+    font-family:var(--mono);
+    font-size:clamp(.42rem,.55vw,.55rem);
+    line-height:1.7;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    text-align:right;
+    margin-left:auto;
+    padding-top:5px;
+    max-width:16ch;
+    color:rgba(23,21,18,.55);
+  }
+  .type-bottom{align-items:flex-end}
+  .type-caption{
+    font-family:var(--mono);
+    font-size:clamp(.42rem,.55vw,.55rem);
+    line-height:1.8;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    text-align:right;
+    max-width:18ch;
+    color:rgba(23,21,18,.55);
+    padding-bottom:4px;
+  }
+  .stage[data-layout="2"] .stage-type{transform:translateX(-3.2%)}
+  .stage[data-layout="3"] .stage-type{transform:translateX(2.4%)}
+  .stage[data-layout="2"] .word-script{color:var(--blue)}
+  .stage[data-layout="3"] .word-script{color:var(--yellow)}
+
+  .canvas{
+    position:absolute;
+    inset:0;
+    z-index:2;
+  }
+  .shape{
+    position:absolute;
+    transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(var(--scale,1));
+    transform-origin:center;
+    cursor:grab;
+    outline:none;
+    touch-action:none;
+    will-change:left,top,transform;
+    transition:left .62s cubic-bezier(.16,.8,.24,1),top .62s cubic-bezier(.16,.8,.24,1),transform .62s cubic-bezier(.16,.8,.24,1),opacity .2s ease;
+    mix-blend-mode:multiply;
+  }
+  .shape svg{
+    width:100%;height:100%;
+    display:block;
+    overflow:visible;
+    transition:filter .15s ease;
+  }
+  .shape:hover svg,.shape:focus-visible svg{filter:drop-shadow(0 0 1px rgba(23,21,18,.4))}
+  .shape:focus-visible{
+    outline:2px dashed var(--ink);
+    outline-offset:5px;
+  }
+  .shape.dragging{
+    cursor:grabbing;
+    transition:none;
+    z-index:10;
+    mix-blend-mode:normal;
+    opacity:.9;
+  }
+  .shape.removing{
+    opacity:0;
+    transform:translate(-50%,-50%) rotate(var(--rot,0deg)) scale(.65);
+    transition:opacity .22s ease,transform .22s ease;
+    pointer-events:none;
+  }
+  .shape.just-stamped svg{animation:pop .3s cubic-bezier(.18,.9,.32,1.2)}
+  @keyframes pop{
+    from{transform:scale(.55);opacity:.2}
+    to{transform:scale(1);opacity:1}
+  }
+
+  .stage-meta{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:clamp(12px,1.6vw,20px);
+    z-index:4;
+    font-family:var(--mono);
+    font-size:.46rem;
+    letter-spacing:.11em;
+    line-height:1.7;
+    text-transform:uppercase;
+    color:rgba(23,21,18,.42);
+    pointer-events:none;
+    text-align:center;
+    white-space:nowrap;
+  }
+  .stage-meta b{color:rgba(23,21,18,.7);font-weight:400}
+  .stage-meta .corner{
+    position:absolute;left:50%;top:-19px;
+    width:100%;
+    height:1px;background:rgba(23,21,18,.15);
+    transform:translateX(-50%);
+  }
+
+  /* ---------------- manifesto ---------------- */
+  .manifesto{
+    margin-top:clamp(22px,3vw,36px);
+    border-top:2px solid var(--ink);
+    padding-top:12px;
+    display:grid;
+    grid-template-columns:180px minmax(0,1fr) auto;
+    gap:18px 34px;
+    align-items:start;
+  }
+  .manifesto .label{
+    font-family:var(--mono);
+    font-size:.54rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    line-height:1.7;
+  }
+  .manifesto .label span{
+    display:block;
+    color:rgba(23,21,18,.5);
+    margin-top:2px;
+  }
+  .manifesto p{
+    margin:0;
+    font-family:var(--serif);
+    font-size:clamp(.95rem,1.25vw,1.12rem);
+    line-height:1.5;
+    max-width:68ch;
+  }
+  .manifesto p strong{font-weight:600}
+  .principles{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    max-width:440px;
+    justify-content:flex-end;
+  }
+  .principle{
+    max-width:130px;
+    font-family:var(--mono);
+    font-size:.46rem;
+    line-height:1.6;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:rgba(23,21,18,.52);
+  }
+  .principle b{
+    display:block;
+    font-family:var(--sans);
+    font-size:.78rem;
+    letter-spacing:-.01em;
+    text-transform:none;
+    color:var(--ink);
+    margin-bottom:2px;
+  }
+  .principle .bar{
+    display:block;
+    height:5px;
+    width:26px;
+    margin-bottom:6px;
+  }
+  .principle:nth-child(1) .bar{background:var(--red)}
+  .principle:nth-child(2) .bar{background:var(--blue)}
+  .principle:nth-child(3) .bar{background:var(--yellow)}
+  .foot{
+    grid-column:1 / -1;
+    display:flex;justify-content:space-between;align-items:baseline;
+    gap:12px;flex-wrap:wrap;
+    border-top:1px solid var(--rule);
+    padding-top:7px;
+    margin-top:2px;
+    font-family:var(--mono);
+    font-size:.47rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:rgba(23,21,18,.42);
+  }
+  .visually-hidden{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+
+  /* ---------------- responsive ---------------- */
+  @media (max-width:980px){
+    .workbench{grid-template-columns:1fr}
+    .rail{
+      display:flex;
+      flex-direction:row;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      gap:14px 20px;
+      padding:12px 14px;
+    }
+    .rail-block{flex:0 0 auto}
+    .shape-grid{grid-template-columns:repeat(4,minmax(52px,1fr));display:grid}
+    .tool{min-width:52px}
+    .shape-grid{width:min(100%,282px)}
+    .color-row{gap:6px}
+    .swatch{width:31px;height:31px}
+    .color-name{margin-top:6px}
+    .recompose{width:auto;flex:0 0 auto;padding:10px 13px}
+    .count-block{
+      margin-top:0;margin-left:auto;
+      border-top:0;border-bottom:0;
+      padding:0;gap:12px;align-items:center;
+    }
+    .count-block .n{font-size:2rem}
+    .hints{flex:1 0 100%;display:flex;flex-wrap:wrap;gap:5px 18px}
+    .rail-note{display:none}
+    .hints span{display:inline}
+    .hints .sep{display:none}
+    .stage{height:clamp(480px,64vw,680px)}
+    .manifesto{grid-template-columns:150px minmax(0,1fr)}
+    .principles{grid-column:1/-1;justify-content:flex-start;max-width:none;border-top:1px solid var(--rule);padding-top:11px}
+  }
+  @media (max-width:640px){
+    .masthead{align-items:flex-start}
+    .tagline{order:3;flex:1 0 100%;text-align:left;max-width:none}
+    .meta{display:none}
+    .brand .mark{width:40px;height:34px}
+    .workbench{gap:12px}
+    .rail{gap:11px 14px;padding:11px 12px}
+    .shape-grid{width:auto;grid-template-columns:repeat(4,44px)}
+    .tool{padding:6px 3px 5px;font-size:.42rem;gap:3px}
+    .tool svg{width:19px;height:19px}
+    .swatch{width:27px;height:27px}
+    .color-name{display:none}
+    .rail-title{margin-bottom:6px;font-size:.47rem}
+    .recompose{font-size:.5rem;padding:9px 10px}
+    .count-block .lbl{font-size:.45rem}
+    .count-block .n{font-size:1.8rem}
+    .hints{font-size:.42rem;line-height:1.55}
+    .stage{height:clamp(430px,95vw,560px)}
+    .stage-type{padding:15px 14px}
+    .word-main{font-size:clamp(3rem,13.5vw,4.6rem)}
+    .word-script{font-size:clamp(2.4rem,11vw,3.8rem)}
+    .type-index{font-size:.38rem;max-width:14ch}
+    .type-caption{display:none}
+    .stage-meta{font-size:.4rem;max-width:38ch;line-height:1.6;left:auto;right:14px;transform:none;text-align:right;white-space:normal}
+    .stage-meta .corner{left:auto;right:0;transform:none}
+    .manifesto{grid-template-columns:1fr}
+    .manifesto p{font-size:.95rem}
+    .principles{gap:14px 20px}
+    .principle{max-width:100px;font-size:.43rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.001ms !important;animation-duration:.001ms !important;scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 60 50">
+          <circle cx="19" cy="28" r="17" fill="#d8342a"/>
+          <rect x="27" y="8" width="24" height="24" fill="#1f4bb8"/>
+          <polygon points="43,26 58,48 28,48" fill="#f0bd2f"/>
+        </svg>
+      </span>
+      <div>
+        <span class="kicker">Werkstatt für Form / Blatt 04</span>
+        <h1>Bauhaus Spiel</h1>
+      </div>
+    </div>
+    <p class="tagline">A composition playground — stamp, drag, remove, begin again.</p>
+    <div class="meta">
+      <b>Weimar</b> / Dessau / everywhere<br>
+      1923 — 2026 · interactive sheet
+    </div>
+  </header>
+
+  <main class="workbench">
+    <aside class="rail" aria-label="Tools and inks">
+      <div class="rail-block">
+        <div class="rail-title">Form <span>01 — 04</span></div>
+        <div class="shape-grid" role="group" aria-label="Choose a shape">
+          <button class="tool active" type="button" data-shape="circle" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#171512"/></svg>
+            Kreis
+          </button>
+          <button class="tool" type="button" data-shape="square" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" fill="#171512"/></svg>
+            Quadrat
+          </button>
+          <button class="tool" type="button" data-shape="triangle" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2 23,22 1,22" fill="#171512"/></svg>
+            Dreieck
+          </button>
+          <button class="tool" type="button" data-shape="rule" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="9.5" width="22" height="5" fill="#171512"/></svg>
+            Linie
+          </button>
+        </div>
+      </div>
+
+      <div class="rail-block">
+        <div class="rail-title">Farbe <span>01 — 04</span></div>
+        <div class="color-row" role="group" aria-label="Choose an ink">
+          <button class="swatch active" type="button" data-color="red" aria-label="Red ink" aria-pressed="true"></button>
+          <button class="swatch" type="button" data-color="blue" aria-label="Blue ink" aria-pressed="false"></button>
+          <button class="swatch" type="button" data-color="yellow" aria-label="Yellow ink" aria-pressed="false"></button>
+          <button class="swatch" type="button" data-color="ink" aria-label="Black ink" aria-pressed="false"></button>
+        </div>
+        <div class="color-name" id="colorName">Rot / Red</div>
+      </div>
+
+      <button class="recompose" id="recompose" type="button">
+        <span>Recompose</span>
+        <span class="glyph" aria-hidden="true">↻</span>
+      </button>
+
+      <div class="rail-note" aria-hidden="true">
+        <span class="quote">„Die Form ist das Ergebnis des Spiels.“</span>
+        <span class="src">Werkstattnotiz, 1924</span>
+      </div>
+
+      <div class="count-block">
+        <span class="lbl">Objects<br>on stage</span>
+        <span class="n" id="count" aria-live="polite">07</span>
+      </div>
+
+      <p class="hints">
+        <span><b>Click</b> stage to stamp</span>
+        <span><b>Drag</b> a form to move</span>
+        <span><b>Double-click</b> to remove</span>
+        <span class="sep" aria-hidden="true"></span>
+        <span>Multiply blend · paper 120g</span>
+      </p>
+    </aside>
+
+    <section class="stage-wrap" aria-label="Composition stage">
+      <div class="stage-toolbar">
+        <span>Feld / 04 — freie Komposition</span>
+        <span class="live">Live sheet</span>
+      </div>
+
+      <div class="stage" id="stage" data-layout="1">
+        <div class="stage-type" aria-hidden="true">
+          <div class="type-top">
+            <span class="word-main">bauhaus</span>
+            <span class="type-index">A composition<br>playground<br>in four forms</span>
+          </div>
+          <div class="type-bottom">
+            <span class="word-script">spiel</span>
+            <span class="type-caption">Form · Farbe · Zufall<br>Stempel / Zug / Blatt</span>
+          </div>
+        </div>
+        <div class="canvas" id="canvas"></div>
+        <div class="stage-meta">
+          <span class="corner" aria-hidden="true"></span>
+          <b>Klick</b> = stempeln · <b>Ziehen</b> = bewegen<br>
+          <b>Doppelklick</b> = löschen · <b>Recompose</b> = neu ordnen
+        </div>
+      </div>
+      <p class="visually-hidden" id="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer class="manifesto">
+    <div class="label">Manifest <span>Nr. 04 / 2026</span></div>
+    <p>
+      <strong>Form follows function. Function follows play.</strong>
+      We begin with the circle, the square and the triangle — the alphabet before
+      the sentence — and let the hand misalign them until the page begins to think.
+      Nothing here is precious; every good composition is one double-click from
+      becoming a better one.
+    </p>
+    <div class="principles">
+      <div class="principle"><span class="bar" aria-hidden="true"></span><b>Werkstatt</b>A workshop, not a museum.</div>
+      <div class="principle"><span class="bar" aria-hidden="true"></span><b>Primär</b>Red, blue, yellow. Black holds the edge.</div>
+      <div class="principle"><span class="bar" aria-hidden="true"></span><b>Zufall</b>Chance is a material like any other.</div>
+    </div>
+    <div class="foot">
+      <span>Bauhaus Spiel — an interactive composition toy</span>
+      <span>Set in grotesque &amp; old style · printed on screen</span>
+      <span>Objects remain until removed</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var stage = document.getElementById("stage");
+  var canvas = document.getElementById("canvas");
+  var countEl = document.getElementById("count");
+  var statusEl = document.getElementById("status");
+  var recomposeBtn = document.getElementById("recompose");
+  var colorName = document.getElementById("colorName");
+
+  var PALETTE = {
+    red: { hex: "#d8342a", name: "Rot / Red" },
+    blue: { hex: "#1f4bb8", name: "Blau / Blue" },
+    yellow: { hex: "#f0bd2f", name: "Gelb / Yellow" },
+    ink: { hex: "#171512", name: "Schwarz / Black" }
+  };
+  var SHAPE_NAMES = {
+    circle: "Kreis / circle",
+    square: "Quadrat / square",
+    triangle: "Dreieck / triangle",
+    rule: "Linie / rule"
+  };
+  var DEFAULT_SIZE = { circle: 0.13, square: 0.12, triangle: 0.145, rule: 0.23 };
+  var ROTATIONS = [-9, 5, -4, 11, 0, -6, 8];
+  var CURATED_ROTATIONS = [-4, 9, -7, -3, 0, 14, 0];
+
+  var selectedShape = "circle";
+  var selectedColor = "red";
+  var objectCount = 0;
+  var stampSeq = 0;
+  var layoutIndex = 0;
+  var curated = [];
+
+  function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+  }
+
+  function stageWidth() {
+    return stage.getBoundingClientRect().width || 1000;
+  }
+
+  function dimensionsFor(type, sizeFrac) {
+    var w = stageWidth();
+    if (type === "rule") {
+      return [clamp(80, sizeFrac * w, 340), clamp(9, w * 0.016, 22)];
+    }
+    var s = clamp(44, sizeFrac * w, 205);
+    return [s, type === "triangle" ? s * 0.88 : s];
+  }
+
+  function artMarkup(type, hex) {
+    if (type === "circle") {
+      return '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><circle cx="50" cy="50" r="49" fill="' + hex + '"/></svg>';
+    }
+    if (type === "square") {
+      return '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="0.5" y="0.5" width="99" height="99" fill="' + hex + '"/></svg>';
+    }
+    if (type === "triangle") {
+      return '<svg viewBox="0 0 100 88" preserveAspectRatio="none" aria-hidden="true"><polygon points="50,1 99,87 1,87" fill="' + hex + '"/></svg>';
+    }
+    return '<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="0" width="100" height="10" fill="' + hex + '"/></svg>';
+  }
+
+  function applyGeometry(shape) {
+    shape.style.left = (shape._fx * 100).toFixed(3) + "%";
+    shape.style.top = (shape._fy * 100).toFixed(3) + "%";
+    shape.style.setProperty("--rot", shape._rot + "deg");
+    shape.style.setProperty("--scale", shape._scale);
+  }
+
+  function makeShape(opts) {
+    var wrap = document.createElement("div");
+    wrap.className = "shape shape--" + opts.type;
+    wrap.tabIndex = 0;
+    wrap.setAttribute("role", "img");
+    wrap.setAttribute("aria-label",
+      PALETTE[opts.color].name.split(" / ")[0] + " " + SHAPE_NAMES[opts.type] +
+      ". Drag to move, double-click or press Delete to remove.");
+
+    wrap._fx = clamp(opts.fx, 0.04, 0.96);
+    wrap._fy = clamp(opts.fy, 0.05, 0.95);
+    wrap._rot = opts.rot;
+    wrap._scale = opts.scale == null ? 1 : opts.scale;
+    wrap._type = opts.type;
+    wrap._color = opts.color;
+
+    var dims = dimensionsFor(opts.type, opts.size);
+    wrap.style.width = dims[0].toFixed(1) + "px";
+    wrap.style.height = dims[1].toFixed(1) + "px";
+
+    wrap.innerHTML = artMarkup(opts.type, PALETTE[opts.color].hex);
+    applyGeometry(wrap);
+
+    if (opts.curatedIndex != null) {
+      wrap.dataset.curatedIndex = String(opts.curatedIndex);
+      wrap.dataset.curated = "true";
+    }
+
+    attachInteractions(wrap);
+    canvas.appendChild(wrap);
+
+    if (opts.curatedIndex != null) curated.push(wrap);
+    objectCount += 1;
+    updateCount();
+
+    return wrap;
+  }
+
+  function updateCount() {
+    countEl.textContent = String(objectCount).padStart(2, "0");
+  }
+
+  function announce(text) {
+    statusEl.textContent = text;
+  }
+
+  /* Curated initial composition, seven objects. */
+  var curatedDefs = [
+    { type: "circle", color: "blue", fx: 0.27, fy: 0.37, size: 0.17, rot: -4 },
+    { type: "square", color: "red", fx: 0.46, fy: 0.58, size: 0.132, rot: 9 },
+    { type: "triangle", color: "yellow", fx: 0.64, fy: 0.29, size: 0.175, rot: -7 },
+    { type: "rule", color: "ink", fx: 0.56, fy: 0.73, size: 0.25, rot: -3 },
+    { type: "circle", color: "yellow", fx: 0.79, fy: 0.60, size: 0.085, rot: 0 },
+    { type: "square", color: "ink", fx: 0.83, fy: 0.25, size: 0.068, rot: 14 },
+    { type: "rule", color: "blue", fx: 0.31, fy: 0.77, size: 0.17, rot: 0 }
+  ];
+
+  /* Three curated arrangements used by "Recompose". */
+  var LAYOUTS = [
+    [
+      { fx: 0.27, fy: 0.37, scale: 1.00, rot: -4 },
+      { fx: 0.46, fy: 0.58, scale: 1.00, rot: 9 },
+      { fx: 0.64, fy: 0.29, scale: 1.00, rot: -7 },
+      { fx: 0.56, fy: 0.73, scale: 1.00, rot: -3 },
+      { fx: 0.79, fy: 0.60, scale: 1.00, rot: 0 },
+      { fx: 0.83, fy: 0.25, scale: 1.00, rot: 14 },
+      { fx: 0.31, fy: 0.77, scale: 1.00, rot: 0 }
+    ],
+    [
+      { fx: 0.60, fy: 0.31, scale: 0.86, rot: 0 },
+      { fx: 0.33, fy: 0.67, scale: 1.12, rot: -8 },
+      { fx: 0.21, fy: 0.36, scale: 1.18, rot: 13 },
+      { fx: 0.46, fy: 0.49, scale: 1.05, rot: 5 },
+      { fx: 0.80, fy: 0.71, scale: 0.95, rot: 0 },
+      { fx: 0.70, fy: 0.51, scale: 0.85, rot: -3 },
+      { fx: 0.75, fy: 0.28, scale: 0.98, rot: -9 }
+    ],
+    [
+      { fx: 0.23, fy: 0.63, scale: 1.10, rot: 0 },
+      { fx: 0.60, fy: 0.63, scale: 0.92, rot: -10 },
+      { fx: 0.44, fy: 0.25, scale: 1.24, rot: 5 },
+      { fx: 0.72, fy: 0.42, scale: 0.80, rot: 7 },
+      { fx: 0.84, fy: 0.23, scale: 0.90, rot: 0 },
+      { fx: 0.34, fy: 0.26, scale: 1.00, rot: -4 },
+      { fx: 0.55, fy: 0.82, scale: 1.10, rot: 3 }
+    ]
+  ];
+
+  curatedDefs.forEach(function (def, i) {
+    makeShape({
+      type: def.type,
+      color: def.color,
+      fx: def.fx,
+      fy: def.fy,
+      size: def.size,
+      rot: def.rot,
+      scale: 1,
+      curatedIndex: i
+    });
+  });
+
+  /* ---------------- stamping ---------------- */
+  function stamp(fx, fy) {
+    var rot = ROTATIONS[stampSeq % ROTATIONS.length];
+    stampSeq += 1;
+
+    var shape = makeShape({
+      type: selectedShape,
+      color: selectedColor,
+      fx: fx,
+      fy: fy,
+      size: DEFAULT_SIZE[selectedShape],
+      rot: rot,
+      scale: 1
+    });
+
+    shape.classList.add("just-stamped");
+    setTimeout(function () {
+      shape.classList.remove("just-stamped");
+    }, 340);
+
+    announce(SHAPE_NAMES[selectedShape] + " stamped. " + objectCount + " objects on stage.");
+  }
+
+  stage.addEventListener("click", function (e) {
+    if (e.target.closest(".shape")) return;
+    var rect = stage.getBoundingClientRect();
+    var fx = clamp((e.clientX - rect.left) / rect.width, 0.05, 0.95);
+    var fy = clamp((e.clientY - rect.top) / rect.height, 0.06, 0.94);
+    stamp(fx, fy);
+  });
+
+  /* ---------------- interaction ---------------- */
+  function attachInteractions(shape) {
+    shape.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      canvas.appendChild(shape);
+      shape.classList.add("dragging");
+      shape.focus({ preventScroll: true });
+
+      var rect = stage.getBoundingClientRect();
+      var startX = e.clientX;
+      var startY = e.clientY;
+      var startFx = shape._fx;
+      var startFy = shape._fy;
+      var moved = false;
+
+      function onMove(ev) {
+        var dx = (ev.clientX - startX) / rect.width;
+        var dy = (ev.clientY - startY) / rect.height;
+        if (Math.abs(dx) > 0.004 || Math.abs(dy) > 0.004) moved = true;
+        shape._fx = clamp(startFx + dx, 0.04, 0.96);
+        shape._fy = clamp(startFy + dy, 0.05, 0.95);
+        shape.style.left = (shape._fx * 100).toFixed(3) + "%";
+        shape.style.top = (shape._fy * 100).toFixed(3) + "%";
+      }
+
+      function onUp(ev) {
+        shape.classList.remove("dragging");
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+        if (moved) shape._lastDrag = Date.now();
+        if (ev && ev.pointerId != null && shape.hasPointerCapture &&
+            shape.hasPointerCapture(ev.pointerId)) {
+          shape.releasePointerCapture(ev.pointerId);
+        }
+      }
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    });
+
+    shape.addEventListener("dblclick", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (shape._lastDrag && Date.now() - shape._lastDrag < 260) return;
+      removeShape(shape);
+    });
+
+    shape.addEventListener("keydown", function (e) {
+      var step = e.shiftKey ? 0.025 : 0.009;
+      var handled = true;
+      if (e.key === "ArrowLeft") shape._fx = clamp(shape._fx - step, 0.04, 0.96);
+      else if (e.key === "ArrowRight") shape._fx = clamp(shape._fx + step, 0.04, 0.96);
+      else if (e.key === "ArrowUp") shape._fy = clamp(shape._fy - step, 0.05, 0.95);
+      else if (e.key === "ArrowDown") shape._fy = clamp(shape._fy + step, 0.05, 0.95);
+      else if (e.key === "Delete" || e.key === "Backspace") {
+        removeShape(shape);
+      } else {
+        handled = false;
+      }
+      if (handled) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.key.indexOf("Arrow") === 0) {
+          shape.style.left = (shape._fx * 100).toFixed(3) + "%";
+          shape.style.top = (shape._fy * 100).toFixed(3) + "%";
+        }
+      }
+    });
+  }
+
+  function removeShape(shape) {
+    if (shape.classList.contains("removing")) return;
+    shape.classList.add("removing");
+    objectCount = Math.max(0, objectCount - 1);
+    updateCount();
+    announce((shape.getAttribute("aria-label") || "Form").split(".")[0] + " removed. " + objectCount + " objects on stage.");
+    setTimeout(function () {
+      if (shape.parentNode) shape.parentNode.removeChild(shape);
+    }, 240);
+  }
+
+  /* ---------------- tools ---------------- */
+  var shapeButtons = Array.prototype.slice.call(document.querySelectorAll(".tool[data-shape]"));
+  var colorButtons = Array.prototype.slice.call(document.querySelectorAll(".swatch[data-color]"));
+
+  shapeButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      selectedShape = btn.getAttribute("data-shape");
+      shapeButtons.forEach(function (b) {
+        var on = b === btn;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    });
+  });
+
+  colorButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      selectedColor = btn.getAttribute("data-color");
+      colorButtons.forEach(function (b) {
+        var on = b === btn;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      colorName.textContent = PALETTE[selectedColor].name;
+    });
+  });
+
+  /* ---------------- recompose ---------------- */
+  recomposeBtn.addEventListener("click", function () {
+    layoutIndex = (layoutIndex + 1) % LAYOUTS.length;
+    var layout = LAYOUTS[layoutIndex];
+
+    curated.forEach(function (shape) {
+      var idx = Number(shape.dataset.curatedIndex);
+      var target = layout[idx];
+      if (!target) return;
+      shape._fx = clamp(target.fx, 0.04, 0.96);
+      shape._fy = clamp(target.fy, 0.05, 0.95);
+      shape._scale = target.scale;
+      shape._rot = target.rot;
+      applyGeometry(shape);
+    });
+
+    stage.dataset.layout = String(layoutIndex + 1);
+    announce("Composition recomposed. Layout " + (layoutIndex + 1) + " of 3.");
+  });
+
+  /* Clamp any shape that ends up outside after a resize. */
+  window.addEventListener("resize", function () {
+    var rect = stage.getBoundingClientRect();
+    if (!rect.width) return;
+    Array.prototype.forEach.call(canvas.querySelectorAll(".shape"), function (shape) {
+      shape._fx = clamp(shape._fx, 0.04, 0.96);
+      shape._fy = clamp(shape._fy, 0.05, 0.95);
+      shape.style.left = (shape._fx * 100).toFixed(3) + "%";
+      shape.style.top = (shape._fy * 100).toFixed(3) + "%";
+    });
+  });
+
+  updateCount();
+})();
+</script>
+</body>
+</html>

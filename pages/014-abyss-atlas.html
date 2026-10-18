@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abyss — Hydrographic Atlas, Sheet 04</title>
+<style>
+  :root{
+    --void:#041619;
+    --panel:#06252a;
+    --panel-2:#082d33;
+    --foam:#cfe9e3;
+    --teal:#5ad1c1;
+    --coral:#ff8a5c;
+    --rule:rgba(90,209,193,.2);
+    --muted:rgba(207,233,227,.62);
+    --display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--foam);
+    background:
+      radial-gradient(1100px 700px at 74% -5%, rgba(90,209,193,.10) 0%, transparent 55%),
+      radial-gradient(900px 600px at 8% 45%, rgba(90,209,193,.045) 0%, transparent 60%),
+      var(--void);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    opacity:.4;
+    background-image:
+      linear-gradient(rgba(90,209,193,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(90,209,193,.035) 1px, transparent 1px);
+    background-size:72px 72px;
+    mask-image:radial-gradient(circle at 55% 35%, #000 0%, transparent 85%);
+  }
+  ::selection{background:var(--teal);color:var(--void)}
+
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:1500px;
+    margin:0 auto;
+    padding:0 clamp(18px,3.4vw,54px) 46px;
+  }
+
+  /* top bar */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:18px;
+    min-height:66px;
+    border-bottom:1px solid var(--rule);
+    font-family:var(--mono);
+    font-size:.62rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .topbar .mark{
+    display:flex;align-items:center;gap:12px;
+    color:var(--foam);
+    letter-spacing:.3em;
+    font-size:.78rem;
+  }
+  .mark .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--teal);
+    box-shadow:0 0 10px var(--teal);
+    flex:none;
+  }
+  .topbar .mid{flex:1;text-align:center;opacity:.55}
+  .topbar .coord{white-space:nowrap}
+  .coord-short{display:none}
+  .coord b{color:var(--foam);font-weight:400}
+
+  /* hero */
+  .hero{
+    display:grid;
+    grid-template-columns:minmax(320px,.78fr) minmax(0,1.55fr);
+    gap:clamp(28px,4.2vw,64px);
+    padding:clamp(30px,5vw,66px) 0 clamp(38px,5vw,66px);
+    align-items:stretch;
+  }
+  .hero-copy{
+    display:flex;flex-direction:column;
+    min-width:0;
+    position:relative;
+  }
+  .eyebrow{
+    display:flex;align-items:center;gap:12px;
+    font-family:var(--mono);
+    font-size:.6rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--teal);
+    margin-bottom:clamp(16px,2.4vw,26px);
+  }
+  .eyebrow::after{content:"";height:1px;flex:1;background:var(--rule)}
+  .eyebrow span{opacity:.72;color:var(--muted)}
+
+  h1{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:clamp(2.9rem,5.2vw,5.7rem);
+    line-height:.96;
+    letter-spacing:-.022em;
+    margin:0 0 clamp(18px,2.4vw,26px);
+    max-width:9.5ch;
+    text-wrap:balance;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--teal);
+    display:inline-block;
+    position:relative;
+  }
+  h1 em::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;bottom:.02em;
+    height:1px;
+    background:linear-gradient(90deg,var(--teal),transparent);
+    opacity:.5;
+  }
+  .intro{
+    max-width:38ch;
+    font-size:clamp(.9rem,1.12vw,1rem);
+    line-height:1.62;
+    color:var(--muted);
+    margin:0 0 clamp(26px,3.4vw,38px);
+  }
+  .intro b{color:var(--foam);font-weight:400}
+
+  /* readout */
+  .readout-block{
+    border-top:1px solid var(--rule);
+    padding-top:14px;
+    margin-top:auto;
+    position:relative;
+  }
+  .readout-label{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);
+    font-size:.56rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:2px;
+  }
+  .readout-label .live{color:var(--teal)}
+  .readout{
+    display:flex;align-items:baseline;gap:10px;
+    font-family:var(--display);
+    font-size:clamp(3.6rem,6.8vw,6rem);
+    line-height:1;
+    letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;
+    color:var(--foam);
+  }
+  .readout .unit{
+    font-family:var(--mono);
+    font-size:.72rem;
+    letter-spacing:.12em;
+    color:var(--teal);
+    transform:translateY(-.4em);
+  }
+  .zone-now{
+    display:flex;align-items:center;gap:9px;
+    font-family:var(--mono);
+    font-size:.62rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--teal);
+    margin-bottom:18px;
+  }
+  .zone-now::before{
+    content:"";
+    width:15px;height:1px;background:var(--teal);
+  }
+
+  /* controls */
+  .controls{display:flex;flex-direction:column;gap:9px}
+  .slider-row{display:flex;align-items:center;gap:13px}
+  .slider-row .end{
+    font-family:var(--mono);font-size:.52rem;letter-spacing:.08em;
+    color:rgba(207,233,227,.42);white-space:nowrap;
+  }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    flex:1;min-width:0;
+    height:28px;
+    margin:0;
+    background:transparent;
+    cursor:ew-resize;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:2px;
+    background:linear-gradient(90deg,var(--teal) 0%,rgba(90,209,193,.28) 60%,rgba(90,209,193,.12) 100%);
+  }
+  input[type=range]::-moz-range-track{
+    height:2px;
+    background:linear-gradient(90deg,var(--teal) 0%,rgba(90,209,193,.28) 60%,rgba(90,209,193,.12) 100%);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:13px;height:13px;margin-top:-5.5px;
+    border-radius:50%;
+    background:var(--void);
+    border:1.5px solid var(--teal);
+    box-shadow:0 0 0 4px rgba(90,209,193,.12), 0 0 14px rgba(90,209,193,.55);
+    cursor:grab;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:12px;height:12px;
+    border-radius:50%;
+    background:var(--void);
+    border:1.5px solid var(--teal);
+    box-shadow:0 0 0 4px rgba(90,209,193,.12), 0 0 14px rgba(90,209,193,.55);
+    cursor:grab;
+  }
+  input[type=range]:focus-visible{outline:1px solid var(--teal);outline-offset:6px}
+  .slider-meta{
+    display:flex;justify-content:space-between;gap:10px;
+    font-family:var(--mono);
+    font-size:.53rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:rgba(207,233,227,.4);
+  }
+  .slider-meta b{color:var(--teal);font-weight:400}
+
+  .dive{
+    margin-top:17px;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;
+    width:100%;
+    border:1px solid rgba(90,209,193,.55);
+    background:rgba(90,209,193,.06);
+    color:var(--foam);
+    padding:14px 17px;
+    font-family:var(--mono);
+    font-size:.66rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition:background .25s ease, border-color .25s ease, color .25s ease;
+  }
+  .dive::before{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(90deg, transparent, rgba(90,209,193,.16), transparent);
+    transform:translateX(-100%);
+    transition:transform .6s ease;
+  }
+  .dive:hover{background:rgba(90,209,193,.13);border-color:var(--teal)}
+  .dive:hover::before{transform:translateX(100%)}
+  .dive:focus-visible{outline:1px solid var(--teal);outline-offset:4px}
+  .dive .arrow{
+    font-size:.9rem;
+    color:var(--teal);
+    transition:transform .3s ease;
+  }
+  .dive:hover .arrow{transform:translateY(3px)}
+  .dive.is-surface .arrow{transform:rotate(180deg)}
+  .dive.is-surface:hover .arrow{transform:rotate(180deg) translateY(3px)}
+  .dive .sub{
+    display:block;
+    font-size:.5rem;
+    letter-spacing:.12em;
+    color:rgba(207,233,227,.45);
+    margin-top:4px;
+  }
+  .visually-hidden{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+
+  /* chart */
+  .chart-panel{
+    border:1px solid var(--rule);
+    background:
+      linear-gradient(180deg, rgba(90,209,193,.035), transparent 42%),
+      var(--panel);
+    display:flex;flex-direction:column;
+    min-width:0;
+    position:relative;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.8), inset 0 0 90px rgba(0,0,0,.25);
+  }
+  .chart-bar{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+    padding:12px 16px;
+    border-bottom:1px solid var(--rule);
+    font-family:var(--mono);
+    font-size:.55rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:rgba(207,233,227,.5);
+    flex-wrap:wrap;
+  }
+  .chart-bar .title{color:var(--foam);letter-spacing:.18em}
+  .chart-bar .legend{display:flex;align-items:center;gap:9px}
+  .chart-bar .legend i{
+    width:16px;height:1px;background:var(--teal);
+    box-shadow:0 0 6px var(--teal);
+    display:inline-block;
+  }
+  .chart-wrap{
+    flex:1;
+    min-height:0;
+    padding:0 6px 2px;
+    display:flex;
+  }
+  .chart-wrap svg{
+    width:100%;
+    height:100%;
+    min-height:clamp(320px,34vw,540px);
+    display:block;
+    font-family:var(--mono);
+  }
+  .chart-foot{
+    display:flex;justify-content:space-between;gap:18px;
+    flex-wrap:wrap;
+    padding:9px 16px 11px;
+    border-top:1px solid var(--rule);
+    font-family:var(--mono);
+    font-size:.52rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:rgba(207,233,227,.42);
+  }
+  .chart-foot b{color:var(--teal);font-weight:400}
+  .chart-foot .coral{color:var(--coral)}
+
+  .coral-halo{
+    transform-box:fill-box;
+    transform-origin:center;
+    animation:halo 3.6s ease-in-out infinite;
+  }
+  @keyframes halo{
+    0%,100%{opacity:.25;transform:scale(.8)}
+    50%{opacity:.6;transform:scale(1.35)}
+  }
+
+  /* zones */
+  .zones{
+    border-top:1px solid var(--rule);
+    padding-top:clamp(22px,3vw,30px);
+  }
+  .zones-head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:15px;
+  }
+  .zones-head h2{
+    margin:0;
+    font-family:var(--display);
+    font-weight:400;
+    font-size:clamp(1.2rem,1.8vw,1.6rem);
+    letter-spacing:-.01em;
+  }
+  .zones-head span{
+    font-family:var(--mono);
+    font-size:.55rem;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:rgba(207,233,227,.42);
+  }
+  .zone-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+  }
+  .zone{
+    appearance:none;
+    -webkit-appearance:none;
+    text-align:left;
+    background:transparent;
+    color:var(--foam);
+    border:0;
+    border-right:1px solid var(--rule);
+    padding:18px clamp(12px,1.5vw,22px) 20px;
+    font-family:inherit;
+    cursor:pointer;
+    position:relative;
+    min-width:0;
+    transition:background .3s ease, opacity .3s ease;
+  }
+  .zone:last-child{border-right:0}
+  .zone::before{
+    content:"";
+    position:absolute;left:0;right:0;top:-1px;height:2px;
+    background:var(--teal);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform .4s ease;
+  }
+  .zone:hover{background:rgba(90,209,193,.035)}
+  .zone:focus-visible{outline:1px solid var(--teal);outline-offset:-5px}
+  .zone.active{background:linear-gradient(180deg, rgba(90,209,193,.08), rgba(90,209,193,.015))}
+  .zone.active::before{transform:scaleX(1)}
+  .zone .num{
+    font-family:var(--mono);
+    font-size:.52rem;
+    letter-spacing:.12em;
+    color:rgba(207,233,227,.4);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .zone .num .here{
+    color:var(--teal);
+    opacity:0;
+    transition:opacity .3s ease;
+    letter-spacing:.1em;
+  }
+  .zone.active .num .here{opacity:1}
+  .zone .zone-name{
+    display:block;
+    margin:13px 0 3px;
+    font-family:var(--display);
+    font-weight:400;
+    font-size:clamp(1.15rem,1.55vw,1.45rem);
+    letter-spacing:-.01em;
+    color:var(--muted);
+    transition:color .3s ease;
+  }
+  .zone.active .zone-name{color:var(--foam)}
+  .zone .range{
+    display:block;
+    font-family:var(--mono);
+    font-size:.55rem;
+    letter-spacing:.1em;
+    color:var(--teal);
+    opacity:.62;
+    margin-bottom:8px;
+  }
+  .zone.active .range{opacity:1}
+  .zone .zone-desc{
+    display:block;
+    margin:0;
+    font-size:.75rem;
+    line-height:1.5;
+    color:rgba(207,233,227,.5);
+    max-width:32ch;
+    transition:color .3s ease;
+  }
+  .zone.active .zone-desc{color:rgba(207,233,227,.76)}
+  .zone .temp{
+    display:block;
+    margin-top:11px;
+    font-family:var(--mono);
+    font-size:.53rem;
+    letter-spacing:.08em;
+    color:rgba(207,233,227,.4);
+  }
+  .zone.active .temp{color:var(--teal)}
+
+  .foot{
+    display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    padding:26px 0 0;
+    font-family:var(--mono);
+    font-size:.53rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:rgba(207,233,227,.34);
+  }
+  .foot .rule{color:var(--teal)}
+
+  /* responsive */
+  @media (max-width:1080px){
+    .hero{grid-template-columns:minmax(280px,.8fr) minmax(0,1.3fr);gap:30px}
+    .zone .zone-desc{font-size:.72rem}
+  }
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;gap:30px;padding-top:34px}
+    h1{max-width:14ch;font-size:clamp(2.9rem,9vw,4.6rem)}
+    .intro{max-width:56ch}
+    .readout-block{margin-top:6px}
+    .chart-wrap svg{min-height:0;aspect-ratio:1000/620;height:auto}
+    .zone-grid{grid-template-columns:1fr 1fr}
+    .zone:nth-child(2){border-right:0}
+    .zone:nth-child(1),.zone:nth-child(2){border-bottom:1px solid var(--rule)}
+    .zone .zone-desc{max-width:40ch}
+  }
+  @media (max-width:640px){
+    .topbar .mid{display:none}
+    .topbar{min-height:58px}
+    .topbar .coord{font-size:.54rem;letter-spacing:.08em}
+    .coord-long{display:none}
+    .coord-short{display:inline}
+    .chart-bar{gap:5px 12px;font-size:.5rem}
+    .chart-bar > span:last-child{display:none}
+    .readout{font-size:clamp(3.2rem,15vw,4.6rem)}
+    .chart-bar .legend{display:none}
+    .chart-wrap svg{aspect-ratio:1000/720}
+    .zone-grid{grid-template-columns:1fr}
+    .zone{border-right:0;border-bottom:1px solid var(--rule);padding:16px 4px}
+    .zone:last-child{border-bottom:0}
+    .zone .zone-name{margin-top:9px}
+    .chart-foot{gap:6px 14px;font-size:.48rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="mark"><span class="dot" aria-hidden="true"></span>ABYSS</div>
+    <div class="mid">Hydrographic Atlas — Sheet 04 — Kermadec Sector</div>
+    <div class="coord"><span class="coord-long"><b>34° 12′ S</b> / <b>147° 48′ E</b></span><span class="coord-short"><b>34° S</b> / <b>147° E</b></span></div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <div class="eyebrow">The deep field <span>/ Survey 41</span></div>
+        <h1 id="page-title">The map <em>beneath</em> the map.</h1>
+        <p class="intro">
+          Eleven kilometres of water, read as contour and inference. What we call
+          the seafloor is mostly a rumour — a sound pulse, a returned echo, a line
+          drawn between <b>three seamounts</b> and the long silence after them.
+        </p>
+
+        <div class="readout-block">
+          <div class="readout-label">
+            <span>Current depth</span>
+            <span class="live">● Live sounding</span>
+          </div>
+          <div class="readout" aria-hidden="true">
+            <span id="depthValue">2,800</span><span class="unit">m</span>
+          </div>
+          <div class="zone-now" id="zoneNow">Midnight zone</div>
+
+          <div class="controls">
+            <div class="slider-row">
+              <span class="end">0</span>
+              <input id="depth" type="range" min="0" max="10935" step="5" value="2800"
+                     aria-label="Depth in metres, from the surface to the trench floor">
+              <span class="end">10,935</span>
+            </div>
+            <div class="slider-meta">
+              <span>Surface</span>
+              <span>Surveyed floor <b>10,935 m</b></span>
+            </div>
+            <button class="dive" id="dive" type="button" aria-label="Dive to the surveyed floor at 10,935 metres">
+              <span id="diveLabel">Dive<span class="sub" id="diveSub">to the trench floor</span></span>
+              <span class="arrow" aria-hidden="true">↓</span>
+            </button>
+            <p class="visually-hidden" id="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="chart-bar">
+          <span class="title">Bathymetric field / Sector 07</span>
+          <span class="legend"><i aria-hidden="true"></i> Contour interval 250 m</span>
+          <span>Datum WGS 84</span>
+        </div>
+        <div class="chart-wrap">
+          <svg id="chart" viewBox="0 0 1000 620" role="img" aria-labelledby="chartTitle chartDesc" preserveAspectRatio="xMidYMid meet">
+            <title id="chartTitle">Bathymetric chart of three seamounts</title>
+            <desc id="chartDesc">A dark hydrographic chart with concentric teal contour lines around three seamounts, a grid of graticule lines, soundings, station markers, and a glowing horizon line that moves with the depth control.</desc>
+            <defs>
+              <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#5ad1c1" stop-opacity=".10"/>
+                <stop offset="1" stop-color="#5ad1c1" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="shadeGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#020c0e" stop-opacity=".03"/>
+                <stop offset=".22" stop-color="#020c0e" stop-opacity=".3"/>
+                <stop offset="1" stop-color="#02090b" stop-opacity=".7"/>
+              </linearGradient>
+              <radialGradient id="vignette" cx="50%" cy="45%" r="70%">
+                <stop offset="55%" stop-color="#041619" stop-opacity="0"/>
+                <stop offset="100%" stop-color="#021012" stop-opacity=".65"/>
+              </radialGradient>
+              <filter id="glow" x="-20%" y="-300%" width="140%" height="700%">
+                <feGaussianBlur stdDeviation="4.5" result="b"/>
+                <feMerge>
+                  <feMergeNode in="b"/>
+                  <feMergeNode in="b"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="2.2" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <clipPath id="chartClip"><rect x="24" y="20" width="952" height="574" rx="2"/></clipPath>
+            </defs>
+
+            <rect x="0" y="0" width="1000" height="620" fill="#06252a"/>
+            <g clip-path="url(#chartClip)">
+              <g id="graticule"></g>
+              <g id="contours"></g>
+              <g id="seamountLabels"></g>
+              <g id="soundings"></g>
+              <rect id="waterTint" x="24" y="20" width="952" height="0" fill="url(#waterGrad)"/>
+              <rect id="depthShade" x="24" y="20" width="952" height="0" fill="url(#shadeGrad)"/>
+              <g id="stations" aria-hidden="true"></g>
+
+              <g id="horizon" aria-hidden="true">
+                <line id="horizonHalo" x1="24" x2="976" y1="20" y2="20" stroke="#5ad1c1" stroke-width="14" opacity=".14" stroke-linecap="round"/>
+                <line id="horizonHalo2" x1="24" x2="976" y1="20" y2="20" stroke="#5ad1c1" stroke-width="5" opacity=".26" stroke-linecap="round"/>
+                <line id="horizonLine" x1="24" x2="976" y1="20" y2="20" stroke="#5ad1c1" stroke-width="2"/>
+                <line id="horizonTickL" x1="24" x2="46" y1="20" y2="20" stroke="#5ad1c1" stroke-width="2.4"/>
+                <line id="horizonTickR" x1="954" x2="976" y1="20" y2="20" stroke="#5ad1c1" stroke-width="2.4"/>
+                <g id="horizonTag">
+                  <rect id="horizonTagBox" x="808" y="-24" width="152" height="20" fill="#06252a" opacity=".9"/>
+                  <text id="horizonText" x="950" y="-8" text-anchor="end" font-size="10" letter-spacing="2.2" fill="#5ad1c1">HORIZON 2,800 M</text>
+                </g>
+              </g>
+
+              <g id="depthRuler" aria-hidden="true"></g>
+
+              <rect x="24" y="20" width="952" height="574" fill="url(#vignette)" pointer-events="none"/>
+            </g>
+
+            <rect x="24" y="20" width="952" height="574" fill="none" stroke="rgba(90,209,193,.22)"/>
+            <g font-size="9" letter-spacing="2" fill="#5ad1c1" opacity=".55">
+              <text x="38" y="44">SECTOR 07 / KERMADEC</text>
+              <text x="38" y="58" fill="#cfe9e3" opacity=".45" letter-spacing="1.6">CONTOURS FROM MULTIBEAM / 2025</text>
+            </g>
+            <g id="compass" transform="translate(932,62)" opacity=".65" aria-hidden="true">
+              <circle r="18" fill="none" stroke="#5ad1c1" stroke-width=".7"/>
+              <path d="M0 -15 L4 3 L0 0 L-4 3 Z" fill="#5ad1c1"/>
+              <text x="0" y="-21" text-anchor="middle" font-size="8" fill="#cfe9e3" letter-spacing="1">N</text>
+            </g>
+            <g transform="translate(44,566)" aria-hidden="true">
+              <line x1="0" x2="96" y1="0" y2="0" stroke="#5ad1c1" stroke-width="1.4"/>
+              <line x1="0" x2="0" y1="-4" y2="4" stroke="#5ad1c1" stroke-width="1"/>
+              <line x1="48" x2="48" y1="-3" y2="3" stroke="#5ad1c1" stroke-width="1"/>
+              <line x1="96" x2="96" y1="-4" y2="4" stroke="#5ad1c1" stroke-width="1"/>
+              <text x="0" y="14" font-size="8" fill="#5ad1c1" letter-spacing="1.4">0</text>
+              <text x="48" y="14" font-size="8" fill="#5ad1c1" letter-spacing="1.4" text-anchor="middle">10</text>
+              <text x="96" y="14" font-size="8" fill="#5ad1c1" letter-spacing="1.4" text-anchor="end">20 KM</text>
+            </g>
+          </svg>
+        </div>
+        <div class="chart-foot">
+          <span><b>Fig. 04</b> — Seamount cluster &amp; abyssal plain</span>
+          <span>Interval <b>250 m</b> · Vertical exaggeration ×8</span>
+          <span class="coral">◆ ROV–03 / 2,740 m</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="zones" aria-labelledby="zones-title">
+      <div class="zones-head">
+        <h2 id="zones-title">The water column, in four zones</h2>
+        <span>Select a zone to move the sounding</span>
+      </div>
+      <div class="zone-grid" id="zoneGrid">
+        <button class="zone" type="button" data-depth="120" aria-pressed="false">
+          <span class="num">01 <span class="here">CURRENT</span></span>
+          <span class="zone-name">Sunlight</span>
+          <span class="range">0 — 200 M</span>
+          <span class="zone-desc">Light enough to photosynthesise. Drifting plankton, silver schools, the warm lid of the sea. Almost all of its colour lives here.</span>
+          <span class="temp">12 — 25 °C · 1–20 atm</span>
+        </button>
+        <button class="zone" type="button" data-depth="620" aria-pressed="false">
+          <span class="num">02 <span class="here">CURRENT</span></span>
+          <span class="zone-name">Twilight</span>
+          <span class="range">200 — 1,000 M</span>
+          <span class="zone-desc">A blue dusk that never ends. Lanternfish rise nightly in the largest migration on Earth; eyes grow large, bodies grow quiet.</span>
+          <span class="temp">4 — 12 °C · 20–100 atm</span>
+        </button>
+        <button class="zone" type="button" data-depth="2800" aria-pressed="true">
+          <span class="num">03 <span class="here">CURRENT</span></span>
+          <span class="zone-name">Midnight</span>
+          <span class="range">1,000 — 4,000 M</span>
+          <span class="zone-desc">No sunlight reaches. Bioluminescence becomes the local language, and the pressure closes past four hundred atmospheres.</span>
+          <span class="temp">2 — 4 °C · 100–400 atm</span>
+        </button>
+        <button class="zone" type="button" data-depth="7600" aria-pressed="false">
+          <span class="num">04 <span class="here">CURRENT</span></span>
+          <span class="zone-name">Abyss</span>
+          <span class="range">4,000 — 11,000 M</span>
+          <span class="zone-desc">Slow marine snow, glass sponges, amphipods in the dark. Less than one per cent of this floor has been mapped at this resolution.</span>
+          <span class="temp">0 — 2 °C · 400–1,100 atm</span>
+        </button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Abyss — a hydrographic atlas · Plate 04</span>
+      <span class="rule">Compiled from echo soundings &amp; imagination</span>
+      <span>34° 12′ S / 147° 48′ E</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var MAX_DEPTH = 10935;
+  var svgNS = "http://www.w3.org/2000/svg";
+
+  var slider = document.getElementById("depth");
+  var depthValue = document.getElementById("depthValue");
+  var zoneNow = document.getElementById("zoneNow");
+  var diveBtn = document.getElementById("dive");
+  var diveLabel = document.getElementById("diveLabel");
+  var diveSub = document.getElementById("diveSub");
+  var status = document.getElementById("status");
+  var zoneButtons = Array.prototype.slice.call(document.querySelectorAll(".zone"));
+
+  var horizonLine = document.getElementById("horizonLine");
+  var horizonHalo = document.getElementById("horizonHalo");
+  var horizonHalo2 = document.getElementById("horizonHalo2");
+  var horizonTickL = document.getElementById("horizonTickL");
+  var horizonTickR = document.getElementById("horizonTickR");
+  var horizonTag = document.getElementById("horizonTag");
+  var horizonText = document.getElementById("horizonText");
+  var waterTint = document.getElementById("waterTint");
+  var depthShade = document.getElementById("depthShade");
+
+  var TOP = 20;
+  var BOTTOM = 594;
+
+  var zones = [
+    { name: "Sunlight zone", max: 200 },
+    { name: "Twilight zone", max: 1000 },
+    { name: "Midnight zone", max: 4000 },
+    { name: "Abyss", max: MAX_DEPTH }
+  ];
+
+  var depth = 2800;
+  var anim = null;
+
+  function depthToY(d) {
+    return TOP + (Math.max(0, Math.min(MAX_DEPTH, d)) / MAX_DEPTH) * (BOTTOM - TOP);
+  }
+
+  function zoneIndex(d) {
+    if (d < 200) return 0;
+    if (d < 1000) return 1;
+    if (d < 4000) return 2;
+    return 3;
+  }
+
+  function fmt(n) {
+    return Math.round(n).toLocaleString("en-US");
+  }
+
+  function updateZones(d) {
+    var idx = zoneIndex(d);
+    zoneNow.textContent = zones[idx].name;
+    zoneButtons.forEach(function (b, i) {
+      var on = i === idx;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function updateButton() {
+    var atFloor = depth >= MAX_DEPTH - 8;
+    diveBtn.classList.toggle("is-surface", atFloor);
+    if (anim) {
+      diveLabel.firstChild.nodeValue = "Descending…";
+      diveSub.textContent = "click to hold this depth";
+      diveBtn.setAttribute("aria-label", "Stop the descent");
+      return;
+    }
+    if (atFloor) {
+      diveLabel.firstChild.nodeValue = "Surface";
+      diveSub.textContent = "return to 0 metres";
+      diveBtn.setAttribute("aria-label", "Return to the surface");
+    } else if (depth > 40) {
+      diveLabel.firstChild.nodeValue = "Dive";
+      diveSub.textContent = "continue to the trench floor";
+      diveBtn.setAttribute("aria-label", "Dive to the surveyed floor at 10,935 metres");
+    } else {
+      diveLabel.firstChild.nodeValue = "Dive";
+      diveSub.textContent = "to the trench floor";
+      diveBtn.setAttribute("aria-label", "Dive to the surveyed floor at 10,935 metres");
+    }
+  }
+
+  function renderChart(d) {
+    var y = depthToY(d);
+    horizonLine.setAttribute("y1", y);
+    horizonLine.setAttribute("y2", y);
+    horizonHalo.setAttribute("y1", y);
+    horizonHalo.setAttribute("y2", y);
+    horizonHalo2.setAttribute("y1", y);
+    horizonHalo2.setAttribute("y2", y);
+    horizonTickL.setAttribute("y1", y);
+    horizonTickL.setAttribute("y2", y);
+    horizonTickR.setAttribute("y1", y);
+    horizonTickR.setAttribute("y2", y);
+
+    waterTint.setAttribute("height", Math.max(0, y - TOP));
+    depthShade.setAttribute("y", y);
+    depthShade.setAttribute("height", Math.max(0, BOTTOM - y));
+
+    horizonTag.setAttribute("transform", "translate(0," + y + ")");
+    var tagBox = document.getElementById("horizonTagBox");
+    if (y < 64) {
+      tagBox.setAttribute("y", "10");
+      horizonText.setAttribute("y", "24");
+    } else {
+      tagBox.setAttribute("y", "-24");
+      horizonText.setAttribute("y", "-8");
+    }
+    horizonText.textContent = "HORIZON " + fmt(d) + " M";
+  }
+
+  function setDepth(d, opts) {
+    opts = opts || {};
+    depth = Math.max(0, Math.min(MAX_DEPTH, d));
+    depthValue.textContent = fmt(depth);
+    if (slider.value !== String(Math.round(depth / 5) * 5)) {
+      slider.value = Math.round(depth / 5) * 5;
+    }
+    updateZones(depth);
+    renderChart(depth);
+    updateButton();
+    if (!opts.silent) {
+      status.textContent = fmt(depth) + " metres. " + zones[zoneIndex(depth)].name + ".";
+    }
+  }
+
+  function cancelAnim() {
+    if (anim) {
+      cancelAnimationFrame(anim.raf);
+      anim = null;
+      updateButton();
+    }
+  }
+
+  function animateTo(target) {
+    cancelAnim();
+    var from = depth;
+    var delta = target - from;
+    if (Math.abs(delta) < 1) {
+      setDepth(target);
+      return;
+    }
+    var duration = Math.min(4200, Math.max(1700, Math.abs(delta) / MAX_DEPTH * 3600));
+    var start = performance.now();
+    anim = { raf: 0 };
+
+    function step(now) {
+      var p = Math.min(1, (now - start) / duration);
+      var e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      setDepth(from + delta * e, { silent: true });
+      if (p < 1) {
+        anim.raf = requestAnimationFrame(step);
+      } else {
+        anim = null;
+        setDepth(target);
+        updateButton();
+      }
+    }
+    updateButton();
+    anim.raf = requestAnimationFrame(step);
+  }
+
+  slider.addEventListener("input", function () {
+    cancelAnim();
+    setDepth(Number(slider.value));
+  });
+
+  slider.addEventListener("change", function () {
+    status.textContent = fmt(depth) + " metres. " + zones[zoneIndex(depth)].name + ".";
+  });
+
+  diveBtn.addEventListener("click", function () {
+    if (anim) {
+      cancelAnim();
+      updateButton();
+      return;
+    }
+    if (depth >= MAX_DEPTH - 8) {
+      animateTo(0);
+    } else {
+      animateTo(MAX_DEPTH);
+    }
+  });
+
+  zoneButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      cancelAnim();
+      setDepth(Number(btn.getAttribute("data-depth")));
+      status.textContent = fmt(depth) + " metres. " + zones[zoneIndex(depth)].name + ".";
+    });
+  });
+
+  /* ---------------- generated chart ----------------- */
+
+  function el(tag, attrs, text) {
+    var node = document.createElementNS(svgNS, tag);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    }
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  var graticule = document.getElementById("graticule");
+  var contours = document.getElementById("contours");
+  var labels = document.getElementById("seamountLabels");
+  var soundings = document.getElementById("soundings");
+  var stations = document.getElementById("stations");
+  var ruler = document.getElementById("depthRuler");
+
+  // Graticule
+  for (var gx = 24; gx <= 976; gx += 68) {
+    graticule.appendChild(el("line", {
+      x1: gx, x2: gx, y1: 20, y2: 594,
+      stroke: "#5ad1c1", "stroke-width": "0.5", opacity: ".12"
+    }));
+  }
+  for (var gy = 20; gy <= 594; gy += 53.6) {
+    graticule.appendChild(el("line", {
+      x1: 24, x2: 976, y1: gy, y2: gy,
+      stroke: "#5ad1c1", "stroke-width": "0.5", opacity: ".12"
+    }));
+  }
+  // Graticule labels
+  var lon = ["146° 40′", "147° 00′", "147° 20′", "147° 40′", "148° 00′", "148° 20′", "148° 40′"];
+  for (var lx = 0; lx < lon.length; lx++) {
+    var xpos = 24 + lx * 136;
+    if (xpos > 976) break;
+    graticule.appendChild(el("text", {
+      x: xpos + 3, y: 587, "font-size": "7.5", fill: "#5ad1c1",
+      "letter-spacing": "1.2", opacity: ".42"
+    }, lon[lx]));
+  }
+  var lat = ["32° S", "33° S", "34° S", "35° S", "36° S"];
+  for (var ly = 0; ly < lat.length; ly++) {
+    graticule.appendChild(el("text", {
+      x: 30, y: 62 + ly * 107, "font-size": "7.5", fill: "#5ad1c1",
+      "letter-spacing": "1.2", opacity: ".4"
+    }, lat[ly]));
+  }
+
+  // Three seamounts, hand-generated concentric contours.
+  var seamounts = [
+    { cx: 232, cy: 402, rings: 16, base: 10, step: 12.6, squash: 1.02, flatten: .74, phase: .6, name: "KEPLER SEAMOUNT", summit: "- 640 M", lx: -4, ly: -12 },
+    { cx: 548, cy: 250, rings: 15, base: 8, step: 12.1, squash: .94, flatten: .82, phase: 2.25, name: "VERNE RISE", summit: "- 1,180 M", lx: 12, ly: 6 },
+    { cx: 792, cy: 424, rings: 14, base: 9, step: 12.8, squash: 1.08, flatten: .7, phase: 4.35, name: "HADAL KNOLL", summit: "- 820 M", lx: -8, ly: -14 }
+  ];
+
+  seamounts.forEach(function (m) {
+    for (var r = 1; r <= m.rings; r++) {
+      var radius = m.base + r * m.step;
+      var pts = [];
+      var steps = 108;
+      var shiftX = Math.sin(r * 0.42 + m.phase) * 1.1;
+      var shiftY = Math.cos(r * 0.37 + m.phase) * 0.9;
+      for (var s = 0; s <= steps; s++) {
+        var a = (s / steps) * Math.PI * 2;
+        var wob = 1
+          + Math.sin(a * 3 + m.phase + r * 0.17) * (0.035 + r * 0.0022)
+          + Math.sin(a * 7 - m.phase * 1.7 + r * 0.09) * (0.022 + r * 0.0014)
+          + Math.sin(a * 11 + m.phase * 2.1) * 0.012;
+        var px = m.cx + shiftX + Math.cos(a) * radius * wob * m.squash;
+        var py = m.cy + shiftY + Math.sin(a) * radius * wob * m.flatten;
+        pts.push((s === 0 ? "M" : "L") + px.toFixed(2) + " " + py.toFixed(2));
+      }
+      var major = r % 4 === 0;
+      var contourAttrs = {
+        d: pts.join(" ") + " Z",
+        fill: "none",
+        stroke: "#5ad1c1",
+        "stroke-width": major ? "1.35" : "0.78",
+        opacity: major ? ".72" : ".36"
+      };
+      if (major) contourAttrs.filter = "url(#softGlow)";
+      contours.appendChild(el("path", contourAttrs));
+    }
+    // Summit crosshair
+    contours.appendChild(el("circle", {
+      cx: m.cx, cy: m.cy, r: 2.2, fill: "#5ad1c1", opacity: ".9"
+    }));
+    contours.appendChild(el("circle", {
+      cx: m.cx, cy: m.cy, r: 8, fill: "none", stroke: "#5ad1c1",
+      "stroke-width": ".7", opacity: ".5", "stroke-dasharray": "2 3"
+    }));
+
+    var g = el("g", { transform: "translate(" + (m.cx + m.lx) + "," + (m.cy + m.ly) + ")" });
+    g.appendChild(el("text", {
+      x: 0, y: 0, "text-anchor": "middle", "font-size": "8",
+      "letter-spacing": "2.4", fill: "#cfe9e3", opacity: ".72"
+    }, m.name));
+    g.appendChild(el("text", {
+      x: 0, y: 12, "text-anchor": "middle", "font-size": "8",
+      "letter-spacing": "1.6", fill: "#5ad1c1", opacity: ".8"
+    }, m.summit));
+    labels.appendChild(g);
+  });
+
+  // Additional broad abyssal contours, like the edge of the plain.
+  [
+    { d: "M24 510 C140 470 210 530 330 505 S520 548 650 512 S850 548 976 518", op: .13 },
+    { d: "M24 546 C160 508 240 562 380 538 S610 576 750 545 S900 574 976 550", op: .1 },
+    { d: "M24 300 C120 270 170 310 260 292 S430 330 520 306", op: .1 },
+    { d: "M660 330 C740 300 820 340 900 318 S960 330 976 322", op: .1 }
+  ].forEach(function (c) {
+    contours.appendChild(el("path", {
+      d: c.d, fill: "none", stroke: "#5ad1c1", "stroke-width": ".8",
+      opacity: c.op, "stroke-dasharray": "1 5", "stroke-linecap": "round"
+    }));
+  });
+
+  // Soundings
+  var dots = [
+    [96, 104, "− 2,410"], [150, 520, "− 3,120"], [364, 112, "− 1,860"],
+    [402, 486, "− 2,660"], [622, 116, "− 1,520"], [662, 512, "− 2,980"],
+    [884, 118, "− 1,940"], [912, 512, "− 3,540"], [458, 350, "− 2,250"],
+    [760, 200, "− 1,880"], [270, 210, "− 2,740"], [842, 300, "− 2,360"]
+  ];
+  dots.forEach(function (s) {
+    soundings.appendChild(el("circle", {
+      cx: s[0] - 9, cy: s[1] - 3, r: 1.3, fill: "#cfe9e3", opacity: ".35"
+    }));
+    soundings.appendChild(el("text", {
+      x: s[0] + 2, y: s[1], "font-size": "7.5", fill: "#cfe9e3",
+      opacity: ".42", "letter-spacing": ".8"
+    }, s[2]));
+  });
+
+  // Station markers; exactly one coral marker.
+  [
+    { x: 356, y: 336, label: "S–07", sub: "3,980 M", coral: false },
+    { x: 604, y: 372, label: "S–11", sub: "4,220 M", coral: false },
+    { x: 714, y: 172, label: "ROV–03", sub: "2,740 M", coral: true }
+  ].forEach(function (st) {
+    if (st.coral) {
+      var halo = el("circle", {
+        cx: st.x, cy: st.y, r: 13, fill: "none",
+        stroke: "#ff8a5c", "stroke-width": "1", opacity: ".45",
+        "class": "coral-halo"
+      });
+      stations.appendChild(halo);
+      stations.appendChild(el("path", {
+        d: "M" + st.x + " " + (st.y - 8) + " L" + (st.x + 8) + " " + st.y +
+           " L" + st.x + " " + (st.y + 8) + " L" + (st.x - 8) + " " + st.y + " Z",
+        fill: "#ff8a5c", opacity: ".95", filter: "url(#softGlow)"
+      }));
+      stations.appendChild(el("line", {
+        x1: st.x + 12, x2: st.x + 32, y1: st.y, y2: st.y,
+        stroke: "#ff8a5c", "stroke-width": ".8", opacity: ".6"
+      }));
+      stations.appendChild(el("text", {
+        x: st.x + 37, y: st.y - 3, "font-size": "8.5", fill: "#ff8a5c",
+        "letter-spacing": "1.6"
+      }, st.label));
+      stations.appendChild(el("text", {
+        x: st.x + 37, y: st.y + 8, "font-size": "7.5", fill: "#ff8a5c",
+        "letter-spacing": "1", opacity: ".7"
+      }, st.sub));
+    } else {
+      stations.appendChild(el("circle", {
+        cx: st.x, cy: st.y, r: 5, fill: "none", stroke: "#cfe9e3",
+        "stroke-width": ".9", opacity: ".55"
+      }));
+      stations.appendChild(el("line", {
+        x1: st.x - 8, x2: st.x + 8, y1: st.y, y2: st.y,
+        stroke: "#cfe9e3", "stroke-width": ".7", opacity: ".5"
+      }));
+      stations.appendChild(el("line", {
+        x1: st.x, x2: st.x, y1: st.y - 8, y2: st.y + 8,
+        stroke: "#cfe9e3", "stroke-width": ".7", opacity: ".5"
+      }));
+      stations.appendChild(el("text", {
+        x: st.x + 10, y: st.y + 3, "font-size": "7.5", fill: "#cfe9e3",
+        opacity: ".55", "letter-spacing": "1.2"
+      }, st.label + " / " + st.sub));
+    }
+  });
+
+  // Depth ruler on the right edge.
+  [0, 2000, 4000, 6000, 8000, 10000, 10935].forEach(function (d) {
+    var y = depthToY(d);
+    ruler.appendChild(el("line", {
+      x1: 952, x2: 976, y1: y, y2: y,
+      stroke: "#5ad1c1", "stroke-width": ".7", opacity: ".32"
+    }));
+    ruler.appendChild(el("text", {
+      x: 946, y: y + 3, "text-anchor": "end", "font-size": "7.5",
+      fill: "#5ad1c1", opacity: ".48", "letter-spacing": ".8"
+    }, fmt(d)));
+  });
+
+  setDepth(2800, { silent: true });
+})();
+</script>
+</body>
+</html>

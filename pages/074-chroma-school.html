@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chroma School — Lesson 05: Colour is a conversation</title>
+<style>
+  :root{
+    --paper:#f2ece1;
+    --paper-deep:#e9e1d3;
+    --ink:#16140f;
+    --ink-soft:rgba(22,20,15,.62);
+    --rule:rgba(22,20,15,.22);
+    --rule-soft:rgba(22,20,15,.12);
+    --red:#cf3a1c;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    min-height:100svh;
+    position:relative;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.28;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='200' height='200' filter='url(%23p)' opacity='0.14'/></svg>");
+    mix-blend-mode:multiply;
+  }
+  ::selection{background:var(--ink);color:var(--paper)}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+  button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+
+  .wrap{max-width:1580px;margin:0 auto;padding:0 clamp(20px,3.2vw,48px);position:relative;z-index:2}
+
+  /* ── masthead ───────────────────────────────────────────── */
+  .site-head{
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;
+    padding:18px 0 15px;border-bottom:1px solid var(--ink);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+  .brand-mark{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:16px;height:16px}
+  .brand-mark i{display:block;background:var(--ink)}
+  .brand-mark i:nth-child(1){background:#d8452a}
+  .brand-mark i:nth-child(2){background:#e0a52c}
+  .brand-mark i:nth-child(3){background:#3b6b52}
+  .brand-mark i:nth-child(4){background:#3d5da8}
+  .head-center{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);text-align:center;white-space:nowrap}
+  .head-right{justify-self:end;text-align:right;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);line-height:1.6}
+
+  /* ── main split ─────────────────────────────────────────── */
+  .page{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);border-bottom:1px solid var(--ink)}
+  .lesson{padding:38px clamp(28px,3.4vw,58px) 44px 0;border-right:1px solid var(--rule);display:flex;flex-direction:column;min-width:0}
+  .studio{padding:38px 0 44px clamp(28px,3.4vw,52px);min-width:0;display:flex;flex-direction:column}
+
+  .lesson-tag{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase}
+  .lesson-tag .num{color:var(--red);font-weight:600}
+  .lesson-tag .dash{flex:1;height:1px;background:var(--rule);max-width:120px}
+  .lesson-tag .muted{color:var(--ink-soft)}
+
+  h1{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(42px,5.2vw,80px);
+    line-height:.92;letter-spacing:-.045em;
+    margin:22px 0 0;max-width:10.5ch;
+  }
+  h1 em{font-style:italic;display:block;color:#000}
+  .note{
+    margin:25px 0 0;max-width:48ch;font-size:14.5px;line-height:1.66;color:rgba(22,20,15,.75);
+  }
+  .note strong{font-weight:600;color:var(--ink)}
+  .note sup{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--red);vertical-align:super}
+
+  /* ── wheel + sliders ────────────────────────────────────── */
+  .wheel-row{display:flex;align-items:center;gap:clamp(22px,2.6vw,40px);margin-top:34px}
+  .wheel-wrap{position:relative;width:clamp(176px,17vw,236px);flex:none}
+  .wheel-wrap canvas{display:block;width:100%;aspect-ratio:1/1;touch-action:none;cursor:crosshair}
+  .wheel-cap{display:flex;justify-content:space-between;gap:8px;margin-top:4px;font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
+  .wheel-cap b{font-weight:500;color:var(--ink)}
+
+  .tune{flex:1;min-width:0}
+  .tune-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);padding-bottom:6px;margin-bottom:14px}
+  .tune-head span{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase}
+  .tune-head b{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;font-weight:400;color:var(--ink-soft)}
+
+  .slider{margin-bottom:15px}
+  .slider-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .slider-head label{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase}
+  .slider-head output{font-family:var(--mono);font-size:10px;font-variant-numeric:tabular-nums;color:var(--ink)}
+  input[type="range"]{
+    -webkit-appearance:none;appearance:none;
+    display:block;width:100%;height:18px;margin:3px 0 0;background:transparent;cursor:pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track{
+    height:2px;
+    background:linear-gradient(90deg,var(--ink) 0 var(--p,50%),rgba(22,20,15,.18) var(--p,50%) 100%);
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:10px;height:10px;margin-top:-4px;
+    background:var(--paper);border:1.5px solid var(--ink);border-radius:0;
+    box-shadow:0 0 0 1px var(--paper);
+  }
+  input[type="range"]::-moz-range-track{height:2px;background:rgba(22,20,15,.18)}
+  input[type="range"]::-moz-range-progress{height:2px;background:var(--ink)}
+  input[type="range"]::-moz-range-thumb{width:8px;height:8px;border-radius:0;background:var(--paper);border:1.5px solid var(--ink)}
+
+  .hsl-echo{
+    margin-top:5px;border-top:1px solid var(--rule-soft);padding-top:10px;
+    font-family:var(--mono);font-size:8px;line-height:1.8;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .hsl-echo b{color:var(--ink);font-weight:500}
+
+  .harmony-head{display:flex;align-items:baseline;justify-content:space-between;margin-top:30px;gap:14px}
+  .harmony-head span{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase}
+  .harmony-head em{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink-soft)}
+  .harmony{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+  .hbtn{
+    border:1px solid var(--ink);padding:8px 12px 7px;border-radius:999px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+    display:flex;align-items:center;gap:7px;
+    transition:background .18s ease,color .18s ease,transform .18s ease;
+    background:transparent;
+  }
+  .hbtn i{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.5}
+  .hbtn:hover{background:rgba(22,20,15,.06)}
+  .hbtn.active{background:var(--ink);color:var(--paper)}
+  .hbtn.active i{opacity:1;background:var(--red)}
+  .lesson-foot{
+    margin-top:auto;padding-top:30px;display:flex;gap:16px;align-items:flex-start;
+    font-size:11.5px;line-height:1.6;color:var(--ink-soft);max-width:52ch;
+  }
+  .lesson-foot .rule{width:26px;height:1px;background:var(--ink);flex:none;margin-top:8px}
+  .lesson-foot b{font-weight:600;color:var(--ink)}
+
+  /* ── studio / palette ───────────────────────────────────── */
+  .studio-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px}
+  .studio-head .kicker{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+  .studio-head .kicker i{width:5px;height:5px;background:var(--red);display:block;border-radius:50%}
+  .studio-head h2{font-family:var(--serif);font-weight:400;font-size:clamp(25px,2.1vw,34px);letter-spacing:-.02em;margin:6px 0 0;line-height:1}
+  .studio-actions{display:flex;align-items:center;gap:12px;flex:none}
+  .shuffle{
+    display:flex;align-items:center;gap:8px;
+    background:var(--ink);color:var(--paper);
+    padding:10px 15px 10px 13px;border-radius:999px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+    transition:transform .2s ease,background .2s ease;
+  }
+  .shuffle svg{width:12px;height:12px;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+  .shuffle:hover{background:#000}
+  .shuffle:hover svg{transform:rotate(180deg)}
+
+  .palette{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;border:1px solid var(--ink);padding:2px;background:var(--paper)}
+  .swatch{
+    position:relative;text-align:left;height:clamp(150px,20vh,204px);
+    padding:11px 11px 10px;display:flex;flex-direction:column;justify-content:space-between;
+    overflow:hidden;isolation:isolate;transition:filter .2s ease;
+  }
+  .swatch:hover{filter:saturate(1.04)}
+  .swatch::after{
+    content:"";position:absolute;inset:0;border:1px solid transparent;pointer-events:none;
+    transition:border-color .2s ease;
+  }
+  .swatch:hover::after{border-color:currentColor;opacity:.7}
+  .swatch .sw-top{display:flex;justify-content:space-between;gap:6px;font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+  .swatch .sw-role{max-width:7ch;line-height:1.4}
+  .swatch .sw-idx{opacity:.7}
+  .swatch .sw-bot{display:flex;align-items:flex-end;justify-content:space-between;gap:6px}
+  .swatch .sw-hex{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;font-weight:500}
+  .swatch .sw-set{
+    font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;
+    opacity:0;transform:translateY(4px);transition:opacity .2s ease,transform .2s ease;
+  }
+  .swatch:hover .sw-set,.swatch:focus-visible .sw-set{opacity:.9;transform:none}
+  .swatch.is-base::before{
+    content:"";position:absolute;left:11px;bottom:29px;width:13px;height:1.5px;background:currentColor;
+  }
+  .palette.is-shuffling .swatch{animation:swatchIn .55s cubic-bezier(.2,.7,.2,1) both}
+  .palette.is-shuffling .swatch:nth-child(2){animation-delay:.04s}
+  .palette.is-shuffling .swatch:nth-child(3){animation-delay:.08s}
+  .palette.is-shuffling .swatch:nth-child(4){animation-delay:.12s}
+  @keyframes swatchIn{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .base-strip{
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;
+    border-bottom:1px solid var(--ink);padding:10px 0 9px;
+  }
+  .base-strip .b-main{display:flex;align-items:baseline;gap:12px;min-width:0}
+  .base-strip .b-chip{width:11px;height:11px;border:1px solid rgba(22,20,15,.35);align-self:center;flex:none;background:#d62a1c}
+  .base-strip .b-label{font-family:var(--mono);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+  .base-strip .b-hex{font-family:var(--mono);font-size:17px;letter-spacing:.02em}
+  .base-strip .b-vals{font-family:var(--mono);font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-soft);display:flex;gap:12px;flex-wrap:wrap}
+  .base-strip .b-hint{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;color:var(--ink-soft);text-align:right}
+
+  .poster-wrap{margin-top:26px}
+  .poster{
+    --c1:#cf3a1c;--c2:#e0a52c;--c3:#3b6b52;--c4:#3d5da8;--p-ink:#16140f;
+    position:relative;display:grid;grid-template-columns:1.9fr 1fr;grid-template-rows:1fr auto;
+    aspect-ratio:16/9.4;min-height:220px;
+    border:1px solid var(--ink);background:var(--c1);color:var(--p-ink);
+    overflow:hidden;
+  }
+  .poster-main{padding:clamp(14px,1.6vw,22px);position:relative;display:flex;flex-direction:column;justify-content:space-between;min-width:0;z-index:2}
+  .poster-kicker{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;border-bottom:1px solid currentColor;padding-bottom:6px;opacity:.9;position:relative;z-index:3}
+  .poster-title{font-family:var(--sans);font-weight:800;text-transform:uppercase;letter-spacing:-.055em;line-height:.83;margin-top:10px;font-size:clamp(25px,3.4vw,50px);position:relative;z-index:3}
+  .poster-title span{display:block}
+  .poster-title .thin{font-weight:400;font-family:var(--serif);font-style:italic;letter-spacing:-.02em;font-size:.75em;line-height:1.05;margin:3px 0 2px}
+  .poster-title .outline{color:transparent;-webkit-text-stroke:1.3px var(--p-ink)}
+  .poster-main .poster-note{margin-top:10px;font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;max-width:30ch;line-height:1.6;opacity:.85;position:relative;z-index:3}
+  .poster-disc{
+    position:absolute;right:-12%;top:16%;width:46%;aspect-ratio:1;border-radius:50%;
+    background:var(--c2);mix-blend-mode:multiply;opacity:.9;z-index:1;
+  }
+  .poster-ring{
+    position:absolute;right:4%;bottom:20%;width:27%;aspect-ratio:1;border-radius:50%;
+    border:1.5px solid currentColor;z-index:3;opacity:.55;
+  }
+  .poster-side{position:relative;z-index:4;display:grid;grid-template-rows:1fr 1fr 1fr;border-left:1px solid currentColor}
+  .pcell{display:flex;align-items:flex-end;justify-content:space-between;padding:8px 9px;position:relative;overflow:hidden}
+  .pcell + .pcell{border-top:1px solid currentColor}
+  .pcell .pc-name{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--mono);font-size:6.5px;letter-spacing:.2em;text-transform:uppercase;line-height:1.4;opacity:.85}
+  .pcell .pc-hex{font-family:var(--mono);font-size:6.5px;letter-spacing:.05em;opacity:.85;writing-mode:vertical-rl;transform:rotate(180deg)}
+  .poster-foot{
+    grid-column:1/-1;background:var(--ink);color:var(--paper);
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:7px clamp(12px,1.5vw,18px);font-family:var(--mono);font-size:7px;letter-spacing:.2em;text-transform:uppercase;
+  }
+  .poster-foot b{font-weight:500;color:#f3b6a2;letter-spacing:.18em}
+  .poster-cap{margin-top:8px;display:flex;justify-content:space-between;gap:14px;font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+  .poster-cap span:last-child{text-align:right}
+
+  /* ── footer ─────────────────────────────────────────────── */
+  .site-foot{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:14px 0 20px;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
+  .site-foot b{font-weight:500;color:var(--ink)}
+
+  @media (max-width:1080px){
+    .page{grid-template-columns:1fr 1.05fr}
+    .wheel-row{gap:22px}
+    .lesson{padding-right:28px}
+    .studio{padding-left:28px}
+    .swatch{height:150px}
+  }
+  @media (max-width:880px){
+    .site-head{grid-template-columns:1fr auto;gap:10px}
+    .head-center{display:none}
+    .page{grid-template-columns:1fr}
+    .lesson{border-right:0;border-bottom:1px solid var(--ink);padding:30px 0 34px}
+    .studio{padding:32px 0 36px}
+    h1{font-size:clamp(44px,9vw,72px);max-width:12ch}
+    .wheel-row{margin-top:28px}
+    .wheel-wrap{width:210px}
+    .lesson-foot{margin-top:28px}
+    .swatch{height:clamp(120px,20vh,170px)}
+    .poster{aspect-ratio:16/10}
+  }
+  @media (max-width:600px){
+    .wrap{padding:0 18px}
+    .site-head{padding:14px 0 12px}
+    .head-right{font-size:7.5px;letter-spacing:.12em}
+    .lesson{padding:26px 0 30px}
+    h1{font-size:clamp(38px,11vw,56px);margin-top:18px}
+    .note{font-size:13.5px;margin-top:20px}
+    .wheel-row{flex-direction:column;align-items:stretch;gap:22px}
+    .wheel-wrap{width:min(68vw,230px);margin:0 auto}
+    .harmony-head{margin-top:26px}
+    .hbtn{font-size:8px;padding:7px 10px 6px}
+    .studio-head{align-items:flex-start;flex-direction:column;gap:14px}
+    .studio-actions{width:100%;justify-content:space-between}
+    .palette{grid-template-columns:1fr 1fr}
+    .swatch{height:120px}
+    .swatch .sw-set{opacity:.65;transform:none}
+    .base-strip .b-hint{display:none}
+    .poster{aspect-ratio:5/4;grid-template-columns:1.5fr 1fr}
+    .poster-title{font-size:clamp(26px,8.4vw,38px)}
+    .poster-main .poster-note{display:none}
+    .poster-disc{width:54%;right:-16%;top:22%}
+    .poster-foot{font-size:6px;letter-spacing:.12em}
+    .poster-foot b{display:none}
+    .poster-cap span:last-child{display:none}
+    .site-foot{font-size:6.5px;letter-spacing:.1em;flex-wrap:wrap}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-head">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      Chroma School
+    </div>
+    <div class="head-center">Studies in colour · Lesson 05 · Harmony</div>
+    <div class="head-right">Spring term<br>Studio 2 · 14:00</div>
+  </header>
+
+  <main class="page">
+    <section class="lesson" aria-labelledby="lesson-title">
+      <div class="lesson-tag">
+        <span class="num">05</span>
+        <span class="dash"></span>
+        <span class="muted">Colour theory / Harmony</span>
+      </div>
+
+      <h1 id="lesson-title">Colour is a <em>conversation.</em></h1>
+      <p class="note">
+        Nothing in a palette speaks alone. <strong>Hue</strong> sets the subject, <strong>saturation</strong> the volume, and <strong>lightness</strong> the distance between them. Move the wheel and listen to how each answer changes its neighbours.
+      </p>
+
+      <div class="wheel-row">
+        <div>
+          <div class="wheel-wrap">
+            <canvas id="wheel" role="slider" tabindex="0" aria-label="HSL colour wheel. Drag to set hue and saturation. Arrow keys adjust hue and saturation." aria-valuemin="0" aria-valuemax="359" aria-valuenow="14" aria-valuetext="Hue 14 degrees, saturation 76 percent"></canvas>
+          </div>
+          <div class="wheel-cap"><span>HSL wheel</span><b>drag to tune</b><span>H° / S%</span></div>
+        </div>
+
+        <div class="tune">
+          <div class="tune-head"><span>Fine tuning</span><b id="mode-label">Analogous</b></div>
+
+          <div class="slider">
+            <div class="slider-head">
+              <label for="hue">Hue</label>
+              <output id="hue-out" for="hue">014°</output>
+            </div>
+            <input type="range" id="hue" min="0" max="359" step="1" value="14">
+          </div>
+          <div class="slider">
+            <div class="slider-head">
+              <label for="sat">Saturation</label>
+              <output id="sat-out" for="sat">76%</output>
+            </div>
+            <input type="range" id="sat" min="0" max="100" step="1" value="76">
+          </div>
+          <div class="slider">
+            <div class="slider-head">
+              <label for="lit">Lightness</label>
+              <output id="lit-out" for="lit">52%</output>
+            </div>
+            <input type="range" id="lit" min="0" max="100" step="1" value="52">
+          </div>
+
+          <div class="hsl-echo">
+            Base <b id="echo-hex">#D62A1C</b><br>
+            <span id="echo-hsl">hsl(14, 76%, 52%)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="harmony-head">
+        <span>Build a harmony</span>
+        <em>four ways to agree</em>
+      </div>
+      <div class="harmony" role="group" aria-label="Colour harmony">
+        <button class="hbtn" data-mode="complementary"><i></i>Complementary</button>
+        <button class="hbtn active" data-mode="analogous"><i></i>Analogous</button>
+        <button class="hbtn" data-mode="triad"><i></i>Triad</button>
+        <button class="hbtn" data-mode="tetrad"><i></i>Tetrad</button>
+      </div>
+
+      <div class="lesson-foot">
+        <span class="rule"></span>
+        <span><b>Try this:</b> hold saturation still and move only lightness. The harmony survives; the mood does not. Then push saturation to 100% and feel the room get louder.</span>
+      </div>
+    </section>
+
+    <section class="studio" aria-labelledby="studio-title">
+      <div class="studio-head">
+        <div>
+          <div class="kicker"><i></i>Generated palette · 04 swatches</div>
+          <h2 id="studio-title">Your palette</h2>
+        </div>
+        <div class="studio-actions">
+          <button class="shuffle" id="shuffle">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.5 4.5h3.2c3.8 0 4.3 7 8.1 7h1.7M11.6 8.7l3 2.8-3 2.8M1.5 11.5h3.2c1.2 0 2.1-.7 2.9-1.7M11.6 3.7l3-2.2-3-2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="square"/></svg>
+            Shuffle hue
+          </button>
+        </div>
+      </div>
+
+      <div class="palette" id="palette" aria-label="Generated four colour palette">
+        <button class="swatch" data-index="0">
+          <span class="sw-top"><span class="sw-role">Base</span><span class="sw-idx">01</span></span>
+          <span class="sw-bot"><span class="sw-hex">#D62A1C</span><span class="sw-set">Set base ↗</span></span>
+        </button>
+        <button class="swatch" data-index="1">
+          <span class="sw-top"><span class="sw-role">Base</span><span class="sw-idx">02</span></span>
+          <span class="sw-bot"><span class="sw-hex">#D62A1C</span><span class="sw-set">Set base ↗</span></span>
+        </button>
+        <button class="swatch" data-index="2">
+          <span class="sw-top"><span class="sw-role">Base</span><span class="sw-idx">03</span></span>
+          <span class="sw-bot"><span class="sw-hex">#D62A1C</span><span class="sw-set">Set base ↗</span></span>
+        </button>
+        <button class="swatch" data-index="3">
+          <span class="sw-top"><span class="sw-role">Base</span><span class="sw-idx">04</span></span>
+          <span class="sw-bot"><span class="sw-hex">#D62A1C</span><span class="sw-set">Set base ↗</span></span>
+        </button>
+      </div>
+
+      <div class="base-strip">
+        <div class="b-main">
+          <span class="b-label">Base colour</span>
+          <span class="b-chip" id="base-chip" aria-hidden="true"></span>
+          <span class="b-hex" id="strip-hex">#D62A1C</span>
+          <span class="b-vals"><span id="strip-hsl">H 014 · S 076 · L 052</span></span>
+        </div>
+        <div class="b-hint">Click any swatch to make it the base</div>
+      </div>
+
+      <div class="poster-wrap">
+        <div class="poster" id="poster" role="img" aria-label="Poster composition using the generated palette">
+          <div class="poster-main">
+            <div class="poster-kicker"><span>Chroma School</span><span>Poster no. 05</span></div>
+            <div class="poster-title" id="poster-title">
+              <span>COLOUR</span>
+              <span class="thin">is a</span>
+              <span class="outline">CONVER—</span>
+              <span>SATION.</span>
+            </div>
+            <div class="poster-note">A palette is not decoration. It is the tone of voice in the room.</div>
+            <div class="poster-disc" aria-hidden="true"></div>
+            <div class="poster-ring" aria-hidden="true"></div>
+          </div>
+          <div class="poster-side" aria-hidden="true">
+            <div class="pcell" data-cell="0"><span class="pc-name">Tint one</span><span class="pc-hex">#D62A1C</span></div>
+            <div class="pcell" data-cell="1"><span class="pc-name">Tint two</span><span class="pc-hex">#D62A1C</span></div>
+            <div class="pcell" data-cell="2"><span class="pc-name">Tint three</span><span class="pc-hex">#D62A1C</span></div>
+          </div>
+          <div class="poster-foot">
+            <span><b>A palette is an argument.</b></span>
+            <span>Chroma / 05 — Speak in colour</span>
+          </div>
+        </div>
+        <div class="poster-cap"><span>Fig. 05.1 — Four swatches, set in conversation.</span><span>Set &amp; printed in the studio</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <span><b>Chroma School</b> · Department of applied colour</span>
+    <span>Lesson 05 of 12 · Warm white studio</span>
+    <span>No colour was harmed in this exercise</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var state = { h: 14, s: 76, l: 52, mode: "analogous" };
+  var palette = [];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var wheel = $("wheel");
+  var wheelCtx = wheel.getContext("2d");
+  var paletteEl = $("palette");
+  var poster = $("poster");
+  var swatches = Array.prototype.slice.call(document.querySelectorAll(".swatch"));
+  var cells = Array.prototype.slice.call(document.querySelectorAll(".pcell"));
+  var modeBtns = Array.prototype.slice.call(document.querySelectorAll(".hbtn"));
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+  function normHue(h){ h = h % 360; return h < 0 ? h + 360 : h; }
+
+  function hslToRgb(h, s, l){
+    h = normHue(h) / 60;
+    s = clamp(s, 0, 100) / 100;
+    l = clamp(l, 0, 100) / 100;
+    var c = (1 - Math.abs(2 * l - 1)) * s;
+    var x = c * (1 - Math.abs(h % 2 - 1));
+    var m = l - c / 2;
+    var r = 0, g = 0, b = 0;
+    if (h < 1){ r = c; g = x; }
+    else if (h < 2){ r = x; g = c; }
+    else if (h < 3){ g = c; b = x; }
+    else if (h < 4){ g = x; b = c; }
+    else if (h < 5){ r = x; b = c; }
+    else { r = c; b = x; }
+    return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+  }
+  function toHex(h, s, l){
+    var rgb = hslToRgb(h, s, l);
+    return "#" + rgb.map(function(v){ return v.toString(16).padStart(2, "0"); }).join("").toUpperCase();
+  }
+  function inkFor(hex){
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    var yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 152 ? "#16140f" : "#f7f1e6";
+  }
+
+  var SPECS = {
+    complementary: [
+      { off: 0,   ds: 0,   dl: 0,   role: "Base" },
+      { off: 0,   ds: -14, dl: 24,  role: "Tint" },
+      { off: 180, ds: 0,   dl: 0,   role: "Complement" },
+      { off: 180, ds: -6,  dl: -20, role: "Shade" }
+    ],
+    analogous: [
+      { off: -30, ds: -6, dl: 10,  role: "−30°" },
+      { off: 0,   ds: 0,  dl: 0,   role: "Base" },
+      { off: 30,  ds: 2,  dl: -6,  role: "+30°" },
+      { off: 60,  ds: -8, dl: 14,  role: "+60°" }
+    ],
+    triad: [
+      { off: 0,   ds: 0,   dl: 0,  role: "Base" },
+      { off: 120, ds: 2,   dl: 6,  role: "+120°" },
+      { off: 240, ds: -4,  dl: -8, role: "+240°" },
+      { off: 120, ds: -14, dl: 26, role: "+120° light" }
+    ],
+    tetrad: [
+      { off: 0,   ds: 0,  dl: 0,  role: "Base" },
+      { off: 90,  ds: 0,  dl: 10, role: "+90°" },
+      { off: 180, ds: 4,  dl: -6, role: "+180°" },
+      { off: 270, ds: -4, dl: 12, role: "+270°" }
+    ]
+  };
+
+  function buildPalette(){
+    var specs = SPECS[state.mode];
+    return specs.map(function(sp){
+      var h = normHue(state.h + sp.off);
+      var s = clamp(state.s + sp.ds, 6, 98);
+      var l = clamp(state.l + sp.dl, 6, 94);
+      var hex = toHex(h, s, l);
+      return { h: h, s: s, l: l, hex: hex, ink: inkFor(hex), role: sp.role, isBase: sp.off === 0 && sp.dl === 0 };
+    });
+  }
+
+  /* ── wheel ─────────────────────────────────────────────── */
+  var wheelSize = 0;
+  function drawWheel(){
+    var rect = wheel.getBoundingClientRect();
+    var css = Math.max(1, rect.width);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var px = Math.round(css * dpr);
+    if (wheel.width !== px || wheel.height !== px){
+      wheel.width = px;
+      wheel.height = px;
+    }
+    wheelSize = css;
+    wheelCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    wheelCtx.clearRect(0, 0, css, css);
+
+    var c = css / 2;
+    var R = c - 13;
+    var L = state.l;
+    var S = state.s;
+
+    wheelCtx.save();
+    for (var hue = 0; hue < 360; hue++){
+      var a0 = (hue - 0.7 - 90) * Math.PI / 180;
+      var a1 = (hue + 0.7 - 90) * Math.PI / 180;
+      var g = wheelCtx.createRadialGradient(c, c, 0, c, c, R);
+      g.addColorStop(0, "hsl(" + hue + ", 0%, " + L + "%)");
+      g.addColorStop(0.48, "hsl(" + hue + ", " + (S * 0.42) + "%, " + L + "%)");
+      g.addColorStop(1, "hsl(" + hue + ", " + S + "%, " + L + "%)");
+      wheelCtx.fillStyle = g;
+      wheelCtx.beginPath();
+      wheelCtx.moveTo(c, c);
+      wheelCtx.arc(c, c, R, a0, a1);
+      wheelCtx.closePath();
+      wheelCtx.fill();
+    }
+    wheelCtx.restore();
+
+    // rim + ticks
+    wheelCtx.strokeStyle = "#16140f";
+    wheelCtx.lineWidth = 1;
+    wheelCtx.beginPath();
+    wheelCtx.arc(c, c, R, 0, Math.PI * 2);
+    wheelCtx.stroke();
+
+    wheelCtx.lineWidth = 1;
+    for (var t = 0; t < 360; t += 30){
+      var ang = (t - 90) * Math.PI / 180;
+      var major = t % 90 === 0;
+      var r0 = R + 2.5;
+      var r1 = R + (major ? 7.5 : 4.5);
+      wheelCtx.globalAlpha = major ? 0.85 : 0.4;
+      wheelCtx.beginPath();
+      wheelCtx.moveTo(c + Math.cos(ang) * r0, c + Math.sin(ang) * r0);
+      wheelCtx.lineTo(c + Math.cos(ang) * r1, c + Math.sin(ang) * r1);
+      wheelCtx.strokeStyle = "#16140f";
+      wheelCtx.stroke();
+    }
+    wheelCtx.globalAlpha = 1;
+
+    // hue labels at cardinal points
+    wheelCtx.fillStyle = "rgba(22,20,15,.5)";
+    wheelCtx.font = "7px ui-monospace, Menlo, monospace";
+    wheelCtx.textAlign = "center";
+    wheelCtx.textBaseline = "middle";
+    [[0, "0"], [90, "90"], [180, "180"], [270, "270"]].forEach(function(pair){
+      var a = (pair[0] - 90) * Math.PI / 180;
+      wheelCtx.fillText(pair[1], c + Math.cos(a) * (R + 11.5), c + Math.sin(a) * (R + 11.5));
+    });
+
+    // cursor
+    var hr = state.h * Math.PI / 180;
+    var rad = R * (state.s / 100);
+    var mx = c + Math.sin(hr) * rad;
+    var my = c - Math.cos(hr) * rad;
+
+    wheelCtx.strokeStyle = "rgba(22,20,15,.28)";
+    wheelCtx.lineWidth = 0.75;
+    wheelCtx.beginPath();
+    wheelCtx.moveTo(c, c);
+    wheelCtx.lineTo(mx, my);
+    wheelCtx.stroke();
+
+    wheelCtx.beginPath();
+    wheelCtx.arc(mx, my, 6.5, 0, Math.PI * 2);
+    wheelCtx.fillStyle = "#f2ece1";
+    wheelCtx.fill();
+    wheelCtx.lineWidth = 1.6;
+    wheelCtx.strokeStyle = "#16140f";
+    wheelCtx.stroke();
+    wheelCtx.beginPath();
+    wheelCtx.arc(mx, my, 2.4, 0, Math.PI * 2);
+    wheelCtx.fillStyle = "#cf3a1c";
+    wheelCtx.fill();
+  }
+
+  function setFromPointer(evt){
+    var rect = wheel.getBoundingClientRect();
+    var x = evt.clientX - rect.left;
+    var y = evt.clientY - rect.top;
+    var c = rect.width / 2;
+    var R = c - 13;
+    var dx = x - c;
+    var dy = y - c;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    var ang = Math.atan2(dx, -dy) * 180 / Math.PI;
+    state.h = Math.round(normHue(ang));
+    state.s = Math.round(clamp((dist / R) * 100, 0, 100));
+    syncAll(true);
+  }
+
+  var dragging = false;
+  wheel.addEventListener("pointerdown", function(evt){
+    dragging = true;
+    if (wheel.setPointerCapture) wheel.setPointerCapture(evt.pointerId);
+    setFromPointer(evt);
+    evt.preventDefault();
+  });
+  wheel.addEventListener("pointermove", function(evt){
+    if (!dragging) return;
+    setFromPointer(evt);
+  });
+  function endDrag(evt){
+    dragging = false;
+    if (wheel.releasePointerCapture && evt && evt.pointerId !== undefined){
+      try { wheel.releasePointerCapture(evt.pointerId); } catch (err) { void err; }
+    }
+  }
+  wheel.addEventListener("pointerup", endDrag);
+  wheel.addEventListener("pointercancel", endDrag);
+
+  wheel.addEventListener("keydown", function(evt){
+    var step = evt.shiftKey ? 10 : 1;
+    if (evt.key === "ArrowRight" || evt.key === "ArrowUp"){
+      if (evt.key === "ArrowUp") state.s = clamp(state.s + step, 0, 100);
+      else state.h = normHue(state.h + step);
+      evt.preventDefault(); syncAll(true);
+    } else if (evt.key === "ArrowLeft" || evt.key === "ArrowDown"){
+      if (evt.key === "ArrowDown") state.s = clamp(state.s - step, 0, 100);
+      else state.h = normHue(state.h - step);
+      evt.preventDefault(); syncAll(true);
+    }
+  });
+
+  /* ── UI sync ───────────────────────────────────────────── */
+  var hueEl = $("hue"), satEl = $("sat"), litEl = $("lit");
+
+  function paintRange(el){
+    var min = parseFloat(el.min), max = parseFloat(el.max);
+    var p = ((parseFloat(el.value) - min) / (max - min)) * 100;
+    el.style.setProperty("--p", p + "%");
+  }
+
+  function syncInputs(){
+    hueEl.value = String(state.h);
+    satEl.value = String(state.s);
+    litEl.value = String(state.l);
+    paintRange(hueEl); paintRange(satEl); paintRange(litEl);
+    $("hue-out").textContent = String(state.h).padStart(3, "0") + "°";
+    $("sat-out").textContent = state.s + "%";
+    $("lit-out").textContent = state.l + "%";
+    $("mode-label").textContent = state.mode.charAt(0).toUpperCase() + state.mode.slice(1);
+    wheel.setAttribute("aria-valuenow", state.h);
+    wheel.setAttribute("aria-valuetext", "Hue " + state.h + " degrees, saturation " + state.s + " percent");
+  }
+
+  function syncPalette(animate){
+    palette = buildPalette();
+
+    swatches.forEach(function(el, i){
+      var p = palette[i];
+      el.style.background = p.hex;
+      el.style.color = p.ink;
+      el.querySelector(".sw-role").textContent = p.role;
+      el.querySelector(".sw-hex").textContent = p.hex;
+      el.setAttribute("aria-label", "Swatch " + (i + 1) + ", " + p.role + ", " + p.hex + ". Click to set as base colour.");
+      if (p.role === "Base"){
+        el.classList.add("is-base");
+      } else {
+        el.classList.remove("is-base");
+      }
+    });
+
+    var hex = toHex(state.h, state.s, state.l);
+    $("strip-hex").textContent = hex;
+    $("strip-hsl").textContent = "H " + String(state.h).padStart(3, "0") + " · S " + String(state.s).padStart(3, "0") + " · L " + String(state.l).padStart(3, "0");
+    $("echo-hex").textContent = hex;
+    $("echo-hsl").textContent = "hsl(" + state.h + ", " + state.s + "%, " + state.l + "%)";
+    $("base-chip").style.background = hex;
+
+    // poster
+    poster.style.setProperty("--c1", palette[0].hex);
+    poster.style.setProperty("--c2", palette[1].hex);
+    poster.style.setProperty("--c3", palette[2].hex);
+    poster.style.setProperty("--c4", palette[3].hex);
+    poster.style.setProperty("--p-ink", inkFor(palette[0].hex));
+
+    cells.forEach(function(cell, i){
+      var p = palette[i + 1];
+      cell.style.background = p.hex;
+      cell.style.color = p.ink;
+      cell.querySelector(".pc-hex").textContent = p.hex;
+    });
+    // Keep the accent disc aligned with the strongest complement.
+    var disc = document.querySelector(".poster-disc");
+    if (disc) disc.style.background = palette[2].hex;
+
+    if (animate && !reduceMotion){
+      paletteEl.classList.remove("is-shuffling");
+      void paletteEl.offsetWidth;
+      paletteEl.classList.add("is-shuffling");
+    }
+  }
+
+  function syncAll(animate){
+    syncInputs();
+    drawWheel();
+    syncPalette(animate);
+  }
+
+  [hueEl, satEl, litEl].forEach(function(el){
+    paintRange(el);
+    el.addEventListener("input", function(){
+      state.h = normHue(parseInt(hueEl.value, 10));
+      state.s = clamp(parseInt(satEl.value, 10), 0, 100);
+      state.l = clamp(parseInt(litEl.value, 10), 0, 100);
+      syncAll(false);
+    });
+  });
+
+  modeBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      state.mode = btn.getAttribute("data-mode");
+      modeBtns.forEach(function(b){ b.classList.toggle("active", b === btn); });
+      syncAll(true);
+    });
+  });
+
+  swatches.forEach(function(el){
+    el.addEventListener("click", function(){
+      var idx = parseInt(el.getAttribute("data-index"), 10);
+      var p = palette[idx];
+      if (!p) return;
+      state.h = Math.round(p.h);
+      state.s = Math.round(p.s);
+      state.l = Math.round(p.l);
+      syncAll(true);
+    });
+  });
+
+  $("shuffle").addEventListener("click", function(){
+    var current = state.h;
+    var next = Math.round(Math.random() * 359);
+    if (Math.abs(next - current) < 22) next = (next + 137) % 360;
+    state.h = next;
+    // Nudge saturation & lightness into lively studio range, keeping character.
+    state.s = Math.round(clamp(58 + Math.random() * 36, 45, 96));
+    state.l = Math.round(clamp(42 + Math.random() * 22, 35, 68));
+    syncAll(true);
+  });
+
+  var resizeTimer = 0;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(drawWheel, 80);
+  });
+
+  /* ── boot ───────────────────────────────────────────────── */
+  syncAll(false);
+  window.addEventListener("load", function(){ drawWheel(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Evening Signal — Sunday, October 18, 2026</title>
+<style>
+  :root{
+    --display:"Bodoni 72","Bodoni MT",Didot,"Iowan Old Style","Times New Roman",serif;
+    --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --paper:#efe6d3;
+    --paper-2:#e7ddc7;
+    --ink:#17130e;
+    --ink-2:#3a3228;
+    --rule:rgba(23,19,14,.34);
+    --rule-soft:rgba(23,19,14,.16);
+    --accent:#a3231c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:#b4a68c;
+    background-image:
+      radial-gradient(90% 60% at 50% 0%, rgba(255,250,235,.35), transparent 65%),
+      radial-gradient(120% 100% at 50% 110%, rgba(50,36,20,.45), transparent 65%),
+      repeating-linear-gradient(93deg, rgba(255,255,255,.035) 0 1px, transparent 1px 9px);
+    color:var(--ink);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit}
+  .paper{
+    position:relative;
+    width:min(1360px,100%);
+    margin:clamp(0px,2vw,28px) auto;
+    padding:clamp(16px,2.6vw,34px) clamp(16px,3.6vw,50px) clamp(20px,2.6vw,36px);
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(120% 80% at 50% 0%, rgba(255,250,236,.7), transparent 62%),
+      radial-gradient(80% 50% at 95% 100%, rgba(120,95,55,.09), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(80,60,35,.027) 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 1px, transparent 1px 7px);
+    box-shadow:0 2px 4px rgba(40,28,14,.25), 0 30px 70px -20px rgba(40,28,14,.55);
+    transition:background-color .6s ease;
+    overflow:hidden;
+  }
+  .paper[data-edition="late"]{--accent:#b0441c;background-color:#ece2cd}
+  .paper::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(rgba(70,52,30,.12) .5px, transparent .6px);
+    background-size:3px 3px;opacity:.35;mix-blend-mode:multiply;
+  }
+  .paper > *{position:relative;z-index:1}
+
+  .masthead{padding-bottom:8px}
+  .mast-top{
+    display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+    padding:2px 0 7px;border-bottom:1px solid var(--rule);
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);
+  }
+  .mast-top .mid{letter-spacing:.24em}
+  .mast-main{
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;
+    padding:clamp(10px,1.6vw,18px) 0 clamp(8px,1.2vw,14px);
+  }
+  .ear{
+    font-family:var(--mono);font-size:8px;letter-spacing:.19em;text-transform:uppercase;
+    color:rgba(23,19,14,.62);line-height:1.7;max-width:200px;
+  }
+  .ear.left{justify-self:start}
+  .ear.right{justify-self:end}
+  .ear.left .earn{display:block;font-family:var(--display);font-style:italic;font-size:13px;letter-spacing:.01em;text-transform:none;color:var(--ink-2);margin-bottom:3px}
+  h1.mast{
+    margin:0;text-align:center;
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(34px,8.1vw,108px);
+    line-height:.82;
+    letter-spacing:-.025em;
+    white-space:nowrap;
+    color:var(--ink);
+  }
+  .weather-box{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--ink);padding:5px 9px;
+    background:rgba(255,250,238,.25);
+  }
+  .weather-box svg{display:block;width:24px;height:24px}
+  .weather-box .wx-txt{font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;line-height:1.5;color:var(--ink-2)}
+  .weather-box .wx-txt b{display:block;font-family:var(--serif);font-size:12px;letter-spacing:.02em;font-weight:400;text-transform:none;color:var(--ink)}
+  .weather-box .wx-deg{font-family:var(--display);font-size:20px;line-height:1;color:var(--ink)}
+
+  .dateline{
+    display:flex;align-items:center;justify-content:space-between;gap:14px 20px;flex-wrap:wrap;
+    padding:8px 0 10px;border-top:1px solid var(--rule);border-bottom:3px double var(--ink);
+    font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);
+  }
+  .dateline .date{color:var(--ink)}
+  .toggle{
+    display:inline-flex;align-items:center;gap:2px;border:1px solid var(--ink);
+    padding:2px;background:rgba(255,252,244,.25);
+  }
+  .toggle button{
+    appearance:none;border:0;background:transparent;color:var(--ink-2);
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;
+    padding:5px 10px;cursor:pointer;transition:background .25s ease,color .25s ease;
+  }
+  .toggle button:hover{background:rgba(23,19,14,.07)}
+  .toggle button[aria-pressed="true"]{background:var(--accent);color:#faf3e3}
+  .toggle .sep{width:1px;height:14px;background:rgba(23,19,14,.25)}
+  .dateline .mark{
+    display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:600;letter-spacing:.2em;
+  }
+  .dateline .mark::before{content:"";width:4px;height:4px;background:var(--accent);transform:rotate(45deg)}
+  .dateline .price{color:var(--ink)}
+
+  .front{
+    display:grid;grid-template-columns:minmax(0,1fr) 292px;
+    gap:0 26px;padding-top:clamp(12px,1.8vw,20px);
+  }
+  .main-col{min-width:0}
+  .rail{min-width:0;border-left:1px solid var(--rule);padding-left:22px}
+
+  .lead{cursor:pointer}
+  .kicker{
+    display:flex;align-items:center;gap:10px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin:0 0 8px;
+  }
+  .kicker::after{content:"";height:1px;background:var(--rule);flex:1}
+  h2.lead-head{
+    font-family:var(--display);font-weight:600;
+    font-size:clamp(40px,5.9vw,82px);
+    line-height:.92;letter-spacing:-.025em;
+    margin:0 0 10px;color:var(--ink);
+    transition:color .3s ease;
+  }
+  .lead:hover h2.lead-head{color:#2b241a}
+  .deck{
+    font-family:var(--serif);font-size:clamp(14px,1.5vw,19px);line-height:1.45;
+    font-style:italic;color:#30281c;max-width:52ch;margin:0 0 10px;
+  }
+  .byline-row{
+    display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-2);padding:7px 0 8px;border-top:1px solid var(--rule-soft);
+  }
+  .byline-row .by b{color:var(--accent);font-weight:600}
+  .byline-row .datestamp{color:rgba(23,19,14,.55)}
+
+  .photo-figure{margin:12px 0 14px}
+  .photo-frame{
+    position:relative;width:100%;aspect-ratio:16/6.1;overflow:hidden;
+    background:#b9b0a0;border:1px solid rgba(23,19,14,.5);
+    box-shadow:0 1px 0 rgba(255,255,255,.4) inset;
+    filter:grayscale(.22) contrast(1.05);
+  }
+  .photo{position:absolute;inset:0;overflow:hidden}
+  .photo-morning{display:block}
+  .photo-late{display:none}
+  .paper[data-edition="late"] .photo-morning{display:none}
+  .paper[data-edition="late"] .photo-late{display:block}
+
+  .photo-morning .sky{position:absolute;inset:0;background:linear-gradient(180deg,#d9cfb9 0%,#c8bda5 46%,#a59c88 68%,#7c776a 100%)}
+  .photo-morning .sun{
+    position:absolute;left:63%;top:12%;width:26%;aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle,#fffdf2 0%,#f5e9c9 36%,rgba(240,225,190,.45) 58%,rgba(240,225,190,0) 72%);
+    mix-blend-mode:screen;
+  }
+  .arcs{position:absolute;left:63%;top:12%;width:26%;aspect-ratio:1}
+  .arcs i{position:absolute;inset:0;border:1px solid rgba(23,19,14,.22);border-radius:50%}
+  .arcs i:nth-child(2){inset:-12%;opacity:.7}
+  .arcs i:nth-child(3){inset:-26%;opacity:.42}
+  .arcs i:nth-child(4){inset:-42%;opacity:.22}
+  .skyline{position:absolute;left:0;right:0;bottom:17%;height:58%}
+  .bld{position:absolute;bottom:0;left:var(--x);width:var(--w);height:var(--h);background:var(--ink);opacity:.93}
+  .bld::after{
+    content:"";position:absolute;inset:5px 3px 2px;
+    background-image:radial-gradient(circle, rgba(239,230,211,.55) .55px, transparent .85px);
+    background-size:7px 9px;opacity:.65;
+  }
+  .bld.dark::after{opacity:.25}
+  .bld.accent::after{background-image:radial-gradient(circle, rgba(163,35,28,.9) .7px, transparent 1px);opacity:.8}
+  .spire{position:absolute;left:var(--x);bottom:calc(17% + var(--h));width:1px;height:9%;background:var(--ink)}
+  .spire::after{content:"";position:absolute;top:0;left:-2px;width:5px;height:1px;background:var(--ink)}
+  .photo-morning .water{
+    position:absolute;left:0;right:0;bottom:0;height:17%;
+    background:
+      repeating-linear-gradient(180deg, rgba(23,19,14,.18) 0 1px, transparent 1px 4px),
+      linear-gradient(180deg,rgba(90,86,77,.75),rgba(55,52,45,.9));
+  }
+  .photo-morning .water::after{
+    content:"";position:absolute;left:55%;top:0;width:22%;height:100%;
+    background:repeating-linear-gradient(180deg, rgba(255,248,230,.25) 0 1px, transparent 1px 5px);
+    opacity:.5;filter:blur(.4px);
+  }
+  .halftone{
+    position:absolute;inset:0;
+    background-image:
+      radial-gradient(circle, rgba(16,13,9,.5) .7px, transparent 1px),
+      radial-gradient(circle, rgba(16,13,9,.28) 1.1px, transparent 1.5px);
+    background-size:3px 3px, 7px 7px;
+    mix-blend-mode:multiply;opacity:.5;
+    mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.7) 55%,transparent 100%);
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,rgba(0,0,0,.7) 55%,transparent 100%);
+  }
+  .grain{
+    position:absolute;inset:0;
+    background-image:repeating-linear-gradient(0deg, rgba(0,0,0,.045) 0 1px, transparent 1px 2px);
+    opacity:.6;mix-blend-mode:multiply;
+  }
+
+  .photo-late .sky{position:absolute;inset:0;background:linear-gradient(180deg,#b9bdb6 0%,#a3aaa3 42%,#848d88 65%,#626b66 100%)}
+  .photo-late .moon{
+    position:absolute;left:72%;top:14%;width:11%;aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle,#f4f0df 0%,#ded9c6 45%,rgba(222,217,198,0) 72%);
+    opacity:.9;filter:blur(1px);
+  }
+  .photo-late .fog{
+    position:absolute;left:-10%;right:-10%;height:22%;
+    background:linear-gradient(90deg, rgba(235,236,226,0) 0%, rgba(235,236,226,.55) 35%, rgba(235,236,226,.25) 70%, rgba(235,236,226,0) 100%);
+    filter:blur(6px);
+  }
+  .photo-late .fog.f1{top:42%;transform:rotate(-2deg)}
+  .photo-late .fog.f2{top:56%;height:16%;opacity:.7;filter:blur(9px);transform:rotate(1deg)}
+  .photo-late .pier{position:absolute;left:0;right:0;bottom:20%;height:2px;background:var(--ink);opacity:.75}
+  .photo-late .crane{position:absolute;bottom:20%;width:1px;height:34%;background:rgba(23,19,14,.85)}
+  .photo-late .crane::before{content:"";position:absolute;left:0;top:0;width:44px;height:1px;background:rgba(23,19,14,.85)}
+  .photo-late .crane::after{content:"";position:absolute;left:43px;top:0;width:1px;height:34%;background:rgba(23,19,14,.6)}
+  .photo-late .ferry{
+    position:absolute;left:25%;bottom:21%;width:24%;height:9%;
+    background:var(--ink);
+    clip-path:polygon(0 55%,8% 0,92% 0,100% 55%,94% 100%,6% 100%);
+    opacity:.9;
+  }
+  .photo-late .ferry::before{
+    content:"";position:absolute;left:34%;top:-42%;width:32%;height:44%;
+    background:var(--ink);border-radius:2px 2px 0 0;
+  }
+  .photo-late .ferry::after{
+    content:"";position:absolute;left:38%;top:-38%;width:4px;height:4px;border-radius:50%;
+    background:#f6e9c0;box-shadow:18px 0 0 #f6e9c0,0 8px 0 rgba(246,233,192,.5);
+  }
+  .photo-late .water{
+    position:absolute;left:0;right:0;bottom:0;height:21%;
+    background:
+      repeating-linear-gradient(180deg, rgba(230,232,224,.2) 0 1px, transparent 1px 6px),
+      linear-gradient(180deg,rgba(76,84,80,.85),rgba(38,43,41,.95));
+  }
+  .photo-late .water::after{
+    content:"";position:absolute;left:28%;top:4px;width:18%;height:70%;
+    background:repeating-linear-gradient(180deg, rgba(246,233,192,.3) 0 1px, transparent 1px 7px);
+    filter:blur(.5px);
+  }
+  .photo-late .halftone{
+    background-image:
+      radial-gradient(circle, rgba(12,15,12,.45) .7px, transparent 1px),
+      radial-gradient(circle, rgba(12,15,12,.25) 1.1px, transparent 1.5px);
+    opacity:.55;
+  }
+
+  .photo-figure figcaption{
+    display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:7px;letter-spacing:.1em;line-height:1.55;
+    text-transform:uppercase;color:rgba(23,19,14,.6);padding-top:5px;
+  }
+  .photo-figure figcaption b{color:var(--accent);font-weight:600;letter-spacing:.16em}
+  .photo-figure figcaption .credit{margin-left:auto;color:rgba(23,19,14,.4)}
+
+  .lead-body{
+    font-size:clamp(12.5px,1.05vw,14.6px);line-height:1.52;
+    text-align:justify;hyphens:auto;
+    columns:3;column-gap:20px;column-rule:1px solid var(--rule-soft);
+  }
+  .lead-body p{margin:0 0 .72em;break-inside:avoid-column}
+  .lead-body p.dropcap::first-letter{
+    float:left;font-family:var(--display);font-size:3.55em;line-height:.76;
+    padding:.06em .09em 0 0;color:var(--accent);font-weight:600;
+  }
+  .lead-body p:first-child{margin-top:0}
+  .lead-body p strong{font-weight:600}
+
+  .story-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    margin-top:10px;padding-top:8px;border-top:1px solid var(--rule-soft);
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,19,14,.6);
+  }
+  .read-full{
+    appearance:none;border:0;background:none;padding:0;cursor:pointer;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);border-bottom:1px solid currentColor;
+  }
+  .read-full:hover{color:var(--ink)}
+
+  .rail section{padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid var(--rule)}
+  .rail h3{
+    font-family:var(--mono);font-size:8px;letter-spacing:.24em;text-transform:uppercase;
+    margin:0 0 9px;color:var(--ink);display:flex;align-items:center;gap:8px;
+  }
+  .rail h3::after{content:"";flex:1;height:1px;background:var(--rule-soft)}
+  .rail h3 .accent{color:var(--accent)}
+  .index-list{list-style:none;margin:0;padding:0}
+  .index-list li{
+    display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+    padding:4.5px 0;border-bottom:1px dotted rgba(23,19,14,.28);
+    font-family:var(--serif);font-size:12px;line-height:1.3;
+  }
+  .index-list li:last-child{border-bottom:0}
+  .index-list .pg{font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--ink-2)}
+  .rail-weather .wx-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .rail-weather svg{width:38px;height:38px;flex:none}
+  .rail-weather .big{font-family:var(--display);font-size:36px;line-height:.9;letter-spacing:-.02em}
+  .rail-weather .wx-desc{font-size:11px;line-height:1.5;color:var(--ink-2);font-style:italic}
+  .wx-week{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:9px;
+    border-top:1px solid var(--rule-soft);padding-top:8px;
+    font-family:var(--mono);font-size:7px;letter-spacing:.04em;text-align:center;color:var(--ink-2);
+  }
+  .wx-week b{display:block;font-family:var(--display);font-size:16px;font-weight:400;color:var(--ink);margin-top:2px}
+  .wx-week span{display:block;color:rgba(23,19,14,.55);font-size:6.5px}
+  .rail-quote{
+    font-family:var(--display);font-size:clamp(19px,1.8vw,24px);line-height:1.18;
+    font-style:italic;color:var(--ink);margin:0;
+  }
+  .rail-quote .qmark{color:var(--accent);font-size:1.5em;line-height:0;margin-right:2px}
+  .rail-quote cite{
+    display:block;margin-top:9px;font-family:var(--mono);font-size:7px;letter-spacing:.14em;
+    text-transform:uppercase;font-style:normal;color:rgba(23,19,14,.55);
+  }
+  .classifieds .ad{padding:7px 0;border-bottom:1px dotted rgba(23,19,14,.24);font-size:10.5px;line-height:1.45;color:var(--ink-2)}
+  .classifieds .ad:last-child{border-bottom:0;padding-bottom:0}
+  .classifieds .ad b{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-right:4px}
+  .classifieds .ad em{color:var(--ink)}
+
+  .second{margin-top:clamp(18px,2.4vw,26px);border-top:3px double var(--ink);padding-top:14px}
+  .second-top{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+  .second h3{
+    font-family:var(--display);font-weight:600;font-size:clamp(25px,2.8vw,38px);
+    line-height:1.02;letter-spacing:-.015em;margin:0;
+  }
+  .second .sec-kicker{font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+  .second .sec-deck{font-style:italic;font-size:12.5px;line-height:1.5;color:var(--ink-2);margin:5px 0 9px;max-width:58ch}
+  .second-grid{display:grid;grid-template-columns:minmax(0,1fr) 218px;gap:20px;border-top:1px solid var(--rule-soft);padding-top:9px}
+  .second-body{
+    font-size:12px;line-height:1.55;text-align:justify;hyphens:auto;
+    columns:2;column-gap:18px;column-rule:1px solid var(--rule-soft);
+  }
+  .second-body p{margin:0 0 .65em}
+  .notice{
+    border:1px solid var(--ink);padding:10px 11px;align-self:start;
+    background:rgba(255,250,238,.22);
+    box-shadow:3px 3px 0 rgba(23,19,14,.08);
+  }
+  .notice h4{
+    font-family:var(--mono);font-size:8px;letter-spacing:.22em;text-transform:uppercase;
+    margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--rule);
+    color:var(--accent);
+  }
+  .notice p{font-size:10px;line-height:1.5;margin:0 0 6px;color:var(--ink-2)}
+  .notice p:last-child{margin:0}
+  .notice .sig{font-style:italic;font-size:9.5px;color:rgba(23,19,14,.6)}
+
+  footer.broadsheet-foot{
+    margin-top:clamp(22px,3vw,34px);padding-top:12px;border-top:3px double var(--ink);
+    display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:baseline;
+    font-family:var(--mono);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:rgba(23,19,14,.55);
+  }
+  footer.broadsheet-foot .mid{text-align:center;font-family:var(--display);font-style:italic;font-size:12px;letter-spacing:.02em;text-transform:none;color:var(--ink-2)}
+  footer.broadsheet-foot .r{text-align:right}
+
+  .overlay{
+    position:fixed;inset:0;z-index:1000;
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:clamp(18px,4vh,48px) clamp(10px,3vw,30px);
+    background:rgba(14,11,7,.72);
+    backdrop-filter:blur(4px);
+    overflow-y:auto;
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .35s ease,visibility .35s ease;
+  }
+  .overlay.open{opacity:1;visibility:visible;pointer-events:auto}
+  .clipping{
+    position:relative;
+    width:min(940px,100%);
+    background:#f3ebd8;
+    color:var(--ink);
+    padding:clamp(24px,4vw,46px) clamp(20px,4.6vw,52px);
+    box-shadow:0 30px 70px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.35) inset;
+    transform:rotate(-.35deg) translateY(14px);
+    transition:transform .45s cubic-bezier(.2,.8,.2,1);
+    clip-path:polygon(0 .7%, 1.2% .15%, 30% .4%, 55% .1%, 98.8% .5%, 99.7% 1.3%, 99.4% 34%, 99.9% 62%, 99.5% 98.9%, 98.3% 99.6%, 62% 99.3%, 34% 99.8%, 1.1% 99.4%, .3% 98.7%, .6% 62%, .1% 34%);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(80,60,35,.02) 0 1px, transparent 1px 4px),
+      radial-gradient(100% 60% at 50% 0%, rgba(255,250,236,.7), transparent 60%);
+  }
+  .overlay.open .clipping{transform:rotate(-.35deg) translateY(0)}
+  .cutline{
+    display:flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:7px;letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(23,19,14,.5);padding-bottom:10px;margin-bottom:12px;
+  }
+  .cutline .scissors{font-size:13px;line-height:1;color:var(--ink)}
+  .cutline .line{flex:1;border-top:1px dashed rgba(23,19,14,.45)}
+  .clip-close{
+    position:absolute;top:14px;right:14px;z-index:2;
+    width:30px;height:30px;border:1px solid rgba(23,19,14,.4);border-radius:50%;
+    background:rgba(255,250,238,.4);color:var(--ink);font-family:var(--mono);font-size:12px;
+    cursor:pointer;line-height:1;transition:all .2s ease;
+  }
+  .clip-close:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .clip-org{
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);text-align:center;margin-bottom:10px;
+  }
+  .clip-org b{font-family:var(--display);font-size:13px;letter-spacing:.02em;text-transform:none;font-style:italic;color:var(--ink)}
+  h2.clip-head{
+    font-family:var(--display);font-weight:600;font-size:clamp(30px,5vw,54px);
+    line-height:.95;letter-spacing:-.02em;margin:0 0 10px;
+  }
+  .clip-deck{font-size:clamp(13px,1.5vw,16px);line-height:1.45;font-style:italic;color:var(--ink-2);margin:0 0 10px;max-width:62ch}
+  .clip-byline{
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(23,19,14,.6);
+    padding:7px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:14px;
+  }
+  .clip-byline b{color:var(--accent);font-weight:600}
+  .clip-body{
+    font-size:clamp(12px,1.05vw,14px);line-height:1.58;text-align:justify;hyphens:auto;
+    columns:2;column-gap:26px;column-rule:1px solid var(--rule-soft);
+  }
+  .clip-body p{margin:0 0 .75em}
+  .clip-body p:first-child::first-letter{
+    float:left;font-family:var(--display);font-size:3.5em;line-height:.78;padding:.05em .1em 0 0;
+    color:var(--accent);font-weight:600;
+  }
+  .clip-pull{
+    column-span:all;margin:8px 0 14px;padding:10px 0;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    font-family:var(--display);font-size:clamp(18px,2.2vw,25px);line-height:1.2;font-style:italic;
+    text-align:center;color:var(--ink);
+  }
+  .clip-pull span{color:var(--accent)}
+  .clip-end{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:16px;font-family:var(--mono);font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:rgba(23,19,14,.5);
+  }
+  .clip-end::before,.clip-end::after{content:"";width:42px;height:1px;background:var(--rule)}
+  .clip-end .sq{width:4px;height:4px;background:var(--accent)}
+  body.no-scroll{overflow:hidden}
+
+  @media (max-width:1040px){
+    .front{grid-template-columns:1fr}
+    .rail{border-left:0;border-top:2px solid var(--ink);padding-left:0;padding-top:16px;margin-top:18px;
+      display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+    .rail section{margin-bottom:0;padding-bottom:14px}
+    .rail section:nth-child(odd){padding-right:10px}
+    .rail section:nth-child(even){padding-left:10px;border-left:1px solid var(--rule-soft)}
+  }
+  @media (max-width:820px){
+    .lead-body{columns:2}
+    .second-grid{grid-template-columns:1fr}
+    .notice{max-width:100%}
+    .second-body{columns:2}
+    .mast-main{grid-template-columns:1fr auto;gap:10px}
+    .ear.left{display:none}
+    h1.mast{grid-column:1;justify-self:start;text-align:left;white-space:normal;font-size:clamp(34px,9.4vw,64px);line-height:.86}
+    .ear.right{grid-column:2}
+  }
+  @media (max-width:620px){
+    .paper{padding:14px 14px 22px;margin:0;box-shadow:none}
+    .mast-top{font-size:6.5px;letter-spacing:.1em;gap:8px;flex-wrap:wrap}
+    .mast-top .mid{display:none}
+    .mast-main{grid-template-columns:1fr;justify-items:start;gap:8px;padding:12px 0 8px}
+    h1.mast{font-size:clamp(32px,10.6vw,48px);line-height:.88;letter-spacing:-.03em}
+    .ear.right{justify-self:start}
+    .weather-box{padding:4px 7px}
+    .weather-box svg{width:20px;height:20px}
+    .dateline{font-size:6.5px;letter-spacing:.1em;gap:7px 12px;padding:7px 0 9px}
+    .toggle button{font-size:6.5px;letter-spacing:.1em;padding:4px 7px}
+    .dateline .mark{display:none}
+    .lead-body{columns:1;font-size:13px}
+    .deck{font-size:14px}
+    .byline-row{font-size:7px}
+    .second-body{columns:1}
+    .second-top{flex-direction:column;align-items:flex-start}
+    .rail{grid-template-columns:1fr}
+    .rail section:nth-child(even){padding-left:0;border-left:0}
+    .photo-frame{aspect-ratio:16/9.4}
+    .photo-morning .arcs i:nth-child(4){display:none}
+    footer.broadsheet-foot{grid-template-columns:1fr;gap:6px;font-size:6.5px}
+    footer.broadsheet-foot .r{text-align:left}
+    .clip-body{columns:1;font-size:12.5px}
+    .clipping{padding:20px 16px}
+    .clip-head{font-size:clamp(27px,8.6vw,38px)}
+  }
+  @media (max-width:420px){
+    h1.mast{font-size:33px}
+    .lead-head{font-size:clamp(32px,10.4vw,44px)}
+    .kicker{font-size:7.5px;letter-spacing:.16em}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.001ms !important;animation-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="paper" id="paper" data-edition="morning">
+  <header class="masthead">
+    <div class="mast-top">
+      <span>Vol. CXVII &nbsp;·&nbsp; No. 42,118</span>
+      <span class="mid">New York, Sunday, October 18, 2026</span>
+      <span>Est. 1889 &nbsp;·&nbsp; Price Five Cents</span>
+    </div>
+    <div class="mast-main">
+      <div class="ear left">
+        <span class="earn">A journal of the city and its weathers</span>
+        All the news that arrives<br>before dark
+      </div>
+      <h1 class="mast">The Evening Signal</h1>
+      <div class="ear right">
+        <div class="weather-box" aria-label="Current weather: fair, 62 degrees">
+          <svg viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="6.4" fill="none" stroke="#17130e" stroke-width="1.3"/>
+            <g stroke="#17130e" stroke-width="1.1">
+              <path d="M16 2.5 V7 M16 25 V29.5 M2.5 16 H7 M25 16 H29.5"/>
+              <path d="M6.5 6.5 L9.7 9.7 M22.3 22.3 L25.5 25.5 M25.5 6.5 L22.3 9.7 M9.7 22.3 L6.5 25.5"/>
+            </g>
+          </svg>
+          <span class="wx-deg">62°</span>
+          <span class="wx-txt"><b>Fair</b>High 64 · Low 51</span>
+        </div>
+      </div>
+    </div>
+    <div class="dateline">
+      <span class="date" id="dateLine">Morning Edition · Sunday, October 18, 2026</span>
+      <div class="toggle" role="group" aria-label="Choose edition">
+        <button type="button" data-edition="morning" aria-pressed="true">Morning</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button type="button" data-edition="late" aria-pressed="false">Late</button>
+      </div>
+      <span class="mark" id="editionMark">Morning / Final</span>
+      <span class="price" id="priceLine">Price Five Cents</span>
+    </div>
+  </header>
+
+  <main class="front">
+    <div class="main-col">
+      <article class="lead" id="lead" aria-label="Lead story">
+        <p class="kicker" id="leadKicker">The City · A Change of Hearing</p>
+        <h2 class="lead-head" id="leadHeadline">The City Learns to Listen</h2>
+        <p class="deck" id="leadDeck">After years of noise, a quiet civic experiment asks residents to pause — and discovers a city with plenty left to say.</p>
+        <div class="byline-row">
+          <span class="by">By <b id="leadByline">Ada Merrill</b> · City Desk</span>
+          <span class="datestamp" id="leadDate">Sunday, October 18, 2026</span>
+        </div>
+
+        <figure class="photo-figure" aria-label="Abstract halftone photograph of the city at dawn">
+          <div class="photo-frame">
+            <div class="photo photo-morning" aria-hidden="true">
+              <div class="sky"></div>
+              <div class="sun"></div>
+              <div class="arcs"><i></i><i></i><i></i><i></i></div>
+              <div class="skyline">
+                <div class="bld" style="--x:1%;--w:6%;--h:19%"></div>
+                <div class="bld" style="--x:8%;--w:9%;--h:31%"></div>
+                <div class="bld" style="--x:18%;--w:7%;--h:25%"></div>
+                <div class="bld" style="--x:26%;--w:11%;--h:43%"></div>
+                <div class="bld dark" style="--x:38%;--w:6%;--h:34%"></div>
+                <div class="bld" style="--x:45%;--w:13%;--h:52%"></div>
+                <div class="bld accent" style="--x:59%;--w:8%;--h:38%"></div>
+                <div class="bld" style="--x:68%;--w:9%;--h:47%"></div>
+                <div class="bld dark" style="--x:78%;--w:12%;--h:29%"></div>
+                <div class="bld" style="--x:91%;--w:8%;--h:36%"></div>
+                <div class="spire" style="--x:51.4%;--h:10%"></div>
+              </div>
+              <div class="water"></div>
+              <div class="halftone"></div>
+              <div class="grain"></div>
+            </div>
+            <div class="photo photo-late" aria-hidden="true">
+              <div class="sky"></div>
+              <div class="moon"></div>
+              <div class="fog f1"></div>
+              <div class="fog f2"></div>
+              <div class="crane" style="left:8%;height:29%"></div>
+              <div class="crane" style="left:15%;height:38%"></div>
+              <div class="crane" style="left:86%;height:33%"></div>
+              <div class="ferry"></div>
+              <div class="pier"></div>
+              <div class="water"></div>
+              <div class="halftone"></div>
+              <div class="grain"></div>
+            </div>
+          </div>
+          <figcaption>
+            <b>Above the avenue</b>
+            <span id="photoCaption">First light on the listening room, and the quiet circuit it has begun to draw.</span>
+            <span class="credit">Staff photograph</span>
+          </figcaption>
+        </figure>
+
+        <div class="lead-body" id="leadBody">
+          <p class="dropcap">For eleven minutes each Thursday, the city is asked to do something it has almost forgotten how to do: nothing at all. No phones, no construction, no announcements — just the sound of a place being inhabited. The experiment, called the Quiet Hour, began on a single block of row houses and has now spread to fourteen neighbourhoods.</p>
+          <p>Its author is a soft-spoken acoustician named Iris Vale, who spent six years mapping the city's noise and concluded that the loudest thing in it was the assumption that no one was listening. Her report recommended a modest remedy: a weekly pause, observed voluntarily, in which residents open their windows and simply pay attention.</p>
+          <p>The results have been small, local and strangely persuasive. On the first Thursday, a bus driver reported hearing a cello through an open window. A bookseller counted twelve different birds. A boy of nine, asked what he had heard, said: “The river, going on with its business.”</p>
+        </div>
+
+        <div class="story-foot">
+          <span>Continued on Page A7</span>
+          <button class="read-full" id="readFull" type="button">Read the full article →</button>
+        </div>
+      </article>
+
+      <section class="second" aria-label="Second story">
+        <div class="second-top">
+          <div>
+            <div class="sec-kicker">The Neighbourhoods · A Census of Birds</div>
+            <h3>A Small Riot of Sparrows</h3>
+          </div>
+          <div class="sec-kicker">Page A4</div>
+        </div>
+        <p class="sec-deck">They have returned to the old telephone exchange, and the neighbours have opinions.</p>
+        <div class="second-grid">
+          <div class="second-body">
+            <p>For a decade the exchange on Mercer Street was a hollow thing, its windows papered, its switchboard sold for scrap. Then the sparrows found it. They came in through a broken pane and made a city of the ceiling, and by June the sound from the pavement was less a chirp than a small civic meeting.</p>
+            <p>The neighbours, at first, were not charmed. “There is a difference between nature and an infestation,” said one man who has lived on the block since 1979 and asked that his name not be used, in case the birds were listening.</p>
+            <p>By autumn, the block had acquired a bird warden, a laminated sign, and a rota for sweeping the pavement. The building's owner has agreed to keep the broken pane. “It is the cheapest tenant we have ever had,” he said.</p>
+            <p>The sparrows, for their part, have made no statement. They continue to arrive at seven, leave at dusk, and treat the whole arrangement as though it were municipal policy.</p>
+          </div>
+          <aside class="notice" aria-label="City notice">
+            <h4>City Notice</h4>
+            <p><strong>Mercer Street</strong> will be closed to traffic between Eighth and Ninth from 7 a.m. to 4 p.m. on Tuesday for pavement repairs.</p>
+            <p>The eastbound bus will divert via Waverly. Expect delays of up to twelve minutes.</p>
+            <p>Residents are asked to move bins from the kerb by 6.30 a.m.</p>
+            <p class="sig">— Department of Small Repairs</p>
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    <aside class="rail" aria-label="Index, weather, quotation and classifieds">
+      <section>
+        <h3>Index <span class="accent">A–Z</span></h3>
+        <ul class="index-list">
+          <li><span>The City</span><span class="pg">A3</span></li>
+          <li><span>The Nation</span><span class="pg">A6</span></li>
+          <li><span>The Harbour</span><span class="pg">A8</span></li>
+          <li><span>Letters</span><span class="pg">A10</span></li>
+          <li><span>Weather</span><span class="pg">A12</span></li>
+          <li><span>Classifieds</span><span class="pg">B4</span></li>
+        </ul>
+      </section>
+
+      <section class="rail-weather">
+        <h3>Weather <span class="accent">62°</span></h3>
+        <div class="wx-row">
+          <svg viewBox="0 0 44 44" aria-hidden="true">
+            <circle cx="22" cy="20" r="8" fill="none" stroke="#17130e" stroke-width="1.2"/>
+            <g stroke="#17130e" stroke-width="1">
+              <path d="M22 4 V9 M22 31 V36 M6 20 H11 M33 20 H38"/>
+              <path d="M10.7 8.7 L14.2 12.2 M29.8 27.8 L33.3 31.3 M33.3 8.7 L29.8 12.2 M14.2 27.8 L10.7 31.3"/>
+            </g>
+            <path d="M5 33 C8 30 12 30 14 32 C16 29 21 29 23 32 C26 30 30 31 31 33 Z" fill="none" stroke="#17130e" stroke-width="1"/>
+          </svg>
+          <div>
+            <div class="big">64°</div>
+            <div class="wx-desc">Fair and mild. Wind SW 8 mph.<br>Sunset 5:42.</div>
+          </div>
+        </div>
+        <div class="wx-week">
+          <div>MON<span>64°</span><b>66</b></div>
+          <div>TUE<span>58°</span><b>63</b></div>
+          <div>WED<span>54°</span><b>58</b></div>
+          <div>THU<span>57°</span><b>61</b></div>
+          <div>FRI<span>60°</span><b>67</b></div>
+        </div>
+      </section>
+
+      <section>
+        <h3>From the Notebook</h3>
+        <blockquote class="rail-quote">
+          <span class="qmark">“</span>A city is a machine for remembering what it has not yet been told.
+          <cite>Iris Vale · The Quiet Hour</cite>
+        </blockquote>
+      </section>
+
+      <section class="classifieds">
+        <h3>Classifieds</h3>
+        <div class="ad"><b>Lost</b>A grey umbrella, wooden handle, left on the 6.12 ferry. Sentimental. Reward, modest. <em>Call at the Signal desk.</em></div>
+        <div class="ad"><b>Piano</b>Lessons, patient and unhurried, for adults who stopped too soon. Evenings. First one free.</div>
+        <div class="ad"><b>For Sale</b>Six dining chairs, good bones, one cat. Will separate. No reasonable offer ignored.</div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="broadsheet-foot">
+    <span>The Evening Signal · Printed at the corner of Press &amp; Mercer</span>
+    <span class="mid">“All the news that arrives before dark”</span>
+    <span class="r">Vol. CXVII · No. 42,118 · © 2026</span>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay" aria-hidden="true">
+  <article class="clipping" role="dialog" aria-modal="true" aria-labelledby="clipHeadline">
+    <button class="clip-close" id="clipClose" type="button" aria-label="Close clipping">✕</button>
+    <div class="cutline"><span class="scissors">✂</span><span class="line"></span><span>Cut here · clipping</span><span class="line"></span></div>
+    <div class="clip-org"><b>The Evening Signal</b> &nbsp;·&nbsp; <span id="clipDate">Morning Edition · Sunday, October 18, 2026</span></div>
+    <h2 class="clip-head" id="clipHeadline">The City Learns to Listen</h2>
+    <p class="clip-deck" id="clipDeck">After years of noise, a quiet civic experiment asks residents to pause — and discovers a city with plenty left to say.</p>
+    <div class="clip-byline" id="clipByline">By <b>Ada Merrill</b> · City Desk · Sunday, October 18, 2026</div>
+    <div class="clip-body" id="clipBody"></div>
+    <div class="clip-end"><span class="sq"></span><span>End of clipping</span><span class="sq"></span></div>
+  </article>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var EDITIONS = {
+    morning: {
+      headline: "The City Learns to Listen",
+      deck: "After years of noise, a quiet civic experiment asks residents to pause — and discovers a city with plenty left to say.",
+      kicker: "The City · A Change of Hearing",
+      byline: "Ada Merrill",
+      date: "Morning Edition · Sunday, October 18, 2026",
+      mark: "Morning / Final",
+      price: "Price Five Cents",
+      accent: "#a3231c",
+      photoCaption: "First light on the listening room, and the quiet circuit it has begun to draw.",
+      body: [
+        "For eleven minutes each Thursday, the city is asked to do something it has almost forgotten how to do: nothing at all. No phones, no construction, no announcements — just the sound of a place being inhabited. The experiment, called the Quiet Hour, began on a single block of row houses and has now spread to fourteen neighbourhoods.",
+        "Its author is a soft-spoken acoustician named Iris Vale, who spent six years mapping the city's noise and concluded that the loudest thing in it was the assumption that no one was listening. Her report recommended a modest remedy: a weekly pause, observed voluntarily, in which residents open their windows and simply pay attention.",
+        "The results have been small, local and strangely persuasive. On the first Thursday, a bus driver reported hearing a cello through an open window. A bookseller counted twelve different birds. A boy of nine, asked what he had heard, said: “The river, going on with its business.”"
+      ],
+      full: [
+        "For eleven minutes each Thursday, the city is asked to do something it has almost forgotten how to do: nothing at all. No phones, no construction, no announcements — just the sound of a place being inhabited. The experiment, called the Quiet Hour, began on a single block of row houses and has now spread to fourteen neighbourhoods.",
+        "Its author is a soft-spoken acoustician named Iris Vale, who spent six years mapping the city's noise and concluded that the loudest thing in it was the assumption that no one was listening. Her report recommended a modest remedy: a weekly pause, observed voluntarily, in which residents open their windows and simply pay attention.",
+        "The results have been small, local and strangely persuasive. On the first Thursday, a bus driver reported hearing a cello through an open window. A bookseller counted twelve different birds. A boy of nine, asked what he had heard, said: “The river, going on with its business.”",
+        "The Quiet Hour is not silent, and that is rather the point. A city cannot be turned off like a radio. What it can do is change its listening. In the fourteen blocks now taking part, the pause has become less an absence than a kind of inventory: the boiler in the basement, the neighbour's kettle, a chair being drawn back in the flat above.",
+        "Not everyone is convinced. The owner of a construction firm on Delancey Street called the experiment “a beautiful idea for people who do not have a deadline.” He has not joined. Neither has the airport, which is not on the list of participants and could not be reached for comment before press time.",
+        "The city council has not funded the programme, and Vale is careful not to ask it to. “The moment it becomes official, it becomes another thing to be late for,” she said. Instead, the Quiet Hour spreads by conversation. A block captain hears about it from a cousin; a school adds eleven minutes to its afternoon; a hospital tries it in a corridor and decides to keep it.",
+        "There are practical effects. The fire department reports fewer false alarms during the pause. A noise complaint line, which once received thirty calls on a Thursday, received four. The librarian at the Mercer branch says the reading room has become so popular that she has had to add chairs, quietly, so as not to spoil the mood.",
+        "What the experiment has produced most of all is anecdote, which is another word for a city remembering itself. A woman on the sixth floor has begun to hear the harbour at night. A man who has lived alone for nine years has discovered that the pipes in his wall make a sound like a distant train.",
+        "Vale keeps a notebook of these reports. She does not call them data. “Data is what you get when you have decided what you are listening for,” she said. “This is just the city, being a city.”",
+        "The next Quiet Hour is Thursday at seven. Participants are asked to open a window, turn off a screen, and do nothing for eleven minutes. The city will do the rest."
+      ],
+      pull: "The city is not getting quieter. It is getting better at hearing."
+    },
+    late: {
+      headline: "The Harbor Holds Its Breath",
+      deck: "A fog-bound evening, a stalled ferry, and the strange quiet that settled over the waterfront.",
+      kicker: "The Harbour · A Night in Low Water",
+      byline: "Jonah Pike",
+      date: "Late Edition · Sunday, October 18, 2026",
+      mark: "Late / Final",
+      price: "Price Seven Cents",
+      accent: "#b0441c",
+      photoCaption: "Fog settles over Pier 9 as the evening ferry holds at the slip. The harbour went quiet at 7:52.",
+      body: [
+        "A low fog came in off the harbour on Sunday evening and did not leave. By eight o'clock the ferry had missed three crossings, the cranes stood in a row like patient herons, and the waterfront had acquired the hush of a room in which someone is asleep.",
+        "The harbour master, Elena Ruiz, said there was no danger and no drama — only weather doing what weather does. “The boats know where they are,” she said. “It is the rest of us who have to slow down.”",
+        "Along the quay, the usual Sunday crowd had thinned to a few figures with collars turned up. A man sold coffee from a cart and did a steady trade. Somewhere out in the white, a foghorn answered another foghorn, and the city seemed to agree to wait."
+      ],
+      full: [
+        "A low fog came in off the harbour on Sunday evening and did not leave. By eight o'clock the ferry had missed three crossings, the cranes stood in a row like patient herons, and the waterfront had acquired the hush of a room in which someone is asleep.",
+        "The harbour master, Elena Ruiz, said there was no danger and no drama — only weather doing what weather does. “The boats know where they are,” she said. “It is the rest of us who have to slow down.”",
+        "Along the quay, the usual Sunday crowd had thinned to a few figures with collars turned up. A man sold coffee from a cart and did a steady trade. Somewhere out in the white, a foghorn answered another foghorn, and the city seemed to agree to wait.",
+        "The 7:40 ferry to the islands held at the slip for forty minutes with its engine idling. Passengers stood at the rail and looked at nothing in particular. A woman with a small dog said she had lived on the island for twenty-two years and had never once seen the crossing cancelled for fog. “It is not cancelled,” the deckhand told her. “It is thinking about it.”",
+        "On Pier 9, a container ship that had been due at six was still a rumour on the radar. Its agent, reachable by telephone, described the vessel as “fine, and extremely large, and in no hurry.” The port's night shift used the pause to sweep the apron and argue, amiably, about football.",
+        "The fog did not stop the city so much as edit it. Sounds arrived out of order: a gull before its shadow, a car door before the car, laughter from a street that might have been two streets away. The usual skyline was reduced to a single red light, blinking at the top of a crane.",
+        "At the coffee cart, the vendor, who gave his name as Frank, said fog was good for business. “People stop,” he said. “They buy a coffee because there is nowhere to be. In summer they walk right past.” He had sold forty-one cups in an hour, which he said was a record for a Sunday in October.",
+        "By ten, the fog had lifted enough for the ferry to make its crossing. The passengers filed aboard without complaint. The harbour master logged the delay in a handbound book, as she has for nineteen years, and went home.",
+        "The waterfront returned to its ordinary noises. But for a few hours, the city had been given a preview of its own quiet — not the quiet of an empty place, but the quiet of a place listening to itself.",
+        "The forecast calls for fog again before dawn. The ferry will run, weather permitting, which is another way of saying that the harbour will decide."
+      ],
+      pull: "The fog did not stop the city so much as edit it."
+    }
+  };
+
+  var paper = document.getElementById("paper");
+  var overlay = document.getElementById("overlay");
+  var dateLine = document.getElementById("dateLine");
+  var editionMark = document.getElementById("editionMark");
+  var priceLine = document.getElementById("priceLine");
+  var leadKicker = document.getElementById("leadKicker");
+  var leadHeadline = document.getElementById("leadHeadline");
+  var leadDeck = document.getElementById("leadDeck");
+  var leadByline = document.getElementById("leadByline");
+  var leadDate = document.getElementById("leadDate");
+  var leadBody = document.getElementById("leadBody");
+  var photoCaption = document.getElementById("photoCaption");
+  var clipBody = document.getElementById("clipBody");
+  var clipHeadline = document.getElementById("clipHeadline");
+  var clipDeck = document.getElementById("clipDeck");
+  var clipByline = document.getElementById("clipByline");
+  var clipDate = document.getElementById("clipDate");
+  var overlayClose = document.getElementById("clipClose");
+  var current = "morning";
+  var lastFocus = null;
+
+  function renderParagraphs(container, paragraphs, pull){
+    container.innerHTML = "";
+    paragraphs.forEach(function(text, i){
+      var p = document.createElement("p");
+      p.textContent = text;
+      container.appendChild(p);
+      if(pull && i === 3){
+        var q = document.createElement("div");
+        q.className = "clip-pull";
+        q.innerHTML = "<span>“</span>" + pull + "<span>”</span>";
+        container.appendChild(q);
+      }
+    });
+  }
+
+  function pulse(el){
+    if(!el || !el.animate) return;
+    el.animate(
+      [{opacity:0.15, transform:"translateY(4px)"}, {opacity:1, transform:"translateY(0)"}],
+      {duration:420, easing:"ease-out"}
+    );
+  }
+
+  function setEdition(key){
+    if(!EDITIONS[key] || key === current) return;
+    current = key;
+    var ed = EDITIONS[key];
+    paper.setAttribute("data-edition", key);
+    paper.style.setProperty("--accent", ed.accent);
+
+    dateLine.textContent = ed.date;
+    editionMark.textContent = ed.mark;
+    priceLine.textContent = ed.price;
+    leadKicker.textContent = ed.kicker;
+    leadHeadline.textContent = ed.headline;
+    leadDeck.textContent = ed.deck;
+    leadByline.textContent = ed.byline;
+    leadDate.textContent = "Sunday, October 18, 2026";
+    photoCaption.textContent = ed.photoCaption;
+    renderParagraphs(leadBody, ed.body.slice(0, 3), false);
+    if(leadBody.firstChild) leadBody.firstChild.classList.add("dropcap");
+
+    pulse(leadHeadline);
+    pulse(leadDeck);
+    pulse(leadBody);
+
+    Array.prototype.forEach.call(document.querySelectorAll(".toggle button"), function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-edition") === key ? "true" : "false");
+    });
+
+    if(overlay.classList.contains("open")){
+      fillClipping(ed);
+    }
+  }
+
+  function fillClipping(ed){
+    clipHeadline.textContent = ed.headline;
+    clipDeck.textContent = ed.deck;
+    clipByline.innerHTML = "By <b>" + ed.byline + "</b> · Sunday, October 18, 2026";
+    clipDate.textContent = ed.date;
+    renderParagraphs(clipBody, ed.full, ed.pull);
+    overlay.style.setProperty("--accent", ed.accent);
+  }
+
+  function openClipping(){
+    var ed = EDITIONS[current];
+    fillClipping(ed);
+    lastFocus = document.activeElement;
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+    document.body.classList.add("no-scroll");
+    setTimeout(function(){ overlayClose.focus(); }, 60);
+  }
+
+  function closeClipping(){
+    overlay.classList.remove("open");
+    overlay.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("no-scroll");
+    if(lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".toggle button"), function(btn){
+    btn.addEventListener("click", function(){ setEdition(btn.getAttribute("data-edition")); });
+  });
+
+  var lead = document.getElementById("lead");
+  lead.addEventListener("click", function(evt){
+    if(evt.target.closest("button")) return;
+    var sel = window.getSelection();
+    if(sel && sel.toString().length > 2) return;
+    openClipping();
+  });
+  lead.addEventListener("keydown", function(evt){
+    if(evt.key === "Enter" && evt.target === lead) openClipping();
+  });
+  lead.setAttribute("tabindex", "0");
+
+  document.getElementById("readFull").addEventListener("click", function(evt){
+    evt.stopPropagation();
+    openClipping();
+  });
+
+  overlayClose.addEventListener("click", closeClipping);
+  overlay.addEventListener("click", function(evt){
+    if(evt.target === overlay) closeClipping();
+  });
+  document.addEventListener("keydown", function(evt){
+    if(evt.key === "Escape" && overlay.classList.contains("open")) closeClipping();
+    if(evt.key === "Tab" && overlay.classList.contains("open")){
+      var focusables = overlay.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+      if(!focusables.length) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if(evt.shiftKey && document.activeElement === first){
+        evt.preventDefault(); last.focus();
+      } else if(!evt.shiftKey && document.activeElement === last){
+        evt.preventDefault(); first.focus();
+      }
+    }
+    if(evt.key === "ArrowRight" && !overlay.classList.contains("open")){
+      setEdition(current === "morning" ? "late" : "morning");
+    }
+  });
+
+  (function init(){
+    var ed = EDITIONS.morning;
+    renderParagraphs(leadBody, ed.body.slice(0, 3), false);
+    if(leadBody.firstChild) leadBody.firstChild.classList.add("dropcap");
+    fillClipping(ed);
+  })();
+})();
+</script>
+</body>
+</html>

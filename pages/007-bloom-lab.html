@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bloom Lab — Grow something improbable</title>
+<style>
+  :root{
+    --paper:#f6f1e7;
+    --paper-warm:#fbf7ee;
+    --paper-deep:#efe7d8;
+    --green:#1d3a2f;
+    --green-soft:#4c6658;
+    --green-faint:rgba(29,58,47,.16);
+    --coral:#d96a4a;
+    --coral-deep:#b65034;
+    --rule:rgba(29,58,47,.22);
+    --hair:rgba(29,58,47,.12);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--paper);color:var(--green);
+    font-family:var(--serif);-webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    background-image:
+      linear-gradient(rgba(29,58,47,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(29,58,47,.045) 1px, transparent 1px),
+      linear-gradient(rgba(29,58,47,.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(29,58,47,.028) 1px, transparent 1px);
+    background-size:120px 120px,120px 120px,24px 24px,24px 24px;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:5;
+    background:radial-gradient(120% 90% at 50% 8%, transparent 50%, rgba(96,70,38,.09) 100%);
+  }
+  ::selection{background:var(--coral);color:var(--paper-warm)}
+  button,input{font:inherit;color:inherit}
+  .page{
+    max-width:1420px;margin:0 auto;
+    padding:0 clamp(18px,3.6vw,52px);
+  }
+  /* ------------- header ------------- */
+  .site-head{
+    display:flex;justify-content:space-between;align-items:center;gap:20px;
+    padding:20px 0 16px;border-bottom:1px solid var(--rule);
+  }
+  .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--green)}
+  .brand svg{width:27px;height:27px}
+  .brand .word{
+    font-family:var(--sans);font-size:12px;letter-spacing:.34em;text-transform:uppercase;font-weight:500;
+  }
+  .brand .word i{font-family:var(--serif);font-style:italic;letter-spacing:.01em;text-transform:none;font-size:17px;margin-right:2px}
+  .head-meta{
+    display:flex;align-items:center;gap:clamp(14px,2.4vw,32px);
+    font-family:var(--sans);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--green-soft);
+  }
+  .head-meta .sep{width:22px;height:1px;background:var(--rule)}
+  .head-meta b{font-weight:500;color:var(--green)}
+  /* ------------- layout ------------- */
+  .lab{
+    display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);
+    gap:clamp(28px,4.4vw,74px);
+    align-items:start;
+    padding:clamp(26px,4.6vw,56px) 0 clamp(28px,4vw,48px);
+  }
+  .lab-copy{padding-top:clamp(4px,1.5vw,18px);position:relative}
+  .eyebrow{
+    display:flex;align-items:center;gap:12px;margin:0 0 clamp(18px,2.4vw,30px);
+    font-family:var(--sans);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--coral-deep);
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--coral)}
+  .eyebrow .num{margin-left:auto;color:var(--green-soft);letter-spacing:.14em}
+  h1.title{
+    margin:0 0 clamp(20px,2.8vw,30px);
+    font-weight:500;
+    font-size:clamp(2.9rem,5.7vw,5.4rem);
+    line-height:.92;letter-spacing:-.045em;
+    max-width:9ch;
+  }
+  h1.title em{font-style:italic;color:var(--coral);font-weight:400;letter-spacing:-.035em}
+  .artist-note{
+    margin:0 0 clamp(20px,2.8vw,28px);max-width:42ch;
+    font-size:clamp(.98rem,1.15vw,1.08rem);line-height:1.68;color:var(--green-soft);
+  }
+  .artist-note::first-letter{
+    float:left;font-size:3.1em;line-height:.72;padding:.08em .1em 0 0;color:var(--green);
+  }
+  .signature{
+    display:flex;align-items:center;gap:10px;margin:-6px 0 clamp(22px,3vw,32px);
+    font-family:var(--sans);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--green-soft);
+  }
+  .signature svg{width:22px;height:14px;opacity:.75}
+  /* ------------- count ------------- */
+  .count-row{
+    display:flex;align-items:baseline;gap:14px;border-top:1px solid var(--rule);border-bottom:1px solid var(--hair);
+    padding:10px 0 12px;margin-bottom:clamp(20px,3vw,30px);
+  }
+  .count-row .label{
+    font-family:var(--sans);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--green-soft);
+  }
+  .count-row .figure{
+    font-size:2rem;line-height:.8;font-weight:500;letter-spacing:-.04em;font-variant-numeric:tabular-nums;
+  }
+  .count-row .figure small{font-size:.45em;letter-spacing:.05em;color:var(--green-soft);font-family:var(--sans);margin-left:3px}
+  .count-row .live{
+    margin-left:auto;display:inline-flex;align-items:center;gap:7px;
+    font-family:var(--sans);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral-deep);
+  }
+  .count-row .live::before{
+    content:"";width:5px;height:5px;border-radius:50%;background:var(--coral);
+    box-shadow:0 0 0 3px rgba(217,106,74,.14);animation:pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  /* ------------- controls ------------- */
+  .controls{border-top:1px solid var(--green);padding-top:14px}
+  .controls-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--sans);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--green-soft);
+    margin-bottom:18px;
+  }
+  .controls-head b{font-weight:500;color:var(--green);letter-spacing:.18em}
+  .control{margin-bottom:22px}
+  .control-label{
+    display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;
+    font-family:var(--sans);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;
+  }
+  .control-label .value{
+    font-family:var(--serif);font-size:1.05rem;letter-spacing:0;text-transform:none;color:var(--coral-deep);
+  }
+  .control-label .value i{font-style:italic}
+  .range-wrap{position:relative;padding:5px 0}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:0;cursor:pointer;display:block;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:1px;background:linear-gradient(to right, var(--coral) 0 var(--fill,50%), rgba(29,58,47,.22) var(--fill,50%) 100%);
+  }
+  input[type=range]::-moz-range-track{
+    height:1px;background:rgba(29,58,47,.22);
+  }
+  input[type=range]::-moz-range-progress{height:1px;background:var(--coral)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--paper-warm);border:1px solid var(--green);margin-top:-7px;
+    box-shadow:inset 0 0 0 3px var(--paper-warm), 0 0 0 1px var(--coral), 0 1px 3px rgba(29,58,47,.2);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  input[type=range]:hover::-webkit-slider-thumb,input[type=range]:focus-visible::-webkit-slider-thumb{
+    transform:scale(1.18);box-shadow:inset 0 0 0 3px var(--paper-warm),0 0 0 1px var(--coral),0 2px 7px rgba(29,58,47,.28);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:15px;height:15px;border-radius:50%;background:var(--paper-warm);border:1px solid var(--green);
+    box-shadow:inset 0 0 0 3px var(--paper-warm),0 0 0 1px var(--coral);
+  }
+  input[type=range]:focus-visible{outline:1px dashed var(--coral);outline-offset:5px}
+  .scale{
+    display:flex;justify-content:space-between;margin-top:1px;
+    font-family:var(--sans);font-size:7px;letter-spacing:.1em;color:var(--green-soft);
+  }
+  .swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .swatch{
+    appearance:none;background:transparent;border:1px solid var(--hair);
+    padding:9px 8px 8px;text-align:left;cursor:pointer;
+    transition:border-color .2s,background .2s,transform .2s;
+  }
+  .swatch:hover{border-color:var(--rule);background:rgba(255,255,255,.35)}
+  .swatch[aria-checked="true"]{
+    border-color:var(--green);background:rgba(255,255,255,.5);
+    box-shadow:inset 0 -2px 0 var(--coral);
+  }
+  .swatch .dots{display:flex;gap:3px;margin-bottom:7px}
+  .swatch .dots i{display:block;width:9px;height:9px;border-radius:50%;border:1px solid rgba(29,58,47,.18)}
+  .swatch .name{
+    display:block;font-family:var(--sans);font-size:7px;letter-spacing:.13em;text-transform:uppercase;color:var(--green-soft);
+  }
+  .swatch[aria-checked="true"] .name{color:var(--green)}
+  .swatch:focus-visible{outline:1px dashed var(--coral);outline-offset:2px}
+  .wind-row{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:2px}
+  .wind-row .wind-copy .hint{margin:3px 0 0;font-family:var(--sans);font-size:7.5px;letter-spacing:.03em;color:var(--green-soft);text-transform:none}
+  .switch{
+    appearance:none;background:transparent;border:0;cursor:pointer;padding:4px 0;
+    display:inline-flex;align-items:center;gap:9px;
+    font-family:var(--sans);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--green-soft);
+  }
+  .switch .track{
+    width:40px;height:20px;border-radius:20px;border:1px solid var(--green);position:relative;display:block;
+    background:transparent;transition:background .25s ease;
+  }
+  .switch .track::after{
+    content:"";position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:50%;background:var(--green);
+    transition:transform .25s cubic-bezier(.3,.8,.3,1),background .25s;
+  }
+  .switch[aria-checked="true"] .track{background:rgba(217,106,74,.12);border-color:var(--coral)}
+  .switch[aria-checked="true"] .track::after{transform:translateX(20px);background:var(--coral)}
+  .switch:focus-visible{outline:1px dashed var(--coral);outline-offset:3px}
+  .plant-btn{
+    width:100%;margin-top:clamp(20px,2.8vw,28px);
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    background:var(--green);color:var(--paper-warm);border:1px solid var(--green);
+    padding:14px 16px;cursor:pointer;
+    font-family:var(--sans);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+    transition:background .25s ease,color .25s ease,border-color .25s ease;
+  }
+  .plant-btn .mark{
+    width:22px;height:22px;border:1px solid rgba(246,241,231,.45);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1;
+    transition:transform .3s ease,border-color .25s;
+  }
+  .plant-btn:hover,.plant-btn:focus-visible{background:var(--coral);border-color:var(--coral);outline:none}
+  .plant-btn:hover .mark{transform:rotate(90deg);border-color:rgba(246,241,231,.8)}
+  .plant-btn:active{transform:translateY(1px)}
+  .click-hint{
+    margin:8px 0 0;text-align:center;font-family:var(--sans);font-size:7px;letter-spacing:.13em;text-transform:uppercase;color:var(--green-soft);
+  }
+  /* ------------- field ------------- */
+  .field-shell{position:relative}
+  .field-top,.field-bottom{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    font-family:var(--sans);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--green-soft);
+  }
+  .field-top{padding:0 2px 8px}
+  .field-top b,.field-bottom b{font-weight:500;color:var(--green)}
+  .field-top .live{display:inline-flex;align-items:center;gap:6px}
+  .field-top .live i{width:5px;height:5px;border-radius:50%;background:var(--coral);animation:pulse 2.6s infinite}
+  .field{
+    position:relative;height:clamp(580px,calc(100svh - 196px),860px);
+    border:1px solid var(--green);
+    background:
+      radial-gradient(90% 60% at 50% 0%, rgba(255,255,255,.55), transparent 70%),
+      linear-gradient(180deg, #faf6ee 0%, #f5efe2 65%, #f0e8d8 100%);
+    overflow:hidden;
+    box-shadow:0 1px 0 rgba(29,58,47,.1), 0 18px 50px rgba(85,64,36,.08);
+    cursor:crosshair;
+  }
+  .field::before,.field::after{
+    content:"";position:absolute;width:10px;height:10px;border:1px solid var(--green);pointer-events:none;opacity:.55;
+  }
+  .field::before{top:10px;left:10px;border-right:0;border-bottom:0}
+  .field::after{bottom:10px;right:10px;border-left:0;border-top:0}
+  .field-grid{
+    position:absolute;inset:0;pointer-events:none;opacity:.55;
+    background-image:
+      linear-gradient(rgba(29,58,47,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(29,58,47,.05) 1px, transparent 1px);
+    background-size:40px 40px;
+    mask-image:linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.28));
+    -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.28));
+  }
+  #bloomCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:manipulation}
+  .field-scale{
+    position:absolute;left:12px;top:56px;bottom:70px;width:26px;pointer-events:none;
+    border-left:1px solid var(--green-faint);
+    font-family:var(--sans);font-size:6px;letter-spacing:.05em;color:var(--green-soft);opacity:.8;
+  }
+  .field-scale .tick{position:absolute;left:0;width:6px;height:1px;background:var(--green-faint)}
+  .field-scale .tick.major{width:12px;background:rgba(29,58,47,.32)}
+  .field-scale .tick span{position:absolute;left:16px;top:-4px;font-size:6px}
+  .field-note{
+    position:absolute;top:54px;right:16px;max-width:130px;text-align:right;pointer-events:none;
+    font-family:var(--sans);font-size:6.5px;line-height:1.8;letter-spacing:.12em;text-transform:uppercase;color:var(--green-soft);opacity:.85;
+  }
+  .field-note b{display:block;color:var(--green);font-weight:500}
+  /* pressed caption card */
+  .specimen-card{
+    position:absolute;left:18px;bottom:18px;width:min(248px,68%);
+    background:var(--paper-warm);border:1px solid var(--rule);
+    padding:12px 13px 11px;
+    box-shadow:3px 4px 0 rgba(29,58,47,.07), 0 14px 30px rgba(74,55,31,.12);
+    transform:rotate(-1.1deg);
+    pointer-events:none;
+  }
+  .specimen-card::before{
+    content:"";position:absolute;top:-7px;left:50%;width:44px;height:13px;transform:translateX(-50%) rotate(1.5deg);
+    background:rgba(217,106,74,.18);border-left:1px solid rgba(217,106,74,.14);border-right:1px solid rgba(217,106,74,.14);
+  }
+  .card-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .card-kicker{
+    font-family:var(--sans);font-size:6.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--coral-deep);
+  }
+  .card-no{
+    font-family:var(--sans);font-size:7px;letter-spacing:.12em;color:var(--green-soft);
+  }
+  .card-main{display:flex;gap:10px;align-items:center;margin-top:6px}
+  .pressed{
+    flex:0 0 44px;width:44px;height:52px;border:1px solid var(--hair);background:#f2ebdc;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  .pressed svg{width:100%;height:100%;display:block}
+  .card-id{min-width:0}
+  .card-name{
+    margin:0;font-size:1.02rem;font-style:italic;font-weight:500;line-height:1.12;letter-spacing:-.01em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .card-meta{
+    margin:4px 0 0;font-family:var(--sans);font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;line-height:1.7;color:var(--green-soft);
+  }
+  .card-foot{
+    margin-top:8px;padding-top:7px;border-top:1px solid var(--hair);
+    display:flex;justify-content:space-between;gap:8px;
+    font-family:var(--sans);font-size:6px;letter-spacing:.12em;text-transform:uppercase;color:var(--green-soft);
+  }
+  .field-bottom{padding:8px 2px 0}
+  .field-bottom .hint-key{color:var(--coral-deep)}
+  /* ------------- field notes ------------- */
+  .field-notes{
+    border-top:1px solid var(--green);
+    padding:clamp(24px,3.6vw,40px) 0 clamp(26px,4vw,44px);
+    display:grid;grid-template-columns:180px repeat(3,minmax(0,1fr));gap:clamp(20px,3.4vw,50px);
+    align-items:start;
+  }
+  .notes-title{font-family:var(--sans);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--green-soft)}
+  .notes-title b{display:block;font-family:var(--serif);font-size:1.55rem;letter-spacing:-.02em;text-transform:none;color:var(--green);margin-top:8px;font-weight:500}
+  .note-item{position:relative;padding-left:26px}
+  .note-item .n{
+    position:absolute;left:0;top:1px;font-family:var(--sans);font-size:7px;letter-spacing:.1em;color:var(--coral-deep);
+  }
+  .note-item h4{margin:0 0 7px;font-size:.94rem;font-weight:600;letter-spacing:.01em}
+  .note-item p{margin:0;font-size:.8rem;line-height:1.65;color:var(--green-soft);max-width:30ch}
+  .site-foot{
+    border-top:1px solid var(--hair);padding:14px 0 22px;
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    font-family:var(--sans);font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:var(--green-soft);
+  }
+  .site-foot .coral{color:var(--coral-deep)}
+  /* ------------- responsive ------------- */
+  @media (max-width:1080px){
+    .lab{grid-template-columns:minmax(0,1fr);gap:34px}
+    .lab-copy{max-width:680px}
+    h1.title{max-width:12ch}
+    .field{height:clamp(560px,72svh,760px)}
+    .field-notes{grid-template-columns:1fr 1fr 1fr}
+    .notes-title{grid-column:1 / -1}
+  }
+  @media (max-width:720px){
+    .site-head{padding:14px 0 12px}
+    .head-meta .optional{display:none}
+    .head-meta .sep{display:none}
+    .head-meta{font-size:7px;gap:12px}
+    .brand .word{font-size:10px;letter-spacing:.26em}
+    .brand .word i{font-size:15px}
+    .lab{padding-top:24px;gap:28px}
+    h1.title{font-size:clamp(2.55rem,12.4vw,3.6rem);line-height:.94;max-width:10ch}
+    .eyebrow{font-size:7.5px;letter-spacing:.18em;margin-bottom:16px}
+    .eyebrow .num{display:none}
+    .artist-note{font-size:.95rem}
+    .count-row .figure{font-size:1.7rem}
+    .swatches{gap:6px}
+    .swatch{padding:8px 6px 7px}
+    .swatch .dots i{width:8px;height:8px}
+    .swatch .name{font-size:6.3px;letter-spacing:.09em}
+    .field{height:70svh;min-height:500px}
+    .field-scale{display:none}
+    .field-note{display:none}
+    .specimen-card{width:min(228px,70%);left:12px;bottom:12px;padding:10px 11px}
+    .card-name{font-size:.92rem}
+    .pressed{flex-basis:38px;width:38px;height:46px}
+    .field-top,.field-bottom{font-size:6.5px}
+    .field-bottom .hint-key{display:none}
+    .field-notes{grid-template-columns:1fr;gap:18px;padding-top:24px}
+    .notes-title{grid-column:auto;margin-bottom:2px}
+    .note-item{padding-left:22px}
+    .note-item p{max-width:44ch}
+    .site-foot{font-size:6.5px;gap:8px}
+    .site-foot .desktop-only{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="site-head">
+    <a class="brand" href="#top" aria-label="Bloom Lab home">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="16" cy="16" r="2.4" fill="currentColor" stroke="none"/>
+        <ellipse cx="16" cy="8" rx="3.4" ry="6"/>
+        <ellipse cx="16" cy="24" rx="3.4" ry="6"/>
+        <ellipse cx="8" cy="16" rx="6" ry="3.4"/>
+        <ellipse cx="24" cy="16" rx="6" ry="3.4"/>
+        <ellipse cx="10.4" cy="10.4" rx="2.4" ry="4.6" transform="rotate(-45 10.4 10.4)"/>
+        <ellipse cx="21.6" cy="21.6" rx="2.4" ry="4.6" transform="rotate(-45 21.6 21.6)"/>
+      </svg>
+      <span class="word"><i>Bloom</i>Lab</span>
+    </a>
+    <div class="head-meta">
+      <span>Generative botany</span>
+      <span class="sep" aria-hidden="true"></span>
+      <span class="optional">Experiment 07</span>
+      <span class="optional">October 2026</span>
+      <span><b>Open studio</b></span>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="lab" aria-labelledby="labTitle">
+      <div class="lab-copy">
+        <p class="eyebrow">The Department of Improbable Botany <span class="num">Plate 07</span></p>
+        <h1 class="title" id="labTitle">Grow something <em>improbable.</em></h1>
+        <p class="artist-note">A flower is only a set of instructions that has learned to keep a secret. Each specimen here is grown from a seed, a palette, and the number of petals you choose &mdash; then left to the weather.</p>
+        <div class="signature">
+          <svg viewBox="0 0 40 20" fill="none" stroke="currentColor" stroke-width=".9" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M2 15c4-8 7-10 9-4s3 4 5-2 4-6 6 2 4 5 6-1 4-4 8 1"/>
+          </svg>
+          <span>Notes from the artist&rsquo;s bench</span>
+        </div>
+
+        <div class="count-row" aria-live="polite">
+          <span class="label">Specimens<br>in this field</span>
+          <span class="figure" id="specCount">04</span>
+          <span class="live">Growing</span>
+        </div>
+
+        <div class="controls" aria-label="Growth parameters">
+          <div class="controls-head"><b>Growth parameters</b><span>All native / no soil</span></div>
+
+          <div class="control">
+            <label class="control-label" for="petals">Petals per bloom
+              <span class="value"><span id="petalVal">8</span> <i>petals</i></span>
+            </label>
+            <div class="range-wrap">
+              <input type="range" id="petals" min="3" max="16" step="1" value="8" aria-valuetext="8 petals">
+            </div>
+            <div class="scale"><span>03</span><span>16</span></div>
+          </div>
+
+          <div class="control">
+            <div class="control-label" id="paletteLabel">Palette <span class="value" id="paletteName"><i>Meadow</i></span></div>
+            <div class="swatches" role="radiogroup" aria-labelledby="paletteLabel">
+              <button class="swatch" type="button" role="radio" aria-checked="true" data-palette="0">
+                <span class="dots" aria-hidden="true"><i style="background:#e8cf83"></i><i style="background:#f0e3c2"></i><i style="background:#d96a4a"></i></span>
+                <span class="name">Meadow</span>
+              </button>
+              <button class="swatch" type="button" role="radio" aria-checked="false" data-palette="1">
+                <span class="dots" aria-hidden="true"><i style="background:#d96a4a"></i><i style="background:#e0855f"></i><i style="background:#b8462f"></i></span>
+                <span class="name">Ember</span>
+              </button>
+              <button class="swatch" type="button" role="radio" aria-checked="false" data-palette="2">
+                <span class="dots" aria-hidden="true"><i style="background:#8e7b9e"></i><i style="background:#b6a3c4"></i><i style="background:#c9a66b"></i></span>
+                <span class="name">Dusk</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="control wind-row">
+            <div class="wind-copy">
+              <div class="control-label" style="margin-bottom:0">Wind</div>
+              <p class="hint" id="windHint">A light breeze, from the left.</p>
+            </div>
+            <button class="switch" type="button" role="switch" aria-checked="true" id="windToggle" aria-label="Wind">
+              <span class="track" aria-hidden="true"></span>
+              <span id="windLabel">Breeze</span>
+            </button>
+          </div>
+
+          <button class="plant-btn" type="button" id="plantBtn">
+            <span>Plant a specimen</span>
+            <span class="mark" aria-hidden="true">+</span>
+          </button>
+          <p class="click-hint">or click anywhere in the field &mdash; the stem finds its own way</p>
+        </div>
+      </div>
+
+      <div class="field-shell">
+        <div class="field-top">
+          <span><b>Field 07</b> &nbsp;/&nbsp; Live cultivation</span>
+          <span class="live"><i aria-hidden="true"></i>Grown locally</span>
+        </div>
+        <div class="field" id="field">
+          <div class="field-grid" aria-hidden="true"></div>
+          <canvas id="bloomCanvas" tabindex="0" role="application" aria-label="Generative flower field. Click or press Enter to plant a specimen."></canvas>
+          <div class="field-scale" id="fieldScale" aria-hidden="true"></div>
+          <div class="field-note" aria-hidden="true">
+            <b>Not to scale</b>
+            Specimens drawn from seed, wind &amp; the patience of the viewer.
+          </div>
+
+          <div class="specimen-card" id="specimenCard">
+            <div class="card-top">
+              <span class="card-kicker">Pressed specimen</span>
+              <span class="card-no" id="cardNo">No. 04 / 04</span>
+            </div>
+            <div class="card-main">
+              <div class="pressed" aria-hidden="true">
+                <svg id="pressedSvg" viewBox="0 0 60 72" xmlns="http://www.w3.org/2000/svg"></svg>
+              </div>
+              <div class="card-id">
+                <p class="card-name" id="cardName">Campanula improbabilis</p>
+                <p class="card-meta" id="cardMeta">8 petals &middot; Meadow &middot; 34 cm</p>
+              </div>
+            </div>
+            <div class="card-foot">
+              <span>Pressed 18 Oct 2026</span>
+              <span>Fictional herbarium</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-bottom">
+          <span>Fig. 7 &mdash; a field of instructions</span>
+          <span class="hint-key">Click to plant / Enter to sow</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="field-notes" aria-labelledby="notesTitle">
+      <div class="notes-title" id="notesTitle">Field notes <b>Three small truths</b></div>
+      <div class="note-item">
+        <span class="n">I.</span>
+        <h4>On soil</h4>
+        <p>Nothing is planted in a straight line. The field keeps its own survey, and the best stems arrive slightly out of register.</p>
+      </div>
+      <div class="note-item">
+        <span class="n">II.</span>
+        <h4>On light</h4>
+        <p>Specimens are drawn, not photographed. Every edge is a decision; every shadow is a little more paper.</p>
+      </div>
+      <div class="note-item">
+        <span class="n">III.</span>
+        <h4>On patience</h4>
+        <p>A bloom takes longer than a click. Stay for the opening. The field will still be here when you look away.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <span>&copy; MMXXVI Bloom Lab &mdash; a fictional herbarium</span>
+    <span class="coral desktop-only">Every specimen is generated in your browser. Nothing leaves the field.</span>
+    <span>Plate 07 / Open studio</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var canvas = document.getElementById("bloomCanvas");
+  var ctx = canvas.getContext("2d");
+  var field = document.getElementById("field");
+  var petalsInput = document.getElementById("petals");
+  var petalVal = document.getElementById("petalVal");
+  var paletteName = document.getElementById("paletteName");
+  var specCount = document.getElementById("specCount");
+  var cardNo = document.getElementById("cardNo");
+  var cardName = document.getElementById("cardName");
+  var cardMeta = document.getElementById("cardMeta");
+  var pressedSvg = document.getElementById("pressedSvg");
+  var windToggle = document.getElementById("windToggle");
+  var windLabel = document.getElementById("windLabel");
+  var windHint = document.getElementById("windHint");
+  var plantBtn = document.getElementById("plantBtn");
+
+  var palettes = [
+    {
+      name:"Meadow",
+      stem:"#3a5741", leaf:"#7f9a75", leafEdge:"#1d3a2f",
+      petals:["#e8cf83","#f0e3c2","#d9a06b","#c8b7d6"],
+      center:"#b07c3e", centerEdge:"#6d4a24", accent:"#d96a4a"
+    },
+    {
+      name:"Ember",
+      stem:"#4a4a31", leaf:"#8a9463", leafEdge:"#32341f",
+      petals:["#d96a4a","#e0855f","#b8462f","#e9b07a"],
+      center:"#7b2f21", centerEdge:"#4a1b13", accent:"#e9b07a"
+    },
+    {
+      name:"Dusk",
+      stem:"#2f4a44", leaf:"#728b82", leafEdge:"#1f3734",
+      petals:["#8e7b9e","#b6a3c4","#d9c7cf","#71838a","#c9a66b"],
+      center:"#544263", centerEdge:"#2f2638", accent:"#c9a66b"
+    }
+  ];
+
+  var state = { petals:8, palette:0, wind:true };
+  var windMix = state.wind ? 1 : 0;
+  var plants = [];
+  var specimenSeq = 0;
+  var W = 0, H = 0, DPR = 1;
+  var last = 0;
+  var time = 0;
+
+  var GENERA = ["Campanula","Nigella","Papaver","Digitalis","Aquilegia","Scabiosa","Cosmos","Delphinium","Helleborus","Linaria"];
+  var EPITHETS = ["improbabilis","serotina","longiflora","quieta","erratica","tenuis","mirabilis","vespertina","lucida","fallax"];
+
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+
+  function easeOut(x){ return 1 - Math.pow(1 - x, 3); }
+
+  function addPlant(xNorm, explicit){
+    explicit = explicit || {};
+    var id = explicit.id || (++specimenSeq);
+    specimenSeq = Math.max(specimenSeq, id);
+    var seed = explicit.seed !== undefined ? explicit.seed : (id * 7919 + 104729);
+    var rnd = mulberry32(seed);
+
+    var p = {
+      id: id,
+      seed: seed,
+      x: Math.max(0.07, Math.min(0.93, xNorm + (rnd() - 0.5) * 0.03)),
+      hNorm: explicit.hNorm !== undefined ? explicit.hNorm : (0.33 + rnd() * 0.31),
+      petals: explicit.petals !== undefined ? explicit.petals : state.petals,
+      palette: state.palette,
+      phase: rnd() * Math.PI * 2,
+      lean: (rnd() - 0.5) * 0.13,
+      bend: (rnd() - 0.5) * 0.06,
+      petalJitter: Array.from({length: 17}, function(){ return 0.86 + rnd() * 0.28; }),
+      colorShift: Math.floor(rnd() * 4),
+      leafSide: rnd() > 0.5 ? 1 : -1,
+      name: GENERA[Math.floor(rnd() * GENERA.length)] + " " + EPITHETS[Math.floor(rnd() * EPITHETS.length)],
+      createdAt: explicit.instant ? -100000 : performance.now(),
+      growDur: explicit.instant ? 1 : (reduceMotion ? 1 : 1350 + rnd() * 650)
+    };
+    plants.push(p);
+    updateCount();
+    updateCard(p);
+    updatePressed(p);
+    return p;
+  }
+
+  function updateCount(){
+    specCount.textContent = pad(plants.length);
+  }
+
+  function paletteOf(p){ return palettes[p.palette]; }
+
+  function updateCard(p){
+    if (!p) return;
+    cardNo.textContent = "No. " + pad(p.id) + " / " + pad(plants.length);
+    cardName.textContent = p.name;
+    cardMeta.innerHTML = p.petals + " petals &middot; " + paletteOf(p).name + " &middot; " + Math.round(18 + p.hNorm * 50) + " cm";
+    updatePressed(p);
+  }
+
+  function updatePressed(p){
+    if (!p) return;
+    var pal = paletteOf(p);
+    var n = Math.min(9, Math.max(5, p.petals));
+    var svg = '<g transform="translate(30,36)">';
+    svg += '<path d="M0 2 C-1 14, -2 23, 0 32" fill="none" stroke="' + pal.stem + '" stroke-width="1.2" stroke-linecap="round"/>';
+    svg += '<path d="M-1 20 C-8 15, -11 17, -12 21 C-8 24, -4 23, -1 22 Z" fill="' + pal.leaf + '" opacity=".9"/>';
+    svg += '<path d="M0 25 C7 21, 10 23, 11 27 C7 30, 3 28, 0 27 Z" fill="' + pal.leaf + '" opacity=".8"/>';
+    for (var i = 0; i < n; i++) {
+      var a = (i * 360 / n) * Math.PI / 180;
+      var len = 16 * (0.9 + ((p.seed + i * 13) % 7) * 0.018);
+      var col = pal.petals[i % pal.petals.length];
+      svg += '<ellipse cx="0" cy="' + (-len * 0.55).toFixed(2) + '" rx="3.4" ry="' + (len * 0.55).toFixed(2) + '" fill="' + col + '" transform="rotate(' + (i * 360 / n).toFixed(1) + ')" opacity=".94"/>';
+    }
+    svg += '<circle cx="0" cy="0" r="4.1" fill="' + pal.center + '"/>';
+    svg += '<circle cx="0" cy="0" r="4.1" fill="none" stroke="' + pal.centerEdge + '" stroke-width=".7"/>';
+    svg += '<circle cx="-1.2" cy="-1.2" r=".9" fill="#f6f1e7" opacity=".55"/>';
+    svg += '</g>';
+    svg += '<path d="M8 66 C18 63, 40 64, 53 66" fill="none" stroke="' + pal.leafEdge + '" stroke-width=".5" opacity=".4"/>';
+    pressedSvg.innerHTML = svg;
+  }
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var rect = field.getBoundingClientRect();
+    W = Math.max(1, rect.width);
+    H = Math.max(1, rect.height);
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  /* ---------- drawing ---------- */
+  function cubic(p0, p1, p2, p3, t){
+    var mt = 1 - t;
+    return {
+      x: mt*mt*mt*p0.x + 3*mt*mt*t*p1.x + 3*mt*t*t*p2.x + t*t*t*p3.x,
+      y: mt*mt*mt*p0.y + 3*mt*mt*t*p1.y + 3*mt*t*t*p2.y + t*t*t*p3.y
+    };
+  }
+
+  function stemGeometry(p, t){
+    var baseX = p.x * W;
+    var baseY = H * 0.9;
+    var h = p.hNorm * H;
+    var topX = baseX + p.lean * h;
+    var p1 = {x:baseX + p.bend * h * 0.35, y:baseY - h * 0.4};
+    var p2 = {x:baseX + p.lean * h * 0.68 + p.bend * h * 0.7, y:baseY - h * 0.73};
+    var p3 = {x:topX, y:baseY - h};
+    var pt = cubic({x:baseX,y:baseY}, p1, p2, p3, t);
+    var sway = Math.sin(time * 0.00115 + p.phase + t * 2.2) * (H * 0.012) * Math.pow(t, 1.7) * windMix * (reduceMotion ? 0 : 1);
+    pt.x += sway;
+    return pt;
+  }
+
+  function drawLeaf(x, y, angle, side, size, pal){
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle + side * 0.52);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(size * 0.28, -size * 0.55, size * 0.9, -size * 0.46, size, 0);
+    ctx.bezierCurveTo(size * 0.86, size * 0.38, size * 0.3, size * 0.4, 0, 0);
+    ctx.closePath();
+    ctx.fillStyle = pal.leaf;
+    ctx.globalAlpha = 0.88;
+    ctx.fill();
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = pal.leafEdge;
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    ctx.globalAlpha = 0.4;
+    ctx.beginPath();
+    ctx.moveTo(size * 0.1, 0);
+    ctx.quadraticCurveTo(size * 0.55, -size * 0.02, size * 0.92, 0);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawStem(p, progress, pal){
+    var samples = 26;
+    var maxT = Math.max(0.02, progress);
+    ctx.beginPath();
+    for (var i = 0; i <= samples; i++) {
+      var t = (i / samples) * maxT;
+      var pt = stemGeometry(p, t);
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    }
+    ctx.strokeStyle = pal.stem;
+    ctx.lineWidth = 1.25;
+    ctx.lineCap = "round";
+    ctx.globalAlpha = 0.92;
+    ctx.stroke();
+    ctx.globalAlpha = 0.24;
+    ctx.lineWidth = 2.6;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    var leafT = 0.43;
+    if (progress > leafT) {
+      var lp = stemGeometry(p, leafT);
+      var tangent = stemGeometry(p, Math.min(0.99, leafT + 0.02));
+      var ang = Math.atan2(tangent.y - lp.y, tangent.x - lp.x) - Math.PI / 2;
+      drawLeaf(lp.x, lp.y, ang, p.leafSide, Math.min(30, H * 0.042), pal);
+    }
+    var leaf2T = 0.66;
+    if (progress > leaf2T) {
+      var lp2 = stemGeometry(p, leaf2T);
+      var tangent2 = stemGeometry(p, Math.min(0.99, leaf2T + 0.02));
+      var ang2 = Math.atan2(tangent2.y - lp2.y, tangent2.x - lp2.x) - Math.PI / 2;
+      drawLeaf(lp2.x, lp2.y, ang2, -p.leafSide, Math.min(24, H * 0.034), pal);
+    }
+  }
+
+  function drawHead(p, progress, pal){
+    var headProgress = Math.max(0, Math.min(1, (progress - 0.58) / 0.42));
+    if (headProgress <= 0) return;
+    var hp = easeOut(headProgress);
+    var pt = stemGeometry(p, Math.min(1, progress));
+    var baseR = Math.min(30, Math.max(16, H * 0.042)) * (0.86 + ((p.seed >> 3) % 11) * 0.024);
+    var R = baseR * hp;
+    var petals = p.petals;
+    var angleOffset = (p.seed % 360) * Math.PI / 180;
+    var palColors = pal.petals;
+
+    ctx.save();
+    ctx.translate(pt.x, pt.y);
+    ctx.rotate(Math.sin(time * 0.0008 + p.phase) * 0.06 * windMix * (reduceMotion ? 0 : 1));
+
+    /* outer petals */
+    for (var i = 0; i < petals; i++) {
+      var a = angleOffset + (i * Math.PI * 2) / petals;
+      var jitter = p.petalJitter[i % p.petalJitter.length];
+      var len = R * jitter;
+      var wid = R * 0.34;
+      ctx.save();
+      ctx.rotate(a);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(-wid, -len * 0.34, -wid * 0.9, -len * 0.88, 0, -len);
+      ctx.bezierCurveTo(wid * 0.9, -len * 0.88, wid, -len * 0.34, 0, 0);
+      ctx.closePath();
+      ctx.fillStyle = palColors[(i + p.colorShift) % palColors.length];
+      ctx.globalAlpha = 0.92;
+      ctx.fill();
+      ctx.globalAlpha = 0.42;
+      ctx.strokeStyle = pal.stem;
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    /* inner petals for fuller blooms */
+    if (petals >= 9) {
+      var inner = 5;
+      for (var j = 0; j < inner; j++) {
+        var ia = angleOffset + Math.PI / inner + (j * Math.PI * 2) / inner;
+        var ilen = R * 0.44;
+        ctx.save();
+        ctx.rotate(ia);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-ilen * 0.34, -ilen * 0.3, -ilen * 0.3, -ilen * 0.86, 0, -ilen);
+        ctx.bezierCurveTo(ilen * 0.3, -ilen * 0.86, ilen * 0.34, -ilen * 0.3, 0, 0);
+        ctx.fillStyle = palColors[(j + 1) % palColors.length];
+        ctx.globalAlpha = 0.85;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    /* centre */
+    ctx.globalAlpha = hp;
+    ctx.beginPath();
+    ctx.arc(0, 0, R * 0.2, 0, Math.PI * 2);
+    ctx.fillStyle = pal.center;
+    ctx.fill();
+    ctx.strokeStyle = pal.centerEdge;
+    ctx.lineWidth = 0.8;
+    ctx.globalAlpha = hp * 0.8;
+    ctx.stroke();
+
+    var dots = Math.min(9, 4 + Math.round(petals / 3));
+    for (var d = 0; d < dots; d++) {
+      var da = (d / dots) * Math.PI * 2 + 0.4;
+      ctx.beginPath();
+      ctx.arc(Math.cos(da) * R * 0.12, Math.sin(da) * R * 0.12, Math.max(0.7, R * 0.026), 0, Math.PI * 2);
+      ctx.fillStyle = "#f6f1e7";
+      ctx.globalAlpha = hp * 0.55;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /* pollen motes */
+  var motes = [];
+  (function makeMotes(){
+    var r = mulberry32(90091);
+    for (var i = 0; i < 28; i++) {
+      motes.push({ x:r(), y:r(), r:0.5 + r() * 1.1, phase:r() * Math.PI * 2, speed:0.3 + r() * 0.5 });
+    }
+  })();
+
+  function drawGround(){
+    var y = H * 0.9;
+    ctx.save();
+    ctx.strokeStyle = "rgba(29,58,47,.32)";
+    ctx.lineWidth = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(W * 0.03, y + 2);
+    for (var i = 1; i <= 18; i++) {
+      var xx = W * 0.03 + (W * 0.94) * (i / 18);
+      var yy = y + Math.sin(i * 0.9 + 1) * 1.4;
+      ctx.lineTo(xx, yy);
+    }
+    ctx.stroke();
+
+    ctx.lineWidth = 0.6;
+    ctx.strokeStyle = "rgba(29,58,47,.14)";
+    for (var h = 0; h < 46; h++) {
+      var hx = W * 0.035 + (W * 0.93) * (h / 46);
+      var hh = 3 + ((h * 7) % 8);
+      var tilt = ((h * 13) % 5 - 2) * 0.8;
+      ctx.beginPath();
+      ctx.moveTo(hx, y + 4);
+      ctx.lineTo(hx + tilt, y + 4 + hh);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function draw(timeMs){
+    ctx.clearRect(0, 0, W, H);
+
+    /* pollen behind */
+    ctx.save();
+    for (var m = 0; m < motes.length; m++) {
+      var mo = motes[m];
+      var drift = reduceMotion ? 0 : (timeMs * 0.006 * mo.speed + mo.phase);
+      var mx = (mo.x * W + Math.sin(drift) * 9 * windMix + 4) % W;
+      var my = mo.y * H * 0.82 + Math.cos(drift * 0.8) * 6 * windMix;
+      ctx.beginPath();
+      ctx.arc(mx, my, mo.r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(217,106,74,.2)";
+      ctx.fill();
+    }
+    ctx.restore();
+
+    drawGround();
+
+    for (var i = 0; i < plants.length; i++) {
+      var p = plants[i];
+      var progress = p.growDur <= 1 ? 1 : Math.max(0, Math.min(1, (timeMs - p.createdAt) / p.growDur));
+      if (progress <= 0) continue;
+      var eased = easeOut(progress);
+      var pal = paletteOf(p);
+      drawStem(p, eased, pal);
+      drawHead(p, eased, pal);
+    }
+  }
+
+  function loop(now){
+    var dt = last ? Math.min((now - last) / 1000, 0.05) : 0.016;
+    last = now;
+    time = now;
+    var target = state.wind ? 1 : 0;
+    var speed = reduceMotion ? 100 : 5;
+    windMix += (target - windMix) * Math.min(1, dt * speed);
+    draw(now);
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- controls ---------- */
+  function setPetals(v, fromInput){
+    v = Math.max(3, Math.min(16, Number(v)));
+    state.petals = v;
+    petalVal.textContent = v;
+    petalsInput.value = String(v);
+    petalsInput.setAttribute("aria-valuetext", v + " petals");
+    var pct = ((v - 3) / 13) * 100;
+    petalsInput.style.setProperty("--fill", pct + "%");
+    if (!fromInput) return;
+    /* live-edit the most recent specimen */
+    if (plants.length) {
+      var p = plants[plants.length - 1];
+      p.petals = v;
+      updateCard(p);
+    }
+  }
+
+  petalsInput.addEventListener("input", function(){ setPetals(this.value, true); });
+
+  var swatches = Array.prototype.slice.call(document.querySelectorAll(".swatch"));
+  swatches.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var idx = Number(btn.dataset.palette);
+      state.palette = idx;
+      swatches.forEach(function(b){ b.setAttribute("aria-checked", b === btn ? "true" : "false"); });
+      paletteName.innerHTML = "<i>" + palettes[idx].name + "</i>";
+      plants.forEach(function(p){ p.palette = idx; });
+      if (plants.length) updateCard(plants[plants.length - 1]);
+    });
+    btn.addEventListener("keydown", function(e){
+      if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        var dir = (e.key === "ArrowRight" || e.key === "ArrowDown") ? 1 : -1;
+        var n = (swatches.indexOf(btn) + dir + swatches.length) % swatches.length;
+        swatches[n].focus();
+        swatches[n].click();
+      }
+    });
+  });
+
+  windToggle.addEventListener("click", function(){
+    state.wind = !state.wind;
+    windToggle.setAttribute("aria-checked", state.wind ? "true" : "false");
+    windLabel.textContent = state.wind ? "Breeze" : "Still";
+    windHint.textContent = state.wind ? "A light breeze, from the left." : "The air is holding its breath.";
+  });
+
+  plantBtn.addEventListener("click", function(){
+    var x = 0.12 + Math.random() * 0.76;
+    /* avoid the caption card area on the left */
+    if (x < 0.24 && Math.random() > 0.25) x += 0.16;
+    addPlant(x);
+    canvas.focus({ preventScroll:true });
+  });
+
+  canvas.addEventListener("pointerdown", function(e){
+    var rect = canvas.getBoundingClientRect();
+    var x = (e.clientX - rect.left) / rect.width;
+    addPlant(x);
+  });
+
+  canvas.addEventListener("keydown", function(e){
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      addPlant(0.35 + Math.random() * 0.34);
+    }
+  });
+
+  /* resize + init */
+  window.addEventListener("resize", resize);
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(resize).observe(field);
+  }
+  resize();
+
+  setPetals(8, false);
+
+  var initial = [
+    {x:0.22, hNorm:0.36, petals:6, seed:3101},
+    {x:0.40, hNorm:0.56, petals:9, seed:4507},
+    {x:0.61, hNorm:0.42, petals:7, seed:5209},
+    {x:0.80, hNorm:0.59, petals:8, seed:6601}
+  ];
+  initial.forEach(function(s){
+    addPlant(s.x, {seed:s.seed, petals:s.petals, hNorm:s.hNorm, instant:true});
+  });
+  updateCount();
+  updateCard(plants[plants.length - 1]);
+  updatePressed(plants[plants.length - 1]);
+
+  /* field scale ticks */
+  (function scaleTicks(){
+    var scaleEl = document.getElementById("fieldScale");
+    if (!scaleEl) return;
+    for (var i = 0; i <= 20; i++) {
+      var t = document.createElement("span");
+      t.className = "tick" + (i % 5 === 0 ? " major" : "");
+      t.style.top = (i * 5) + "%";
+      if (i % 5 === 0 && i < 20) {
+        var s = document.createElement("span");
+        s.textContent = String(40 - i * 2);
+        t.appendChild(s);
+      }
+      scaleEl.appendChild(t);
+    }
+  })();
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

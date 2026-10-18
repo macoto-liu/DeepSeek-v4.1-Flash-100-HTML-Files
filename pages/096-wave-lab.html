@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wave Lab — Two Sources</title>
+<style>
+  :root{
+    --plum:#170c1e;
+    --plum-deep:#0e0614;
+    --plum-soft:#2a1434;
+    --ember:#ff8a5c;
+    --ember-hot:#ffc08f;
+    --ember-deep:#b8452c;
+    --cream:#f3e5d2;
+    --muted:#b795b0;
+    --line:rgba(243,229,210,.18);
+    --mono:"Courier New",Courier,monospace;
+    --serif:Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;overflow:hidden;background:var(--plum-deep);color:var(--cream);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  #field{
+    position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(120% 100% at 50% 40%, transparent 40%, rgba(8,3,13,.55) 100%),
+      linear-gradient(180deg, rgba(10,4,16,.55), transparent 18%, transparent 78%, rgba(10,4,16,.6));
+  }
+  .grain{
+    position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.28;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.5'/></svg>");
+  }
+
+  .top{
+    position:fixed;z-index:5;top:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:baseline;gap:18px;
+    padding:20px 26px 16px;
+    font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);pointer-events:none;
+    border-bottom:1px solid rgba(243,229,210,.12);
+    background:linear-gradient(180deg,rgba(12,5,18,.55),transparent);
+  }
+  .top b{color:var(--cream);font-weight:400;letter-spacing:.22em}
+  .top .mid{color:#d0a992}
+  .top .mid i{font-style:normal;color:var(--ember)}
+  .top .right{text-align:right}
+  .top .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--ember);box-shadow:0 0 8px var(--ember);margin-right:6px;vertical-align:1px}
+
+  .rail{
+    position:fixed;z-index:6;left:26px;top:96px;width:236px;
+    padding:17px 16px 15px;
+    color:var(--cream);
+    background:rgba(20,9,28,.58);
+    border:1px solid rgba(243,229,210,.2);
+    box-shadow:0 20px 60px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.08) inset;
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  }
+  .rail::before{
+    content:"";position:absolute;inset:5px;border:1px solid rgba(243,229,210,.07);pointer-events:none;
+  }
+  .rail-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:12px;
+  }
+  .rail-head b{font-weight:400;color:var(--ember)}
+  .ctrl{margin-bottom:14px}
+  .ctrl:last-of-type{margin-bottom:10px}
+  .ctrl-row{
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px;
+    font-family:var(--sans);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:#c4a6b7;
+  }
+  .ctrl-row output{font-family:var(--mono);font-size:9px;letter-spacing:.03em;color:var(--cream)}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;display:block;width:100%;height:18px;margin:0;
+    background:transparent;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:2px;background:linear-gradient(90deg,var(--ember) 0%,var(--ember) var(--pct,50%),rgba(243,229,210,.22) var(--pct,50%),rgba(243,229,210,.22) 100%);
+  }
+  input[type=range]::-moz-range-track{height:2px;background:rgba(243,229,210,.22)}
+  input[type=range]::-moz-range-progress{height:2px;background:var(--ember)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:9px;height:9px;margin-top:-3.5px;border-radius:50%;
+    background:var(--ember-hot);border:1px solid #68261a;box-shadow:0 0 0 3px rgba(255,138,92,.16),0 0 12px rgba(255,138,92,.6);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:9px;height:9px;border-radius:50%;background:var(--ember-hot);border:1px solid #68261a;
+    box-shadow:0 0 0 3px rgba(255,138,92,.16);
+  }
+  input[type=range]:focus-visible{outline:1px solid var(--ember);outline-offset:4px}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:15px}
+  .btn{
+    appearance:none;border:1px solid rgba(243,229,210,.3);background:rgba(243,229,210,.04);
+    color:var(--cream);font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+    padding:9px 6px;cursor:pointer;transition:background .2s,border-color .2s,color .2s;
+  }
+  .btn:hover{background:rgba(255,138,92,.12);border-color:rgba(255,138,92,.55);color:var(--ember-hot)}
+  .btn[aria-pressed=true]{background:var(--ember);border-color:var(--ember);color:#2a0d08}
+  .btn:focus-visible{outline:1px solid var(--ember);outline-offset:2px}
+  .rail-note{
+    margin-top:13px;padding-top:10px;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:7px;line-height:1.8;color:#9d7c96;letter-spacing:.04em;
+  }
+  .rail-note b{font-weight:400;color:#e0b49f}
+
+  .caption{
+    position:fixed;z-index:5;left:28px;bottom:34px;pointer-events:none;max-width:480px;
+  }
+  .caption .kicker{
+    font-family:var(--mono);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:#c29584;
+    margin-bottom:10px;
+  }
+  .caption .kicker i{font-style:normal;color:var(--ember)}
+  .caption h1{
+    margin:0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(26px,3.8vw,48px);line-height:.98;letter-spacing:-.025em;color:var(--cream);
+    text-shadow:0 2px 24px rgba(0,0,0,.4);
+  }
+  .caption h1 em{font-style:italic;color:var(--ember-hot)}
+  .caption p{
+    margin:12px 0 0;max-width:330px;font-family:var(--mono);font-size:8px;line-height:1.8;
+    letter-spacing:.03em;color:#bd9caf;
+  }
+  .caption .formula{
+    margin-top:9px;font-family:var(--mono);font-size:8px;color:#e1b39c;letter-spacing:.02em;
+  }
+
+  .gauge{
+    position:fixed;z-index:6;right:25px;top:96px;bottom:92px;width:92px;
+    padding:13px 9px;
+    background:rgba(20,9,28,.5);
+    border:1px solid rgba(243,229,210,.18);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .gauge-head{
+    font-family:var(--mono);font-size:6.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:#a987a0;text-align:center;border-bottom:1px solid var(--line);padding-bottom:7px;
+  }
+  .meters{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;flex:1;min-height:0}
+  .meter{display:flex;flex-direction:column;align-items:center;min-height:0;gap:5px}
+  .meter .val{
+    writing-mode:vertical-rl;transform:rotate(180deg);
+    font-family:var(--mono);font-size:8px;color:var(--cream);letter-spacing:.02em;
+    white-space:nowrap;
+  }
+  .meter .track{
+    flex:1;width:5px;min-height:30px;background:rgba(243,229,210,.12);position:relative;overflow:hidden;
+  }
+  .meter .fill{
+    position:absolute;left:0;right:0;bottom:0;height:20%;
+    background:linear-gradient(180deg,var(--ember-hot),var(--ember-deep));
+    box-shadow:0 0 10px rgba(255,138,92,.5);
+    transition:height .25s ease;
+  }
+  .meter .fill::after{
+    content:"";position:absolute;left:-2px;right:-2px;top:0;height:1px;background:var(--ember-hot);
+  }
+  .meter .lbl{
+    writing-mode:vertical-rl;transform:rotate(180deg);
+    font-family:var(--mono);font-size:6px;letter-spacing:.12em;text-transform:uppercase;color:#a987a0;
+    height:52px;white-space:nowrap;
+  }
+
+  .source{
+    position:fixed;z-index:8;width:34px;height:34px;border-radius:50%;
+    transform:translate(-50%,-50%);
+    border:1px solid rgba(255,224,199,.8);
+    background:radial-gradient(circle at 40% 34%, rgba(255,224,194,.95), rgba(255,138,92,.32) 38%, rgba(255,138,92,.05) 70%);
+    box-shadow:0 0 0 5px rgba(255,138,92,.06),0 0 24px rgba(255,138,92,.35);
+    cursor:grab;touch-action:none;display:grid;place-items:center;
+    color:#2a0d08;font-family:var(--mono);font-size:8px;font-weight:700;
+  }
+  .source::before{
+    content:"";position:absolute;inset:-13px;border-radius:50%;border:1px solid rgba(255,138,92,.18);
+    animation:pulse 4s ease-out infinite;
+  }
+  .source:active{cursor:grabbing}
+  .source:focus-visible{outline:2px solid var(--cream);outline-offset:4px}
+  .source span{
+    width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+    background:var(--ember-hot);box-shadow:0 0 12px rgba(255,192,143,.8);
+  }
+  @keyframes pulse{
+    0%{transform:scale(.9);opacity:.8}
+    70%{transform:scale(1.45);opacity:0}
+    100%{transform:scale(1.45);opacity:0}
+  }
+
+  .footer{
+    position:fixed;z-index:5;left:28px;right:28px;bottom:12px;
+    display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+    font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:#8f7089;
+    pointer-events:none;
+  }
+  .footer em{font-family:var(--serif);font-size:10px;letter-spacing:0;color:#bd9caf}
+
+  @media(max-width:900px){
+    .rail{width:210px;left:16px;top:82px}
+    .gauge{right:16px;top:82px;bottom:110px;width:82px}
+    .caption{left:16px;bottom:120px}
+  }
+  @media(max-width:700px){
+    .top{padding:14px 14px 11px;font-size:6.5px}
+    .top .mid{display:none}
+    .rail{
+      left:12px;right:12px;top:auto;bottom:38px;width:auto;
+      padding:11px 12px 10px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;
+    }
+    .rail-head{display:none}
+    .ctrl{margin:0}
+    .ctrl-row{font-size:6px;letter-spacing:.12em;margin-bottom:2px}
+    .ctrl-row output{font-size:8px}
+    .actions{grid-column:1/-1;grid-template-columns:1fr 1fr;margin-top:2px}
+    .btn{padding:7px 5px;font-size:7px}
+    .rail-note{display:none}
+    .caption{left:14px;bottom:216px;max-width:260px}
+    .caption h1{font-size:30px}
+    .caption p{display:none}
+    .caption .kicker{font-size:6.5px;margin-bottom:6px}
+    .caption .formula{font-size:6.5px;margin-top:6px}
+    .gauge{
+      right:12px;top:58px;bottom:auto;height:150px;width:auto;left:12px;
+      padding:7px 8px;flex-direction:row;gap:8px;
+    }
+    .gauge-head{display:none}
+    .meters{grid-template-columns:repeat(5,1fr);width:100%;gap:8px}
+    .meter{flex-direction:row;align-items:center;gap:4px}
+    .meter .val{writing-mode:horizontal-tb;transform:none;font-size:6.5px}
+    .meter .track{width:3px;height:22px;flex:none;min-height:0}
+    .meter .lbl{writing-mode:horizontal-tb;transform:none;height:auto;font-size:5.5px;order:-1}
+    .source{width:28px;height:28px;font-size:7px}
+    .footer{left:14px;right:14px;bottom:10px;font-size:6px}
+    .footer .serial{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}
+  }
+</style>
+</head>
+<body>
+<canvas id="field" aria-label="Two-source interference field"></canvas>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<header class="top">
+  <span><b>Wave Lab</b> / interference field</span>
+  <span class="mid"><i>●</i> two sources · continuous</span>
+  <span class="right"><span class="dot"></span><span id="clock">00:00:00</span> · λ study 02</span>
+</header>
+
+<aside class="rail" aria-label="Wave controls">
+  <div class="rail-head"><span>Instrument rail</span><b>live</b></div>
+
+  <div class="ctrl">
+    <div class="ctrl-row"><label for="freq">Frequency</label><output id="freqOut">1.80 Hz</output></div>
+    <input id="freq" type="range" min="0.6" max="3.2" step="0.01" value="1.8" aria-label="Frequency">
+  </div>
+
+  <div class="ctrl">
+    <div class="ctrl-row"><label for="phase">Phase</label><output id="phaseOut">45°</output></div>
+    <input id="phase" type="range" min="0" max="360" step="1" value="45" aria-label="Phase">
+  </div>
+
+  <div class="ctrl">
+    <div class="ctrl-row"><label for="sep">Separation</label><output id="sepOut">22.0 cm</output></div>
+    <input id="sep" type="range" min="6" max="44" step="0.1" value="22" aria-label="Separation">
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="pause" type="button" aria-pressed="false">Pause</button>
+    <button class="btn" id="recenter" type="button">Recenter</button>
+  </div>
+
+  <div class="rail-note">
+    Drag either <b>source</b> across the field.<br>
+    Wave crests add; troughs cancel.
+  </div>
+</aside>
+
+<div class="caption">
+  <div class="kicker"><i>Interference</i> · two point sources</div>
+  <h1>Two waves<br>make a <em>third.</em></h1>
+  <p>A field of differences. Where the paths agree, light gathers; where they oppose, the field goes quiet.</p>
+  <div class="formula">A = sin(kr₁ − ωt) + sin(kr₂ − ωt + φ)</div>
+</div>
+
+<aside class="gauge" aria-label="Wave readouts">
+  <div class="gauge-head">Field gauge</div>
+  <div class="meters">
+    <div class="meter"><span class="val" id="gFreq">1.80</span><div class="track"><div class="fill" id="gFreqFill"></div></div><span class="lbl">Hz</span></div>
+    <div class="meter"><span class="val" id="gWave">14.2</span><div class="track"><div class="fill" id="gWaveFill"></div></div><span class="lbl">λ cm</span></div>
+    <div class="meter"><span class="val" id="gSep">22.0</span><div class="track"><div class="fill" id="gSepFill"></div></div><span class="lbl">d cm</span></div>
+    <div class="meter"><span class="val" id="gPhase">45</span><div class="track"><div class="fill" id="gPhaseFill"></div></div><span class="lbl">φ°</span></div>
+    <div class="meter"><span class="val" id="gNodes">7</span><div class="track"><div class="fill" id="gNodesFill"></div></div><span class="lbl">nodes</span></div>
+  </div>
+</aside>
+
+<div class="source" id="sourceA" role="slider" tabindex="0" aria-label="Source A" aria-valuemin="0" aria-valuemax="100" aria-valuenow="38" aria-valuetext="Source A position"><span>A</span></div>
+<div class="source" id="sourceB" role="slider" tabindex="0" aria-label="Source B" aria-valuemin="0" aria-valuemax="100" aria-valuenow="62" aria-valuetext="Source B position"><span>B</span></div>
+
+<footer class="footer">
+  <span>Wave Lab · ripple tank simulation</span>
+  <em>Every crest is a conversation.</em>
+  <span class="serial">WL-02 / 2026</span>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById("field");
+  var ctx = canvas.getContext("2d", { alpha: false });
+  var off = document.createElement("canvas");
+  var offCtx = off.getContext("2d", { alpha: false });
+  var W = 0, H = 0, scale = 0.44;
+  var sources = [{ x: 0.38, y: 0.52 }, { x: 0.62, y: 0.52 }];
+  var defaults = { freq: 1.8, phase: 45, sep: 22 };
+  var state = {
+    freq: defaults.freq,
+    phase: defaults.phase,
+    sep: defaults.sep,
+    paused: false,
+    t: 0,
+    needs: true
+  };
+  var dragging = -1;
+  var lastFrame = 0;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var els = {
+    freq: document.getElementById("freq"),
+    phase: document.getElementById("phase"),
+    sep: document.getElementById("sep"),
+    freqOut: document.getElementById("freqOut"),
+    phaseOut: document.getElementById("phaseOut"),
+    sepOut: document.getElementById("sepOut"),
+    pause: document.getElementById("pause"),
+    recenter: document.getElementById("recenter"),
+    sourceA: document.getElementById("sourceA"),
+    sourceB: document.getElementById("sourceB"),
+    clock: document.getElementById("clock"),
+    gFreq: document.getElementById("gFreq"),
+    gWave: document.getElementById("gWave"),
+    gSep: document.getElementById("gSep"),
+    gPhase: document.getElementById("gPhase"),
+    gNodes: document.getElementById("gNodes"),
+    gFreqFill: document.getElementById("gFreqFill"),
+    gWaveFill: document.getElementById("gWaveFill"),
+    gSepFill: document.getElementById("gSepFill"),
+    gPhaseFill: document.getElementById("gPhaseFill"),
+    gNodesFill: document.getElementById("gNodesFill")
+  };
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function sourcePx(i) {
+    return { x: sources[i].x * W, y: sources[i].y * H };
+  }
+
+  function distanceCm() {
+    var a = sourcePx(0), b = sourcePx(1);
+    var dx = b.x - a.x, dy = b.y - a.y;
+    return Math.sqrt(dx * dx + dy * dy) / Math.max(W, H) * 100;
+  }
+
+  function syncSepFromSources() {
+    state.sep = clamp(distanceCm(), 6, 44);
+    els.sep.value = state.sep.toFixed(1);
+    els.sepOut.textContent = state.sep.toFixed(1) + " cm";
+    setSliderFill(els.sep);
+  }
+
+  function setSourcePositionsFromSep() {
+    var d = state.sep / 100 * Math.max(W, H);
+    var cx = 0.5 * W, cy = 0.52 * H;
+    sources[0].x = (cx - d / 2) / W;
+    sources[0].y = cy / H;
+    sources[1].x = (cx + d / 2) / W;
+    sources[1].y = cy / H;
+    placeMarkers();
+  }
+
+  function placeMarkers() {
+    els.sourceA.style.left = (sources[0].x * 100).toFixed(2) + "%";
+    els.sourceA.style.top = (sources[0].y * 100).toFixed(2) + "%";
+    els.sourceB.style.left = (sources[1].x * 100).toFixed(2) + "%";
+    els.sourceB.style.top = (sources[1].y * 100).toFixed(2) + "%";
+    els.sourceA.setAttribute("aria-valuenow", String(Math.round(sources[0].x * 100)));
+    els.sourceB.setAttribute("aria-valuenow", String(Math.round(sources[1].x * 100)));
+    els.sourceA.setAttribute("aria-valuetext", "Source A at " + Math.round(sources[0].x * 100) + " percent");
+    els.sourceB.setAttribute("aria-valuetext", "Source B at " + Math.round(sources[1].x * 100) + " percent");
+  }
+
+  function resize() {
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    off.width = Math.max(2, Math.round(W * scale));
+    off.height = Math.max(2, Math.round(H * scale));
+    placeMarkers();
+    state.needs = true;
+  }
+
+  function setSliderFill(el) {
+    var min = parseFloat(el.min), max = parseFloat(el.max), val = parseFloat(el.value);
+    var pct = ((val - min) / (max - min)) * 100;
+    el.style.setProperty("--pct", pct.toFixed(2) + "%");
+  }
+
+  function updateReadouts() {
+    var wavelengthPx = Math.min(W, H) / (state.freq * 2.4);
+    var wavelengthCm = wavelengthPx / Math.max(W, H) * 100;
+    var phaseRad = state.phase * Math.PI / 180;
+    var dPx = Math.hypot((sources[1].x - sources[0].x) * W, (sources[1].y - sources[0].y) * H);
+    var ratio = dPx / Math.max(1, wavelengthPx);
+    var nodes = Math.max(1, Math.round(ratio * 2) - 1);
+
+    els.freqOut.textContent = state.freq.toFixed(2) + " Hz";
+    els.phaseOut.textContent = Math.round(state.phase) + "°";
+    els.sepOut.textContent = state.sep.toFixed(1) + " cm";
+    els.gFreq.textContent = state.freq.toFixed(2);
+    els.gWave.textContent = wavelengthCm.toFixed(1);
+    els.gSep.textContent = state.sep.toFixed(1);
+    els.gPhase.textContent = String(Math.round(state.phase));
+    els.gNodes.textContent = String(nodes);
+
+    els.gFreqFill.style.height = ((state.freq - 0.6) / (3.2 - 0.6) * 100).toFixed(1) + "%";
+    els.gWaveFill.style.height = clamp(wavelengthCm / 30 * 100, 4, 100).toFixed(1) + "%";
+    els.gSepFill.style.height = ((state.sep - 6) / (44 - 6) * 100).toFixed(1) + "%";
+    els.gPhaseFill.style.height = (state.phase / 360 * 100).toFixed(1) + "%";
+    els.gNodesFill.style.height = clamp(nodes / 24 * 100, 4, 100).toFixed(1) + "%";
+
+    setSliderFill(els.freq);
+    setSliderFill(els.phase);
+    setSliderFill(els.sep);
+    state.needs = true;
+  }
+
+  function render() {
+    if (!W || !H) return;
+    var w = off.width, h = off.height;
+    var img = offCtx.createImageData(w, h);
+    var data = img.data;
+    var a = sourcePx(0), b = sourcePx(1);
+    var ax = a.x * scale, ay = a.y * scale;
+    var bx = b.x * scale, by = b.y * scale;
+    var wavelength = Math.min(W, H) / (state.freq * 2.4) * scale;
+    var k = 2 * Math.PI / Math.max(4, wavelength);
+    var omega = state.freq * 1.9;
+    var t = state.t;
+    var phase = state.phase * Math.PI / 180;
+    var idx = 0;
+    var cx = w / 2, cy = h / 2;
+    var invMax = 1 / Math.max(w, h);
+
+    for (var y = 0; y < h; y++) {
+      var dy1 = y - ay, dy2 = y - by;
+      for (var x = 0; x < w; x++) {
+        var dx1 = x - ax, dx2 = x - bx;
+        var r1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+        var r2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        var n = Math.sin(k * r1 - omega * t) + Math.sin(k * r2 - omega * t + phase);
+        var pos = n > 0 ? n : 0;
+        var neg = n < 0 ? -n : 0;
+        var crest = pos * pos;
+        var grain = ((x * 17 + y * 31) % 7) * 1.1;
+        var base = 30 - neg * 12;
+        var r = base + crest * 205 - neg * 8 + grain;
+        var g = 14 + crest * 102 - neg * 4 + grain * .7;
+        var bl = 36 + crest * 58 + neg * 16 + grain;
+        // gentle radial falloff toward edges
+        var vx = (x - cx) * invMax, vy = (y - cy) * invMax;
+        var fall = 1 - (vx * vx + vy * vy) * 0.32;
+        data[idx] = clamp(r * fall, 0, 255);
+        data[idx + 1] = clamp(g * fall, 0, 255);
+        data[idx + 2] = clamp(bl * fall, 0, 255);
+        data[idx + 3] = 255;
+        idx += 4;
+      }
+    }
+    offCtx.putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(off, 0, 0, W, H);
+  }
+
+  function frame(now) {
+    if (!state.paused && !reduce) {
+      state.t += Math.min(0.05, (now - lastFrame) / 1000 || 0.016);
+      state.needs = true;
+    }
+    if (state.needs) { render(); state.needs = false; }
+    lastFrame = now;
+    requestAnimationFrame(frame);
+  }
+
+  function setSource(i, clientX, clientY) {
+    sources[i].x = clamp(clientX / W, 0.04, 0.96);
+    sources[i].y = clamp(clientY / H, 0.08, 0.92);
+    placeMarkers();
+    syncSepFromSources();
+    updateReadouts();
+  }
+
+  function attachDrag(el, i) {
+    el.addEventListener("pointerdown", function (e) {
+      dragging = i;
+      el.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    el.addEventListener("pointermove", function (e) {
+      if (dragging !== i) return;
+      setSource(i, e.clientX, e.clientY);
+      e.preventDefault();
+    });
+    function end(e) {
+      if (dragging !== i) return;
+      dragging = -1;
+      try { el.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+    el.addEventListener("lostpointercapture", function () { if (dragging === i) dragging = -1; });
+
+    el.addEventListener("keydown", function (e) {
+      var step = e.shiftKey ? 0.04 : 0.012;
+      if (e.key === "ArrowLeft") { sources[i].x = clamp(sources[i].x - step, 0.04, 0.96); }
+      else if (e.key === "ArrowRight") { sources[i].x = clamp(sources[i].x + step, 0.04, 0.96); }
+      else if (e.key === "ArrowUp") { sources[i].y = clamp(sources[i].y - step, 0.08, 0.92); }
+      else if (e.key === "ArrowDown") { sources[i].y = clamp(sources[i].y + step, 0.08, 0.92); }
+      else return;
+      e.preventDefault();
+      placeMarkers();
+      syncSepFromSources();
+      updateReadouts();
+    });
+  }
+
+  els.freq.addEventListener("input", function () {
+    state.freq = parseFloat(this.value);
+    updateReadouts();
+  });
+  els.phase.addEventListener("input", function () {
+    state.phase = parseFloat(this.value);
+    updateReadouts();
+  });
+  els.sep.addEventListener("input", function () {
+    state.sep = parseFloat(this.value);
+    setSourcePositionsFromSep();
+    updateReadouts();
+  });
+
+  els.pause.addEventListener("click", function () {
+    state.paused = !state.paused;
+    this.setAttribute("aria-pressed", String(state.paused));
+    this.textContent = state.paused ? "Resume" : "Pause";
+    state.needs = true;
+  });
+
+  els.recenter.addEventListener("click", function () {
+    state.freq = defaults.freq;
+    state.phase = defaults.phase;
+    state.sep = defaults.sep;
+    els.freq.value = String(state.freq);
+    els.phase.value = String(state.phase);
+    els.sep.value = String(state.sep);
+    setSourcePositionsFromSep();
+    updateReadouts();
+  });
+
+  attachDrag(els.sourceA, 0);
+  attachDrag(els.sourceB, 1);
+
+  function tickClock() {
+    var d = new Date();
+    var p = function (v) { return String(v).padStart(2, "0"); };
+    els.clock.textContent = p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  }
+
+  window.addEventListener("resize", resize);
+  resize();
+  setSourcePositionsFromSep();
+  updateReadouts();
+  tickClock();
+  setInterval(tickClock, 1000);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

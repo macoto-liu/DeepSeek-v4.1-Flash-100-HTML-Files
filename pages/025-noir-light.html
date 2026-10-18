@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Last Light — A 1948 Picture</title>
+<style>
+  :root{
+    --bg:#08080a;
+    --bg-soft:#101012;
+    --bone:#eae3d3;
+    --muted:rgba(234,227,211,.56);
+    --faint:rgba(234,227,211,.16);
+    --rule:rgba(234,227,211,.22);
+    --red:#a21319;
+    --red-bright:#c21c23;
+    --ghost:rgba(234,227,211,.30);
+    --shade:rgba(0,0,0,.82);
+    --beam-rgb:255,214,158;
+    --serif:Didot,"Bodoni 72","Bodoni MT","Playfair Display","Times New Roman",serif;
+    --mono:"Courier New",Courier,monospace;
+    --mx:62vw;
+    --my:32vh;
+  }
+  body.house{
+    --bg:#cecbc4;
+    --bg-soft:#dad7d0;
+    --bone:#111215;
+    --muted:rgba(17,18,21,.56);
+    --faint:rgba(17,18,21,.13);
+    --rule:rgba(17,18,21,.26);
+    --red:#870f15;
+    --red-bright:#9e1218;
+    --ghost:rgba(17,18,21,.26);
+    --shade:rgba(48,54,60,.40);
+    --beam-rgb:214,232,244;
+  }
+  *{box-sizing:border-box}
+  html{min-height:100%}
+  body{
+    margin:0;
+    min-height:100svh;
+    background:var(--bg);
+    color:var(--bone);
+    font-family:var(--serif);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    transition:background-color 1.05s ease,color 1.05s ease;
+  }
+  ::selection{background:var(--red);color:#f2ecdf}
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    background:radial-gradient(125% 92% at 50% 38%,transparent 28%,rgba(0,0,0,.62) 100%);
+    transition:background 1.05s ease;
+  }
+  body.house::before{
+    background:radial-gradient(130% 95% at 50% 38%,transparent 48%,rgba(34,36,38,.18) 100%);
+  }
+
+  .beam{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    background:
+      radial-gradient(46vmax 46vmax at var(--mx) var(--my),rgba(var(--beam-rgb),.23),rgba(var(--beam-rgb),.08) 36%,transparent 68%),
+      linear-gradient(113deg,transparent 28%,rgba(var(--beam-rgb),.055) 47%,transparent 64%);
+    mix-blend-mode:screen;
+    opacity:1;
+    transition:opacity 1.05s ease,background 1.05s ease;
+  }
+  body.house .beam{opacity:.30}
+
+  .frame{
+    position:relative;
+    z-index:3;
+    width:100%;
+    max-width:1540px;
+    margin:0 auto;
+    min-height:100svh;
+    padding:clamp(18px,2.4vw,34px) clamp(20px,4.8vw,76px) clamp(16px,2.4vw,32px);
+    display:flex;
+    flex-direction:column;
+  }
+  .weave{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    animation:weave 7.4s steps(1,end) infinite;
+  }
+  @keyframes weave{
+    0%,100%{transform:translate3d(0,0,0)}
+    9%{transform:translate3d(.45px,-.35px,0)}
+    21%{transform:translate3d(-.35px,.25px,0)}
+    34%{transform:translate3d(.2px,.45px,0)}
+    47%{transform:translate3d(-.5px,-.2px,0)}
+    58%{transform:translate3d(.3px,0,0)}
+    71%{transform:translate3d(-.2px,.3px,0)}
+    84%{transform:translate3d(.4px,-.4px,0)}
+  }
+
+  /* ── masthead ───────────────────────────── */
+  .masthead{
+    display:flex;
+    align-items:center;
+    gap:clamp(12px,2vw,24px);
+    padding-bottom:clamp(11px,1.6vh,18px);
+    border-bottom:1px solid var(--rule);
+    font-family:var(--mono);
+    font-size:clamp(7.5px,.68vw,9.5px);
+    letter-spacing:.30em;
+    text-transform:uppercase;
+    line-height:1.5;
+    transition:border-color 1.05s ease;
+  }
+  .studio{color:var(--bone);white-space:nowrap}
+  .studio em{
+    font-family:var(--serif);
+    font-style:italic;
+    text-transform:none;
+    letter-spacing:.03em;
+    font-size:1.5em;
+    color:var(--muted);
+    margin-left:.25em;
+  }
+  .masthead .fill{
+    flex:1;
+    height:1px;
+    min-width:14px;
+    background:linear-gradient(90deg,var(--faint),transparent);
+  }
+  .masthead .meta{
+    display:flex;
+    gap:clamp(10px,1.8vw,26px);
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .masthead .meta b{
+    color:var(--bone);
+    font-weight:400;
+  }
+  .masthead .cert{
+    color:var(--red-bright);
+    display:inline-flex;
+    align-items:center;
+    gap:.5em;
+  }
+  .masthead .cert::before{
+    content:"";
+    width:5px;
+    height:5px;
+    background:var(--red);
+    border-radius:50%;
+  }
+
+  /* ── poster ─────────────────────────────── */
+  .poster{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    position:relative;
+    padding:clamp(20px,4.4vh,58px) 0 clamp(18px,3.4vh,44px);
+  }
+  .eyebrow{
+    display:flex;
+    align-items:baseline;
+    gap:clamp(12px,2vw,26px);
+    font-family:var(--mono);
+    font-size:clamp(7.5px,.72vw,10px);
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:clamp(14px,2.6vh,30px);
+    position:relative;
+    z-index:4;
+  }
+  .eyebrow .bar{
+    width:clamp(24px,3.6vw,54px);
+    height:1px;
+    background:var(--red);
+    align-self:center;
+  }
+  .eyebrow .right{
+    margin-left:auto;
+    letter-spacing:.22em;
+    color:var(--faint2,rgba(234,227,211,.38));
+  }
+  body.house .eyebrow .right{color:rgba(17,18,21,.42)}
+
+  .title{
+    position:relative;
+    margin:0;
+    font-weight:400;
+    text-transform:uppercase;
+    line-height:.8;
+    width:max-content;
+    max-width:100%;
+  }
+  .row{display:block;position:relative;width:max-content;max-width:100%}
+  .row-a{
+    font-size:clamp(2.6rem,11.4vw,9.4rem);
+    letter-spacing:.085em;
+    margin-left:.12em;
+    color:var(--bone);
+    text-shadow:0 1px 0 rgba(0,0,0,.35);
+    transition:color 1.05s ease,text-shadow 1.05s ease;
+  }
+  body.house .row-a{text-shadow:0 1px 0 rgba(255,255,255,.5)}
+  .row-b{
+    font-style:italic;
+    font-size:clamp(4.4rem,20.5vw,16.5rem);
+    line-height:.68;
+    margin-top:.035em;
+    letter-spacing:-.012em;
+  }
+  .row-b .solid{
+    position:relative;
+    z-index:1;
+    color:var(--bone);
+    transition:color 1.05s ease;
+  }
+  .row-b .ghost{
+    position:absolute;
+    left:0;
+    top:0;
+    z-index:0;
+    font-style:italic;
+    color:transparent;
+    -webkit-text-stroke:1px var(--ghost);
+    transform:translate(.058em,-.036em);
+    pointer-events:none;
+    user-select:none;
+    transition:-webkit-text-stroke-color 1.05s ease;
+  }
+
+  .blinds{
+    position:absolute;
+    left:0;
+    right:0;
+    top:2%;
+    height:62%;
+    z-index:3;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+      118deg,
+      var(--shade) 0 17px,
+      transparent 17px 54px
+    );
+    opacity:.40;
+    filter:blur(2.4px);
+    mix-blend-mode:multiply;
+    -webkit-mask-image:radial-gradient(74% 90% at 48% 46%,#000 22%,transparent 78%);
+    mask-image:radial-gradient(74% 90% at 48% 46%,#000 22%,transparent 78%);
+    transition:opacity 1.05s ease,background 1.05s ease;
+  }
+  .blinds::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:repeating-linear-gradient(
+      118deg,
+      transparent 0 42px,
+      var(--shade) 42px 48px
+    );
+    opacity:.32;
+    filter:blur(1.6px);
+  }
+  body.house .blinds{opacity:.22}
+
+  /* ── lower credits ──────────────────────── */
+  .lower{
+    display:grid;
+    grid-template-columns:minmax(0,1.35fr) auto minmax(0,1fr);
+    align-items:end;
+    gap:clamp(18px,3.2vw,54px);
+    margin-top:clamp(26px,5.4vh,64px);
+    position:relative;
+    z-index:4;
+  }
+  .credits{
+    display:flex;
+    flex-direction:column;
+    gap:clamp(11px,1.8vh,18px);
+    min-width:0;
+  }
+  .credit .k{
+    display:block;
+    font-family:var(--mono);
+    font-size:clamp(7px,.62vw,8.5px);
+    letter-spacing:.36em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:.55em;
+  }
+  .credit .v{
+    font-size:clamp(14px,1.4vw,19px);
+    letter-spacing:.035em;
+    line-height:1.45;
+    color:var(--bone);
+    transition:color 1.05s ease;
+  }
+  .credit .v em{
+    font-style:italic;
+    color:var(--muted);
+  }
+  .credit .v .sep{
+    color:var(--red-bright);
+    padding:0 .35em;
+    font-style:normal;
+  }
+
+  .stamp{
+    width:clamp(104px,9.6vw,138px);
+    aspect-ratio:1;
+    border:2px solid var(--red);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:var(--red-bright);
+    transform:rotate(-9deg);
+    position:relative;
+    justify-self:center;
+    font-family:var(--mono);
+    text-transform:uppercase;
+    letter-spacing:.16em;
+    opacity:.96;
+    transition:border-color 1.05s ease,color 1.05s ease;
+  }
+  .stamp::before{
+    content:"";
+    position:absolute;
+    inset:5px;
+    border:1px solid currentColor;
+    border-radius:50%;
+    opacity:.55;
+  }
+  .stamp-inner{display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.35}
+  .stamp .top{font-size:clamp(5.5px,.5vw,7px);letter-spacing:.2em;opacity:.85}
+  .stamp .big{
+    font-family:var(--serif);
+    font-size:clamp(15px,1.55vw,21px);
+    letter-spacing:.1em;
+    line-height:1.1;
+    margin:.12em 0;
+  }
+  .stamp .star{font-family:var(--serif);font-size:9px;letter-spacing:.4em;opacity:.8}
+  .stamp .num{font-size:clamp(5px,.46vw,6.5px);letter-spacing:.13em;opacity:.8}
+
+  .runtime{
+    justify-self:end;
+    text-align:right;
+    display:flex;
+    flex-direction:column;
+    gap:.85em;
+    font-family:var(--mono);
+    font-size:clamp(7.5px,.66vw,9.5px);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--muted);
+    line-height:1.5;
+    transition:color 1.05s ease;
+  }
+  .runtime strong{
+    font-weight:400;
+    color:var(--bone);
+    letter-spacing:.18em;
+  }
+  .runtime .red{color:var(--red-bright)}
+  .runtime .stars{
+    letter-spacing:.32em;
+    color:var(--bone);
+    font-family:var(--serif);
+    font-size:1.25em;
+  }
+
+  /* ── programme ──────────────────────────── */
+  .programme{
+    border-top:1px solid var(--rule);
+    padding-top:clamp(13px,2vh,20px);
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:end;
+    gap:clamp(14px,2.4vw,30px);
+    position:relative;
+    z-index:4;
+    transition:border-color 1.05s ease;
+  }
+  .prog-left{min-width:0}
+  .prog-head{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:.8em;
+    font-family:var(--mono);
+    font-size:clamp(7px,.6vw,8.5px);
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:clamp(9px,1.3vh,13px);
+  }
+  .prog-head .red{color:var(--red-bright)}
+  .prog-head .dot{font-size:6px;color:var(--faint2,rgba(234,227,211,.35))}
+  body.house .prog-head .dot{color:rgba(17,18,21,.3)}
+  .times{
+    display:flex;
+    align-items:flex-end;
+    gap:clamp(18px,4.2vw,62px);
+  }
+  .time{display:flex;flex-direction:column;align-items:flex-start}
+  .time .clock{
+    display:flex;
+    align-items:baseline;
+    font-size:clamp(23px,2.9vw,40px);
+    line-height:1;
+    letter-spacing:.015em;
+    color:var(--bone);
+    transition:color 1.05s ease;
+  }
+  .time .ampm{
+    font-family:var(--mono);
+    font-size:clamp(6.5px,.55vw,8px);
+    letter-spacing:.18em;
+    color:var(--muted);
+    margin-left:.5em;
+    text-transform:uppercase;
+  }
+  .time .cap{
+    font-family:var(--mono);
+    font-size:clamp(6px,.52vw,7.5px);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-top:.75em;
+    white-space:nowrap;
+  }
+  .time.sold .clock{color:var(--red-bright)}
+  .time.sold .cap{color:var(--red-bright);opacity:.8}
+
+  .house-btn{
+    appearance:none;
+    background:transparent;
+    border:1px solid var(--rule);
+    color:var(--bone);
+    font-family:var(--mono);
+    font-size:clamp(7px,.6vw,8.5px);
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    padding:.95em 1.15em;
+    display:inline-flex;
+    align-items:center;
+    gap:.85em;
+    cursor:pointer;
+    transition:border-color .4s ease,color .4s ease,background-color .4s ease;
+    white-space:nowrap;
+  }
+  .house-btn:hover{border-color:var(--bone)}
+  .house-btn:focus-visible{outline:1px solid var(--red-bright);outline-offset:3px}
+  .house-btn .lamp{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--red-bright);
+    box-shadow:0 0 9px rgba(194,28,35,.8);
+    transition:background-color .5s ease,box-shadow .5s ease;
+    flex:0 0 auto;
+  }
+  body.house .house-btn .lamp{
+    background:#23262a;
+    box-shadow:0 0 8px rgba(255,255,255,.65);
+  }
+
+  /* ── overlays ───────────────────────────── */
+  .grain{
+    position:fixed;
+    left:-50%;
+    top:-50%;
+    width:200%;
+    height:200%;
+    z-index:80;
+    pointer-events:none;
+    opacity:.155;
+    mix-blend-mode:overlay;
+    animation:grainShift .62s steps(4) infinite;
+  }
+  @keyframes grainShift{
+    0%{transform:translate3d(0,0,0)}
+    25%{transform:translate3d(-1.7%,1.3%,0)}
+    50%{transform:translate3d(1.2%,-1.5%,0)}
+    75%{transform:translate3d(-1.4%,-1.1%,0)}
+    100%{transform:translate3d(0,0,0)}
+  }
+  .flicker{
+    position:fixed;
+    inset:0;
+    z-index:81;
+    pointer-events:none;
+    background:#ffe9c4;
+    mix-blend-mode:screen;
+    opacity:.018;
+    animation:flicker 4.3s steps(1,end) infinite;
+  }
+  @keyframes flicker{
+    0%,100%{opacity:.014}
+    7%{opacity:.048}
+    8%{opacity:.01}
+    24%{opacity:.032}
+    25%{opacity:.012}
+    47%{opacity:.05}
+    48%{opacity:.016}
+    63%{opacity:.008}
+    64%{opacity:.036}
+    82%{opacity:.02}
+    83%{opacity:.055}
+    84%{opacity:.012}
+  }
+
+  @media (max-width:760px){
+    .masthead .cert{display:none}
+    .eyebrow .right{display:none}
+    .lower{grid-template-columns:1fr auto;gap:20px}
+    .credits{grid-column:1/-1}
+    .stamp{justify-self:start;width:96px;transform:rotate(-8deg)}
+    .runtime{justify-self:end;align-self:center;gap:.7em}
+    .row-b .ghost{-webkit-text-stroke-width:.8px}
+    .programme{grid-template-columns:1fr;align-items:start;gap:18px}
+    .house-btn{justify-content:center;width:100%}
+  }
+  @media (max-width:430px){
+    .masthead .meta .opt{display:none}
+    .times{gap:16px;flex-wrap:wrap}
+    .time .clock{font-size:23px}
+    .time .cap{font-size:6px;letter-spacing:.18em}
+    .title{width:100%}
+    .row-a{letter-spacing:.06em;margin-left:.06em}
+    .lower{margin-top:24px}
+    .prog-head .dot{display:none}
+  }
+  @media (max-height:720px) and (min-width:761px){
+    .poster{padding-top:10px;padding-bottom:14px}
+    .lower{margin-top:22px}
+    .credits{gap:9px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .weave,.grain,.flicker{animation:none}
+    .beam,.frame,.title{transition-duration:.01ms}
+  }
+</style>
+</head>
+<body>
+  <div class="beam" aria-hidden="true"></div>
+
+  <div class="frame">
+    <div class="weave">
+      <header class="masthead">
+        <span class="studio">Candlelight Pictures <em>presents</em></span>
+        <span class="fill"></span>
+        <span class="meta">
+          <span class="opt">A <b>35&nbsp;mm</b> presentation</span>
+          <span class="opt">Mono · 1.37:1</span>
+          <span class="cert">Approved 1948</span>
+        </span>
+      </header>
+
+      <main class="poster">
+        <div class="eyebrow">
+          <span class="bar"></span>
+          <span>A film by August Vale</span>
+          <span class="right">The Rialto · Screen One</span>
+        </div>
+
+        <h1 class="title" aria-label="The Last Light">
+          <span class="row row-a">THE LAST</span>
+          <span class="row row-b">
+            <span class="ghost" aria-hidden="true">LIGHT</span>
+            <span class="solid">LIGHT</span>
+          </span>
+        </h1>
+        <div class="blinds" aria-hidden="true"></div>
+
+        <div class="lower">
+          <div class="credits">
+            <div class="credit">
+              <span class="k">Directed by</span>
+              <span class="v">August Vale</span>
+            </div>
+            <div class="credit">
+              <span class="k">Screenplay by</span>
+              <span class="v">Ruth Calder <em>and</em> August Vale</span>
+            </div>
+            <div class="credit">
+              <span class="k">With</span>
+              <span class="v">Ingrid Marsh<span class="sep">·</span>Elias Crane<span class="sep">·</span>Vera Lind</span>
+            </div>
+          </div>
+
+          <div class="stamp" role="img" aria-label="Certificate number 2417, approved 1948">
+            <div class="stamp-inner">
+              <span class="top">Certificate</span>
+              <span class="big">APPROVED</span>
+              <span class="star">✦ ✦ ✦</span>
+              <span class="num">No. 2417 · 1948</span>
+            </div>
+          </div>
+
+          <div class="runtime">
+            <span><strong>1 HR 47 MIN</strong></span>
+            <span class="red">Approved · General audiences</span>
+            <span class="stars">★ ★ ★ ★</span>
+            <span>Black &amp; white · Mono</span>
+          </div>
+        </div>
+      </main>
+
+      <footer class="programme" id="programme">
+        <div class="prog-left">
+          <div class="prog-head">
+            <span class="red">Programme</span>
+            <span class="dot">●</span>
+            <span>Tonight only · The Rialto</span>
+            <span class="dot">●</span>
+            <span>No. 2417</span>
+          </div>
+          <div class="times">
+            <div class="time">
+              <span class="clock">6.15<span class="ampm">pm</span></span>
+              <span class="cap">Doors 5.45</span>
+            </div>
+            <div class="time">
+              <span class="clock">8.30<span class="ampm">pm</span></span>
+              <span class="cap">Stage talk</span>
+            </div>
+            <div class="time">
+              <span class="clock">10.45<span class="ampm">pm</span></span>
+              <span class="cap">Final house</span>
+            </div>
+          </div>
+        </div>
+        <button class="house-btn" id="houseBtn" type="button" aria-pressed="false">
+          <span class="lamp" aria-hidden="true"></span>
+          <span id="houseLabel">House lights</span>
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <svg class="grain" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <filter id="noirGrain">
+      <feTurbulence type="fractalNoise" baseFrequency=".82" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <rect width="100%" height="100%" filter="url(#noirGrain)"/>
+  </svg>
+  <div class="flicker" aria-hidden="true"></div>
+
+  <script>
+    (function(){
+      "use strict";
+      var root = document.documentElement;
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var state = {x: window.innerWidth * 0.62, y: window.innerHeight * 0.34};
+      var target = {x: state.x, y: state.y};
+      var pointerSeen = false;
+
+      function paint(){
+        root.style.setProperty("--mx", state.x.toFixed(1) + "px");
+        root.style.setProperty("--my", state.y.toFixed(1) + "px");
+      }
+
+      function tick(){
+        state.x += (target.x - state.x) * 0.075;
+        state.y += (target.y - state.y) * 0.075;
+        paint();
+        window.requestAnimationFrame(tick);
+      }
+
+      window.addEventListener("pointermove", function(e){
+        pointerSeen = true;
+        target.x = e.clientX;
+        target.y = e.clientY;
+        if(reduce){ state.x = target.x; state.y = target.y; paint(); }
+      }, {passive:true});
+
+      window.addEventListener("resize", function(){
+        if(!pointerSeen){
+          target.x = window.innerWidth * 0.62;
+          target.y = window.innerHeight * 0.34;
+          if(reduce){ state.x = target.x; state.y = target.y; paint(); }
+        }
+      }, {passive:true});
+
+      if(!reduce){ window.requestAnimationFrame(tick); }
+      else { paint(); }
+
+      var btn = document.getElementById("houseBtn");
+      var label = document.getElementById("houseLabel");
+      btn.addEventListener("click", function(){
+        var on = document.body.classList.toggle("house");
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        label.textContent = on ? "Dim the house" : "House lights";
+      });
+    })();
+  </script>
+</body>
+</html>

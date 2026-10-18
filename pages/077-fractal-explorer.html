@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mandelbrot Field — The Edge of Everything</title>
+<style>
+  :root{
+    --page:#060607;
+    --panel:#0b0b0d;
+    --ink:#e7e2d8;
+    --muted:#8d8981;
+    --faint:#5c5954;
+    --line:rgba(231,226,216,.14);
+    --line-soft:rgba(231,226,216,.075);
+    --accent:#d08a55;
+    --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--page);color:var(--ink)}
+  body{
+    font-family:var(--serif);
+    min-height:100vh;
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgba(208,138,85,.075), transparent 60%),
+      radial-gradient(90% 60% at 100% 100%, rgba(80,110,140,.05), transparent 70%),
+      var(--page);
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:5;opacity:.35;
+    background-image:radial-gradient(rgba(255,255,255,.055) .6px, transparent .7px);
+    background-size:3px 3px;
+    mix-blend-mode:screen;
+  }
+  .shell{max-width:1360px;margin:0 auto;padding:clamp(18px,3.2vw,44px) clamp(18px,4vw,56px) 0;}
+  .topbar{
+    display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);padding-bottom:14px;border-bottom:1px solid var(--line);
+  }
+  .topbar b{font-weight:400;color:var(--ink)}
+  .topbar .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin-right:9px;vertical-align:1px}
+  header.hero{padding:clamp(30px,6vw,76px) 0 clamp(24px,4vw,44px);position:relative}
+  .eyebrow{
+    font-family:var(--mono);font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 clamp(14px,2.4vw,26px);
+  }
+  h1{
+    font-weight:400;margin:0;
+    font-size:clamp(38px,7.2vw,88px);
+    line-height:.98;letter-spacing:-.025em;
+    max-width:12ch;
+  }
+  h1 em{font-style:italic;color:#f4efe4}
+  .hero .sub{
+    margin:clamp(18px,2.6vw,28px) 0 0;
+    max-width:56ch;color:#b8b2a7;font-size:clamp(13px,1.25vw,16px);line-height:1.65;
+  }
+  .hero .rule{
+    display:flex;align-items:center;gap:14px;margin-top:clamp(26px,4vw,40px);
+    color:var(--faint);font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;
+  }
+  .hero .rule::before,.hero .rule::after{content:"";height:1px;background:var(--line);flex:1}
+  .hero .rule span{white-space:nowrap}
+
+  .layout{
+    display:grid;grid-template-columns:minmax(0,1fr) 302px;gap:clamp(24px,3.6vw,52px);
+    align-items:start;padding-bottom:clamp(40px,6vw,80px);
+  }
+  .viewport{min-width:0}
+  .canvas-wrap{
+    position:relative;width:100%;aspect-ratio:1/1;
+    background:#000;
+    border:1px solid var(--line);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.8),
+      0 40px 90px -30px rgba(0,0,0,.9),
+      0 0 70px -10px rgba(208,138,85,.08);
+    overflow:hidden;
+  }
+  canvas{display:block;width:100%;height:100%;cursor:crosshair;touch-action:manipulation}
+  .canvas-wrap::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(231,226,216,.06), inset 0 0 80px rgba(0,0,0,.55);
+  }
+  .mark{position:absolute;width:13px;height:13px;pointer-events:none;opacity:.55}
+  .mark.tl{top:10px;left:10px;border-top:1px solid var(--ink);border-left:1px solid var(--ink)}
+  .mark.tr{top:10px;right:10px;border-top:1px solid var(--ink);border-right:1px solid var(--ink)}
+  .mark.bl{bottom:10px;left:10px;border-bottom:1px solid var(--ink);border-left:1px solid var(--ink)}
+  .mark.br{bottom:10px;right:10px;border-bottom:1px solid var(--ink);border-right:1px solid var(--ink)}
+  .underbar{
+    display:flex;justify-content:space-between;align-items:center;gap:18px;
+    padding-top:12px;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--faint);
+  }
+  .underbar .status{color:var(--muted);display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+  .pulse{width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:.4;transition:opacity .3s}
+  .status.busy .pulse{opacity:1;animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+  .hint{line-height:1.5}
+
+  aside.controls{
+    border-left:1px solid var(--line);
+    padding-left:clamp(18px,2.4vw,30px);
+    position:sticky;top:24px;
+  }
+  .ctrl-block{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid var(--line-soft)}
+  .ctrl-block:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+  .ctrl-label{
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);
+    margin-bottom:12px;
+  }
+  .ctrl-label .val{color:var(--ink);font-size:11px;letter-spacing:.08em}
+  .ctrl-label .val small{color:var(--faint);font-size:9px;letter-spacing:.14em}
+
+  .slider{width:100%;margin:2px 0 8px;-webkit-appearance:none;appearance:none;background:transparent}
+  .slider:focus{outline:none}
+  .slider::-webkit-slider-runnable-track{height:1px;background:rgba(231,226,216,.28)}
+  .slider::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:11px;height:11px;border-radius:50%;
+    background:var(--accent);border:0;margin-top:-5px;box-shadow:0 0 0 3px rgba(208,138,85,.14);cursor:pointer;
+  }
+  .slider::-moz-range-track{height:1px;background:rgba(231,226,216,.28)}
+  .slider::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:var(--accent);border:0;cursor:pointer}
+  .ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--faint)}
+
+  .swatches{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .swatch{
+    display:flex;align-items:center;gap:9px;padding:9px 9px;
+    background:transparent;border:1px solid var(--line-soft);color:var(--muted);
+    font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+    cursor:pointer;transition:border-color .2s,color .2s,background .2s;text-align:left;
+  }
+  .swatch:hover{border-color:rgba(231,226,216,.3);color:var(--ink)}
+  .swatch[aria-pressed="true"]{border-color:rgba(231,226,216,.45);color:var(--ink);background:rgba(255,255,255,.025)}
+  .chip{width:22px;height:11px;flex:none;border:1px solid rgba(0,0,0,.5)}
+  .chip.ember{background:linear-gradient(90deg,#1a0803,#7a2509,#ef9a45,#ffe6bb)}
+  .chip.deep{background:linear-gradient(90deg,#030c16,#0b435e,#37b8c6,#d8f6f8)}
+  .chip.mono{background:linear-gradient(90deg,#0a0a0a,#4a4a48,#a8a59c,#f1eee5)}
+  .chip.rose{background:linear-gradient(90deg,#18060c,#67162f,#d95f7e,#ffe0e4)}
+
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  button.act{
+    appearance:none;background:transparent;border:1px solid var(--line);
+    color:var(--ink);font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+    padding:11px 8px;cursor:pointer;transition:background .2s,border-color .2s,color .2s;
+  }
+  button.act:hover{background:rgba(231,226,216,.07);border-color:rgba(231,226,216,.4)}
+  button.act:active{background:rgba(231,226,216,.12)}
+  button.act span{display:block;color:var(--faint);font-size:8px;letter-spacing:.1em;margin-top:4px}
+
+  .coords{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:2}
+  .coord-row{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dotted rgba(231,226,216,.12);padding:2px 0}
+  .coord-row:last-child{border-bottom:0}
+  .coord-row span:first-child{color:var(--faint);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase}
+  .coord-row span:last-child{color:var(--ink);font-variant-numeric:tabular-nums}
+  .scale-bar{height:9px;border-bottom:1px solid var(--ink);position:relative;margin:6px 0 4px}
+  .scale-bar i{position:absolute;bottom:0;left:0;height:9px;border-left:1px solid var(--ink);border-right:1px solid var(--ink);display:block}
+  .scale-cap{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--faint);margin-top:4px}
+
+  .note{font-size:12.5px;line-height:1.75;color:#a9a399}
+  .note p{margin:0 0 10px}
+  .note p:last-child{margin:0}
+  .note .lead{color:var(--ink);font-style:italic}
+
+  footer.page-foot{
+    border-top:1px solid var(--line);padding:22px 0 34px;
+    display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);
+  }
+  footer.page-foot .mid{color:var(--muted)}
+
+  @media (max-width:1000px){
+    .layout{grid-template-columns:1fr;gap:30px}
+    aside.controls{position:static;border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:24px;
+      display:grid;grid-template-columns:1fr 1fr;gap:0 30px}
+    .ctrl-block{padding-bottom:18px;margin-bottom:18px}
+    .ctrl-block.note-block,.ctrl-block.draw{grid-column:1/-1}
+    h1{max-width:none}
+  }
+  @media (max-width:620px){
+    .shell{padding:16px 15px 0}
+    .topbar{font-size:8.5px;letter-spacing:.14em;flex-wrap:wrap;row-gap:6px}
+    .topbar .right{display:none}
+    .hero{padding:30px 0 26px}
+    h1{font-size:clamp(36px,12vw,54px)}
+    .hero .sub{font-size:13px}
+    .underbar{font-size:8px;letter-spacing:.1em;flex-wrap:wrap;gap:6px}
+    .hint{order:2;flex-basis:100%}
+    aside.controls{grid-template-columns:1fr}
+    .ctrl-block.note-block,.ctrl-block.draw{grid-column:auto}
+    canvas{cursor:pointer}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <span><span class="dot"></span><b>Mandelbrot Field</b> &nbsp;/&nbsp; Computational plate No. 077</span>
+    <span class="right">Escape-time study &nbsp;·&nbsp; z ↦ z² + c</span>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow">A portrait of the boundary</p>
+    <h1>The edge of <em>everything.</em></h1>
+    <p class="sub">A square of the complex plane, resolved one pixel at a time. The black is the set; the light is everything that tries to leave it, and cannot decide.</p>
+    <div class="rule"><span>Click to advance · Shift-click to retreat</span></div>
+  </header>
+
+  <main class="layout">
+    <section class="viewport" aria-label="Mandelbrot set viewport">
+      <div class="canvas-wrap">
+        <canvas id="field" width="840" height="840" role="img" aria-label="Rendered Mandelbrot set. Click to zoom in, shift-click to zoom out." tabindex="0"></canvas>
+        <i class="mark tl"></i><i class="mark tr"></i><i class="mark bl"></i><i class="mark br"></i>
+      </div>
+      <div class="underbar">
+        <span class="status" id="status"><i class="pulse"></i><span id="statusText">Field ready</span></span>
+        <span class="hint">Wheel to zoom · drag-free navigation · 840 × 840 samples</span>
+      </div>
+    </section>
+
+    <aside class="controls" aria-label="Field controls">
+      <div class="ctrl-block">
+        <div class="ctrl-label"><label for="iter">Iteration depth</label><span class="val" id="iterVal">300</span></div>
+        <input class="slider" id="iter" type="range" min="60" max="1400" step="20" value="300" aria-label="Iteration depth">
+        <div class="ticks"><span>60</span><span>730</span><span>1 400</span></div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-label"><span>Palette</span><span class="val" id="paletteName">Ember</span></div>
+        <div class="swatches" id="palettes" role="group" aria-label="Colour palette">
+          <button class="swatch" data-palette="ember" aria-pressed="true"><i class="chip ember"></i>Ember</button>
+          <button class="swatch" data-palette="deep" aria-pressed="false"><i class="chip deep"></i>Deep</button>
+          <button class="swatch" data-palette="mono" aria-pressed="false"><i class="chip mono"></i>Mono</button>
+          <button class="swatch" data-palette="rose" aria-pressed="false"><i class="chip rose"></i>Rose</button>
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="btn-row">
+          <button class="act" id="zoomOut" type="button">Zoom out<span>×3.5</span></button>
+          <button class="act" id="reset" type="button">Reset field<span>−0.600, 0.000</span></button>
+        </div>
+      </div>
+
+      <div class="ctrl-block">
+        <div class="ctrl-label"><span>Coordinates</span><span class="val" id="mag">×1.00</span></div>
+        <div class="coords">
+          <div class="coord-row"><span>Centre re</span><span id="cx">−0.600000</span></div>
+          <div class="coord-row"><span>Centre im</span><span id="cy">0.000000</span></div>
+          <div class="coord-row"><span>Cursor re</span><span id="mx">—</span></div>
+          <div class="coord-row"><span>Cursor im</span><span id="my">—</span></div>
+        </div>
+        <div class="scale-bar" id="scaleBar"><i id="scaleFill"></i></div>
+        <div class="scale-cap"><span>Scale</span><span id="scaleLabel">1.0 unit</span></div>
+        <div class="scale-cap"><span>Span</span><span id="spanLabel">3.200000</span></div>
+      </div>
+
+      <div class="ctrl-block note-block">
+        <div class="ctrl-label"><span>The set</span></div>
+        <div class="note">
+          <p class="lead">Iterate z ↦ z² + c from zero. Some seeds wander, some settle, some are held forever.</p>
+          <p>The Mandelbrot set is the collection of complex numbers c for which that sequence stays bounded. Its rim is infinitely long and endlessly folded — a coastline that keeps arriving.</p>
+        </div>
+      </div>
+
+      <div class="ctrl-block draw">
+        <div class="ctrl-label"><span>Drawing</span><span class="val" id="drawVal">0%</span></div>
+        <div class="note"><p style="font-size:11.5px">Escape-time colouring, smooth continuous iteration, 64-bit floating point. Interior points are left as unlit black.</p></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="page-foot">
+    <span>Mandelbrot Field · Plate 077</span>
+    <span class="mid">Computed in your browser · no images, no network</span>
+    <span>Benoît Mandelbrot, 1980</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById("field");
+  var ctx = canvas.getContext("2d", {alpha:false});
+  var RES = 840;
+
+  var BASE_SPAN = 3.2;
+  var HOME = {cx:-0.6, cy:0, span:BASE_SPAN};
+  var MIN_SPAN = 4e-14;
+  var MAX_SPAN = 6.0;
+  var ZOOM = 3.5;
+
+  var view = {cx:HOME.cx, cy:HOME.cy, span:HOME.span};
+  var maxIter = 300;
+  var smooth = null;
+  var smoothReady = false;
+  var imageData = ctx.createImageData(RES, RES);
+  var renderToken = 0;
+  var computing = false;
+  var paletteDirty = false;
+  var activePalette = "ember";
+  var currentLut = null;
+
+  var PALETTES = {
+    ember: {
+      label:"Ember",
+      stops:[[0,"#050203"],[.10,"#2c0a04"],[.24,"#7d2409"],[.38,"#cc5a12"],
+             [.48,"#f09a41"],[.56,"#ffe5b8"],[.63,"#f2a552"],[.72,"#b3420f"],
+             [.84,"#4d1006"],[.93,"#1a0503"],[1,"#050203"]],
+      interior:[5,4,5]
+    },
+    deep: {
+      label:"Deep",
+      stops:[[0,"#020408"],[.10,"#061523"],[.24,"#0a3550"],[.38,"#0f6d86"],
+             [.49,"#34b8c4"],[.57,"#d6f5f6"],[.64,"#4bb6c4"],[.73,"#0d5270"],
+             [.84,"#062234"],[.93,"#030a12"],[1,"#020408"]],
+      interior:[3,5,8]
+    },
+    mono: {
+      label:"Mono",
+      stops:[[0,"#070707"],[.10,"#1b1b1b"],[.24,"#434341"],[.38,"#7d7b74"],
+             [.49,"#b9b5aa"],[.57,"#f2eee2"],[.65,"#b0aca1"],[.74,"#6a6862"],
+             [.85,"#2b2b29"],[.93,"#111111"],[1,"#070707"]],
+      interior:[7,7,7]
+    },
+    rose: {
+      label:"Rose",
+      stops:[[0,"#090307"],[.10,"#300b18"],[.24,"#731a36"],[.38,"#b93a59"],
+             [.48,"#e57490"],[.57,"#ffdfe4"],[.64,"#e77e96"],[.73,"#a52c4c"],
+             [.84,"#46101f"],[.93,"#18060c"],[1,"#090307"]],
+      interior:[6,3,5]
+    }
+  };
+
+  function hexToRgb(hex){
+    var n = parseInt(hex.slice(1), 16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  }
+
+  function buildLut(stops){
+    var size = 1024;
+    var lut = new Uint8ClampedArray(size*3);
+    var parsed = stops.map(function(s){ return [s[0], hexToRgb(s[1])]; });
+    for(var i=0;i<size;i++){
+      var t = i/size;
+      var a = parsed[0], b = parsed[parsed.length-1];
+      for(var k=0;k<parsed.length-1;k++){
+        if(t >= parsed[k][0] && t <= parsed[k+1][0]){ a = parsed[k]; b = parsed[k+1]; break; }
+      }
+      var span = (b[0]-a[0]) || 1;
+      var f = Math.min(1, Math.max(0, (t-a[0])/span));
+      // gentle smoothstep keeps the bands soft
+      f = f*f*(3-2*f);
+      lut[i*3]   = a[1][0] + (b[1][0]-a[1][0])*f;
+      lut[i*3+1] = a[1][1] + (b[1][1]-a[1][1])*f;
+      lut[i*3+2] = a[1][2] + (b[1][2]-a[1][2])*f;
+    }
+    return lut;
+  }
+  currentLut = buildLut(PALETTES[activePalette].stops);
+
+  function formatNum(v, digits){
+    if(!isFinite(v)) return "—";
+    var s = Math.abs(v).toFixed(digits);
+    return (v < 0 ? "\u2212" : "") + s;
+  }
+
+  function fmtSpan(v){
+    if(v >= 0.01) return v.toFixed(v >= 1 ? 3 : 4);
+    return v.toExponential(2).replace("e-", " × 10\u207B").replace("e+", " × 10");
+  }
+
+  function decimalsFor(span){
+    var d = Math.ceil(-Math.log10(span)) + 4;
+    return Math.max(4, Math.min(14, d));
+  }
+
+  function pixelToComplex(px, py){
+    return {
+      re: view.cx + (px/RES - 0.5) * view.span,
+      im: view.cy + (py/RES - 0.5) * view.span
+    };
+  }
+
+  function colorFor(v){
+    var interior = PALETTES[activePalette].interior;
+    if(v < 0) return interior;
+    var idx = (Math.sqrt(v + 0.4) * 58) | 0;
+    idx = idx % 1024;
+    var o = idx*3;
+    return [currentLut[o], currentLut[o+1], currentLut[o+2]];
+  }
+
+  function recolor(){
+    if(!smoothReady || !smooth) return;
+    var d = imageData.data;
+    for(var i=0, p=0;i<smooth.length;i++,p+=4){
+      var c = colorFor(smooth[i]);
+      d[p] = c[0]; d[p+1] = c[1]; d[p+2] = c[2]; d[p+3] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  function setStatus(text, busy){
+    var el = document.getElementById("status");
+    var t = document.getElementById("statusText");
+    t.textContent = text;
+    el.classList.toggle("busy", !!busy);
+  }
+
+  function updateStats(){
+    var ds = decimalsFor(view.span);
+    document.getElementById("cx").textContent = formatNum(view.cx, ds);
+    document.getElementById("cy").textContent = formatNum(view.cy, ds);
+    var mag = BASE_SPAN / view.span;
+    document.getElementById("mag").textContent = mag < 1000
+      ? "×" + mag.toFixed(2)
+      : "×" + mag.toExponential(2).replace("e+", " × 10");
+    document.getElementById("spanLabel").textContent = fmtSpan(view.span);
+
+    // Scale bar: a nice round distance inside the current span.
+    var target = view.span * 0.3;
+    var pow = Math.pow(10, Math.floor(Math.log10(target)));
+    var base = target / pow;
+    var nice = base >= 5 ? 5 : base >= 2 ? 2 : 1;
+    var dist = nice * pow;
+    var pct = Math.min(100, (dist / view.span) * 100);
+    document.getElementById("scaleFill").style.width = pct.toFixed(2) + "%";
+    var label;
+    if(dist >= 0.001) label = dist.toLocaleString("en-US", {maximumFractionDigits:6}) + (dist === 1 ? " unit" : " units");
+    else label = dist.toExponential(1).replace("e-", " × 10\u207B") + " units";
+    document.getElementById("scaleLabel").textContent = label;
+  }
+
+  function renderRow(row){
+    var N = RES;
+    var half = view.span * 0.5;
+    var im = view.cy + ((row + 0.5)/N - 0.5) * view.span;
+    var d = imageData.data;
+    var base = row * N;
+    var interior = PALETTES[activePalette].interior;
+
+    for(var col=0; col<N; col++){
+      var cr = view.cx + ((col + 0.5)/N - 0.5) * view.span;
+      var ci = im;
+      var v = -1;
+
+      // Quick interior tests: main cardioid and period-2 bulb.
+      var xq = cr - 0.25;
+      var q = xq*xq + ci*ci;
+      var inside = q*(q + xq) <= 0.25*ci*ci;
+      if(!inside){
+        var xp = cr + 1;
+        inside = xp*xp + ci*ci <= 0.0625;
+      }
+
+      if(!inside){
+        var zx = 0, zy = 0, zx2 = 0, zy2 = 0, i = 0;
+        while(zx2 + zy2 <= 16 && i < maxIter){
+          zy = 2*zx*zy + ci;
+          zx = zx2 - zy2 + cr;
+          zx2 = zx*zx;
+          zy2 = zy*zy;
+          i++;
+        }
+        if(i < maxIter){
+          var mod = Math.sqrt(zx2 + zy2);
+          var mu = i + 1 - Math.log(Math.log(mod) / Math.LN2) / Math.LN2;
+          v = mu > 0 ? mu : 0;
+        }
+      }
+
+      smooth[base + col] = v;
+
+      var p = (base + col) * 4;
+      if(v < 0){
+        d[p] = interior[0]; d[p+1] = interior[1]; d[p+2] = interior[2]; d[p+3] = 255;
+      } else {
+        var idx = (Math.sqrt(v + 0.4) * 58) | 0;
+        idx = idx % 1024;
+        var o = idx*3;
+        d[p] = currentLut[o]; d[p+1] = currentLut[o+1]; d[p+2] = currentLut[o+2]; d[p+3] = 255;
+      }
+    }
+  }
+
+  function startRender(){
+    var token = ++renderToken;
+    computing = true;
+    paletteDirty = false;
+    smoothReady = false;
+    smooth = new Float32Array(RES*RES);
+    var row = 0;
+    setStatus("Resolving field", true);
+
+    function step(){
+      if(token !== renderToken) return;
+      var t0 = performance.now();
+      while(row < RES && performance.now() - t0 < 13){
+        renderRow(row);
+        row++;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      var pct = Math.round(row / RES * 100);
+      document.getElementById("drawVal").textContent = pct + "%";
+      if(row < RES){
+        setStatus("Resolving " + pct + "%", true);
+        requestAnimationFrame(step);
+      } else {
+        computing = false;
+        smoothReady = true;
+        if(paletteDirty) recolor();
+        setStatus("Field ready", false);
+        document.getElementById("drawVal").textContent = "100%";
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function zoomAt(cx, cy, factor){
+    var span = Math.min(MAX_SPAN, Math.max(MIN_SPAN, view.span * factor));
+    view = {cx:cx, cy:cy, span:span};
+    updateStats();
+    startRender();
+  }
+
+  function zoomToPoint(px, py, factor){
+    var z = pixelToComplex(px, py);
+    var span = Math.min(MAX_SPAN, Math.max(MIN_SPAN, view.span * factor));
+    if(factor > 1){
+      view = {cx:z.re, cy:z.im, span:span};
+    } else {
+      view = {cx:view.cx, cy:view.cy, span:span};
+    }
+    updateStats();
+    startRender();
+  }
+
+  function eventPixel(evt){
+    var r = canvas.getBoundingClientRect();
+    var x = (evt.clientX - r.left) / r.width;
+    var y = (evt.clientY - r.top) / r.height;
+    x = Math.min(1, Math.max(0, x));
+    y = Math.min(1, Math.max(0, y));
+    return {x:x, y:y, px:x*RES, py:y*RES};
+  }
+
+  canvas.addEventListener("click", function(evt){
+    var p = eventPixel(evt);
+    if(evt.shiftKey){
+      zoomToPoint(p.px, p.py, 1/ZOOM);
+      return;
+    }
+    // Clicking centres the field on the chosen point, then advances.
+    var z = pixelToComplex(p.px, p.py);
+    var span = Math.min(MAX_SPAN, Math.max(MIN_SPAN, view.span / ZOOM));
+    view = {cx:z.re, cy:z.im, span:span};
+    updateStats();
+    startRender();
+  });
+
+  canvas.addEventListener("mousemove", function(evt){
+    var p = eventPixel(evt);
+    var z = pixelToComplex(p.px, p.py);
+    var d = decimalsFor(view.span);
+    document.getElementById("mx").textContent = formatNum(z.re, d);
+    document.getElementById("my").textContent = formatNum(z.im, d);
+  });
+  canvas.addEventListener("mouseleave", function(){
+    document.getElementById("mx").textContent = "—";
+    document.getElementById("my").textContent = "—";
+  });
+
+  canvas.addEventListener("wheel", function(evt){
+    evt.preventDefault();
+    var p = eventPixel(evt);
+    var factor = evt.deltaY < 0 ? 0.78 : 1/0.78;
+    var span = Math.min(MAX_SPAN, Math.max(MIN_SPAN, view.span * factor));
+    var z = pixelToComplex(p.px, p.py);
+    // Keep the point beneath the cursor anchored while changing scale.
+    var fx = (p.px/RES - 0.5);
+    var fy = (p.py/RES - 0.5);
+    view = {
+      cx: z.re - fx * span,
+      cy: z.im - fy * span,
+      span: span
+    };
+    updateStats();
+    startRender();
+  }, {passive:false});
+
+  canvas.addEventListener("keydown", function(evt){
+    if(evt.key === "+" || evt.key === "="){
+      evt.preventDefault(); zoomAt(view.cx, view.cy, 1/2);
+    } else if(evt.key === "-" || evt.key === "_"){
+      evt.preventDefault(); zoomAt(view.cx, view.cy, 2);
+    } else if(evt.key === "0"){
+      evt.preventDefault(); resetView();
+    }
+  });
+
+  document.getElementById("zoomOut").addEventListener("click", function(){
+    zoomAt(view.cx, view.cy, ZOOM);
+  });
+
+  document.getElementById("reset").addEventListener("click", resetView);
+
+  function resetView(){
+    view = {cx:HOME.cx, cy:HOME.cy, span:HOME.span};
+    updateStats();
+    startRender();
+  }
+
+  document.getElementById("palettes").addEventListener("click", function(evt){
+    var btn = evt.target.closest(".swatch");
+    if(!btn) return;
+    var key = btn.getAttribute("data-palette");
+    if(!PALETTES[key] || key === activePalette) return;
+    activePalette = key;
+    currentLut = buildLut(PALETTES[key].stops);
+    Array.prototype.forEach.call(document.querySelectorAll(".swatch"), function(b){
+      b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+    });
+    document.getElementById("paletteName").textContent = PALETTES[key].label;
+    if(computing){
+      paletteDirty = true;
+    } else {
+      recolor();
+    }
+  });
+
+  var iterTimer = null;
+  var iterInput = document.getElementById("iter");
+  iterInput.addEventListener("input", function(){
+    maxIter = parseInt(iterInput.value, 10);
+    document.getElementById("iterVal").textContent = maxIter;
+    clearTimeout(iterTimer);
+    iterTimer = setTimeout(function(){
+      updateStats();
+      startRender();
+    }, 140);
+  });
+
+  updateStats();
+  startRender();
+})();
+</script>
+</body>
+</html>

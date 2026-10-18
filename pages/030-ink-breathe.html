@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sumi — one breath, one line.</title>
+<style>
+  :root{
+    --paper:#f2ead9;
+    --paper-deep:#e8ddc7;
+    --ink:#1d1a15;
+    --ink-soft:rgba(29,26,21,.68);
+    --ink-faint:rgba(29,26,21,.42);
+    --hair:rgba(42,36,27,.2);
+    --seal:#b23b2b;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --jp:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Songti SC","Noto Serif JP","Times New Roman",serif;
+    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{background:#ded3bf}
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:clamp(0px,2.2vw,32px);
+    background:
+      radial-gradient(1200px 900px at 50% 40%, #e7ddca 0%, #ded2bc 58%, #d5c8b0 100%);
+    color:var(--ink);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+  }
+  .sheet{
+    position:relative;
+    width:min(1240px,100%);
+    min-height:min(940px,calc(100vh - clamp(0px,4.4vw,64px)));
+    display:flex;
+    flex-direction:column;
+    padding:clamp(16px,2.8vw,38px) clamp(16px,3.6vw,56px) 0;
+    background:
+      radial-gradient(ellipse at 22% 18%, rgba(255,253,245,.55), rgba(255,253,245,0) 46%),
+      radial-gradient(ellipse at 78% 82%, rgba(170,150,112,.10), rgba(170,150,112,0) 50%),
+      repeating-linear-gradient(94deg, rgba(120,100,66,.018) 0 1px, rgba(255,255,255,0) 1px 3px),
+      linear-gradient(150deg,#f5efe1 0%,var(--paper) 48%,#efe5d2 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 32px 70px rgba(78,60,34,.18),
+      0 2px 6px rgba(78,60,34,.10);
+    overflow:hidden;
+    border-radius:2px;
+  }
+  .sheet::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(circle at 12% 26%, rgba(126,99,59,.055), rgba(126,99,59,0) 18%),
+      radial-gradient(circle at 86% 74%, rgba(126,99,59,.045), rgba(126,99,59,0) 22%),
+      radial-gradient(circle at 70% 12%, rgba(126,99,59,.035), rgba(126,99,59,0) 16%);
+    mix-blend-mode:multiply;
+    z-index:1;
+  }
+  .grain{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    opacity:.055;
+    mix-blend-mode:multiply;
+    pointer-events:none;
+    z-index:6;
+  }
+  .masthead{
+    position:relative;
+    z-index:5;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:24px;
+    padding:0 0 clamp(12px,1.8vw,19px);
+    border-bottom:1px solid var(--hair);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:2px 10px;
+    margin:0;
+    line-height:1.1;
+  }
+  .brand .name{
+    font-size:clamp(24px,2.5vw,32px);
+    letter-spacing:-.015em;
+    font-weight:400;
+  }
+  .brand .tag{
+    font-size:clamp(13px,1.35vw,17px);
+    font-style:italic;
+    color:var(--ink-soft);
+    letter-spacing:.01em;
+  }
+  .mast-meta{
+    flex:0 0 auto;
+    text-align:right;
+    font-family:var(--mono);
+    font-size:8px;
+    line-height:1.85;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    padding-top:2px;
+  }
+  .mast-meta b{
+    font-weight:400;
+    color:var(--ink-soft);
+  }
+  .paper-wrap{
+    position:relative;
+    flex:1 1 auto;
+    min-height:clamp(430px,56vh,740px);
+    margin:0 calc(-1 * clamp(16px,3.6vw,56px));
+    z-index:2;
+  }
+  .paper{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    cursor:none;
+  }
+  #ink{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    z-index:2;
+    touch-action:none;
+  }
+  .composition{
+    position:absolute;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+    user-select:none;
+  }
+  .haiku{
+    position:absolute;
+    left:clamp(22px,7.6%,96px);
+    top:clamp(28px,13.5%,96px);
+    display:flex;
+    align-items:flex-start;
+    gap:clamp(14px,2vw,26px);
+  }
+  .haiku-jp{
+    writing-mode:vertical-rl;
+    text-orientation:upright;
+    font-family:var(--jp);
+    font-size:clamp(15px,1.6vw,20px);
+    line-height:2.15;
+    letter-spacing:.22em;
+    color:rgba(25,22,17,.9);
+    min-height:clamp(150px,20vw,230px);
+  }
+  .haiku-side{
+    display:flex;
+    flex-direction:column;
+    gap:clamp(14px,2.4vw,30px);
+    padding-top:2px;
+    max-width:130px;
+  }
+  .haiku-en{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:clamp(10px,1vw,12.5px);
+    line-height:1.65;
+    color:var(--ink-soft);
+    letter-spacing:.015em;
+  }
+  .haiku-en span{display:block}
+  .haiku-sig{
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .haiku-sig .kanji{
+    display:block;
+    font-family:var(--jp);
+    font-size:12px;
+    letter-spacing:.24em;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+  }
+  .hanko{
+    position:absolute;
+    left:clamp(64px,23%,244px);
+    top:clamp(250px,58%,410px);
+    width:clamp(34px,3.8vw,46px);
+    height:clamp(34px,3.8vw,46px);
+    background:var(--seal);
+    color:#f4e8d7;
+    display:grid;
+    place-items:center;
+    font-family:var(--jp);
+    font-size:clamp(20px,2.3vw,27px);
+    line-height:1;
+    filter:url(#sealRough);
+    transform:rotate(-2.4deg);
+    opacity:.92;
+    box-shadow:0 1px 0 rgba(70,18,12,.18);
+  }
+  .hanko::after{
+    content:"";
+    position:absolute;
+    inset:5px;
+    border:1px solid rgba(244,232,215,.46);
+    border-radius:1px;
+  }
+  .enso-note{
+    position:absolute;
+    left:62%;
+    bottom:11%;
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    display:flex;
+    align-items:center;
+    gap:9px;
+    white-space:nowrap;
+  }
+  .enso-note::before{
+    content:"";
+    width:34px;
+    height:1px;
+    background:rgba(42,36,27,.2);
+  }
+  .branch-note{
+    position:absolute;
+    right:clamp(18px,4.4%,60px);
+    top:clamp(16px,4.6%,46px);
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    text-align:right;
+    line-height:1.9;
+  }
+  .brush-cursor{
+    position:absolute;
+    left:0;
+    top:0;
+    width:14px;
+    height:14px;
+    border:1px solid rgba(34,29,22,.45);
+    border-radius:50%;
+    transform:translate(-50%,-50%) scale(1);
+    pointer-events:none;
+    z-index:5;
+    opacity:0;
+    transition:opacity .18s ease,width .1s ease,height .1s ease;
+    mix-blend-mode:multiply;
+  }
+  .brush-cursor.show{opacity:1}
+  .brush-cursor.down{background:rgba(34,29,22,.06)}
+  .tools{
+    position:relative;
+    z-index:5;
+    display:grid;
+    grid-template-columns:minmax(220px,320px) auto 1fr;
+    align-items:center;
+    gap:clamp(14px,2.6vw,34px);
+    margin:0 calc(-1 * clamp(16px,3.6vw,56px));
+    padding:clamp(13px,1.8vw,19px) clamp(16px,3.6vw,56px) clamp(15px,2vw,21px);
+    border-top:1px solid var(--hair);
+    background:linear-gradient(180deg,rgba(242,234,217,.3),rgba(232,221,199,.16));
+  }
+  .tool-group{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+  .tool-label{
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    white-space:nowrap;
+  }
+  .tool-label b{
+    font-weight:400;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .slider{
+    appearance:none;
+    -webkit-appearance:none;
+    flex:1;
+    min-width:70px;
+    height:22px;
+    background:transparent;
+    cursor:pointer;
+    margin:0;
+  }
+  .slider::-webkit-slider-runnable-track{
+    height:1px;
+    background:rgba(34,29,22,.35);
+  }
+  .slider::-moz-range-track{
+    height:1px;
+    background:rgba(34,29,22,.35);
+  }
+  .slider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px;
+    height:16px;
+    margin-top:-7.5px;
+    border-radius:50%;
+    background:var(--ink);
+    border:2px solid var(--paper);
+    box-shadow:0 0 0 1px rgba(34,29,22,.45);
+  }
+  .slider::-moz-range-thumb{
+    width:13px;
+    height:13px;
+    border-radius:50%;
+    background:var(--ink);
+    border:2px solid var(--paper);
+    box-shadow:0 0 0 1px rgba(34,29,22,.45);
+  }
+  .slider:focus-visible{outline:1px solid var(--ink);outline-offset:5px}
+  .actions{display:flex;gap:8px}
+  .tool-btn{
+    appearance:none;
+    border:1px solid rgba(34,29,22,.3);
+    background:transparent;
+    color:var(--ink);
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    padding:10px 15px;
+    min-height:40px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:background .22s ease,color .22s ease,border-color .22s ease;
+    white-space:nowrap;
+  }
+  .tool-btn svg{display:block;flex:0 0 auto;opacity:.8}
+  .tool-btn:hover{background:rgba(29,26,21,.07);border-color:rgba(34,29,22,.55)}
+  .tool-btn:active{background:rgba(29,26,21,.12)}
+  .tool-btn:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+  .tool-btn.ink{
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+  }
+  .tool-btn.ink:hover{background:#302b23}
+  .tool-btn.ink svg{opacity:.75}
+  .tool-note{
+    justify-self:end;
+    text-align:right;
+    font-family:var(--mono);
+    font-size:7px;
+    line-height:1.8;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  @media (max-width:860px){
+    .tools{
+      grid-template-columns:1fr auto;
+      row-gap:12px;
+    }
+    .tool-note{display:none}
+    .tool-group.brush{grid-column:1 / -1}
+    .enso-note{left:58%;bottom:9%}
+  }
+  @media (max-width:600px){
+    body{padding:0}
+    .sheet{
+      width:100%;
+      min-height:100vh;
+      padding:16px 16px 0;
+      box-shadow:none;
+      border-radius:0;
+    }
+    .masthead{padding-bottom:11px;gap:12px}
+    .brand{gap:2px 7px}
+    .brand .name{font-size:23px}
+    .brand .tag{font-size:12.5px;width:100%}
+    .mast-meta{font-size:6.5px;letter-spacing:.13em;line-height:1.7}
+    .paper-wrap{
+      margin:0 -16px;
+      min-height:clamp(430px,62vh,560px);
+    }
+    .haiku{
+      left:18px;
+      top:26px;
+      gap:10px;
+    }
+    .haiku-jp{font-size:15px;line-height:2;min-height:158px;letter-spacing:.16em}
+    .haiku-side{max-width:104px;gap:12px}
+    .haiku-en{font-size:9.5px;line-height:1.6}
+    .haiku-sig{font-size:6.5px;letter-spacing:.16em}
+    .haiku-sig .kanji{font-size:10px}
+    .hanko{left:22px;top:auto;bottom:11%;width:34px;height:34px;font-size:20px}
+    .enso-note,.branch-note{display:none}
+    .tools{
+      margin:0 -16px;
+      padding:12px 16px max(14px,env(safe-area-inset-bottom));
+      grid-template-columns:1fr auto;
+      gap:10px 14px;
+    }
+    .tool-group.brush{gap:9px}
+    .tool-label{font-size:7px;letter-spacing:.14em}
+    .tool-btn{font-size:8px;padding:9px 11px;min-height:38px;letter-spacing:.1em}
+    .actions{gap:6px}
+    .paper{cursor:crosshair}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition-duration:.001ms !important;animation-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="sealRough" x="-20%" y="-20%" width="140%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency=".12" numOctaves="2" seed="7" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="paperGrain">
+    <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</svg>
+
+<main class="sheet">
+  <svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="100%" filter="url(#paperGrain)" opacity=".8"/>
+  </svg>
+
+  <header class="masthead">
+    <h1 class="brand">
+      <span class="name">Sumi</span>
+      <span class="tag">— one breath, one line.</span>
+    </h1>
+    <div class="mast-meta">
+      <b>Rice paper · sheet 003</b><br>
+      pine soot ink · 2026<br>
+      studio of breath &amp; ink
+    </div>
+  </header>
+
+  <div class="paper-wrap">
+    <div class="paper" id="paper">
+      <canvas id="ink" aria-label="Painting paper. Drag to paint ink strokes with the brush."></canvas>
+      <div class="composition" aria-hidden="true">
+        <div class="haiku">
+          <div class="haiku-jp">一滴の墨に山の静けさ</div>
+          <div class="haiku-side">
+            <div class="haiku-en">
+              <span>one drop of ink —</span>
+              <span>a mountain's stillness</span>
+              <span>enters the paper</span>
+            </div>
+            <div class="haiku-sig">
+              <span class="kanji">墨舟</span>
+              sumi-bune · 2026
+            </div>
+          </div>
+        </div>
+        <div class="hanko">墨</div>
+        <div class="enso-note">ensō · one continuous breath</div>
+        <div class="branch-note">spring branch<br>ink on kozo</div>
+      </div>
+      <div class="brush-cursor" id="brushCursor" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <div class="tools">
+    <div class="tool-group brush">
+      <label class="tool-label" for="brushSize">Brush · <b id="sizeLabel">14</b> px</label>
+      <input class="slider" id="brushSize" type="range" min="4" max="46" step="1" value="14" aria-label="Brush size">
+    </div>
+    <div class="tool-group actions">
+      <button class="tool-btn ink" id="ensoBtn" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+          <path d="M17.8 6.5a8 8 0 1 0 2.1 6.2c-.2-4.7-4.5-8-8.6-7.4"/>
+        </svg>
+        Enso
+      </button>
+      <button class="tool-btn" id="newBtn" type="button">New sheet</button>
+    </div>
+    <div class="tool-note">drag anywhere on the paper<br>pace and pressure vary the weight</div>
+  </div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var paper = document.getElementById("paper");
+  var canvas = document.getElementById("ink");
+  var ctx = canvas.getContext("2d");
+  var sizeInput = document.getElementById("brushSize");
+  var sizeLabel = document.getElementById("sizeLabel");
+  var cursor = document.getElementById("brushCursor");
+  var ensoBtn = document.getElementById("ensoBtn");
+  var newBtn = document.getElementById("newBtn");
+
+  var W = 0;
+  var H = 0;
+  var DPR = 1;
+  var minDim = 1;
+  var items = [];
+  var active = null;
+  var state = { size: 14 };
+  var strokeSeed = 8701;
+  var pointerInside = false;
+
+  var BG_SEED = 7307;
+  var OPENING_ENSO = { cx: 0.615, cy: 0.475, r: 0.285, seed: 4411 };
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0;
+      a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function hashSeed(n) {
+    var x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+    return Math.floor((x - Math.floor(x)) * 2147483647) + 1;
+  }
+
+  /* ---------------- canvas sizing ---------------- */
+
+  function resize() {
+    var rect = paper.getBoundingClientRect();
+    if (rect.width < 2 || rect.height < 2) return;
+    W = rect.width;
+    H = rect.height;
+    minDim = Math.min(W, H);
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    redraw();
+  }
+
+  /* ---------------- ink rendering ---------------- */
+
+  function seg(ax, ay, bx, by, w, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(0.35, w);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
+    ctx.stroke();
+  }
+
+  /* Renders a stored point array into layered ink. Points: {x,y,w} in 0..1 space. */
+  function renderStroke(points, seed, strength) {
+    if (!points || points.length === 0) return;
+    strength = strength == null ? 1 : strength;
+
+    if (points.length === 1) {
+      var p = points[0];
+      var px = p.x * W, py = p.y * H, pw = Math.max(1.2, p.w * minDim);
+      var rand0 = mulberry32(seed);
+      drawBlot(px, py, pw * 0.72, 0.5 * strength, rand0);
+      return;
+    }
+
+    for (var i = 1; i < points.length; i++) {
+      var a = points[i - 1];
+      var b = points[i];
+      var ax = a.x * W, ay = a.y * H, bx = b.x * W, by = b.y * H;
+      var wa = Math.max(0.6, a.w * minDim);
+      var wb = Math.max(0.6, b.w * minDim);
+      var w = (wa + wb) * 0.5;
+      seg(ax, ay, bx, by, w * 1.72, "rgba(38,32,24," + (0.045 * strength) + ")");
+      seg(ax, ay, bx, by, w * 1.16, "rgba(30,26,19," + (0.085 * strength) + ")");
+      seg(ax, ay, bx, by, w * 0.84, "rgba(25,22,17," + (0.30 * strength) + ")");
+      seg(ax, ay, bx, by, w * 0.38, "rgba(18,16,12," + (0.34 * strength) + ")");
+    }
+  }
+
+  function ribbonPath(points, widthMul) {
+    var n = points.length;
+    if (n < 2) return;
+    var outer = [];
+    var inner = [];
+    for (var i = 0; i < n; i++) {
+      var p = points[i];
+      var a = points[Math.max(0, i - 1)];
+      var b = points[Math.min(n - 1, i + 1)];
+      var dx = (b.x - a.x) * W;
+      var dy = (b.y - a.y) * H;
+      var len = Math.sqrt(dx * dx + dy * dy) || 1;
+      var nx = -dy / len;
+      var ny = dx / len;
+      var edgeTaper = 1;
+      if (i < 4) edgeTaper = 0.55 + 0.45 * (i / 3);
+      if (i > n - 26) edgeTaper *= Math.max(0.06, (n - 1 - i) / 25);
+      var half = (p.w * minDim * widthMul * edgeTaper) / 2;
+      outer.push([p.x * W + nx * half, p.y * H + ny * half]);
+      inner.push([p.x * W - nx * half, p.y * H - ny * half]);
+    }
+    ctx.beginPath();
+    ctx.moveTo(outer[0][0], outer[0][1]);
+    for (var o = 1; o < outer.length; o++) ctx.lineTo(outer[o][0], outer[o][1]);
+    for (var q = inner.length - 1; q >= 0; q--) ctx.lineTo(inner[q][0], inner[q][1]);
+    ctx.closePath();
+  }
+
+  /* continuous brush ribbon: soft halo beneath, solid body above */
+  function renderInkRibbon(points, strength) {
+    if (!points || points.length < 2) return;
+    for (var i = 1; i < points.length; i++) {
+      var a = points[i - 1];
+      var b = points[i];
+      var w = (a.w + b.w) * 0.5 * minDim;
+      seg(a.x * W, a.y * H, b.x * W, b.y * H, w * 2.15, "rgba(34,29,21," + (0.028 * strength) + ")");
+      seg(a.x * W, a.y * H, b.x * W, b.y * H, w * 1.55, "rgba(30,26,19," + (0.05 * strength) + ")");
+    }
+    ctx.save();
+    try { ctx.filter = "blur(" + Math.max(1.4, points[0].w * minDim * 0.1).toFixed(2) + "px)"; } catch (err) {}
+    ribbonPath(points, 1.42);
+    ctx.fillStyle = "rgba(36,30,22," + (0.16 * strength) + ")";
+    ctx.fill();
+    if (ctx.filter !== undefined) ctx.filter = "none";
+    ribbonPath(points, 1.12);
+    ctx.fillStyle = "rgba(26,22,17," + (0.35 * strength) + ")";
+    ctx.fill();
+    ribbonPath(points, 1);
+    ctx.fillStyle = "rgba(20,17,13," + (0.9 * strength) + ")";
+    ctx.fill();
+    ctx.restore();
+    /* round landing of the brush */
+    var p0 = points[0];
+    ctx.fillStyle = "rgba(20,17,13," + (0.7 * strength) + ")";
+    ctx.beginPath();
+    ctx.arc(p0.x * W, p0.y * H, Math.max(1, p0.w * minDim * 0.5), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBlot(x, y, r, alpha, rand) {
+    var g = ctx.createRadialGradient(x, y, 0, x, y, Math.max(1, r * 1.9));
+    g.addColorStop(0, "rgba(20,18,14," + (alpha * 0.95) + ")");
+    g.addColorStop(0.45, "rgba(26,23,18," + (alpha * 0.55) + ")");
+    g.addColorStop(0.8, "rgba(30,26,20," + (alpha * 0.16) + ")");
+    g.addColorStop(1, "rgba(30,26,20,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.9, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* absorbent fringe */
+    for (var i = 0; i < 4; i++) {
+      var a = rand() * Math.PI * 2;
+      var d = r * (0.6 + rand() * 1.4);
+      ctx.fillStyle = "rgba(28,24,18," + (alpha * 0.12) + ")";
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, Math.max(0.4, r * 0.18 * rand()), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawSplats(splats) {
+    for (var i = 0; i < splats.length; i++) {
+      var s = splats[i];
+      ctx.fillStyle = "rgba(24,21,16," + s.a + ")";
+      ctx.beginPath();
+      ctx.ellipse(s.x * W, s.y * H, Math.max(0.35, s.r * minDim), Math.max(0.3, s.r * minDim * (0.6 + s.stretch)), s.rot, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  /* ---------------- branch and leaves ---------------- */
+
+  function taperedPath(points, widthStart, widthEnd, seed, alpha) {
+    var rand = mulberry32(seed);
+    for (var i = 1; i < points.length; i++) {
+      var t = i / (points.length - 1);
+      var w = widthStart + (widthEnd - widthStart) * Math.pow(t, 0.8);
+      var ax = points[i - 1].x * W, ay = points[i - 1].y * H;
+      var bx = points[i].x * W, by = points[i].y * H;
+      seg(ax, ay, bx, by, w * 1.6, "rgba(36,30,22," + (0.05 * alpha) + ")");
+      seg(ax, ay, bx, by, w, "rgba(24,21,16," + (0.82 * alpha) + ")");
+      seg(ax, ay, bx, by, w * 0.33, "rgba(14,12,9," + (0.62 * alpha) + ")");
+      if (rand() < 0.12) {
+        var ang = rand() * Math.PI * 2;
+        var len = (2 + rand() * 7) * (minDim / 650);
+        var ex = bx + Math.cos(ang) * len;
+        var ey = by + Math.sin(ang) * len;
+        seg(bx, by, ex, ey, Math.max(0.4, w * 0.12), "rgba(24,21,16," + (0.22 * alpha) + ")");
+      }
+    }
+  }
+
+  function bezierPoints(p0, p1, p2, p3, count) {
+    count = count || 48;
+    var out = [];
+    for (var i = 0; i <= count; i++) {
+      var t = i / count;
+      var mt = 1 - t;
+      out.push({
+        x: mt * mt * mt * p0.x + 3 * mt * mt * t * p1.x + 3 * mt * t * t * p2.x + t * t * t * p3.x,
+        y: mt * mt * mt * p0.y + 3 * mt * mt * t * p1.y + 3 * mt * t * t * p2.y + t * t * t * p3.y
+      });
+    }
+    return out;
+  }
+
+  function drawLeaf(x, y, len, angle, bend, alpha, seed) {
+    var rand = mulberry32(seed);
+    var px = x * W, py = y * H;
+    var L = len * minDim;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(L * 0.42, -L * bend, L, 0);
+    ctx.quadraticCurveTo(L * 0.42, L * bend * 0.72, 0, 0);
+    ctx.fillStyle = "rgba(23,20,15," + alpha + ")";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(240,233,219," + (alpha * 0.22) + ")";
+    ctx.lineWidth = 0.55;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.06, 0);
+    ctx.quadraticCurveTo(L * 0.55, -L * 0.02, L * 0.9, 0);
+    ctx.stroke();
+    /* dry edge nicks */
+    for (var i = 0; i < 3; i++) {
+      var t = 0.25 + rand() * 0.6;
+      var yy = -L * bend * Math.sin(t * Math.PI) * 0.82;
+      ctx.fillStyle = "rgba(20,18,14," + (alpha * 0.35) + ")";
+      ctx.beginPath();
+      ctx.arc(L * t, yy, Math.max(0.3, L * 0.014), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawBranch() {
+    var rand = mulberry32(BG_SEED);
+    var main = bezierPoints(
+      { x: 1.045, y: 0.115 },
+      { x: 0.925, y: 0.104 },
+      { x: 0.815, y: 0.155 },
+      { x: 0.698, y: 0.188 }
+    );
+    taperedPath(main, minDim * 0.0155, minDim * 0.0022, 91, 1);
+
+    var twigA = bezierPoints(
+      { x: 0.912, y: 0.128 },
+      { x: 0.895, y: 0.086 },
+      { x: 0.862, y: 0.061 },
+      { x: 0.824, y: 0.060 }
+    );
+    taperedPath(twigA, minDim * 0.0052, minDim * 0.0011, 92, 0.95);
+
+    var twigB = bezierPoints(
+      { x: 0.772, y: 0.172 },
+      { x: 0.756, y: 0.204 },
+      { x: 0.735, y: 0.228 },
+      { x: 0.713, y: 0.238 }
+    );
+    taperedPath(twigB, minDim * 0.0044, minDim * 0.0009, 93, 0.9);
+
+    var leaves = [
+      { x: 0.985, y: 0.113, len: 0.058, ang: -0.92, bend: 0.72, a: 0.78 },
+      { x: 0.922, y: 0.124, len: 0.068, ang: 0.52, bend: 0.74, a: 0.82 },
+      { x: 0.862, y: 0.143, len: 0.074, ang: -1.06, bend: 0.8, a: 0.86 },
+      { x: 0.805, y: 0.160, len: 0.060, ang: 0.86, bend: 0.7, a: 0.7 },
+      { x: 0.754, y: 0.175, len: 0.064, ang: -0.42, bend: 0.66, a: 0.76 },
+      { x: 0.824, y: 0.060, len: 0.058, ang: -1.28, bend: 0.72, a: 0.68 },
+      { x: 0.862, y: 0.086, len: 0.050, ang: 0.72, bend: 0.6, a: 0.6 },
+      { x: 0.713, y: 0.238, len: 0.048, ang: -0.36, bend: 0.62, a: 0.64 }
+    ];
+    leaves.forEach(function (leaf, i) {
+      /* a short stem, so every leaf sits on the wood rather than floating */
+      var stemLen = 0.008 + rand() * 0.008;
+      var sa = leaf.ang + Math.PI;
+      var sx = leaf.x + Math.cos(sa) * stemLen;
+      var sy = leaf.y + Math.sin(sa) * stemLen;
+      seg(sx * W, sy * H, leaf.x * W, leaf.y * H, Math.max(0.7, minDim * 0.0016), "rgba(24,21,16,.5)");
+      drawLeaf(leaf.x, leaf.y, leaf.len, leaf.ang, leaf.bend, leaf.a, 301 + i * 17);
+    });
+
+    /* a few dropped flecks beneath the branch */
+    for (var i = 0; i < 9; i++) {
+      ctx.fillStyle = "rgba(26,23,18," + (0.08 + rand() * 0.18) + ")";
+      ctx.beginPath();
+      ctx.arc((0.66 + rand() * 0.32) * W, (0.3 + rand() * 0.07) * H, (0.35 + rand() * 1.1) * (minDim / 650), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  /* ---------------- ensō ---------------- */
+
+  function makeEnsoPoints(cx, cy, r, seed) {
+    var rand = mulberry32(seed);
+    var pts = [];
+    var count = 310;
+    var start = -2.34 + (rand() - 0.5) * 0.18;
+    var sweep = Math.PI * 1.78 + rand() * 0.08;
+    var wobblePhase = rand() * Math.PI * 2;
+    for (var i = 0; i < count; i++) {
+      var t = i / (count - 1);
+      var angle = start + sweep * t;
+      var wob = Math.sin(t * 9 + wobblePhase) * 0.008 + Math.sin(t * 23 + 1.3) * 0.0025;
+      var rad = r * (1 + wob) * (1 - 0.011 * t);
+      var press = 0.34 + 0.66 * Math.pow(1 - t, 0.42);
+      press *= 0.82 + 0.18 * Math.sin(t * 7.3 + wobblePhase);
+      press *= 0.78 + 0.22 * Math.sin(t * Math.PI * 2.2 + 0.8);
+      press = Math.max(0.27, press);
+      press *= 0.95 + 0.05 * Math.sin(t * 67 + wobblePhase * 3);
+      var w = (r * 0.106) * press;
+      /* a hair of normal-direction wander, so the edge breathes */
+      var tangentX = -Math.sin(angle);
+      var tangentY = Math.cos(angle);
+      var normal = Math.sin(t * 37 + wobblePhase) * r * 0.0018;
+      pts.push({
+        x: cx + Math.cos(angle) * rad + tangentX * normal,
+        y: cy + Math.sin(angle) * rad + tangentY * normal,
+        w: w
+      });
+    }
+    return { pts: pts, rand: rand, start: start, sweep: sweep, cx: cx, cy: cy, r: r };
+  }
+
+  function drawEnso(cx, cy, r, seed, options) {
+    options = options || {};
+    var e = makeEnsoPoints(cx, cy, r, seed);
+    var strength = options.strength == null ? 1 : options.strength;
+
+    /* soft bleed shadow behind the wet beginning */
+    var g = ctx.createRadialGradient(cx * W, cy * H, r * minDim * 0.7, cx * W, cy * H, r * minDim * 1.12);
+    g.addColorStop(0, "rgba(40,34,25,0)");
+    g.addColorStop(0.72, "rgba(40,34,25,0)");
+    g.addColorStop(1, "rgba(40,34,25,0.018)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx * W, cy * H, r * minDim * 1.12, 0, Math.PI * 2);
+    ctx.fill();
+
+    renderInkRibbon(e.pts, strength);
+
+    /* carve dry channels through the ink: the paper shows through */
+    var dry = mulberry32(seed + 271);
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-out";
+    for (var ch = 0; ch < 17; ch++) {
+      var startT = 0.06 + dry() * 0.58;
+      var chOff = (dry() - 0.5) * 0.95;
+      var chAlpha = 0.14 + dry() * 0.38;
+      var lw = 0.65 + dry() * 2.3;
+      ctx.beginPath();
+      ctx.lineWidth = lw;
+      ctx.strokeStyle = "rgba(0,0,0," + chAlpha + ")";
+      ctx.lineCap = "round";
+      var drawing = false;
+      for (var di = 0; di < 100; di++) {
+        var dt = startT + (1 - startT) * (di / 99);
+        if (dry() < 0.13) { drawing = false; continue; }
+        var dAngle = e.start + e.sweep * dt;
+        var dPress = 0.34 + 0.66 * Math.pow(1 - dt, 0.42);
+        var widthPx = r * minDim * 0.098 * dPress;
+        var off = chOff * widthPx * 0.55;
+        var dx = cx * W + Math.cos(dAngle) * (r * minDim + off);
+        var dy = cy * H + Math.sin(dAngle) * (r * minDim + off);
+        if (!drawing) { ctx.moveTo(dx, dy); drawing = true; }
+        else ctx.lineTo(dx, dy);
+      }
+      ctx.stroke();
+    }
+    /* thirsty nicks at the edges */
+    for (var bite = 0; bite < 18; bite++) {
+      var bt = 0.08 + dry() * 0.9;
+      var ba = e.start + e.sweep * bt;
+      var bPress = 0.34 + 0.66 * Math.pow(1 - bt, 0.42);
+      var bWidth = r * minDim * 0.106 * bPress;
+      var bOff = (dry() > 0.5 ? 1 : -1) * bWidth * (0.34 + dry() * 0.2);
+      var bRad = 0.4 + dry() * 2.2;
+      ctx.fillStyle = "rgba(0,0,0," + (0.12 + dry() * 0.34) + ")";
+      ctx.beginPath();
+      ctx.arc(
+        cx * W + Math.cos(ba) * (r * minDim + bOff),
+        cy * H + Math.sin(ba) * (r * minDim + bOff),
+        bRad, 0, Math.PI * 2
+      );
+      ctx.fill();
+    }
+    ctx.restore();
+
+    /* ink pooling and spatter at the start */
+    var sx = cx + Math.cos(e.start) * r;
+    var sy = cy + Math.sin(e.start) * r;
+    var r2 = mulberry32(seed + 7);
+    drawBlot(sx * W, sy * H, r * minDim * 0.055, 0.5 * strength, r2);
+    for (var s = 0; s < 10; s++) {
+      var a = r2() * Math.PI * 2;
+      var d = r * (0.06 + r2() * 0.2) * minDim;
+      var dotR = (0.007 + r2() * 0.019) * r * minDim;
+      ctx.fillStyle = "rgba(18,15,12," + (0.25 + r2() * 0.4) * strength + ")";
+      ctx.beginPath();
+      ctx.arc(sx * W + Math.cos(a) * d, sy * H + Math.sin(a) * d, Math.max(0.35, dotR), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  /* ---------------- composition redraw ---------------- */
+
+  function redraw() {
+    ctx.clearRect(0, 0, W, H);
+    drawBranch();
+    drawEnso(OPENING_ENSO.cx, OPENING_ENSO.cy, OPENING_ENSO.r, OPENING_ENSO.seed, { strength: 0.94 });
+
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      if (item.type === "enso") {
+        drawEnso(item.cx, item.cy, item.r, item.seed, { strength: 0.9 });
+      } else {
+        renderStroke(item.pts, item.seed, 1);
+        if (item.splats && item.splats.length) drawSplats(item.splats);
+      }
+    }
+  }
+
+  /* ---------------- painting ---------------- */
+
+  function pointFromEvent(e) {
+    var rect = canvas.getBoundingClientRect();
+    var x = (e.clientX - rect.left) / rect.width;
+    var y = (e.clientY - rect.top) / rect.height;
+    return { x: Math.max(-0.02, Math.min(1.02, x)), y: Math.max(-0.02, Math.min(1.02, y)) };
+  }
+
+  function pressureOf(e) {
+    if (e.pointerType === "pen") {
+      return Math.max(0.12, Math.min(1, e.pressure || 0.5));
+    }
+    if (e.pointerType === "touch") {
+      return e.pressure && e.pressure > 0 && e.pressure < 1 ? Math.max(0.3, e.pressure) : 0.82;
+    }
+    return 0.62;
+  }
+
+  var lastMove = { x: 0, y: 0, t: 0 };
+
+  function addPoint(stroke, e, isFirst) {
+    var pt = pointFromEvent(e);
+    var now = performance.now();
+    var dx = (pt.x - lastMove.x) * W;
+    var dy = (pt.y - lastMove.y) * H;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    var dt = Math.max(8, now - lastMove.t);
+    var speed = isFirst ? 0 : dist / dt;
+    var speedFactor = Math.max(0.52, Math.min(1.18, 1.14 - speed * 0.9));
+    var press = pressureOf(e);
+    var taper = Math.min(1, stroke.pts.length / 4);
+    taper = 0.55 + 0.45 * taper;
+    var base = state.size * (0.42 + press * 0.92) * speedFactor * taper;
+    var w = Math.max(0.6, base) / minDim;
+
+    var last = stroke.pts[stroke.pts.length - 1];
+    pt.w = w;
+    pt.p = press;
+
+    if (!isFirst && last) {
+      stroke.pts.push(pt);
+      renderStroke([last, pt], stroke.seed, 1);
+      /* bleed and splatter, stored so it survives resize */
+      var rand = Math.random;
+      if (rand() < 0.26) {
+        var angle = rand() * Math.PI * 2;
+        var d = (0.6 + rand() * 3.2) * (minDim / 650);
+        stroke.splats.push({
+          x: pt.x + Math.cos(angle) * d / W,
+          y: pt.y + Math.sin(angle) * d / H,
+          r: (0.3 + rand() * 1.1) / minDim * (pt.w * minDim * 0.35 + 0.7),
+          a: 0.07 + rand() * 0.2,
+          stretch: rand() * 1.2,
+          rot: rand() * Math.PI
+        });
+      }
+      if (rand() < 0.14) {
+        var fAng = rand() * Math.PI * 2;
+        var fLen = (2 + rand() * 8) * (minDim / 650);
+        var fx = pt.x * W, fy = pt.y * H;
+        ctx.strokeStyle = "rgba(26,22,17," + (0.06 + rand() * 0.1) + ")";
+        ctx.lineWidth = 0.45;
+        ctx.beginPath();
+        ctx.moveTo(fx, fy);
+        ctx.lineTo(fx + Math.cos(fAng) * fLen, fy + Math.sin(fAng) * fLen);
+        ctx.stroke();
+      }
+      if (stroke.splats.length) {
+        drawSplats(stroke.splats.slice(-2));
+      }
+    } else {
+      stroke.pts.push(pt);
+      var px = pt.x * W, py = pt.y * H;
+      var r = pt.w * minDim * 0.6;
+      var g = ctx.createRadialGradient(px, py, 0, px, py, Math.max(1, r * 1.6));
+      g.addColorStop(0, "rgba(22,19,15,.55)");
+      g.addColorStop(0.55, "rgba(28,24,18,.22)");
+      g.addColorStop(1, "rgba(30,26,19,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(px, py, r * 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    lastMove = { x: pt.x, y: pt.y, t: now };
+  }
+
+  paper.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+    ensureCursor(e);
+    rememberPointer(e);
+    canvas.setPointerCapture(e.pointerId);
+    cursor.classList.add("down");
+    strokeSeed += 7919;
+    var now = performance.now();
+    var pt = pointFromEvent(e);
+    var startW = Math.max(0.6, state.size * 0.38) / minDim;
+    active = {
+      type: "stroke",
+      seed: hashSeed(strokeSeed),
+      pts: [{ x: pt.x, y: pt.y, w: startW, p: pressureOf(e) }],
+      splats: []
+    };
+    items.push(active);
+    lastMove = { x: pt.x, y: pt.y, t: now };
+    addPoint(active, e, true);
+  });
+
+  paper.addEventListener("pointermove", function (e) {
+    ensureCursor(e);
+    if (!active) {
+      rememberPointer(e);
+      return;
+    }
+    e.preventDefault();
+    var events = (typeof e.getCoalescedEvents === "function") ? e.getCoalescedEvents() : [e];
+    if (!events || events.length === 0) events = [e];
+    for (var i = 0; i < events.length; i++) {
+      addPoint(active, events[i], false);
+    }
+    rememberPointer(e);
+  });
+
+  function endStroke(e) {
+    if (!active) return;
+    active = null;
+    cursor.classList.remove("down");
+    if (e && e.pointerId != null) {
+      try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+  }
+  paper.addEventListener("pointerup", endStroke);
+  paper.addEventListener("pointercancel", endStroke);
+  paper.addEventListener("pointerleave", function () {
+    if (!active) {
+      cursor.classList.remove("show");
+      pointerInside = false;
+    }
+  });
+  paper.addEventListener("pointerenter", function () { pointerInside = true; });
+
+  var lastPointer = { x: 0, y: 0 };
+
+  function rememberPointer(e) {
+    var rect = paper.getBoundingClientRect();
+    lastPointer.x = e.clientX - rect.left;
+    lastPointer.y = e.clientY - rect.top;
+    positionCursor();
+  }
+
+  function ensureCursor(e) {
+    var rect = paper.getBoundingClientRect();
+    lastPointer.x = e.clientX - rect.left;
+    lastPointer.y = e.clientY - rect.top;
+    if (e.pointerType === "touch") {
+      cursor.classList.remove("show");
+    } else {
+      cursor.classList.add("show");
+    }
+    positionCursor();
+  }
+
+  function positionCursor() {
+    cursor.style.left = lastPointer.x + "px";
+    cursor.style.top = lastPointer.y + "px";
+  }
+
+  function setCursorSize() {
+    var d = Math.max(6, state.size);
+    cursor.style.width = d + "px";
+    cursor.style.height = d + "px";
+  }
+
+  /* ---------------- controls ---------------- */
+
+  sizeInput.addEventListener("input", function () {
+    state.size = Number(sizeInput.value);
+    sizeLabel.textContent = String(state.size);
+    setCursorSize();
+  });
+
+  ensoBtn.addEventListener("click", function () {
+    var seed = hashSeed(Date.now() % 100000 + 5501);
+    var rand = mulberry32(seed);
+    var narrow = W < 600;
+    var cx = narrow ? 0.61 + (rand() - 0.5) * 0.04 : 0.62 + (rand() - 0.5) * 0.1;
+    var cy = narrow ? 0.49 + (rand() - 0.5) * 0.05 : 0.47 + (rand() - 0.5) * 0.08;
+    var r = (narrow ? 0.27 : 0.235) + rand() * 0.035;
+    items.push({ type: "enso", cx: cx, cy: cy, r: r, seed: seed });
+    drawEnso(cx, cy, r, seed, { strength: 0.92 });
+    ensoBtn.blur();
+  });
+
+  newBtn.addEventListener("click", function () {
+    items = [];
+    active = null;
+    redraw();
+    newBtn.blur();
+  });
+
+  /* ---------------- init ---------------- */
+
+  setCursorSize();
+  if (typeof ResizeObserver !== "undefined") {
+    var ro = new ResizeObserver(function () { resize(); });
+    ro.observe(paper);
+  } else {
+    window.addEventListener("resize", resize);
+  }
+  resize();
+
+  /* ensure fonts settle before the first composition pass */
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { /* canvas art is font-independent */ });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TIDAL 07 — North Sea Observatory</title>
+<meta name="description" content="TIDAL 07 is a live tide observatory for the North Sea: tide height, station telemetry and a circular tide clock.">
+<style>
+  :root{
+    --ocean:#07131f;
+    --ink:#0d1f2d;
+    --ink-2:#0a1a26;
+    --aqua:#7ee8d5;
+    --sand:#f2b880;
+    --cream:#eaf2f5;
+    --muted:#89a0ad;
+    --faint:#5c7686;
+    --line:rgba(126,232,213,.15);
+    --line-soft:rgba(126,232,213,.08);
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Helvetica Neue","Segoe UI",Arial,sans-serif;
+    --serif:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--ocean);color:var(--cream);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+    background-image:
+      radial-gradient(ellipse 70% 45% at 18% 0%,rgba(18,52,69,.72),transparent 65%),
+      radial-gradient(ellipse 55% 50% at 92% 42%,rgba(11,38,52,.55),transparent 70%);
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(to right,rgba(126,232,213,.035) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(126,232,213,.035) 1px,transparent 1px);
+    background-size:88px 88px;
+    mask-image:radial-gradient(ellipse 90% 80% at 50% 20%,#000 20%,transparent 88%);
+    -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 20%,#000 20%,transparent 88%);
+  }
+  ::selection{background:rgba(126,232,213,.28);color:#fff}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit}
+  .page{position:relative;z-index:1;width:min(1360px,calc(100% - 64px));margin:0 auto}
+  .micro{
+    font-family:var(--mono);font-size:9px;line-height:1.5;letter-spacing:.17em;
+    text-transform:uppercase;color:var(--faint);
+  }
+
+  /* ---------- header ---------- */
+  .top{
+    display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center;
+    padding:22px 0 19px;border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-mark{width:31px;height:31px;flex:none}
+  .brand-name{font-family:var(--mono);font-size:12px;letter-spacing:.2em;line-height:1.1}
+  .brand-name small{
+    display:block;margin-top:5px;font-size:7px;letter-spacing:.19em;color:var(--faint);
+  }
+  .nav{display:flex;justify-content:center;gap:30px}
+  .nav a{
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--muted);
+    padding:5px 0;position:relative;transition:color .25s;
+  }
+  .nav a::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--aqua);
+    transform:scaleX(0);transform-origin:left;transition:transform .3s;
+  }
+  .nav a:hover,.nav a:focus-visible{color:var(--cream);outline:none}
+  .nav a:hover::after,.nav a:focus-visible::after{transform:scaleX(1)}
+  .utc-block{display:flex;align-items:center;gap:12px;justify-self:end}
+  .utc-label{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .live-dot{
+    width:5px;height:5px;border-radius:50%;background:var(--aqua);display:inline-block;
+    box-shadow:0 0 8px rgba(126,232,213,.9);position:relative;flex:none;
+  }
+  .live-dot::after{
+    content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(126,232,213,.4);
+    animation:dot-ping 3s ease-out infinite;
+  }
+  @keyframes dot-ping{0%{transform:scale(.5);opacity:.9}70%,100%{transform:scale(1.8);opacity:0}}
+  .utc-time{
+    font-family:var(--mono);font-size:12px;letter-spacing:.1em;font-variant-numeric:tabular-nums;
+    color:var(--cream);border-left:1px solid var(--line);padding-left:13px;white-space:nowrap;
+  }
+  .utc-time small{font-size:8px;color:var(--faint);margin-left:5px;letter-spacing:.12em}
+
+  /* ---------- hero ---------- */
+  .hero{
+    display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.65fr);
+    gap:clamp(28px,5vw,80px);align-items:end;padding:clamp(42px,6.5vh,82px) 0 clamp(36px,5vh,58px);
+  }
+  .eyebrow{display:flex;align-items:center;gap:10px;margin:0 0 24px;color:var(--muted)}
+  .eyebrow .rule{width:32px;height:1px;background:rgba(126,232,213,.45)}
+  .eyebrow b{font-weight:400;color:var(--aqua);letter-spacing:.18em}
+  h1{
+    margin:0;font-size:clamp(52px,7.6vw,118px);line-height:.9;letter-spacing:-.05em;font-weight:300;
+    color:var(--cream);
+  }
+  h1 em{
+    font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.035em;
+    color:var(--aqua);
+  }
+  .hero-copy p.lede{
+    margin:28px 0 0;max-width:480px;font-size:13px;line-height:1.85;color:var(--muted);font-weight:300;
+  }
+  .hero-copy p.lede b{color:rgba(234,242,245,.88);font-weight:400}
+  .hero-side{border-left:1px solid var(--line);padding-left:clamp(20px,3vw,34px)}
+  .side-kicker{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+  .coords{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+  .coord{padding:13px 0 12px;border-bottom:1px solid var(--line)}
+  .coord:nth-child(odd){border-right:1px solid var(--line);padding-right:16px}
+  .coord:nth-child(even){padding-left:16px}
+  .coord span{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+  .coord b{font-family:var(--mono);font-size:11px;font-weight:400;letter-spacing:.04em;color:rgba(234,242,245,.84)}
+  .side-note{margin:17px 0 0;font-size:11px;line-height:1.7;color:var(--muted)}
+  .side-status{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);
+  }
+  .side-status b{font-weight:400;color:var(--sand);display:flex;align-items:center;gap:6px}
+  .side-status b i{width:5px;height:5px;border-radius:50%;background:var(--sand);box-shadow:0 0 7px rgba(242,184,128,.75)}
+
+  /* ---------- panels ---------- */
+  .panel{
+    background:linear-gradient(180deg,rgba(15,34,49,.94),rgba(11,27,40,.9));
+    border:1px solid var(--line);border-radius:6px;position:relative;
+    box-shadow:inset 0 1px 0 rgba(234,242,245,.04),0 30px 80px -50px rgba(0,0,0,.9);
+  }
+  .panel::before{
+    content:"";position:absolute;left:14px;right:14px;top:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(126,232,213,.28),transparent);
+  }
+  .panel-head{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:22px;
+    padding:20px 22px;border-bottom:1px solid var(--line-soft);
+  }
+  .panel-title h2{margin:7px 0 0;font-size:16px;font-weight:400;letter-spacing:-.01em;color:rgba(234,242,245,.92)}
+  .panel-title h2 small{font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:var(--faint);margin-left:8px;text-transform:uppercase}
+  .console-grid{
+    display:grid;grid-template-columns:minmax(0,2.18fr) minmax(295px,.82fr);
+    gap:18px;align-items:stretch;
+  }
+  .chart-card{display:flex;flex-direction:column;min-width:0}
+  .range-switch{
+    display:flex;gap:2px;padding:3px;background:rgba(7,19,31,.72);border:1px solid var(--line);border-radius:999px;
+  }
+  .range-switch button{
+    appearance:none;border:0;background:transparent;border-radius:999px;padding:7px 14px;cursor:pointer;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;color:var(--muted);
+    transition:background .25s,color .25s;
+  }
+  .range-switch button:hover{color:var(--cream)}
+  .range-switch button.active{background:var(--aqua);color:#07131f}
+  .range-switch button:focus-visible{outline:1px solid var(--aqua);outline-offset:3px}
+
+  .chart-wrap{
+    position:relative;flex:1 1 auto;height:auto;min-height:340px;
+    cursor:crosshair;touch-action:pan-y;
+  }
+  .chart-wrap svg{display:block;width:100%;height:100%;overflow:visible}
+  .chart-wrap .axis-text{
+    font-family:var(--mono);font-size:8px;letter-spacing:.08em;fill:rgba(137,160,173,.78);
+  }
+  .chart-wrap .axis-unit{font-size:7px;fill:var(--faint);letter-spacing:.13em}
+  .chart-wrap .mean-label{font-family:var(--mono);font-size:7px;letter-spacing:.12em;fill:rgba(242,184,128,.6)}
+  .chart-wrap .anno{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;fill:var(--sand)}
+  .chart-wrap .tide-line{fill:none;stroke:var(--aqua);stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px rgba(126,232,213,.22))}
+  .chart-wrap .tide-area{fill:url(#tideArea)}
+  .chart-wrap .live-halo{
+    transform-box:fill-box;transform-origin:center;animation:halo 2.8s ease-out infinite;
+  }
+  @keyframes halo{0%{transform:scale(.55);opacity:.85}80%,100%{transform:scale(2.2);opacity:0}}
+  .chart-wrap .crosshair line{stroke:rgba(126,232,213,.5);stroke-width:1;stroke-dasharray:3 4}
+  .chart-wrap .crosshair circle{fill:#07131f;stroke:var(--aqua);stroke-width:1.5}
+  .chart-tip{
+    position:absolute;z-index:6;width:158px;padding:10px 12px 9px;pointer-events:none;
+    background:rgba(6,18,28,.97);border:1px solid rgba(126,232,213,.38);border-radius:2px;
+    box-shadow:0 14px 36px rgba(0,0,0,.55);
+    transform:translate(-50%,-100%);opacity:0;transition:opacity .15s ease;
+  }
+  .chart-tip::after{
+    content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;background:rgba(6,18,28,.97);
+    border-right:1px solid rgba(126,232,213,.38);border-bottom:1px solid rgba(126,232,213,.38);
+    transform:translateX(-50%) rotate(45deg);
+  }
+  .chart-tip.below{transform:translate(-50%,0)}
+  .chart-tip.below::after{bottom:auto;top:-5px;transform:translateX(-50%) rotate(225deg)}
+  .chart-tip.on{opacity:1}
+  .tip-time{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .tip-value{display:flex;align-items:baseline;gap:5px;margin:7px 0 5px;font-size:23px;font-weight:300;letter-spacing:-.035em;color:var(--cream);font-variant-numeric:tabular-nums}
+  .tip-value small{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--faint)}
+  .tip-state{display:block;font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--aqua)}
+  .tip-state.falling{color:var(--sand)}
+
+  .chart-foot{
+    display:flex;justify-content:space-between;align-items:center;gap:18px;
+    padding:13px 22px;border-top:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+  }
+  .legend{display:flex;align-items:center;gap:7px;color:var(--muted)}
+  .legend i{width:14px;height:1px;background:var(--aqua);position:relative;display:inline-block}
+  .legend i::after{content:"";position:absolute;left:4px;top:-1.5px;width:4px;height:4px;border-radius:50%;background:var(--aqua)}
+  .chart-foot .updated{color:var(--muted);white-space:nowrap}
+
+  /* ---------- side column ---------- */
+  .side-col{display:flex;flex-direction:column;gap:18px;min-width:0}
+  .tide-card{padding-bottom:16px}
+  .tide-card .panel-head{padding:18px 20px 15px}
+  .tide-wrap{position:relative;width:min(238px,calc(100% - 36px));aspect-ratio:1;margin:20px auto 6px}
+  .tide-wrap svg{display:block;width:100%;height:100%;overflow:visible}
+  .tide-track{fill:none;stroke:rgba(126,232,213,.1);stroke-width:1}
+  .tide-arc{fill:none;stroke:var(--aqua);stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(126,232,213,.3));transition:stroke-dashoffset 1s cubic-bezier(.2,.7,.2,1)}
+  .tide-tick{stroke:rgba(126,232,213,.25);stroke-width:1}
+  .tide-tick.major{stroke:rgba(126,232,213,.55)}
+  .tide-hand{stroke:var(--sand);stroke-width:1.4;stroke-linecap:round}
+  .tide-center-dot{fill:var(--sand)}
+  .tc-center{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;pointer-events:none;
+  }
+  .tc-center .micro{font-size:7px;letter-spacing:.16em;color:var(--faint);margin-bottom:5px}
+  .tc-height{display:flex;align-items:baseline;gap:3px;color:var(--cream);font-weight:300;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+  .tc-height b{font-size:37px;line-height:1;font-weight:300}
+  .tc-height span{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--muted)}
+  .tc-state{
+    display:flex;align-items:center;gap:6px;margin-top:7px;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--aqua);
+  }
+  .tc-state i{width:4px;height:4px;border-radius:50%;background:currentColor;box-shadow:0 0 5px currentColor;animation:breathe 3s ease-in-out infinite}
+  .tc-state.falling{color:var(--sand)}
+  .tc-state.slack{color:var(--muted)}
+  @keyframes breathe{0%,100%{opacity:.4}50%{opacity:1}}
+  .clock-events{
+    display:grid;grid-template-columns:1fr 1fr;margin:8px 20px 0;border-top:1px solid var(--line-soft);
+  }
+  .clock-events div{padding:11px 0 0}
+  .clock-events div:first-child{padding-right:16px;border-right:1px solid var(--line-soft)}
+  .clock-events div:last-child{padding-left:16px}
+  .clock-events span{display:block;font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+  .clock-events b{font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.06em;color:rgba(234,242,245,.82)}
+
+  .station-card{padding:18px 20px 16px;flex:1}
+  .station-quote{
+    margin:14px 0 16px;font-family:var(--serif);font-style:italic;font-size:15.5px;line-height:1.52;
+    color:rgba(234,242,245,.72);letter-spacing:.005em;
+  }
+  .station-quote span{color:var(--sand)}
+  .station-rows{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line-soft)}
+  .station-rows div{padding:10px 0;border-bottom:1px solid var(--line-soft)}
+  .station-rows div:nth-child(odd){border-right:1px solid var(--line-soft);padding-right:12px}
+  .station-rows div:nth-child(even){padding-left:12px}
+  .station-rows span{display:block;font-family:var(--mono);font-size:6.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+  .station-rows b{font-family:var(--mono);font-size:9px;font-weight:400;letter-spacing:.04em;color:rgba(234,242,245,.8)}
+  .station-note{margin:12px 0 0;font-size:10px;line-height:1.65;color:var(--faint)}
+
+  /* ---------- telemetry ---------- */
+  .telemetry-section{padding:clamp(38px,5vw,56px) 0 0}
+  .section-line{display:flex;justify-content:space-between;gap:20px;padding-bottom:11px;border-bottom:1px solid var(--line)}
+  .telemetry-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
+  .telemetry-card{
+    position:relative;padding:17px 18px 13px;overflow:hidden;
+    transition:border-color .35s,transform .45s cubic-bezier(.2,.7,.2,1);
+  }
+  .telemetry-card:hover{border-color:rgba(126,232,213,.35);transform:translateY(-2px)}
+  .telemetry-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .telemetry-id{font-family:var(--mono);font-size:7px;letter-spacing:.12em;color:var(--faint)}
+  .telemetry-value{display:flex;align-items:baseline;gap:5px;margin:16px 0 2px;font-weight:300;letter-spacing:-.04em}
+  .telemetry-value b{font-size:clamp(28px,2.7vw,38px);line-height:1;font-weight:300;font-variant-numeric:tabular-nums}
+  .telemetry-value span{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--muted)}
+  .spark{height:54px;margin:9px -2px 7px;position:relative}
+  .spark svg{display:block;width:100%;height:100%}
+  .spark .spark-line{fill:none;stroke:var(--aqua);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .spark .spark-fill{opacity:.9}
+  .spark .spark-dot{fill:var(--aqua)}
+  .spark[data-tone="sand"] .spark-line{stroke:var(--sand)}
+  .spark[data-tone="sand"] .spark-dot{fill:var(--sand)}
+  .spark[data-tone="steel"] .spark-line{stroke:#8fb6c4}
+  .spark[data-tone="steel"] .spark-dot{fill:#8fb6c4}
+  .telemetry-foot{
+    display:flex;justify-content:space-between;align-items:center;gap:14px;
+    font-family:var(--mono);font-size:7px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);
+  }
+  .telemetry-foot b{font-weight:400;color:var(--muted)}
+  .telemetry-foot .trend{color:var(--aqua)}
+  .telemetry-card:nth-child(2) .telemetry-foot .trend{color:var(--sand)}
+  .telemetry-card:nth-child(3) .telemetry-foot .trend{color:#8fb6c4}
+
+  /* ---------- footer ---------- */
+  .foot{
+    display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;
+    margin-top:clamp(34px,5vw,48px);padding:18px 0 24px;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);
+  }
+  .foot .foot-live{display:flex;align-items:center;gap:8px;color:var(--muted)}
+  .foot .foot-live i{width:4px;height:4px;border-radius:50%;background:var(--aqua);box-shadow:0 0 6px rgba(126,232,213,.8)}
+  .foot b{font-weight:400;color:var(--muted)}
+  :focus-visible{outline:1px solid rgba(126,232,213,.8);outline-offset:4px}
+
+  @media (max-width:1080px){
+    .console-grid{grid-template-columns:1fr}
+    .side-col{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .tide-card{grid-row:span 1}
+    .station-card{display:flex;flex-direction:column}
+    .station-note{margin-top:auto;padding-top:8px}
+    .telemetry-grid{gap:14px}
+  }
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;align-items:start;gap:32px}
+    .hero-side{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:0 30px}
+    .hero-side .side-kicker{grid-column:1/-1;margin-bottom:12px}
+    .side-note{grid-column:1;margin-top:14px}
+    .side-status{grid-column:2;grid-row:2/4;align-self:end;justify-content:flex-end;margin:0}
+    .coords{grid-column:1;grid-row:2}
+    .side-note{grid-column:2;grid-row:3;margin-top:14px}
+  }
+  @media (max-width:720px){
+    .page{width:calc(100% - 32px)}
+    .top{grid-template-columns:auto auto;gap:14px;padding:16px 0 14px}
+    .nav{display:none}
+    .utc-block{grid-column:2}
+    .utc-label{display:none}
+    .utc-time{border-left:0;padding-left:0;font-size:11px}
+    .hero{padding-top:34px}
+    h1{font-size:clamp(46px,14vw,76px)}
+    .hero-copy p.lede{font-size:12px;margin-top:21px}
+    .hero-side{grid-template-columns:1fr;gap:0}
+    .hero-side .side-kicker,.coords,.side-note,.side-status{grid-column:1;grid-row:auto}
+    .side-note{margin-top:14px}
+    .side-status{margin-top:16px;justify-content:flex-start}
+    .panel-head{padding:15px 15px 13px;gap:12px;align-items:flex-start}
+    .panel-title h2{font-size:14px}
+    .panel-title h2 small{display:block;margin:5px 0 0}
+    .range-switch button{padding:7px 10px;font-size:8px}
+    .chart-wrap{min-height:286px;height:auto}
+    .chart-foot{padding:11px 15px;gap:10px;font-size:6.5px}
+    .chart-foot .legend span{display:none}
+    .chart-foot .legend i{width:11px}
+    .chart-foot .updated{font-size:6.5px}
+    .side-col{grid-template-columns:1fr}
+    .telemetry-grid{grid-template-columns:1fr;gap:12px}
+    .telemetry-card{padding:15px 16px 12px}
+    .telemetry-value{margin-top:12px}
+    .spark{height:48px;margin-bottom:6px}
+    .section-line span:last-child{display:none}
+    .foot{flex-direction:column;align-items:flex-start;gap:9px;margin-top:28px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+    .chart-wrap .live-halo{display:none}
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="top">
+      <a class="brand" href="#top" aria-label="TIDAL 07 home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="14.5" fill="none" stroke="rgba(126,232,213,.35)" stroke-width="1"/>
+          <path d="M5 20 C 9 15 12 15 16 20 S 23 25 27 20" fill="none" stroke="#7ee8d5" stroke-width="1.3"/>
+          <path d="M5 15 C 9 10 12 10 16 15 S 23 20 27 15" fill="none" stroke="rgba(242,184,128,.7)" stroke-width="1"/>
+          <circle cx="16" cy="16" r="1.8" fill="#7ee8d5"/>
+        </svg>
+        <span class="brand-name">TIDAL 07<small>North Sea Observatory</small></span>
+      </a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#tide">Tide</a>
+        <a href="#telemetry">Telemetry</a>
+        <a href="#station">Station</a>
+      </nav>
+      <div class="utc-block">
+        <span class="utc-label"><i class="live-dot" aria-hidden="true"></i> Live UTC</span>
+        <time class="utc-time" id="utcClock" datetime="">--:--:--<small>UTC</small></time>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow micro"><span class="rule"></span> Buoy 07 / translation <b>No. 0142</b></p>
+          <h1 id="hero-title">North Sea,<br><em>translated.</em></h1>
+          <p class="lede">A live reading of water, wind and pressure from a single point in the North Sea. <b>TIDAL 07</b> turns the tide into something legible — quiet data, held up to the light.</p>
+        </div>
+        <aside class="hero-side" id="station" aria-label="Station coordinates">
+          <div class="side-kicker micro"><i class="live-dot" aria-hidden="true"></i> Station 07 / operational</div>
+          <div class="coords">
+            <div class="coord"><span>Latitude</span><b>60° 14′ 08″ N</b></div>
+            <div class="coord"><span>Longitude</span><b>04° 31′ 22″ E</b></div>
+            <div class="coord"><span>Depth</span><b>142 M</b></div>
+            <div class="coord"><span>Established</span><b>2019 · MMXIX</b></div>
+          </div>
+          <p class="side-note">Anchored above the Norwegian trench. Observations are modelled in deterministic time and transmitted every sixty seconds.</p>
+          <div class="side-status"><span>Last sync <b id="lastSync">--:--:--</b></span><span><b><i></i> Transmitting</b></span></div>
+        </aside>
+      </section>
+
+      <section class="console-grid" id="tide" aria-label="Tide observation console">
+        <div class="panel chart-card">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="micro">Tide height / metres above LAT</span>
+              <h2>Water column <small>observed + modelled</small></h2>
+            </div>
+            <div class="range-switch" role="group" aria-label="Chart time range">
+              <button type="button" data-range="24" class="active" aria-pressed="true">24H</button>
+              <button type="button" data-range="7" aria-pressed="false">7D</button>
+              <button type="button" data-range="30" aria-pressed="false">30D</button>
+            </div>
+          </div>
+          <div class="chart-wrap" id="chartWrap">
+            <svg id="chart" role="img" aria-label="Interactive tide height chart. Hover to inspect the tide height at any point."></svg>
+            <div class="chart-tip" id="chartTip" aria-hidden="true">
+              <span class="tip-time" id="tipTime">—</span>
+              <span class="tip-value"><span id="tipHeight">0.00</span><small>M</small></span>
+              <span class="tip-state" id="tipState">—</span>
+            </div>
+          </div>
+          <div class="chart-foot">
+            <span>Datum · LAT 0.00 M</span>
+            <span class="legend"><i aria-hidden="true"></i><span>Predicted tide</span></span>
+            <span class="updated" id="chartMeta">Updated —</span>
+          </div>
+        </div>
+
+        <div class="side-col">
+          <div class="panel tide-card">
+            <div class="panel-head">
+              <div class="panel-title">
+                <span class="micro">Cyclic phase / 12.42 H</span>
+                <h2>Tide clock</h2>
+              </div>
+              <span class="micro" id="clockCycle">—</span>
+            </div>
+            <div class="tide-wrap">
+              <svg viewBox="0 0 240 240" aria-hidden="true">
+                <circle class="tide-track" cx="120" cy="120" r="88"/>
+                <g id="tideTicks"></g>
+                <circle id="tideArc" class="tide-arc" cx="120" cy="120" r="88" transform="rotate(-90 120 120)"/>
+                <line id="tideHand" class="tide-hand" x1="120" y1="120" x2="120" y2="40"/>
+                <circle class="tide-center-dot" cx="120" cy="120" r="2.6"/>
+                <circle cx="120" cy="120" r="15" fill="none" stroke="rgba(126,232,213,.12)"/>
+              </svg>
+              <div class="tc-center">
+                <span class="micro">Current height</span>
+                <span class="tc-height"><b id="clockHeight">3.42</b><span>M</span></span>
+                <span class="tc-state" id="clockState"><i aria-hidden="true"></i> Rising</span>
+              </div>
+            </div>
+            <div class="clock-events">
+              <div><span>Next high</span><b id="nextHigh">—</b></div>
+              <div><span>Next low</span><b id="nextLow">—</b></div>
+            </div>
+          </div>
+
+          <div class="panel station-card">
+            <div class="panel-head" style="padding:0 0 0;border:0">
+              <div class="panel-title">
+                <span class="micro">Station note / 07</span>
+                <h2 style="margin-top:6px">Field reading</h2>
+              </div>
+              <span class="micro">60.24° / 4.52°</span>
+            </div>
+            <p class="station-quote">“The sea states its height twice a day, and the sky decides how <span>loudly.</span>”</p>
+            <div class="station-rows">
+              <div><span>Sea state</span><b>Moderate · 3</b></div>
+              <div><span>Swell period</span><b>7.4 S</b></div>
+              <div><span>Water temp</span><b>11.4 °C</b></div>
+              <div><span>Visibility</span><b>18 NM</b></div>
+            </div>
+            <p class="station-note">Sampling interval 60 s. Barometric pressure corrected to mean sea level. All times UTC.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="telemetry-section" id="telemetry" aria-labelledby="telemetry-title">
+        <div class="section-line">
+          <span class="micro" id="telemetry-title">Telemetry / last 24 hours</span>
+          <span class="micro">Three channels / continuous</span>
+        </div>
+        <div class="telemetry-grid">
+          <article class="panel telemetry-card">
+            <div class="telemetry-head"><span class="micro">Water temperature</span><span class="telemetry-id">CH 01</span></div>
+            <div class="telemetry-value"><b>11.4</b><span>°C</span></div>
+            <div class="spark" id="sparkTemp" data-tone="aqua" aria-hidden="true"></div>
+            <div class="telemetry-foot"><span>24H mean <b>11.2 °C</b></span><span class="trend">+0.3 °</span></div>
+          </article>
+          <article class="panel telemetry-card">
+            <div class="telemetry-head"><span class="micro">Swell height</span><span class="telemetry-id">CH 02</span></div>
+            <div class="telemetry-value"><b>2.3</b><span>M</span></div>
+            <div class="spark" id="sparkSwell" data-tone="sand" aria-hidden="true"></div>
+            <div class="telemetry-foot"><span>24H peak <b>3.1 M</b></span><span class="trend">SW 18 KT</span></div>
+          </article>
+          <article class="panel telemetry-card">
+            <div class="telemetry-head"><span class="micro">Barometric pressure</span><span class="telemetry-id">CH 03</span></div>
+            <div class="telemetry-value"><b>1014</b><span>hPa</span></div>
+            <div class="spark" id="sparkPressure" data-tone="steel" aria-hidden="true"></div>
+            <div class="telemetry-foot"><span>Tendency <b>Steady</b></span><span class="trend">+0.6 / 3H</span></div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span class="foot-live"><i aria-hidden="true"></i> TIDAL 07 · 60°14′08″N 04°31′22″E · North Sea</span>
+      <b>Deterministic tide model / synthetic observation</b>
+      <span>© 2026 Station 07 · All times UTC</span>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  var NS = 'http://www.w3.org/2000/svg';
+  var TIDE_PERIOD = 12.42 * 3600 * 1000;
+  var MS_DAY = 86400000;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var clockEl = document.getElementById('utcClock');
+  var lastSyncEl = document.getElementById('lastSync');
+  var chartSvg = document.getElementById('chart');
+  var chartWrap = document.getElementById('chartWrap');
+  var chartTip = document.getElementById('chartTip');
+  var tipTime = document.getElementById('tipTime');
+  var tipHeight = document.getElementById('tipHeight');
+  var tipState = document.getElementById('tipState');
+  var chartMeta = document.getElementById('chartMeta');
+  var rangeButtons = Array.prototype.slice.call(document.querySelectorAll('.range-switch button'));
+
+  var utcFmt = new Intl.DateTimeFormat('en-GB',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  var utcHM = new Intl.DateTimeFormat('en-GB',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',hour12:false});
+  var dayFmt = new Intl.DateTimeFormat('en-GB',{timeZone:'UTC',day:'2-digit',month:'short'});
+  var fullFmt = new Intl.DateTimeFormat('en-GB',{timeZone:'UTC',day:'2-digit',month:'short',year:'numeric'});
+
+  /* ---------- tide model ---------- */
+  function heightAt(ms){
+    var phase = (ms % TIDE_PERIOD) / TIDE_PERIOD * Math.PI * 2;
+    var spring = 0.5 + 0.5 * Math.cos((ms / (14.77 * MS_DAY)) * Math.PI * 2 - 0.9);
+    var amp = 1.06 + 0.56 * spring;
+    return 3.03 + amp * Math.cos(phase)
+      + 0.2 * Math.cos(2 * phase + 0.58)
+      + 0.04 * Math.sin(ms / 3600000 * 0.73);
+  }
+
+  function tidePhase(ms){
+    var p = (ms / TIDE_PERIOD) % 1;
+    return p < 0 ? p + 1 : p;
+  }
+
+  /* ---------- live clock ---------- */
+  function updateClock(){
+    var now = new Date();
+    clockEl.innerHTML = utcFmt.format(now) + '<small>UTC</small>';
+    clockEl.setAttribute('datetime', now.toISOString());
+    lastSyncEl.textContent = utcFmt.format(now);
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ---------- tide clock ---------- */
+  var tideTicks = document.getElementById('tideTicks');
+  var tideArc = document.getElementById('tideArc');
+  var tideHand = document.getElementById('tideHand');
+  var clockHeight = document.getElementById('clockHeight');
+  var clockState = document.getElementById('clockState');
+  var nextHighEl = document.getElementById('nextHigh');
+  var nextLowEl = document.getElementById('nextLow');
+  var clockCycle = document.getElementById('clockCycle');
+  var arcCirc = 2 * Math.PI * 88;
+
+  for (var ti = 0; ti < 60; ti++){
+    var tickLine = document.createElementNS(NS, 'line');
+    var major = ti % 5 === 0;
+    var angle = ti * 6;
+    tickLine.setAttribute('x1', '120');
+    tickLine.setAttribute('y1', major ? '24' : '28');
+    tickLine.setAttribute('x2', '120');
+    tickLine.setAttribute('y2', '34');
+    tickLine.setAttribute('transform', 'rotate(' + angle + ' 120 120)');
+    tickLine.setAttribute('class', 'tide-tick' + (major ? ' major' : ''));
+    tideTicks.appendChild(tickLine);
+  }
+  tideArc.setAttribute('stroke-dasharray', arcCirc.toFixed(1));
+  tideArc.setAttribute('stroke-dashoffset', arcCirc.toFixed(1));
+
+  function nextExtreme(wantHigh, now){
+    var step = 5 * 60000;
+    var prev = heightAt(now);
+    var prevSlope = heightAt(now + step) - prev;
+    for (var i = 1; i < 220; i++){
+      var t = now + i * step;
+      var h = heightAt(t);
+      var slope = h - prev;
+      if (wantHigh && prevSlope > 0 && slope <= 0) return t;
+      if (!wantHigh && prevSlope < 0 && slope >= 0) return t;
+      prev = h;
+      prevSlope = slope;
+    }
+    return now + (wantHigh ? TIDE_PERIOD / 2 : TIDE_PERIOD / 2);
+  }
+
+  function updateTideClock(){
+    var now = Date.now();
+    var h = heightAt(now);
+    var hNext = heightAt(now + 60000);
+    var rate = hNext - h;
+    var phase = tidePhase(now);
+    var rising = rate > 0.001;
+    var slack = Math.abs(rate) < 0.0008;
+
+    clockHeight.textContent = h.toFixed(2);
+    clockState.className = 'tc-state' + (slack ? ' slack' : rising ? '' : ' falling');
+    clockState.innerHTML = '<i aria-hidden="true"></i>' + (slack ? 'Slack' : rising ? 'Rising' : 'Falling');
+    clockCycle.textContent = 'Cycle ' + String(Math.floor(now / TIDE_PERIOD) % 1000).padStart(3, '0');
+    tideArc.style.strokeDashoffset = (arcCirc * (1 - phase)).toFixed(2);
+    var handAngle = phase * Math.PI * 2 - Math.PI / 2;
+    tideHand.setAttribute('x2', (120 + Math.cos(handAngle) * 80).toFixed(2));
+    tideHand.setAttribute('y2', (120 + Math.sin(handAngle) * 80).toFixed(2));
+
+    nextHighEl.textContent = utcHM.format(new Date(nextExtreme(true, now))) + ' UTC';
+    nextLowEl.textContent = utcHM.format(new Date(nextExtreme(false, now))) + ' UTC';
+  }
+  updateTideClock();
+  setInterval(updateTideClock, 15000);
+
+  /* ---------- chart ---------- */
+  var ranges = {
+    '24': {hours:24, step:10 * 60000, samples:145, label:'24H'},
+    '7':  {hours:24 * 7, step:30 * 60000, samples:337, label:'7D'},
+    '30': {hours:24 * 30, step:60 * 60000, samples:721, label:'30D'}
+  };
+  var chart = {range:'24', points:[], plot:null, w:0, h:0, animated:false};
+
+  function buildData(rangeKey){
+    var cfg = ranges[rangeKey];
+    var end = Date.now();
+    var span = cfg.hours * 3600000;
+    var count = Math.round(span / cfg.step);
+    var points = [];
+    for (var i = 0; i <= count; i++){
+      var t = end - span + i * cfg.step;
+      points.push({t:t, v:heightAt(t)});
+    }
+    return points;
+  }
+
+  function el(name, attrs){
+    var node = document.createElementNS(NS, name);
+    if (attrs){
+      for (var k in attrs){
+        if (Object.prototype.hasOwnProperty.call(attrs, k)) node.setAttribute(k, attrs[k]);
+      }
+    }
+    return node;
+  }
+
+  function smoothPath(points){
+    if (points.length < 2) return '';
+    var d = 'M' + points[0].x.toFixed(2) + ',' + points[0].y.toFixed(2);
+    for (var i = 0; i < points.length - 1; i++){
+      var p0 = points[i - 1] || points[i];
+      var p1 = points[i];
+      var p2 = points[i + 1];
+      var p3 = points[i + 2] || p2;
+      var cp1x = p1.x + (p2.x - p0.x) / 6;
+      var cp1y = p1.y + (p2.y - p0.y) / 6;
+      var cp2x = p2.x - (p3.x - p1.x) / 6;
+      var cp2y = p2.y - (p3.y - p1.y) / 6;
+      d += ' C' + cp1x.toFixed(2) + ',' + cp1y.toFixed(2) + ' ' + cp2x.toFixed(2) + ',' + cp2y.toFixed(2) + ' ' + p2.x.toFixed(2) + ',' + p2.y.toFixed(2);
+    }
+    return d;
+  }
+
+  function axisLabel(t, rangeKey, index, total){
+    if (rangeKey === '24' && index === total - 1) return 'NOW';
+    if (rangeKey === '24') return utcHM.format(new Date(t));
+    return dayFmt.format(new Date(t)).toUpperCase();
+  }
+
+  function drawChart(animate){
+    var w = chartWrap.clientWidth;
+    var h = chartWrap.clientHeight;
+    if (!w || !h) return;
+    chart.w = w;
+    chart.h = h;
+    var pad = {l: w < 540 ? 36 : 46, r: w < 540 ? 12 : 18, t: 20, b: 28};
+    var plot = {left:pad.l, right:w - pad.r, top:pad.t, bottom:h - pad.b};
+    plot.width = plot.right - plot.left;
+    plot.height = plot.bottom - plot.top;
+    chart.plot = plot;
+
+    var points = chart.points;
+    var yMax = 6;
+    function yFor(v){ return plot.bottom - (v / yMax) * plot.height; }
+    function xFor(i){ return plot.left + (i / (points.length - 1)) * plot.width; }
+
+    var mapped = points.map(function(p, i){
+      return {t:p.t, v:p.v, x:xFor(i), y:yFor(p.v)};
+    });
+    chart.mapped = mapped;
+
+    while (chartSvg.firstChild) chartSvg.removeChild(chartSvg.firstChild);
+    chartSvg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+
+    var defs = el('defs');
+    var grad = el('linearGradient', {id:'tideArea', x1:'0', y1:'0', x2:'0', y2:'1'});
+    grad.appendChild(el('stop', {offset:'0', 'stop-color':'#7ee8d5', 'stop-opacity':'.24'}));
+    grad.appendChild(el('stop', {offset:'.62', 'stop-color':'#7ee8d5', 'stop-opacity':'.06'}));
+    grad.appendChild(el('stop', {offset:'1', 'stop-color':'#7ee8d5', 'stop-opacity':'0'}));
+    defs.appendChild(grad);
+    chartSvg.appendChild(defs);
+
+    var bgGrid = el('g');
+    for (var v = 0; v <= 6; v++){
+      var gy = yFor(v);
+      bgGrid.appendChild(el('line', {
+        x1:plot.left, y1:gy, x2:plot.right, y2:gy,
+        stroke: v === 3 ? 'rgba(126,232,213,.14)' : 'rgba(126,232,213,.07)',
+        'stroke-width':'1'
+      }));
+      var label = el('text', {
+        x: plot.left - 9, y: gy + 3, 'text-anchor':'end',
+        class:'axis-text'
+      });
+      label.textContent = v === 6 ? '6' : String(v);
+      bgGrid.appendChild(label);
+    }
+    var unit = el('text', {x:10, y:16, class:'axis-text axis-unit'});
+    unit.textContent = 'M';
+    bgGrid.appendChild(unit);
+
+    for (var k = 0; k < 5; k++){
+      var idx = Math.round((points.length - 1) * (k / 4));
+      var tx = xFor(idx);
+      bgGrid.appendChild(el('line', {
+        x1:tx, y1:plot.top, x2:tx, y2:plot.bottom,
+        stroke:'rgba(126,232,213,.055)', 'stroke-width':'1'
+      }));
+      var axis = el('text', {
+        x: tx, y: plot.bottom + 17, 'text-anchor': k === 0 ? 'start' : k === 4 ? 'end' : 'middle',
+        class:'axis-text'
+      });
+      axis.textContent = axisLabel(points[idx].t, chart.range, idx, points.length);
+      bgGrid.appendChild(axis);
+    }
+    chartSvg.appendChild(bgGrid);
+
+    var lineD = smoothPath(mapped);
+    var areaD = lineD + ' L' + plot.right.toFixed(2) + ',' + plot.bottom.toFixed(2) +
+      ' L' + plot.left.toFixed(2) + ',' + plot.bottom.toFixed(2) + ' Z';
+
+    var area = el('path', {d:areaD, class:'tide-area'});
+    var line = el('path', {d:lineD, class:'tide-line'});
+    chartSvg.appendChild(area);
+    chartSvg.appendChild(line);
+
+    var meanY = yFor(3.03);
+    chartSvg.appendChild(el('line', {
+      x1:plot.left, y1:meanY, x2:plot.right, y2:meanY,
+      stroke:'rgba(242,184,128,.22)', 'stroke-width':'1', 'stroke-dasharray':'2 5'
+    }));
+    var meanLabel = el('text', {x:plot.right - 2, y:meanY - 6, 'text-anchor':'end', class:'mean-label'});
+    meanLabel.textContent = 'MEAN 3.03';
+    chartSvg.appendChild(meanLabel);
+
+    if (chart.range === '24'){
+      var hi = mapped[0], lo = mapped[0];
+      mapped.forEach(function(p){
+        if (p.v > hi.v) hi = p;
+        if (p.v < lo.v) lo = p;
+      });
+      [[hi, 'HW'], [lo, 'LW']].forEach(function(pair){
+        var p = pair[0];
+        var labelX = Math.max(plot.left + 22, Math.min(plot.right - 22, p.x));
+        chartSvg.appendChild(el('circle', {cx:p.x, cy:p.y, r:'2.4', fill:'#f2b880', opacity:'.85'}));
+        var a = el('text', {
+          x:labelX, y:Math.max(plot.top + 10, p.y - 9), 'text-anchor':'middle', class:'anno'
+        });
+        a.textContent = pair[1] + ' ' + p.v.toFixed(2);
+        chartSvg.appendChild(a);
+      });
+    }
+
+    var last = mapped[mapped.length - 1];
+    var liveGroup = el('g');
+    var halo = el('circle', {
+      cx:last.x, cy:last.y, r:'6', fill:'none',
+      stroke:'#7ee8d5', 'stroke-width':'1.2', class:'live-halo', opacity:'.6'
+    });
+    var liveDot = el('circle', {cx:last.x, cy:last.y, r:'3.4', fill:'#7ee8d5'});
+    var core = el('circle', {cx:last.x, cy:last.y, r:'1.3', fill:'#07131f'});
+    liveGroup.appendChild(halo);
+    liveGroup.appendChild(liveDot);
+    liveGroup.appendChild(core);
+    chartSvg.appendChild(liveGroup);
+
+    var cross = el('g', {class:'crosshair', opacity:'0'});
+    var crossLine = el('line', {x1:plot.left, y1:plot.top, x2:plot.left, y2:plot.bottom});
+    var crossDot = el('circle', {cx:plot.left, cy:plot.top, r:'3.6'});
+    cross.appendChild(crossLine);
+    cross.appendChild(crossDot);
+    chartSvg.appendChild(cross);
+    chart.cross = {group:cross, line:crossLine, dot:crossDot};
+
+    if (animate && !reduceMotion){
+      chartSvg.style.opacity = '0';
+      chartSvg.style.transition = 'none';
+      var len = line.getTotalLength();
+      line.style.strokeDasharray = String(len);
+      line.style.strokeDashoffset = String(len);
+      area.style.opacity = '0';
+      chartSvg.getBoundingClientRect();
+      requestAnimationFrame(function(){
+        chartSvg.style.transition = 'opacity .24s ease';
+        chartSvg.style.opacity = '1';
+        line.style.transition = 'stroke-dashoffset 1.35s cubic-bezier(.22,.7,.2,1)';
+        line.style.strokeDashoffset = '0';
+        area.style.transition = 'opacity 1s ease .28s';
+        area.style.opacity = '1';
+      });
+    } else {
+      chartSvg.style.opacity = '1';
+      line.style.strokeDasharray = 'none';
+      line.style.strokeDashoffset = '0';
+      area.style.opacity = '1';
+    }
+
+    chartMeta.textContent = 'Updated ' + utcFmt.format(new Date()) + ' UTC · ' + points.length + ' samples';
+    hideTip();
+  }
+
+  function rebuildChart(animate){
+    chart.points = buildData(chart.range);
+    drawChart(animate);
+  }
+
+  function setRange(key){
+    chart.range = key;
+    ranges[key] && rangeButtons.forEach(function(btn){
+      var active = btn.getAttribute('data-range') === key;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    rebuildChart(true);
+  }
+
+  rangeButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      setRange(btn.getAttribute('data-range'));
+    });
+  });
+
+  /* crosshair */
+  function hideTip(){
+    chartTip.classList.remove('on', 'below');
+    chartTip.setAttribute('aria-hidden', 'true');
+    chartTip.style.left = '0px';
+    chartTip.style.top = '0px';
+    if (chart.cross) chart.cross.group.setAttribute('opacity', '0');
+  }
+
+  function tipTimeText(t){
+    if (chart.range === '24'){
+      return fullFmt.format(new Date(t)).toUpperCase() + ' · ' + utcHM.format(new Date(t)) + ' UTC';
+    }
+    return fullFmt.format(new Date(t)).toUpperCase() + ' · ' + utcHM.format(new Date(t)) + ' UTC';
+  }
+
+  function handlePointer(e){
+    if (!chart.plot || !chart.mapped) return;
+    var rect = chartSvg.getBoundingClientRect();
+    var scaleX = chart.w / rect.width;
+    var scaleY = chart.h / rect.height;
+    var x = (e.clientX - rect.left) * scaleX;
+    var plot = chart.plot;
+    if (x < plot.left - 10 || x > plot.right + 10){ hideTip(); return; }
+
+    var ratio = (x - plot.left) / plot.width;
+    ratio = Math.max(0, Math.min(1, ratio));
+    var idx = Math.round(ratio * (chart.mapped.length - 1));
+    var p = chart.mapped[idx];
+    chart.hover = idx;
+
+    var cross = chart.cross;
+    cross.group.setAttribute('opacity', '1');
+    cross.line.setAttribute('x1', p.x);
+    cross.line.setAttribute('x2', p.x);
+    cross.line.setAttribute('y1', plot.top);
+    cross.line.setAttribute('y2', plot.bottom);
+    cross.dot.setAttribute('cx', p.x);
+    cross.dot.setAttribute('cy', p.y);
+
+    var n = chart.mapped.length;
+    var prev = chart.mapped[Math.max(0, idx - 3)];
+    var next = chart.mapped[Math.min(n - 1, idx + 3)];
+    var dh = next.v - prev.v;
+    var dt = (next.t - prev.t) / 3600000;
+    var rate = dt > 0 ? dh / dt : 0;
+    var slack = Math.abs(rate) < 0.06;
+    var stateText = slack ? 'Slack water' : rate > 0 ? 'Rising' : 'Falling';
+
+    tipTime.textContent = tipTimeText(p.t);
+    tipHeight.textContent = p.v.toFixed(2);
+    tipState.textContent = stateText + ' / ' + Math.abs(rate).toFixed(2) + ' M/H';
+    tipState.className = 'tip-state' + (rate < 0 && !slack ? ' falling' : '');
+
+    var tipX = Math.max(84, Math.min(chart.w - 84, p.x));
+    var tipY = p.y - 15;
+    var below = tipY < 105;
+    chartTip.style.left = tipX + 'px';
+    chartTip.style.top = (below ? p.y + 22 : tipY) + 'px';
+    chartTip.classList.toggle('below', below);
+    chartTip.classList.add('on');
+    chartTip.setAttribute('aria-hidden', 'false');
+  }
+
+  chartWrap.addEventListener('pointermove', handlePointer);
+  chartWrap.addEventListener('pointerdown', handlePointer);
+  chartWrap.addEventListener('pointerleave', hideTip);
+  chartWrap.addEventListener('pointercancel', hideTip);
+
+  /* resize */
+  var resizeTimer = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){ drawChart(false); }, 140);
+  });
+  if ('ResizeObserver' in window){
+    new ResizeObserver(function(){
+      if (chart.points.length) drawChart(false);
+    }).observe(chartWrap);
+  }
+
+  /* ---------- sparklines ---------- */
+  function seeded(seed){
+    var s = seed;
+    return function(){
+      s = (s * 1664525 + 1013904223) % 4294967296;
+      return s / 4294967296;
+    };
+  }
+
+  function makeSpark(container, seed, tone, drift){
+    var rand = seeded(seed);
+    var w = 180, h = 52;
+    var points = [];
+    var val = 0.5;
+    for (var i = 0; i < 34; i++){
+      val += (rand() - 0.5) * 0.22 + drift;
+      val = Math.max(0.12, Math.min(0.88, val));
+      points.push({x: (i / 33) * w, y: h - val * h, v:val});
+    }
+    var lineD = smoothPath(points.slice());
+    var areaD = lineD + ' L' + w + ',' + h + ' L0,' + h + ' Z';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    var defs = document.createElementNS(NS, 'defs');
+    var gid = 'sparkGrad-' + seed;
+    var grad = document.createElementNS(NS, 'linearGradient');
+    grad.setAttribute('id', gid);
+    grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
+    grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
+    var stop1 = document.createElementNS(NS, 'stop');
+    stop1.setAttribute('offset', '0');
+    stop1.setAttribute('stop-color', tone === 'sand' ? '#f2b880' : tone === 'steel' ? '#8fb6c4' : '#7ee8d5');
+    stop1.setAttribute('stop-opacity', '.16');
+    var stop2 = document.createElementNS(NS, 'stop');
+    stop2.setAttribute('offset', '1');
+    stop2.setAttribute('stop-color', '#07131f');
+    stop2.setAttribute('stop-opacity', '0');
+    grad.appendChild(stop1); grad.appendChild(stop2);
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+
+    var area = document.createElementNS(NS, 'path');
+    area.setAttribute('d', areaD);
+    area.setAttribute('class', 'spark-fill');
+    area.setAttribute('fill', 'url(#' + gid + ')');
+    area.setAttribute('stroke', 'none');
+    svg.appendChild(area);
+
+    var baseline = document.createElementNS(NS, 'line');
+    baseline.setAttribute('x1', '0'); baseline.setAttribute('y1', h - 1);
+    baseline.setAttribute('x2', w); baseline.setAttribute('y2', h - 1);
+    baseline.setAttribute('stroke', 'rgba(126,232,213,.12)');
+    baseline.setAttribute('stroke-dasharray', '2 4');
+    svg.appendChild(baseline);
+
+    var line = document.createElementNS(NS, 'path');
+    line.setAttribute('d', lineD);
+    line.setAttribute('class', 'spark-line');
+    svg.appendChild(line);
+
+    var last = points[points.length - 1];
+    var dot = document.createElementNS(NS, 'circle');
+    dot.setAttribute('cx', last.x); dot.setAttribute('cy', last.y);
+    dot.setAttribute('r', '2.2');
+    dot.setAttribute('class', 'spark-dot');
+    svg.appendChild(dot);
+
+    container.appendChild(svg);
+
+    if (!reduceMotion){
+      var len = line.getTotalLength();
+      line.style.strokeDasharray = String(len);
+      line.style.strokeDashoffset = String(len);
+      line.style.transition = 'stroke-dashoffset 1.3s cubic-bezier(.2,.7,.2,1) ' + (seed % 3) * 0.12 + 's';
+      area.style.opacity = '0';
+      area.style.transition = 'opacity 1s ease .25s';
+      requestAnimationFrame(function(){
+        line.style.strokeDashoffset = '0';
+        area.style.opacity = '1';
+      });
+    }
+  }
+
+  makeSpark(document.getElementById('sparkTemp'), 7, 'aqua', 0.005);
+  makeSpark(document.getElementById('sparkSwell'), 21, 'sand', 0.002);
+  makeSpark(document.getElementById('sparkPressure'), 39, 'steel', -0.002);
+
+  /* ---------- boot ---------- */
+  rebuildChart(!reduceMotion);
+})();
+</script>
+</body>
+</html>

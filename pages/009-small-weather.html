@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Small Weather — a poem in six movements</title>
+<meta name="description" content="Small Weather — an original poem in six movements, set as a kinetic art book.">
+<style>
+  :root{
+    --paper:#f1e9d8;
+    --paper-deep:#e9dfca;
+    --ink:#17150f;
+    --ink-soft:#3b372c;
+    --red:#d6411f;
+    --petrol:#123d4b;
+    --rule:rgba(23,21,15,.22);
+    --pad:clamp(1.25rem,4.4vw,4.5rem);
+    --rail:clamp(34px,4vw,58px);
+    --grotesk:"Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;
+    --serif:Georgia,"Times New Roman",Times,serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--grotesk);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:80;
+    opacity:.36;
+    background-image:
+      repeating-linear-gradient(0deg,rgba(23,21,15,.018) 0 1px,transparent 1px 3px),
+      radial-gradient(120% 90% at 20% 10%,rgba(255,255,255,.38),transparent 55%),
+      radial-gradient(120% 90% at 85% 95%,rgba(120,86,40,.10),transparent 60%);
+    mix-blend-mode:multiply;
+  }
+  ::selection{background:var(--red);color:var(--paper)}
+  a{color:inherit}
+
+  /* progress */
+  .progress{
+    position:fixed;
+    top:0;left:0;right:0;
+    height:2px;
+    background:var(--red);
+    transform:scaleX(0);
+    transform-origin:0 50%;
+    z-index:100;
+    will-change:transform;
+  }
+
+  /* vertical rail */
+  .rail{
+    position:fixed;
+    z-index:60;
+    right:calc(var(--pad) * .34);
+    top:50%;
+    transform:translateY(-50%);
+    display:flex;
+    flex-direction:column;
+    gap:.2rem;
+    padding:1rem 0 1rem 2.9rem;
+    background:linear-gradient(90deg,rgba(241,233,216,0) 0%,rgba(241,233,216,.78) 38%,rgba(241,233,216,.93) 100%);
+  }
+  .rail::before{
+    content:"";
+    position:absolute;
+    right:.42rem;
+    top:.5rem;
+    bottom:.5rem;
+    width:1px;
+    background:var(--rule);
+    z-index:-1;
+  }
+  .rail a{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:.6rem;
+    min-height:26px;
+    padding:.15rem 0 .15rem .5rem;
+    text-decoration:none;
+    color:var(--ink-soft);
+    font-size:.6rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    transition:color .35s ease;
+  }
+  .rail .rn{
+    font-size:.66rem;
+    letter-spacing:.12em;
+    width:1.6rem;
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  .rail .rl{
+    max-width:0;
+    overflow:hidden;
+    white-space:nowrap;
+    opacity:0;
+    transition:max-width .45s ease,opacity .35s ease;
+  }
+  .rail a::after{
+    content:"";
+    width:5px;height:5px;
+    flex:none;
+    border-radius:50%;
+    border:1px solid var(--rule);
+    background:var(--paper);
+    transition:background .3s ease,border-color .3s ease,transform .3s ease;
+  }
+  .rail a:hover .rl,.rail a:focus-visible .rl{max-width:9rem;opacity:1}
+  .rail a:hover,.rail a:focus-visible{color:var(--ink)}
+  .rail a[aria-current="true"]{color:var(--red)}
+  .rail a[aria-current="true"]::after{background:var(--red);border-color:var(--red);transform:scale(1.25)}
+  body.rail-dark .rail{
+    background:linear-gradient(90deg,rgba(23,21,15,0) 0%,rgba(23,21,15,.8) 38%,rgba(23,21,15,.94) 100%);
+  }
+  body.rail-dark .rail::before{background:rgba(241,233,216,.28)}
+  body.rail-dark .rail a{color:rgba(241,233,216,.55)}
+  body.rail-dark .rail a::after{border-color:rgba(241,233,216,.35);background:var(--ink)}
+  body.rail-dark .rail a:hover,body.rail-dark .rail a:focus-visible{color:var(--paper)}
+  body.rail-dark .rail a[aria-current="true"]{color:#ef7a57}
+  body.rail-dark .rail a[aria-current="true"]::after{background:var(--red);border-color:var(--red)}
+  @media (min-width:1100px){
+    .rail{right:calc(var(--pad) * .55)}
+  }
+  @media (max-width:700px){
+    .rail{right:0;gap:0;padding:.55rem .12rem .55rem .5rem;background:linear-gradient(90deg,rgba(241,233,216,0) 0%,rgba(241,233,216,.72) 45%,rgba(241,233,216,.92) 100%)}
+    .rail a{min-height:25px;padding-left:0}
+    .rail .rn{width:1.2rem;font-size:.55rem}
+    .rl{display:none}
+  }
+
+  /* opening spread */
+  .title-spread{
+    min-height:100svh;
+    padding:calc(var(--pad) * .65) var(--pad) calc(var(--pad) * .7);
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    position:relative;
+    overflow:hidden;
+  }
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    align-items:baseline;
+    border-bottom:1px solid var(--ink);
+    padding-bottom:.65rem;
+    font-size:.6rem;
+    letter-spacing:.19em;
+    text-transform:uppercase;
+    line-height:1.5;
+  }
+  .masthead span:nth-child(2){text-align:center}
+  .masthead span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  .title-core{
+    align-self:center;
+    position:relative;
+    padding:clamp(2rem,5vh,4.5rem) 0;
+    z-index:2;
+  }
+  .kicker{
+    display:flex;
+    align-items:center;
+    gap:.9rem;
+    margin:0 0 clamp(1.4rem,3vh,2.6rem);
+    font-size:.62rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+  }
+  .kicker i{
+    display:block;
+    width:clamp(2rem,5vw,5rem);
+    height:1px;
+    background:var(--red);
+  }
+  h1{
+    margin:0;
+    font-weight:600;
+    line-height:.79;
+    letter-spacing:-.055em;
+    font-size:clamp(4.6rem,15.5vw,15rem);
+  }
+  h1 .l1{display:block}
+  h1 .l2{
+    display:block;
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    letter-spacing:-.045em;
+    color:var(--petrol);
+    margin-left:clamp(0rem,6vw,7rem);
+  }
+  h1 .red-dot{
+    display:inline-block;
+    width:.115em;height:.115em;
+    border-radius:50%;
+    background:var(--red);
+    vertical-align:.1em;
+    margin-left:.06em;
+  }
+  .title-sub{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:.7rem 2.4rem;
+    margin-top:clamp(1.8rem,4vh,3.4rem);
+    border-top:1px solid var(--rule);
+    padding-top:1rem;
+    max-width:54rem;
+  }
+  .title-sub p{
+    margin:0;
+    font-size:clamp(.95rem,1.6vw,1.28rem);
+    letter-spacing:.01em;
+  }
+  .title-sub p em{font-family:var(--serif);font-size:1.12em;color:var(--red)}
+  .title-sub .small{
+    margin-left:auto;
+    font-size:.6rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .title-disc{
+    position:absolute;
+    z-index:1;
+    width:clamp(11rem,27vw,26rem);
+    aspect-ratio:1;
+    border-radius:50%;
+    background:var(--red);
+    right:clamp(-4rem,-2vw,1rem);
+    top:clamp(2rem,10vh,9rem);
+    mix-blend-mode:multiply;
+    opacity:.92;
+  }
+  .title-disc::after{
+    content:"";
+    position:absolute;
+    inset:12%;
+    border-radius:50%;
+    border:1px solid rgba(241,233,216,.42);
+  }
+  .spread-foot{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:1rem;
+    border-top:1px solid var(--ink);
+    padding-top:.8rem;
+    font-size:.58rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    line-height:1.7;
+    color:var(--ink-soft);
+  }
+  .spread-foot strong{
+    display:block;
+    color:var(--ink);
+    font-weight:500;
+    letter-spacing:.13em;
+  }
+  .scroll-cue{
+    display:flex;
+    align-items:center;
+    gap:.55rem;
+    justify-content:flex-end;
+  }
+  .scroll-cue span{
+    display:block;
+    width:2.4rem;height:1px;
+    background:var(--ink);
+    position:relative;
+    overflow:hidden;
+  }
+  .scroll-cue span::after{
+    content:"";
+    position:absolute;inset:0;
+    background:var(--red);
+    animation:cue 2.8s cubic-bezier(.7,0,.2,1) infinite;
+    transform:translateX(-100%);
+  }
+  @keyframes cue{
+    0%{transform:translateX(-100%)}
+    55%{transform:translateX(0)}
+    100%{transform:translateX(100%)}
+  }
+
+  /* movements */
+  .movement{
+    min-height:100svh;
+    padding:clamp(4.6rem,10vh,7.5rem) calc(var(--pad) + var(--rail)) clamp(3.2rem,7vh,5.5rem) var(--pad);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    overflow:hidden;
+    border-top:1px solid var(--rule);
+  }
+  .movement-inner{
+    position:relative;
+    z-index:3;
+    width:100%;
+    max-width:92rem;
+    margin:0 auto;
+  }
+  .m-head{
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    gap:1rem;
+    align-items:baseline;
+    border-top:1px solid var(--ink);
+    padding-top:.55rem;
+    margin-bottom:clamp(2rem,7vh,5.5rem);
+    font-size:.6rem;
+    letter-spacing:.19em;
+    text-transform:uppercase;
+  }
+  .m-head .num{color:var(--red);font-weight:600}
+  .m-head .m-title{letter-spacing:.14em}
+  .m-head .m-side{color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .m-body{
+    position:relative;
+    z-index:2;
+  }
+  .lines{display:flex;flex-direction:column;gap:.1em}
+  .line{
+    margin:0;
+    font-size:clamp(2.5rem,7.9vw,8.4rem);
+    line-height:.94;
+    font-weight:600;
+    letter-spacing:-.05em;
+    will-change:transform,opacity;
+  }
+  .line.serif{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    font-size:clamp(1.35rem,2.55vw,2.55rem);
+    line-height:1.32;
+    letter-spacing:-.01em;
+    color:var(--petrol);
+    max-width:30ch;
+    margin-top:clamp(1rem,2.4vh,2rem);
+  }
+  .line.red{color:var(--red)}
+  .line.outline{
+    color:transparent;
+    -webkit-text-stroke:1px var(--petrol);
+    text-stroke:1px var(--petrol);
+  }
+  .m-body .line{
+    opacity:0;
+    transform:translateY(1.1em);
+    transition:opacity .9s ease,transform 1.15s cubic-bezier(.16,.84,.2,1);
+  }
+  .movement.in-view .m-body .line{
+    opacity:1;
+    transform:translateY(0);
+    transition-delay:calc(var(--i,0) * 105ms + 90ms);
+  }
+  .m-foot{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    margin-top:clamp(2.4rem,8vh,6rem);
+    padding-top:.6rem;
+    border-top:1px solid var(--rule);
+    font-size:.56rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .m-foot .w{font-family:var(--serif);font-style:italic;text-transform:none;font-size:.82rem;letter-spacing:.01em}
+
+  /* alignments */
+  .m-right .m-body{text-align:right}
+  .m-right .line.serif{margin-left:auto}
+  .m-center .m-body{text-align:center}
+  .m-center .line.serif{margin-left:auto;margin-right:auto}
+  .m-low .m-body{margin-top:auto}
+  .m-low .movement-inner{display:flex;flex-direction:column;min-height:calc(100svh - 13rem)}
+  .m-low .m-head{margin-bottom:auto}
+
+  /* shapes */
+  .shape{
+    position:absolute;
+    z-index:1;
+    pointer-events:none;
+  }
+  .shape-disc{
+    width:clamp(14rem,32vw,31rem);
+    aspect-ratio:1;
+    border-radius:50%;
+    background:var(--red);
+    right:clamp(-7rem,-4vw,2rem);
+    top:50%;
+    transform:translateY(-50%);
+    mix-blend-mode:multiply;
+    opacity:.9;
+  }
+  .shape-disc::after{
+    content:"";
+    position:absolute;
+    inset:8%;
+    border:1px solid rgba(241,233,216,.35);
+    border-radius:50%;
+  }
+  .shape-horizon{
+    left:0;right:0;
+    bottom:0;
+    height:clamp(4.5rem,10.5vh,8rem);
+    background:var(--petrol);
+  }
+  .shape-horizon::before{
+    content:"";
+    position:absolute;
+    left:0;right:0;top:-1px;
+    height:1px;
+    background:var(--red);
+  }
+  .shape-horizon::after{
+    content:"HORIZON / 02";
+    position:absolute;
+    right:var(--pad);
+    bottom:.8rem;
+    color:rgba(241,233,216,.55);
+    font-size:.55rem;
+    letter-spacing:.24em;
+  }
+  .shape-circle{
+    width:clamp(17rem,40vw,39rem);
+    aspect-ratio:1;
+    border-radius:50%;
+    border:1px solid var(--petrol);
+    right:clamp(-11rem,-5vw,2rem);
+    top:50%;
+    transform:translateY(-50%);
+  }
+  .shape-circle::before{
+    content:"";
+    position:absolute;
+    inset:14%;
+    border-radius:50%;
+    border:1px solid rgba(18,61,75,.24);
+  }
+  .shape-circle::after{
+    content:"";
+    position:absolute;
+    left:50%;top:-2.5rem;
+    width:1px;height:2.5rem;
+    background:var(--petrol);
+  }
+  .shape-rain{
+    inset:0;
+    overflow:hidden;
+  }
+  .shape-rain .drop{
+    position:absolute;
+    top:-18%;
+    width:1px;
+    background:linear-gradient(to bottom,transparent,rgba(18,61,75,.62),transparent);
+    animation:rainfall linear infinite;
+  }
+  @keyframes rainfall{
+    to{transform:translateY(142vh)}
+  }
+  .shape-eclipse{
+    width:clamp(15rem,31vw,30rem);
+    aspect-ratio:1;
+    border-radius:50%;
+    background:var(--red);
+    left:clamp(-9rem,-4vw,1rem);
+    top:50%;
+    transform:translateY(-50%);
+  }
+  .shape-eclipse::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;top:42%;
+    height:23%;
+    background:var(--petrol);
+  }
+  .shape-orbit{
+    width:clamp(19rem,43vw,42rem);
+    aspect-ratio:1;
+    border-radius:50%;
+    border:1px solid var(--petrol);
+    left:50%;top:50%;
+    transform:translate(-50%,-50%);
+  }
+  .shape-orbit::before{
+    content:"";
+    position:absolute;
+    inset:-2.2rem;
+    border-radius:50%;
+    border:1px solid rgba(18,61,75,.2);
+  }
+  .shape-orbit::after{
+    content:"";
+    position:absolute;
+    width:clamp(3rem,7vw,6rem);
+    aspect-ratio:1;
+    border-radius:50%;
+    background:var(--red);
+    top:8%;right:6%;
+  }
+
+
+  /* colophon */
+  .colophon{
+    background:var(--ink);
+    color:var(--paper);
+    padding:clamp(4rem,10vh,8rem) calc(var(--pad) + var(--rail)) clamp(2rem,5vh,4rem) var(--pad);
+    position:relative;
+    overflow:hidden;
+  }
+  .colophon .eyebrow{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    border-top:1px solid rgba(241,233,216,.38);
+    padding-top:.66rem;
+    font-size:.58rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(241,233,216,.65);
+  }
+  .colophon h2{
+    font-family:var(--serif);
+    font-weight:400;
+    font-style:italic;
+    font-size:clamp(3rem,10vw,9.5rem);
+    line-height:.94;
+    letter-spacing:-.04em;
+    margin:clamp(2rem,8vh,5rem) 0 clamp(2.4rem,7vh,5rem);
+    max-width:14ch;
+  }
+  .colophon h2 span{color:var(--red)}
+  .colo-grid{
+    display:grid;
+    grid-template-columns:1.2fr .8fr .8fr;
+    gap:clamp(1.4rem,4vw,4rem);
+    border-top:1px solid rgba(241,233,216,.25);
+    padding-top:1.2rem;
+  }
+  .colo-grid p{
+    margin:0;
+    font-size:clamp(.78rem,1vw,.92rem);
+    line-height:1.65;
+    color:rgba(241,233,216,.78);
+    max-width:34ch;
+  }
+  .colo-grid .label{
+    font-size:.55rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--red);
+    margin-bottom:.65rem;
+  }
+  .colo-grid em{font-family:var(--serif);font-size:1.05em}
+  .endmark{
+    margin-top:clamp(3rem,9vh,6rem);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    border-top:1px solid rgba(241,233,216,.25);
+    padding-top:.8rem;
+    font-size:.58rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(241,233,216,.55);
+  }
+  .endmark .dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+  .top-link{
+    text-decoration:none;
+    border-bottom:1px solid rgba(241,233,216,.4);
+    padding-bottom:2px;
+    transition:color .3s ease,border-color .3s ease;
+  }
+  .top-link:hover,.top-link:focus-visible{color:var(--red);border-color:var(--red)}
+
+  @media (max-width:900px){
+    .title-sub .small{margin-left:0;width:100%}
+    .spread-foot{grid-template-columns:1fr 1fr}
+    .colo-grid{grid-template-columns:1fr 1fr}
+    .colo-grid p:first-child{grid-column:1 / -1}
+    .m-head{margin-bottom:2.2rem}
+    .movement{justify-content:flex-start;padding-top:clamp(4rem,8vh,6rem)}
+    .m-low .movement-inner{min-height:calc(100svh - 9rem)}
+  }
+  @media (max-width:620px){
+    h1{font-size:clamp(3.35rem,14.4vw,5.8rem);line-height:.83}
+    h1 .l2{margin-left:0}
+    .title-disc{width:12rem;top:auto;bottom:18%;right:-4rem;opacity:.8}
+    .title-sub p{font-size:1rem}
+    .title-sub{padding-right:2.9rem}
+    .masthead span:nth-child(2){display:none}
+    .spread-foot{grid-template-columns:1fr;gap:.55rem}
+    .spread-foot div:nth-child(2),.spread-foot div:nth-child(3){display:none}
+    .scroll-cue{justify-content:flex-start}
+    .line{font-size:clamp(2.35rem,10.6vw,4.4rem)}
+    .line.serif{font-size:clamp(1.1rem,4.2vw,1.5rem);max-width:25ch}
+    .m-foot{flex-wrap:wrap}
+    .m-foot .w{order:3;flex-basis:100%}
+    .shape-disc,.shape-eclipse{width:14rem;opacity:.55}
+    .shape-circle{width:19rem;right:-10rem}
+    .shape-orbit{width:20rem}
+    .colo-grid{grid-template-columns:1fr}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+    .m-body .line{opacity:1;transform:none}
+    .shape-rain .drop{animation:none;top:0;height:100%}
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<nav class="rail" aria-label="Poem movements">
+  <a href="#m1" data-target="m1"><span class="rl">A Small Weather</span><span class="rn">I</span></a>
+  <a href="#m2" data-target="m2"><span class="rl">Barometer</span><span class="rn">II</span></a>
+  <a href="#m3" data-target="m3"><span class="rl">Window</span><span class="rn">III</span></a>
+  <a href="#m4" data-target="m4"><span class="rl">Rain</span><span class="rn">IV</span></a>
+  <a href="#m5" data-target="m5"><span class="rl">After</span><span class="rn">V</span></a>
+  <a href="#m6" data-target="m6"><span class="rl">Forecast</span><span class="rn">VI</span></a>
+</nav>
+
+<header class="title-spread" id="top">
+  <div class="masthead">
+    <span>Small Weather</span>
+    <span>An original poem in six movements</span>
+    <span>MMXXVI / No. 09</span>
+  </div>
+
+  <div class="title-disc" aria-hidden="true"></div>
+
+  <div class="title-core">
+    <p class="kicker"><i></i>Poem / Six Movements</p>
+    <h1>
+      <span class="l1">Small<span class="red-dot" aria-hidden="true"></span></span>
+      <span class="l2">Weather</span>
+    </h1>
+    <div class="title-sub">
+      <p><em>a poem in six movements</em></p>
+      <p class="small">Words by an unnamed hand / Set in grotesque &amp; serif</p>
+    </div>
+  </div>
+
+  <div class="spread-foot">
+    <div><strong>Movement</strong>I—VI</div>
+    <div><strong>Weather</strong>Low pressure, clearing</div>
+    <div><strong>Paper</strong>Cream, 120 gsm</div>
+    <div class="scroll-cue"><span></span>Scroll to begin</div>
+  </div>
+</header>
+
+<main>
+  <section class="movement m-left" id="m1" data-label="A Small Weather">
+    <div class="shape shape-disc" aria-hidden="true"></div>
+    <div class="movement-inner">
+      <div class="m-head"><span class="num">I</span><span class="m-title">A Small Weather</span><span class="m-side">01 / 06</span></div>
+      <div class="m-body">
+        <div class="lines">
+          <p class="line" style="--i:0">Morning arrives</p>
+          <p class="line" style="--i:1">without a forecast.</p>
+          <p class="line" style="--i:2">We dress inside it.</p>
+          <p class="line serif" style="--i:3">A low sky, held in the mouth —<br>the taste of tin and green.</p>
+        </div>
+      </div>
+      <div class="m-foot"><span>Low pressure / 1,012 hPa</span><span class="w">“the day has not decided”</span><span>Wind SW, 4 knots</span></div>
+    </div>
+  </section>
+
+  <section class="movement m-right" id="m2" data-label="Barometer">
+    <div class="shape shape-horizon" aria-hidden="true"></div>
+    <div class="movement-inner">
+      <div class="m-head"><span class="num">II</span><span class="m-title">Barometer</span><span class="m-side">02 / 06</span></div>
+      <div class="m-body">
+        <div class="lines">
+          <p class="line" style="--i:0">The barometer</p>
+          <p class="line" style="--i:1">leans toward</p>
+          <p class="line" style="--i:2">the window.</p>
+          <p class="line serif" style="--i:3">Somewhere, rain is deciding.<br>Pressure is only a way of listening.</p>
+        </div>
+      </div>
+      <div class="m-foot"><span>Falling slowly</span><span class="w">“a needle, a held breath”</span><span>28.94 in</span></div>
+    </div>
+  </section>
+
+  <section class="movement m-center" id="m3" data-label="Window">
+    <div class="shape shape-circle" aria-hidden="true"></div>
+    <div class="movement-inner">
+      <div class="m-head"><span class="num">III</span><span class="m-title">Window</span><span class="m-side">03 / 06</span></div>
+      <div class="m-body">
+        <div class="lines">
+          <p class="line" style="--i:0">A circle of glass</p>
+          <p class="line outline" style="--i:1">keeps the weather</p>
+          <p class="line" style="--i:2">at arm’s length.</p>
+          <p class="line serif" style="--i:3">Outside, the town is slightly out of focus.<br>We call this distance a room.</p>
+        </div>
+      </div>
+      <div class="m-foot"><span>Visibility 8 km</span><span class="w">“the glass keeps its own small climate”</span><span>West-facing</span></div>
+    </div>
+  </section>
+
+  <section class="movement m-low" id="m4" data-label="Rain">
+    <div class="shape shape-rain" id="rain" aria-hidden="true"></div>
+    <div class="movement-inner">
+      <div class="m-head"><span class="num">IV</span><span class="m-title">Rain</span><span class="m-side">04 / 06</span></div>
+      <div class="m-body">
+        <div class="lines">
+          <p class="line" style="--i:0">Rain writes</p>
+          <p class="line red" style="--i:1">its thin alphabet</p>
+          <p class="line" style="--i:2">on the awning,</p>
+          <p class="line" style="--i:3">on the idea of leaving.</p>
+          <p class="line serif" style="--i:4">Every drop a small correction.<br>The street edits itself.</p>
+        </div>
+      </div>
+      <div class="m-foot"><span>4 mm / hour</span><span class="w">“nothing falls in a straight line”</span><span>Umbrella, unopened</span></div>
+    </div>
+  </section>
+
+  <section class="movement m-right m-low" id="m5" data-label="After">
+    <div class="shape shape-eclipse" aria-hidden="true"></div>
+    <div class="movement-inner">
+      <div class="m-head"><span class="num">V</span><span class="m-title">After</span><span class="m-side">05 / 06</span></div>
+      <div class="m-body">
+        <div class="lines">
+          <p class="line" style="--i:0">After the storm,</p>
+          <p class="line" style="--i:1">the air is</p>
+          <p class="line" style="--i:2">a blue room.</p>
+          <p class="line serif" style="--i:3">We stand in it without speaking.<br>The weather has no memory, but we do.</p>
+        </div>
+      </div>
+      <div class="m-foot"><span>Clearing / 17:42</span><span class="w">“the furniture of light, rearranged”</span><span>Wind NW, 2 knots</span></div>
+    </div>
+  </section>
+
+  <section class="movement m-center" id="m6" data-label="Forecast">
+    <div class="shape shape-orbit" aria-hidden="true"></div>
+    <div class="movement-inner">
+      <div class="m-head"><span class="num">VI</span><span class="m-title">Forecast</span><span class="m-side">06 / 06</span></div>
+      <div class="m-body">
+        <div class="lines">
+          <p class="line" style="--i:0">Tomorrow:</p>
+          <p class="line red" style="--i:1">small weather,</p>
+          <p class="line" style="--i:2">occasional light,</p>
+          <p class="line" style="--i:3">a chance of staying.</p>
+          <p class="line serif" style="--i:4">Bring nothing. We are already here.<br>The forecast is a kind of promise.</p>
+        </div>
+      </div>
+      <div class="m-foot"><span>Outlook / fair</span><span class="w">“end of poem, beginning of weather”</span><span>06 / 06</span></div>
+    </div>
+  </section>
+</main>
+
+<footer class="colophon">
+  <div class="eyebrow"><span>Colophon</span><span>Small Weather / Pages 01—06</span><span>MMXXVI</span></div>
+  <h2>And the weather <span>stays.</span></h2>
+  <div class="colo-grid">
+    <p>An original poem in six movements, composed for the space between a window and a person. Set in a neo-grotesque for the large lines and an italic serif for the quieter ones; printed on warm cream, with vermilion and petrol blue.</p>
+    <div>
+      <p class="label">Edition</p>
+      <p>Digital folio, open edition.<br>Composed in one file.<br>No. 009 / MMXXVI.</p>
+    </div>
+    <div>
+      <p class="label">Note</p>
+      <p><em>Read it at the speed of weather.</em><br>Scroll slowly. The rail keeps your place.</p>
+    </div>
+  </div>
+  <div class="endmark">
+    <span class="dot" aria-hidden="true"></span>
+    <span>The end / 06</span>
+    <a class="top-link" href="#top">Return to the title ↑</a>
+  </div>
+</footer>
+
+<noscript>
+  <style>.m-body .line{opacity:1;transform:none}</style>
+</noscript>
+
+<script>
+(function () {
+  "use strict";
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var progress = document.getElementById("progress");
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".movement"));
+  var railLinks = Array.prototype.slice.call(document.querySelectorAll(".rail a"));
+  var railMap = {};
+  railLinks.forEach(function (a) { railMap[a.getAttribute("data-target")] = a; });
+
+  /* Rain of thin rules — deterministic, authored composition. */
+  var rain = document.getElementById("rain");
+  if (rain) {
+    var seed = 8417;
+    function rnd() {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    }
+    var count = window.innerWidth < 700 ? 28 : 52;
+    for (var i = 0; i < count; i++) {
+      var drop = document.createElement("i");
+      drop.className = "drop";
+      drop.style.left = (rnd() * 100).toFixed(2) + "%";
+      drop.style.height = (14 + rnd() * 38).toFixed(1) + "vh";
+      drop.style.opacity = (0.2 + rnd() * 0.65).toFixed(2);
+      drop.style.animationDuration = (5 + rnd() * 8).toFixed(2) + "s";
+      drop.style.animationDelay = (-rnd() * 12).toFixed(2) + "s";
+      rain.appendChild(drop);
+    }
+  }
+
+  /* Reveal lines as each movement enters. */
+  if ("IntersectionObserver" in window) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          if (!reduceMotion) revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.22 });
+    sections.forEach(function (s) { revealObserver.observe(s); });
+  } else {
+    sections.forEach(function (s) { s.classList.add("in-view"); });
+  }
+
+  /* Progress + active movement. */
+  var ticking = false;
+  function paint() {
+    ticking = false;
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - window.innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    progress.style.transform = "scaleX(" + p.toFixed(5) + ")";
+
+    var mid = window.innerHeight * 0.46;
+    var active = sections[0];
+    var found = false;
+    for (var i = 0; i < sections.length; i++) {
+      var r = sections[i].getBoundingClientRect();
+      if (r.top <= mid && r.bottom >= mid) { active = sections[i]; found = true; break; }
+      if (r.top > mid) { active = sections[Math.max(0, i - 1)]; found = true; break; }
+    }
+    if (!found) active = sections[sections.length - 1];
+
+    var colophon = document.querySelector(".colophon");
+    if (colophon) {
+      document.body.classList.toggle("rail-dark", colophon.getBoundingClientRect().top < window.innerHeight * 0.5);
+    }
+    railLinks.forEach(function (a) {
+      var on = a.getAttribute("data-target") === active.id;
+      if (on) a.setAttribute("aria-current", "true");
+      else a.removeAttribute("aria-current");
+    });
+  }
+  function onScroll() {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(paint);
+    }
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+  paint();
+
+  /* Rail navigation: smooth scroll; native anchors still work without JS. */
+  railLinks.forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      var id = a.getAttribute("data-target");
+      var target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      if (history.replaceState) history.replaceState(null, "", "#" + id);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantum Waves — Particle in a Box</title>
+<style>
+  :root{
+    --bg:#06070a;
+    --cream:#f2ecdf;
+    --cream-dim:#c9c3b5;
+    --muted:#8b90a3;
+    --faint:#565c70;
+    --cyan:#9ceff6;
+    --cyan-soft:rgba(156,239,246,.5);
+    --violet:#a78bfa;
+    --violet-soft:rgba(167,139,250,.45);
+    --line:rgba(242,236,223,.12);
+    --line-soft:rgba(242,236,223,.06);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--cream);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    min-height:100vh;
+  }
+  .page{
+    display:grid;
+    grid-template-columns:minmax(360px,29vw) minmax(0,1fr);
+    min-height:100vh;
+  }
+
+  /* ---------- left column ---------- */
+  .panel{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    padding:clamp(24px,3vw,48px) clamp(24px,3.2vw,52px) clamp(22px,2.6vw,38px);
+    background:
+      radial-gradient(120% 70% at 0% 0%,rgba(167,139,250,.05),transparent 55%),
+      linear-gradient(180deg,#090b10 0%,#06070a 100%);
+    border-right:1px solid var(--line-soft);
+    overflow:hidden;
+    z-index:2;
+  }
+  .panel::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background-image:radial-gradient(rgba(242,236,223,.5) .5px,transparent .5px);
+    background-size:5px 5px;
+    opacity:.035;
+  }
+  .masthead{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    position:relative;
+    z-index:1;
+  }
+  .mark{
+    width:32px;height:32px;
+    display:grid;place-items:center;
+    border:1px solid rgba(156,239,246,.38);
+    color:var(--cyan);
+    font-family:var(--serif);
+    font-size:19px;
+    line-height:1;
+    box-shadow:inset 0 0 14px rgba(156,239,246,.08);
+  }
+  .mast-label{
+    font-family:var(--mono);
+    font-size:9px;
+    line-height:1.5;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .mast-right{
+    margin-left:auto;
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.14em;
+    color:var(--faint);
+    text-align:right;
+    line-height:1.6;
+  }
+  .copy{
+    position:relative;
+    z-index:1;
+    margin-top:clamp(38px,6.5vh,74px);
+    max-width:26em;
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0 0 18px;
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    opacity:.82;
+  }
+  .eyebrow::before{
+    content:"";
+    width:26px;height:1px;
+    background:var(--cyan);
+    opacity:.6;
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(34px,3.15vw,47px);
+    line-height:1.035;
+    letter-spacing:-.018em;
+    margin:0;
+    color:var(--cream);
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--cyan);
+  }
+  .lede{
+    font-size:13.5px;
+    line-height:1.68;
+    color:#b3aea2;
+    margin:20px 0 0;
+    max-width:31em;
+  }
+  .lede b{
+    color:var(--cream-dim);
+    font-weight:500;
+  }
+
+  /* ---------- controls ---------- */
+  .controls{
+    position:relative;
+    z-index:1;
+    margin-top:clamp(26px,4.4vh,46px);
+    padding-top:22px;
+    border-top:1px solid var(--line);
+  }
+  .control-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .control-head label{
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .control-head output{
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.1em;
+    color:var(--cyan);
+  }
+  .range-wrap{
+    margin-top:12px;
+    position:relative;
+  }
+  input[type=range]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:22px;
+    background:transparent;
+    margin:0;
+    cursor:pointer;
+    display:block;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:2px;
+    background:linear-gradient(90deg,var(--cyan) 0%,rgba(156,239,246,.5) 42%,rgba(167,139,250,.5) 100%);
+    opacity:.7;
+  }
+  input[type=range]::-moz-range-track{
+    height:2px;
+    background:linear-gradient(90deg,var(--cyan),rgba(167,139,250,.6));
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px;height:16px;
+    margin-top:-7px;
+    border-radius:50%;
+    background:var(--bg);
+    border:1px solid var(--cyan);
+    box-shadow:0 0 0 4px rgba(6,7,10,.9),0 0 14px rgba(156,239,246,.55),inset 0 0 6px rgba(156,239,246,.5);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;
+    border-radius:50%;
+    background:var(--bg);
+    border:1px solid var(--cyan);
+    box-shadow:0 0 12px rgba(156,239,246,.6);
+  }
+  input[type=range]:focus-visible{outline:1px solid var(--cyan);outline-offset:6px}
+  .ticks{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    margin-top:3px;
+  }
+  .ticks button{
+    appearance:none;
+    background:none;
+    border:0;
+    padding:3px 0;
+    font-family:var(--mono);
+    font-size:9px;
+    color:var(--faint);
+    cursor:pointer;
+    transition:color .2s ease;
+  }
+  .ticks button:first-child{text-align:left}
+  .ticks button:last-child{text-align:right}
+  .ticks button:hover{color:var(--cream-dim)}
+  .ticks button.active{color:var(--cyan)}
+  .ticks button:focus-visible{outline:1px solid var(--cyan);outline-offset:2px}
+
+  .switch-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-top:20px;
+  }
+  .switch{
+    appearance:none;
+    border:0;
+    background:none;
+    padding:0;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:var(--cream);
+    cursor:pointer;
+    text-align:left;
+    font-family:var(--sans);
+  }
+  .switch .track{
+    width:38px;height:20px;
+    border:1px solid rgba(242,236,223,.22);
+    border-radius:20px;
+    position:relative;
+    flex:0 0 auto;
+    transition:border-color .25s ease,background .25s ease;
+    background:rgba(255,255,255,.02);
+  }
+  .switch .knob{
+    position:absolute;
+    top:3px;left:3px;
+    width:12px;height:12px;
+    border-radius:50%;
+    background:#777d90;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1),background .25s ease,box-shadow .25s ease;
+  }
+  .switch[aria-checked="true"] .track{
+    border-color:rgba(167,139,250,.65);
+    background:rgba(167,139,250,.12);
+  }
+  .switch[aria-checked="true"] .knob{
+    transform:translateX(18px);
+    background:var(--violet);
+    box-shadow:0 0 10px rgba(167,139,250,.8);
+  }
+  .switch:focus-visible{outline:1px solid var(--cyan);outline-offset:5px}
+  .switch .txt{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    font-size:12px;
+    letter-spacing:.01em;
+  }
+  .switch .txt small{
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+  .micro-label{
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+  .measure{
+    margin-top:20px;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding:13px 18px;
+    background:var(--cream);
+    color:#0a0b0f;
+    border:1px solid var(--cream);
+    border-radius:1px;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .2s ease,color .2s ease,box-shadow .25s ease,transform .12s ease;
+  }
+  .measure .dot{
+    width:6px;height:6px;
+    border-radius:50%;
+    background:#0a0b0f;
+    transition:background .2s ease;
+  }
+  .measure:hover{
+    background:transparent;
+    color:var(--cyan);
+    border-color:rgba(156,239,246,.65);
+    box-shadow:0 0 24px rgba(156,239,246,.1) inset;
+  }
+  .measure:hover .dot{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+  .measure:active{transform:translateY(1px)}
+  .measure:focus-visible{outline:1px solid var(--cyan);outline-offset:4px}
+  .measure.armed{
+    background:rgba(167,139,250,.1);
+    color:var(--cream);
+    border-color:rgba(167,139,250,.5);
+  }
+  .measure.armed .dot{background:var(--violet);box-shadow:0 0 8px var(--violet)}
+
+  .readouts{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    margin-top:22px;
+    background:var(--line);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .ro{
+    background:var(--bg);
+    padding:12px 10px 11px;
+    min-width:0;
+  }
+  .ro:first-child{padding-left:0}
+  .ro:last-child{padding-right:0}
+  .ro span.ro-label{
+    display:block;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:var(--faint);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .ro strong{
+    display:block;
+    margin-top:6px;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:23px;
+    letter-spacing:-.01em;
+    color:var(--cream);
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .ro strong small{
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.02em;
+    color:var(--muted);
+    margin-left:3px;
+  }
+  .ro:nth-child(2) strong{color:var(--cyan)}
+  .ro:nth-child(3) strong{color:var(--violet)}
+  .live{
+    margin:14px 0 0;
+    font-size:10.5px;
+    line-height:1.55;
+    color:var(--muted);
+    min-height:2.9em;
+  }
+  .live b{color:var(--cream-dim);font-weight:500}
+  .foot{
+    position:relative;
+    z-index:1;
+    margin-top:auto;
+    padding-top:24px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--faint);
+    line-height:1.7;
+  }
+  .foot span:last-child{text-align:right}
+
+  /* ---------- field ---------- */
+  .stage{
+    position:relative;
+    min-height:100vh;
+    overflow:hidden;
+    background:
+      radial-gradient(90% 60% at 70% 15%,rgba(84,76,180,.10),transparent 62%),
+      radial-gradient(70% 60% at 20% 90%,rgba(30,126,146,.09),transparent 65%),
+      #06070a;
+    cursor:crosshair;
+  }
+  #field{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+  }
+  .stage-meta{
+    position:absolute;
+    top:clamp(20px,3vw,34px);
+    left:clamp(22px,3.4vw,48px);
+    right:clamp(22px,3.4vw,48px);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    pointer-events:none;
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--faint);
+    z-index:2;
+  }
+  .stage-meta .field-title{color:var(--muted)}
+  .stage-meta .state{
+    text-align:right;
+    color:var(--cyan);
+    opacity:.7;
+  }
+  .legend{
+    position:absolute;
+    left:clamp(22px,3.4vw,48px);
+    bottom:clamp(18px,2.6vw,30px);
+    display:flex;
+    gap:22px;
+    pointer-events:none;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--faint);
+    z-index:2;
+  }
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .legend i{display:block;width:14px;height:1px;background:currentColor;position:relative}
+  .legend .c{color:var(--cyan)}
+  .legend .v{color:var(--violet)}
+  .legend .p{color:var(--cream);opacity:.6}
+  .hint{
+    position:absolute;
+    right:clamp(22px,3.4vw,48px);
+    bottom:clamp(18px,2.6vw,30px);
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--faint);
+    pointer-events:none;
+    z-index:2;
+    text-align:right;
+  }
+  .hoverbox{
+    position:absolute;
+    z-index:4;
+    pointer-events:none;
+    padding:9px 11px;
+    background:rgba(7,9,14,.88);
+    border:1px solid rgba(242,236,223,.16);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    font-family:var(--mono);
+    font-size:9px;
+    line-height:1.75;
+    letter-spacing:.04em;
+    color:var(--muted);
+    white-space:nowrap;
+    opacity:0;
+    transform:translate(12px,-50%);
+    transition:opacity .15s ease;
+    box-shadow:0 12px 30px rgba(0,0,0,.35);
+  }
+  .hoverbox.on{opacity:1}
+  .hoverbox b{color:var(--cream);font-weight:400}
+  .hoverbox .cy{color:var(--cyan)}
+  .hoverbox .vi{color:var(--violet)}
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+
+  @media (max-width:900px){
+    .page{grid-template-columns:1fr}
+    .panel{
+      min-height:0;
+      border-right:0;
+      border-bottom:1px solid var(--line-soft);
+      padding-bottom:28px;
+    }
+    .copy{margin-top:34px}
+    .foot{margin-top:28px}
+    .stage{
+      min-height:0;
+      height:clamp(400px,68vh,620px);
+      border-bottom:1px solid var(--line-soft);
+    }
+    .readouts{max-width:520px}
+  }
+  @media (max-width:640px){
+    .panel{padding:20px 20px 24px}
+    .copy{margin-top:28px}
+    .lede{font-size:13px}
+    .controls{margin-top:26px}
+    .stage{height:clamp(380px,62vh,520px)}
+    .stage-meta{font-size:7.5px;letter-spacing:.14em}
+    .stage-meta .state{max-width:46%;line-height:1.6}
+    .legend{gap:14px}
+    .legend span:last-child{display:none}
+    .hint{display:none}
+    .foot{flex-direction:column;gap:8px;align-items:flex-start}
+    .foot span:last-child{text-align:left}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{scroll-behavior:auto}
+    .switch .knob,.measure,.hoverbox{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <aside class="panel">
+    <header class="masthead">
+      <span class="mark" aria-hidden="true">&psi;</span>
+      <span class="mast-label">Quantum mechanics<br>Observable study</span>
+      <span class="mast-right">Fig. 081<br>Infinite well</span>
+    </header>
+
+    <div class="copy">
+      <p class="eyebrow">Particle in a one-dimensional box</p>
+      <h1>A particle is a <em>rumour</em> until measured.</h1>
+      <p class="lede">Held between two impenetrable walls, it can only occupy discrete standing waves. Until an observation fixes it, the particle is a <b>haze of possibility</b> — amplitude, phase, and a cloud of plausible positions.</p>
+    </div>
+
+    <div class="controls">
+      <div class="control-head">
+        <label for="level">Energy level</label>
+        <output id="levelOut" for="level">n = 03</output>
+      </div>
+      <div class="range-wrap">
+        <input id="level" type="range" min="1" max="6" step="1" value="3" aria-describedby="levelNote">
+      </div>
+      <div class="ticks" id="ticks" role="group" aria-label="Choose energy level">
+        <button type="button" data-n="1">01</button>
+        <button type="button" data-n="2">02</button>
+        <button type="button" data-n="3" class="active">03</button>
+        <button type="button" data-n="4">04</button>
+        <button type="button" data-n="5">05</button>
+        <button type="button" data-n="6">06</button>
+      </div>
+      <p id="levelNote" class="sr-only">Adjusts the principal quantum number of the confined particle.</p>
+
+      <div class="switch-row">
+        <button class="switch" id="super" type="button" role="switch" aria-checked="false">
+          <span class="track" aria-hidden="true"><span class="knob"></span></span>
+          <span class="txt">Superposition<small>mix n with n + 1</small></span>
+        </button>
+        <span class="micro-label" id="modeLabel">pure state</span>
+      </div>
+
+      <button class="measure" id="measureBtn" type="button">
+        <span class="dot" aria-hidden="true"></span>Measure
+      </button>
+
+      <div class="readouts" aria-live="off">
+        <div class="ro">
+          <span class="ro-label">Energy &lang;E&rang;</span>
+          <strong id="energyVal">9.00<small>E&#8321;</small></strong>
+        </div>
+        <div class="ro">
+          <span class="ro-label">Nodes</span>
+          <strong id="nodesVal">2</strong>
+        </div>
+        <div class="ro">
+          <span class="ro-label">Uncertainty</span>
+          <strong id="dxVal">0.181<small>&Delta;x/L</small></strong>
+        </div>
+      </div>
+      <p class="live" id="live" aria-live="polite">Cloud intact — 240 samples drawn from <b>|&psi;|&sup2;</b>. Nothing is decided.</p>
+    </div>
+
+    <footer class="foot">
+      <span>Model: &psi;<sub>n</sub>(x) = &radic;(2/L) sin(n&pi;x/L)</span>
+      <span>Hover to probe<br>Measure to collapse</span>
+    </footer>
+  </aside>
+
+  <main class="stage" id="stage">
+    <canvas id="field" aria-label="Wavefunction, probability density and sample particle cloud for a particle in a box"></canvas>
+    <div class="stage-meta">
+      <span class="field-title">Field 01 &mdash; probability amplitude</span>
+      <span class="state" id="stageState">n = 03 &middot; pure state<br>unobserved</span>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span class="c"><i></i>&psi;(x)</span>
+      <span class="v"><i></i>|&psi;(x)|&sup2;</span>
+      <span class="p"><i></i>sample cloud</span>
+    </div>
+    <div class="hint">Position x / L &rarr;<br><span id="hintRight">move to read</span></div>
+    <div class="hoverbox" id="hoverbox" aria-hidden="true"></div>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var stage = document.getElementById("stage");
+  var canvas = document.getElementById("field");
+  var ctx = canvas.getContext("2d");
+  var level = document.getElementById("level");
+  var levelOut = document.getElementById("levelOut");
+  var ticks = Array.prototype.slice.call(document.querySelectorAll("#ticks button"));
+  var superBtn = document.getElementById("super");
+  var modeLabel = document.getElementById("modeLabel");
+  var measureBtn = document.getElementById("measureBtn");
+  var energyVal = document.getElementById("energyVal");
+  var nodesVal = document.getElementById("nodesVal");
+  var dxVal = document.getElementById("dxVal");
+  var live = document.getElementById("live");
+  var stageState = document.getElementById("stageState");
+  var hintRight = document.getElementById("hintRight");
+  var hoverbox = document.getElementById("hoverbox");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var W = 0, H = 0, DPR = 1;
+  var plot = { x0: 60, x1: 100, y0: 60, psiY: 200, densY: 600, psiAmp: 120, densH: 260 };
+
+  var Q = {
+    n: 3,
+    sup: false,
+    collapsed: false,
+    collapseStart: -10,
+    mx: 0.5,
+    hoverX: null,
+    t: 0,
+    last: 0
+  };
+
+  var N = 640;
+  var psi = new Float64Array(N + 1);
+  var prob = new Float64Array(N + 1);
+  var cdf = new Float64Array(N + 1);
+  var probMax = 1;
+  var nodes = 0;
+  var energy = 3;
+  var uncertainty = 0.18;
+  var particles = [];
+  var stars = [];
+
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  var rand = mulberry32(0x081A2C);
+
+  function rawPsi(x){
+    if(!Q.sup){
+      return Math.sin(Q.n * Math.PI * x);
+    }
+    return Math.sin(Q.n * Math.PI * x) + 0.78 * Math.sin((Q.n + 1) * Math.PI * x);
+  }
+
+  function buildStars(){
+    stars = [];
+    var r = mulberry32(0x51A7);
+    for(var i = 0; i < 110; i++){
+      stars.push({ x: r(), y: r(), s: 0.4 + r() * 1.1, a: 0.06 + r() * 0.22, p: r() * Math.PI * 2 });
+    }
+  }
+
+  function rebuild(){
+    var i, maxAbs = 0.0001;
+    for(i = 0; i <= N; i++){
+      psi[i] = rawPsi(i / N);
+      if(Math.abs(psi[i]) > maxAbs) maxAbs = Math.abs(psi[i]);
+    }
+    for(i = 0; i <= N; i++) psi[i] /= maxAbs;
+
+    var total = 0;
+    probMax = 0.0001;
+    for(i = 0; i <= N; i++){
+      prob[i] = psi[i] * psi[i];
+      if(prob[i] > probMax) probMax = prob[i];
+      total += prob[i] * (i === 0 || i === N ? 0.5 : 1);
+    }
+    if(total < 1e-9) total = 1;
+
+    cdf[0] = 0;
+    for(i = 1; i <= N; i++){
+      cdf[i] = cdf[i - 1] + 0.5 * (prob[i] + prob[i - 1]) / total;
+    }
+    var cdfTotal = cdf[N] || 1;
+    for(i = 0; i <= N; i++) cdf[i] /= cdfTotal;
+
+    nodes = 0;
+    for(i = 1; i < N; i++){
+      if(psi[i - 1] === 0) continue;
+      if(psi[i] !== 0 && Math.sign(psi[i]) !== Math.sign(psi[i - 1])) nodes++;
+    }
+
+    var xbar = 0, x2bar = 0;
+    for(i = 0; i <= N; i++){
+      var w = (i === 0 || i === N ? 0.5 : 1) * prob[i] / total;
+      var x = i / N;
+      xbar += x * w;
+      x2bar += x * x * w;
+    }
+    uncertainty = Math.sqrt(Math.max(0, x2bar - xbar * xbar));
+
+    energy = Q.sup
+      ? (Q.n * Q.n + 0.78 * 0.78 * (Q.n + 1) * (Q.n + 1)) / (1 + 0.78 * 0.78)
+      : Q.n * Q.n;
+
+    var count = reduceMotion ? 150 : 250;
+    particles = [];
+    var pr = mulberry32(0x08A1 + Q.n * 37 + (Q.sup ? 907 : 0));
+    for(i = 0; i < count; i++){
+      var u = pr();
+      var lo = 0, hi = N;
+      while(lo < hi){
+        var mid = (lo + hi) >> 1;
+        if(cdf[mid] < u) lo = mid + 1; else hi = mid;
+      }
+      var px = lo / N;
+      var local = prob[lo] / (probMax || 1);
+      var py = Math.min(0.98, 0.06 + pr() * Math.max(0.08, local));
+      particles.push({
+        x: px,
+        y: py,
+        px: px,
+        py: py,
+        ox: px * W,
+        oy: py,
+        phase: pr() * Math.PI * 2,
+        speed: 0.35 + pr() * 0.8,
+        size: 0.7 + pr() * 1.5,
+        tint: pr() < 0.24 ? 1 : 0
+      });
+    }
+
+    levelOut.textContent = "n = " + String(Q.n).padStart(2, "0");
+    ticks.forEach(function(b){
+      b.classList.toggle("active", Number(b.dataset.n) === Q.n);
+    });
+    energyVal.innerHTML = energy.toFixed(2) + "<small>E\u2081</small>";
+    nodesVal.textContent = String(nodes);
+    dxVal.innerHTML = (Q.collapsed ? "0.000" : uncertainty.toFixed(3)) + "<small>\u0394x/L</small>";
+    modeLabel.textContent = Q.sup ? "superposed" : "pure state";
+    stageState.innerHTML = "n = " + String(Q.n).padStart(2, "0") +
+      " \u00b7 " + (Q.sup ? "superposed" : "pure state") +
+      "<br>" + (Q.collapsed ? "observed \u00b7 collapsed" : "unobserved");
+    measureBtn.classList.toggle("armed", Q.collapsed);
+    hintRight.textContent = Q.collapsed ? "collapse sampled" : "move to read";
+  }
+
+  function samplePosition(){
+    var u = Math.random();
+    var lo = 0, hi = N;
+    while(lo < hi){
+      var mid = (lo + hi) >> 1;
+      if(cdf[mid] < u) lo = mid + 1; else hi = mid;
+    }
+    return lo / N;
+  }
+
+  function updateLive(){
+    if(Q.collapsed){
+      live.innerHTML = "Measured at <b>x = " + Q.mx.toFixed(3) + " L</b>. The cloud has collapsed; uncertainty is zero. Measure again to resample the wave.";
+    } else {
+      live.innerHTML = "Cloud intact \u2014 250 samples drawn from <b>|&psi;|&sup2;</b>. Nothing is decided.";
+    }
+  }
+
+  function doMeasure(){
+    Q.mx = samplePosition();
+    Q.collapsed = true;
+    Q.collapseStart = Q.t;
+    dxVal.innerHTML = "0.000<small>\u0394x/L</small>";
+    measureBtn.classList.add("armed");
+    stageState.innerHTML = "n = " + String(Q.n).padStart(2, "0") +
+      " \u00b7 " + (Q.sup ? "superposed" : "pure state") + "<br>observed \u00b7 collapsed";
+    hintRight.textContent = "collapse sampled";
+    updateLive();
+  }
+
+  function resetObservation(){
+    Q.collapsed = false;
+    Q.mx = 0.5;
+    dxVal.innerHTML = uncertainty.toFixed(3) + "<small>\u0394x/L</small>";
+    measureBtn.classList.remove("armed");
+  }
+
+  function setLevel(n){
+    n = Math.max(1, Math.min(6, n));
+    if(n === Q.n && !Q.collapsed) return;
+    Q.n = n;
+    level.value = String(n);
+    resetObservation();
+    rebuild();
+    updateLive();
+  }
+
+  level.addEventListener("input", function(){
+    setLevel(Number(level.value));
+  });
+
+  ticks.forEach(function(b){
+    b.addEventListener("click", function(){
+      setLevel(Number(b.dataset.n));
+    });
+  });
+
+  superBtn.addEventListener("click", function(){
+    Q.sup = !Q.sup;
+    superBtn.setAttribute("aria-checked", Q.sup ? "true" : "false");
+    resetObservation();
+    rebuild();
+    updateLive();
+  });
+
+  measureBtn.addEventListener("click", doMeasure);
+
+  function resize(){
+    var rect = stage.getBoundingClientRect();
+    W = Math.max(1, rect.width);
+    H = Math.max(1, rect.height);
+    DPR = Math.min(2.5, window.devicePixelRatio || 1);
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    computePlot();
+    particles.forEach(function(p){
+      p.ox = p.x * W;
+    });
+  }
+
+  function computePlot(){
+    var small = W < 560;
+    var padL = small ? 44 : 66;
+    var padR = small ? 24 : 50;
+    var padT = small ? 74 : 76;
+    var padB = small ? 60 : 66;
+    var x0 = padL, x1 = W - padR;
+    var y0 = padT, y1 = H - padB;
+    var ph = y1 - y0;
+    plot.x0 = x0; plot.x1 = x1;
+    plot.y0 = y0;
+    plot.psiY = y0 + ph * 0.255;
+    plot.densY = y1;
+    plot.psiAmp = ph * 0.185;
+    plot.densH = ph * 0.44;
+  }
+
+  function xy(x, p){
+    return plot.x0 + (plot.x1 - plot.x0) * x;
+  }
+
+  function drawStars(t){
+    for(var i = 0; i < stars.length; i++){
+      var s = stars[i];
+      var tw = reduceMotion ? 1 : 0.7 + 0.3 * Math.sin(t * 0.8 + s.p);
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(200,214,235," + (s.a * tw) + ")";
+      ctx.arc(s.x * W, s.y * H, s.s, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawAxes(){
+    var x0 = plot.x0, x1 = plot.x1, y0 = plot.y0;
+    var yBottom = plot.densY;
+    ctx.save();
+    ctx.font = '9px "SFMono-Regular",Menlo,Consolas,monospace';
+    ctx.textBaseline = "middle";
+
+    // vertical grid
+    for(var i = 0; i <= 4; i++){
+      var x = x0 + (x1 - x0) * (i / 4);
+      ctx.beginPath();
+      ctx.strokeStyle = i === 0 || i === 4 ? "rgba(242,236,223,.14)" : "rgba(242,236,223,.055)";
+      ctx.lineWidth = 1;
+      ctx.moveTo(Math.round(x) + 0.5, y0 - 6);
+      ctx.lineTo(Math.round(x) + 0.5, yBottom);
+      ctx.stroke();
+    }
+
+    // horizontal guides
+    ctx.strokeStyle = "rgba(242,236,223,.10)";
+    ctx.beginPath();
+    ctx.moveTo(x0, plot.psiY + 0.5);
+    ctx.lineTo(x1, plot.psiY + 0.5);
+    ctx.stroke();
+
+    ctx.setLineDash([2, 6]);
+    ctx.strokeStyle = "rgba(242,236,223,.13)";
+    ctx.beginPath();
+    ctx.moveTo(x0, yBottom + 0.5);
+    ctx.lineTo(x1, yBottom + 0.5);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // left labels
+    ctx.fillStyle = "rgba(156,239,246,.62)";
+    ctx.font = 'italic 13px "Iowan Old Style",Palatino,Georgia,serif';
+    ctx.textAlign = "right";
+    ctx.fillText("\u03c8(x)", x0 - 16, plot.psiY - 10);
+    ctx.fillStyle = "rgba(167,139,250,.62)";
+    ctx.fillText("|\u03c8(x)|\u00b2", x0 - 16, yBottom - plot.densH * 0.56);
+
+    ctx.fillStyle = "rgba(139,144,163,.55)";
+    ctx.font = '8.5px "SFMono-Regular",Menlo,Consolas,monospace';
+    ctx.textAlign = "right";
+    ctx.fillText("+1", x0 - 10, plot.psiY - plot.psiAmp);
+    ctx.fillText("0", x0 - 10, plot.psiY);
+    ctx.fillText("\u22121", x0 - 10, plot.psiY + plot.psiAmp);
+    ctx.fillText("0", x0 - 10, yBottom - 4);
+
+    // x tick labels
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(139,144,163,.6)";
+    for(var j = 0; j <= 4; j++){
+      var xx = x0 + (x1 - x0) * (j / 4);
+      ctx.fillText(String(j / 4), xx, yBottom + 20);
+    }
+    ctx.restore();
+  }
+
+  function drawDensity(t){
+    var x0 = plot.x0, x1 = plot.x1, yb = plot.densY, h = plot.densH;
+    var i, x, y;
+
+    ctx.save();
+    var grad = ctx.createLinearGradient(0, yb - h, 0, yb);
+    grad.addColorStop(0, "rgba(167,139,250,.34)");
+    grad.addColorStop(0.55, "rgba(144,128,236,.13)");
+    grad.addColorStop(1, "rgba(139,120,220,.015)");
+    ctx.beginPath();
+    ctx.moveTo(x0, yb);
+    for(i = 0; i <= N; i += 2){
+      x = xy(i / N);
+      y = yb - (prob[i] / probMax) * h;
+      if(i === 0) ctx.lineTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.lineTo(x1, yb);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // density edge
+    ctx.beginPath();
+    for(i = 0; i <= N; i += 2){
+      x = xy(i / N);
+      y = yb - (prob[i] / probMax) * h;
+      if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = "rgba(167,139,250,.55)";
+    ctx.lineWidth = 1.1;
+    ctx.shadowColor = "rgba(167,139,250,.55)";
+    ctx.shadowBlur = 12;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawCloud(t, collapseEase){
+    var i, p, x, y, alpha, radius;
+    ctx.save();
+    for(i = 0; i < particles.length; i++){
+      p = particles[i];
+      var driftX = reduceMotion ? 0 : Math.sin(t * 0.38 + p.phase) * 2.2;
+      var driftY = reduceMotion ? 0 : Math.cos(t * 0.52 + p.phase * 1.6) * 3.4;
+      x = xy(p.x) + driftX;
+      y = plot.densY - p.y * plot.densH * 0.94 + driftY;
+      if(Q.collapsed){
+        var ex = xy(Q.mx) + Math.sin(p.phase * 3.1) * (1 - collapseEase) * 42;
+        var ey = measurePointY() + Math.cos(p.phase * 2.3) * (1 - collapseEase) * 60;
+        x = x + (ex - x) * collapseEase;
+        y = y + (ey - y) * collapseEase;
+      }
+      alpha = (Q.collapsed ? 0.85 * (1 - collapseEase) + 0.05 : 0.52) * (0.45 + p.size * 0.34);
+      radius = p.size * (Q.collapsed ? 1 + collapseEase * 0.4 : 1);
+      ctx.beginPath();
+      ctx.fillStyle = p.tint
+        ? "rgba(167,139,250," + alpha + ")"
+        : "rgba(156,239,246," + alpha + ")";
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function measurePointY(){
+    var idx = Math.round(Q.mx * N);
+    return plot.densY - (prob[idx] / probMax) * plot.densH;
+  }
+
+  function drawNodes(){
+    var i, prevSign = 0;
+    ctx.save();
+    for(i = 1; i < N; i++){
+      var s = Math.sign(psi[i]);
+      if(prevSign !== 0 && s !== 0 && s !== prevSign){
+        var x = xy(i / N);
+        ctx.beginPath();
+        ctx.setLineDash([2, 7]);
+        ctx.strokeStyle = "rgba(156,239,246,.18)";
+        ctx.lineWidth = 1;
+        ctx.moveTo(x, plot.psiY - plot.psiAmp - 14);
+        ctx.lineTo(x, plot.densY - 8);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.arc(x, plot.psiY, 3, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(242,236,223,.5)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, plot.psiY, 1.1, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(242,236,223,.85)";
+        ctx.fill();
+      }
+      if(s !== 0) prevSign = s;
+    }
+    ctx.restore();
+  }
+
+  function drawWaves(){
+    var i, x, y;
+    ctx.save();
+
+    // faint components when superposed
+    if(Q.sup){
+      var comps = [
+        { k: Q.n, col: "rgba(156,239,246,.20)", phase: 0 },
+        { k: Q.n + 1, col: "rgba(167,139,250,.20)", phase: 0 }
+      ];
+      comps.forEach(function(c){
+        ctx.beginPath();
+        for(i = 0; i <= N; i += 3){
+          x = xy(i / N);
+          y = plot.psiY - Math.sin(c.k * Math.PI * (i / N)) * plot.psiAmp * 0.94;
+          if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.setLineDash([3, 5]);
+        ctx.strokeStyle = c.col;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+    }
+
+    // main wavefunction
+    ctx.beginPath();
+    for(i = 0; i <= N; i += 1){
+      x = xy(i / N);
+      y = plot.psiY - psi[i] * plot.psiAmp;
+      if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = "rgba(156,239,246,.96)";
+    ctx.lineWidth = 1.9;
+    ctx.lineJoin = "round";
+    ctx.shadowColor = "rgba(156,239,246,.75)";
+    ctx.shadowBlur = 16;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // axis line behind curve
+    ctx.restore();
+  }
+
+  function drawHover(){
+    if(Q.hoverX === null) return;
+    var x = xy(Q.hoverX);
+    var idx = Math.round(Q.hoverX * N);
+    var py = plot.psiY - psi[idx] * plot.psiAmp;
+    var dy = plot.densY - (prob[idx] / probMax) * plot.densH;
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([2, 5]);
+    ctx.strokeStyle = "rgba(242,236,223,.26)";
+    ctx.lineWidth = 1;
+    ctx.moveTo(x, plot.y0);
+    ctx.lineTo(x, plot.densY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    ctx.arc(x, py, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(156,239,246,.95)";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, dy, 2.6, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(167,139,250,.95)";
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawMeasure(t){
+    if(!Q.collapsed) return;
+    var x = xy(Q.mx);
+    var py = measurePointY();
+    var flash = Math.max(0, 1 - (t - Q.collapseStart) / 1.4);
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+
+    var grad = ctx.createLinearGradient(0, plot.y0, 0, plot.densY);
+    grad.addColorStop(0, "rgba(242,236,223,.03)");
+    grad.addColorStop(0.4, "rgba(242,236,223,.22)");
+    grad.addColorStop(1, "rgba(242,236,223,.34)");
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, plot.y0 - 6);
+    ctx.lineTo(x, plot.densY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x, py, 4 + flash * 4, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(242,236,223,.95)";
+    ctx.shadowColor = "rgba(242,236,223,.95)";
+    ctx.shadowBlur = 26 + flash * 30;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, py, 12 + flash * 20, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(242,236,223," + (0.24 * (1 - flash * 0.6)) + ")";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.globalCompositeOperation = "source-over";
+
+    ctx.font = '8.5px "SFMono-Regular",Menlo,Consolas,monospace';
+    ctx.fillStyle = "rgba(242,236,223,.72)";
+    ctx.textAlign = x > plot.x0 + (plot.x1 - plot.x0) * 0.72 ? "right" : "left";
+    ctx.textBaseline = "bottom";
+    var lx = ctx.textAlign === "right" ? x - 9 : x + 9;
+    ctx.fillText("x = " + Q.mx.toFixed(3) + " L", lx, plot.y0 + 8);
+    ctx.restore();
+  }
+
+  function draw(t){
+    ctx.clearRect(0, 0, W, H);
+    drawStars(t);
+    drawAxes();
+    var collapseEase = 0;
+    if(Q.collapsed){
+      collapseEase = Math.min(1, Math.max(0, (t - Q.collapseStart) / (reduceMotion ? 0.2 : 0.75)));
+      collapseEase = 1 - Math.pow(1 - collapseEase, 3);
+    }
+    drawCloud(t, collapseEase);
+    drawDensity(t);
+    drawWaves();
+    drawNodes();
+    drawHover();
+    drawMeasure(t);
+  }
+
+  function loop(ts){
+    var t = ts / 1000;
+    if(!Q.last) Q.last = t;
+    Q.t = t;
+    draw(t);
+    requestAnimationFrame(loop);
+  }
+
+  function onPointerMove(e){
+    var rect = stage.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    if(x < plot.x0 - 8 || x > plot.x1 + 8 || y < plot.y0 - 12 || y > plot.densY + 22){
+      hideHover();
+      return;
+    }
+    var nx = Math.max(0, Math.min(1, (x - plot.x0) / (plot.x1 - plot.x0)));
+    Q.hoverX = nx;
+    var idx = Math.round(nx * N);
+    var pv = psi[idx];
+    var pd = prob[idx] / probMax;
+    hoverbox.innerHTML =
+      "x/L&nbsp;&nbsp;<b>" + nx.toFixed(3) + "</b><br>" +
+      "<span class='cy'>&psi;</span>&nbsp;&nbsp;<b>" + (pv >= 0 ? "+" : "") + pv.toFixed(3) + "</b><br>" +
+      "<span class='vi'>|&psi;|&sup2;</span>&nbsp;<b>" + pd.toFixed(3) + "</b>";
+    hoverbox.classList.add("on");
+    var bx = Math.max(rect.width - 160, Math.min(rect.width - 10, x));
+    var by = Math.max(70, Math.min(rect.height - 50, y));
+    hoverbox.style.left = (bx + 6) + "px";
+    hoverbox.style.top = by + "px";
+  }
+
+  function hideHover(){
+    Q.hoverX = null;
+    hoverbox.classList.remove("on");
+  }
+
+  stage.addEventListener("pointermove", onPointerMove);
+  stage.addEventListener("pointerleave", hideHover);
+  stage.addEventListener("pointerdown", hideHover);
+
+  window.addEventListener("keydown", function(e){
+    if(e.key === " " && e.target === document.body){
+      e.preventDefault();
+      doMeasure();
+    }
+  });
+
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){
+      var prevW = W;
+      resize();
+      if(prevW !== W){
+        particles.forEach(function(p){ p.ox = p.x * W; });
+      }
+    }).observe(stage);
+  } else {
+    window.addEventListener("resize", resize);
+  }
+
+  buildStars();
+  resize();
+  rebuild();
+  updateLive();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

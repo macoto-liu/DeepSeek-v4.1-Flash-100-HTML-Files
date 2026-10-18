@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lunar Almanac — October 2026</title>
+<style>
+  :root{
+    --midnight:#06101d;
+    --midnight-2:#0a1727;
+    --panel:rgba(12,25,42,.62);
+    --panel-2:rgba(8,18,32,.52);
+    --ivory:#f0e8d7;
+    --ivory-soft:rgba(240,232,215,.68);
+    --ivory-faint:rgba(240,232,215,.4);
+    --silver:#cbd6e2;
+    --silver-soft:rgba(203,214,226,.55);
+    --gold:#c9a25b;
+    --gold-bright:#e2c48b;
+    --hair:rgba(203,214,226,.16);
+    --hair-soft:rgba(203,214,226,.09);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--midnight)}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ivory);
+    font-family:var(--serif);
+    background:
+      radial-gradient(1100px 720px at 73% -8%, rgba(46,78,112,.32), rgba(46,78,112,0) 62%),
+      radial-gradient(900px 800px at 6% 100%, rgba(28,56,84,.28), rgba(28,56,84,0) 60%),
+      radial-gradient(1200px 900px at 50% 40%, rgba(20,38,60,.35), rgba(20,38,60,0) 70%),
+      linear-gradient(178deg,#07111f 0%,#081624 44%,#060f1b 100%);
+    background-attachment:fixed;
+    overflow-x:hidden;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0) 45%, rgba(0,0,0,.38) 100%),
+      linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,0) 12%);
+    z-index:0;
+  }
+  .stars{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    opacity:.8;
+  }
+  .stars svg{display:block;width:100%;height:100%}
+  .twinkle{animation:tw 8s ease-in-out infinite}
+  @keyframes tw{
+    0%,100%{opacity:.18}
+    45%{opacity:.8}
+    60%{opacity:.28}
+  }
+  .grain{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    opacity:.035;
+    mix-blend-mode:overlay;
+    z-index:4;
+  }
+  .wrap{
+    position:relative;
+    z-index:2;
+    width:min(1240px,100%);
+    margin:0 auto;
+    padding:clamp(20px,3.2vw,42px) clamp(14px,3.4vw,46px) clamp(16px,2.2vw,28px);
+  }
+
+  .masthead{
+    position:relative;
+    padding-bottom:clamp(18px,2.4vw,26px);
+  }
+  .masthead::before{
+    content:"";
+    position:absolute;
+    right:-80px;
+    top:-160px;
+    width:430px;
+    height:430px;
+    border:1px solid rgba(203,214,226,.09);
+    border-radius:50%;
+    pointer-events:none;
+  }
+  .masthead::after{
+    content:"";
+    position:absolute;
+    right:12px;
+    top:-118px;
+    width:270px;
+    height:270px;
+    border:1px dashed rgba(203,214,226,.07);
+    border-radius:50%;
+    pointer-events:none;
+  }
+  .mast-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+    margin-bottom:clamp(12px,2vw,20px);
+  }
+  .mast-top .kicker{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--gold-bright);
+  }
+  .mast-top .kicker::before{
+    content:"";
+    width:22px;
+    height:1px;
+    background:var(--gold);
+    opacity:.7;
+  }
+  .mast-top .vol{text-align:right;white-space:nowrap}
+  .mast-main{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+  h1{
+    margin:0;
+    font-weight:400;
+    font-size:clamp(46px,7vw,86px);
+    line-height:.9;
+    letter-spacing:-.025em;
+    color:var(--ivory);
+    text-wrap:balance;
+  }
+  h1 em{
+    display:inline-block;
+    font-style:italic;
+    font-weight:400;
+    color:var(--silver);
+    letter-spacing:-.015em;
+  }
+  .site{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    text-align:right;
+    font-family:var(--mono);
+    font-size:8px;
+    line-height:1.55;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+    padding-bottom:5px;
+    white-space:nowrap;
+  }
+  .site .place{
+    font-family:var(--serif);
+    font-size:clamp(15px,1.5vw,18px);
+    font-style:italic;
+    letter-spacing:.02em;
+    text-transform:none;
+    color:var(--ivory);
+  }
+  .site .coords{color:var(--silver-soft);font-size:7.5px}
+  .mast-rule{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-top:clamp(18px,2.6vw,26px);
+  }
+  .mast-rule::before,.mast-rule::after{
+    content:"";
+    height:1px;
+    flex:1;
+  }
+  .mast-rule::before{background:linear-gradient(90deg,rgba(203,214,226,0),var(--hair))}
+  .mast-rule::after{background:linear-gradient(90deg,var(--hair),rgba(201,162,91,.55))}
+  .mast-rule span{
+    width:5px;height:5px;
+    transform:rotate(45deg);
+    background:var(--gold);
+    opacity:.85;
+    flex:0 0 auto;
+  }
+
+  .almanac{
+    position:relative;
+    border:1px solid var(--hair);
+    background:
+      linear-gradient(160deg,rgba(16,33,53,.6),rgba(7,17,31,.5) 55%,rgba(8,20,35,.56));
+    box-shadow:
+      0 34px 80px rgba(0,0,0,.28),
+      inset 0 1px 0 rgba(255,255,255,.035);
+    backdrop-filter:blur(2px);
+  }
+  .main-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(300px,356px);
+  }
+  .calendar-pane{
+    padding:clamp(12px,1.8vw,22px);
+    border-right:1px solid var(--hair);
+    min-width:0;
+  }
+  .calendar-kicker{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:0 2px clamp(8px,1vw,12px);
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.19em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .calendar-kicker .gold{color:var(--gold)}
+  .weekdays{
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    border-top:1px solid var(--hair);
+    border-bottom:1px solid var(--hair);
+    background:rgba(255,255,255,.015);
+  }
+  .weekday{
+    padding:9px 4px 8px;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .weekday.sun{color:var(--gold)}
+  .calendar-grid{
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:1px;
+    background:var(--hair-soft);
+    border-bottom:1px solid var(--hair);
+  }
+  .cell-empty{
+    background:rgba(6,14,25,.5);
+    min-height:clamp(64px,7.4vw,92px);
+  }
+  .day{
+    position:relative;
+    appearance:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+    gap:3px;
+    min-height:clamp(64px,7.4vw,92px);
+    padding:clamp(5px,.7vw,8px) clamp(5px,.7vw,9px) clamp(6px,.8vw,9px);
+    border:1px solid transparent;
+    background:rgba(7,17,30,.5);
+    color:var(--ivory);
+    cursor:pointer;
+    font-family:inherit;
+    text-align:left;
+    transition:background .18s ease,border-color .18s ease;
+    -webkit-tap-highlight-color:transparent;
+    overflow:hidden;
+  }
+  .day:hover{background:rgba(28,49,74,.46);border-color:rgba(203,214,226,.14)}
+  .day:focus-visible{outline:1px solid var(--gold-bright);outline-offset:-2px}
+  .day-num{
+    align-self:flex-start;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.04em;
+    color:var(--ivory-soft);
+    font-variant-numeric:tabular-nums;
+    line-height:1;
+  }
+  .day-num::after{
+    content:"";
+    display:none;
+    width:4px;height:4px;
+    background:var(--gold);
+    transform:rotate(45deg);
+  }
+  .day.is-tonight .day-num::after{display:inline-block}
+  .day-moon{
+    display:block;
+    width:clamp(26px,3vw,36px);
+    height:clamp(26px,3vw,36px);
+    pointer-events:none;
+  }
+  .day-illum{
+    align-self:flex-end;
+    font-family:var(--mono);
+    font-size:6px;
+    letter-spacing:.04em;
+    color:var(--ivory-faint);
+    line-height:1;
+  }
+  .day.is-selected{
+    background:linear-gradient(180deg,rgba(201,162,91,.13),rgba(201,162,91,.055));
+    border-color:rgba(201,162,91,.62);
+    box-shadow:inset 0 0 22px rgba(201,162,91,.05);
+  }
+  .day.is-selected .day-num{color:var(--gold-bright)}
+  .day.is-phase .day-illum{color:var(--gold)}
+  .day.is-phase .day-illum::before{content:"◆ ";font-size:5px;opacity:.8}
+  .calendar-foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding-top:9px;
+    font-family:var(--mono);
+    font-size:6.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .calendar-foot .key{display:flex;align-items:center;gap:6px}
+  .calendar-foot .key i{
+    width:4px;height:4px;background:var(--gold);transform:rotate(45deg);display:inline-block;
+  }
+
+  /* ---------------- detail ---------------- */
+  .detail{
+    position:relative;
+    padding:clamp(14px,1.8vw,22px) clamp(16px,2vw,26px) clamp(16px,2vw,24px);
+    display:flex;
+    flex-direction:column;
+    background:
+      radial-gradient(ellipse at 50% 12%, rgba(46,76,108,.2), rgba(46,76,108,0) 52%),
+      linear-gradient(180deg,rgba(10,22,38,.45),rgba(7,17,30,.2));
+    min-width:0;
+  }
+  .detail::before{
+    content:"";
+    position:absolute;
+    top:10px;left:10px;right:10px;bottom:10px;
+    border:1px solid rgba(203,214,226,.055);
+    pointer-events:none;
+  }
+  .detail-kicker{
+    position:relative;
+    z-index:1;
+    margin:0 0 2px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    font-family:var(--mono);
+    font-size:6.8px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .detail-kicker .trend{color:var(--gold)}
+  .moon-stage{
+    position:relative;
+    width:min(100%,252px);
+    aspect-ratio:1;
+    margin:clamp(4px,1.2vw,12px) auto clamp(8px,1.4vw,14px);
+    display:grid;
+    place-items:center;
+    flex:0 0 auto;
+  }
+  .moon-orbit{
+    position:absolute;
+    inset:2%;
+    border:1px solid rgba(203,214,226,.1);
+    border-radius:50%;
+    pointer-events:none;
+  }
+  .moon-orbit::before,.moon-orbit::after{
+    content:"";
+    position:absolute;
+    left:50%;top:50%;
+    background:rgba(203,214,226,.06);
+    transform:translate(-50%,-50%);
+  }
+  .moon-orbit::before{width:100%;height:1px}
+  .moon-orbit::after{height:100%;width:1px}
+  .moon-orbit span{
+    position:absolute;
+    width:3px;height:3px;
+    background:var(--gold);
+    transform:translate(-50%,-50%) rotate(45deg);
+    opacity:.65;
+  }
+  .moon-orbit span:nth-child(1){left:50%;top:2%}
+  .moon-orbit span:nth-child(2){left:98%;top:50%}
+  .moon-orbit span:nth-child(3){left:50%;top:98%}
+  .moon-orbit span:nth-child(4){left:2%;top:50%}
+  #bigMoon{
+    position:relative;
+    z-index:1;
+    display:block;
+    width:91%;
+    height:91%;
+    filter:drop-shadow(0 0 24px rgba(197,215,236,.14));
+  }
+  .phase-name{
+    position:relative;
+    z-index:1;
+    margin:0;
+    text-align:center;
+    font-weight:400;
+    font-style:italic;
+    font-size:clamp(24px,2.5vw,31px);
+    line-height:1.1;
+    letter-spacing:-.012em;
+    color:var(--ivory);
+  }
+  .phase-date{
+    position:relative;
+    z-index:1;
+    margin:7px 0 0;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:7.2px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .illum-row{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:8px;
+    margin:clamp(10px,1.6vw,16px) 0 clamp(8px,1.2vw,12px);
+    padding-bottom:clamp(9px,1.4vw,13px);
+    border-bottom:1px solid var(--hair-soft);
+  }
+  .illum-num{
+    font-size:clamp(34px,3.8vw,46px);
+    line-height:.9;
+    color:var(--silver);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-.03em;
+  }
+  .illum-pct{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--silver-soft);
+  }
+  .illum-label{
+    font-family:var(--mono);
+    font-size:6.8px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+    margin-left:2px;
+  }
+  .times{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+    margin:0;
+    border-bottom:1px solid var(--hair-soft);
+  }
+  .times > div{
+    padding:8px 0 9px;
+  }
+  .times > div:nth-child(2){
+    padding-left:14px;
+    border-left:1px solid var(--hair-soft);
+  }
+  .times > div:nth-child(3),
+  .times > div:nth-child(4){
+    border-top:1px solid var(--hair-soft);
+  }
+  .times > div:nth-child(4){
+    padding-left:14px;
+    border-left:1px solid var(--hair-soft);
+  }
+  .times dt{
+    margin:0 0 4px;
+    font-family:var(--mono);
+    font-size:6.3px;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .times dd{
+    margin:0;
+    font-family:var(--mono);
+    font-size:14px;
+    color:var(--silver);
+    letter-spacing:.02em;
+    font-variant-numeric:tabular-nums;
+  }
+  .times dd sup{
+    font-size:7px;
+    color:var(--gold);
+    vertical-align:super;
+    margin-left:2px;
+    letter-spacing:0;
+  }
+  .moon-note{
+    position:relative;
+    z-index:1;
+    margin:clamp(11px,1.7vw,16px) 0 0;
+    padding-left:12px;
+    border-left:1px solid rgba(201,162,91,.5);
+    font-size:clamp(11px,1.05vw,12.5px);
+    font-style:italic;
+    line-height:1.68;
+    color:var(--ivory-soft);
+  }
+  .tonight-btn{
+    position:relative;
+    z-index:1;
+    margin-top:clamp(13px,1.8vw,18px);
+    appearance:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    width:100%;
+    min-height:41px;
+    padding:9px 14px;
+    border:1px solid rgba(201,162,91,.45);
+    background:rgba(201,162,91,.035);
+    color:var(--gold-bright);
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .22s ease,border-color .22s ease,color .22s ease;
+  }
+  .tonight-btn svg{display:block;transition:transform .22s ease}
+  .tonight-btn:hover{background:rgba(201,162,91,.11);border-color:rgba(201,162,91,.75);color:#f1d9ad}
+  .tonight-btn:hover svg{transform:rotate(-20deg)}
+  .tonight-btn:active{background:rgba(201,162,91,.16)}
+  .tonight-btn:focus-visible{outline:2px solid var(--gold-bright);outline-offset:2px}
+  .tonight-cap{
+    position:relative;
+    z-index:1;
+    margin:7px 0 0;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:6px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+
+  /* ---------------- principal phases ---------------- */
+  .principal{
+    border-top:1px solid var(--hair);
+  }
+  .principal-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:10px clamp(12px,1.8vw,22px) 0;
+    font-family:var(--mono);
+    font-size:6.8px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .principal-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+  .phase-card{
+    appearance:none;
+    display:flex;
+    align-items:center;
+    gap:clamp(9px,1.4vw,16px);
+    padding:clamp(10px,1.5vw,16px) clamp(12px,1.8vw,22px);
+    background:transparent;
+    border:0;
+    border-right:1px solid var(--hair-soft);
+    color:var(--ivory);
+    text-align:left;
+    cursor:pointer;
+    font-family:inherit;
+    transition:background .2s ease;
+    min-width:0;
+  }
+  .phase-card:last-child{border-right:0}
+  .phase-card:hover{background:rgba(255,255,255,.025)}
+  .phase-card:focus-visible{outline:1px solid var(--gold-bright);outline-offset:-2px}
+  .phase-card canvas{
+    flex:0 0 auto;
+    width:clamp(34px,4vw,46px);
+    height:clamp(34px,4vw,46px);
+    display:block;
+  }
+  .phase-card .pc-text{min-width:0}
+  .phase-card .pc-name{
+    display:block;
+    font-size:clamp(13px,1.25vw,16px);
+    font-style:italic;
+    letter-spacing:.005em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .phase-card .pc-date{
+    display:block;
+    margin-top:5px;
+    font-family:var(--mono);
+    font-size:6.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+    white-space:nowrap;
+  }
+  .phase-card.is-active{
+    background:linear-gradient(180deg,rgba(201,162,91,.09),rgba(201,162,91,.025));
+  }
+  .phase-card.is-active .pc-date{color:var(--gold)}
+  .phase-card.is-active .pc-name{color:var(--gold-bright)}
+
+  .foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px 24px;
+    flex-wrap:wrap;
+    padding-top:clamp(14px,2vw,20px);
+    font-family:var(--mono);
+    font-size:6.5px;
+    line-height:1.8;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .foot .note{max-width:58ch}
+  .foot b{font-weight:400;color:var(--silver-soft)}
+  .foot .right{text-align:right;white-space:nowrap}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  @media (max-width:900px){
+    .main-grid{grid-template-columns:1fr}
+    .calendar-pane{border-right:0;border-bottom:1px solid var(--hair)}
+    .detail{
+      display:grid;
+      grid-template-columns:minmax(180px,240px) minmax(0,1fr);
+      grid-template-areas:
+        "moon kicker"
+        "moon name"
+        "moon date"
+        "moon illum"
+        "moon times"
+        "moon note"
+        "moon button"
+        "moon cap";
+      column-gap:clamp(18px,3vw,34px);
+      align-content:center;
+    }
+    .detail-kicker{grid-area:kicker}
+    .moon-stage{grid-area:moon;align-self:center;margin:0 auto;width:100%;max-width:230px}
+    .phase-name{grid-area:name;text-align:left}
+    .phase-date{grid-area:date;text-align:left;margin-top:5px}
+    .illum-row{grid-area:illum;justify-content:flex-start;margin:10px 0 8px;padding-bottom:9px}
+    .times{grid-area:times}
+    .moon-note{grid-area:note;margin-top:10px}
+    .tonight-btn{grid-area:button;margin-top:12px}
+    .tonight-cap{grid-area:cap;text-align:left;margin-top:5px}
+    .moon-stage::before{content:""}
+  }
+  @media (max-width:640px){
+    .wrap{padding-left:10px;padding-right:10px;padding-top:18px}
+    .mast-top{font-size:6.4px;letter-spacing:.16em;margin-bottom:14px}
+    .mast-top .kicker::before{width:14px}
+    .mast-main{display:block}
+    h1{font-size:clamp(42px,12vw,58px);line-height:.92}
+    .site{text-align:left;margin-top:10px;font-size:6.5px;letter-spacing:.12em;flex-direction:row;flex-wrap:wrap;gap:4px 12px;white-space:normal}
+    .site .place{font-size:14px;width:100%}
+    .site .coords{font-size:6.4px}
+    .masthead::before,.masthead::after{display:none}
+    .calendar-pane{padding:9px 7px 10px}
+    .calendar-kicker{font-size:6px;letter-spacing:.1em;padding:0 2px 7px}
+    .weekday{padding:7px 1px 6px;font-size:5.8px;letter-spacing:.06em}
+    .day,.cell-empty{min-height:57px}
+    .day{padding:4px 3px 5px;gap:1px}
+    .day-num{font-size:6.8px;gap:3px}
+    .day-moon{width:23px;height:23px}
+    .day-illum{display:none}
+    .calendar-foot{font-size:5.5px;letter-spacing:.08em;padding-top:7px}
+    .calendar-foot .phases{display:none}
+    .detail{
+      display:block;
+      padding:18px 16px 18px;
+    }
+    .moon-stage{width:min(100%,190px);margin:4px auto 10px}
+    .phase-name{text-align:center;font-size:25px}
+    .phase-date{text-align:center}
+    .illum-row{justify-content:center}
+    .moon-note{font-size:11.5px}
+    .detail-kicker{font-size:6px}
+    .times dd{font-size:13px}
+    .principal-head{padding:10px 11px 0;font-size:5.8px;letter-spacing:.12em}
+    .principal-grid{grid-template-columns:1fr 1fr}
+    .phase-card{padding:10px 11px;gap:9px;border-top:1px solid var(--hair-soft)}
+    .phase-card:nth-child(2){border-right:0}
+    .phase-card:nth-child(1),.phase-card:nth-child(2){border-top:0}
+    .phase-card canvas{width:31px;height:31px}
+    .phase-card .pc-name{font-size:12.5px}
+    .phase-card .pc-date{font-size:5.8px;letter-spacing:.08em;margin-top:4px}
+    .foot{font-size:5.6px;letter-spacing:.1em;gap:8px}
+    .foot .right{text-align:left;white-space:normal}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars" aria-hidden="true"></div>
+
+<svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <filter id="grainFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+  <rect width="100%" height="100%" filter="url(#grainFilter)" opacity=".8"/>
+</svg>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="mast-top">
+      <span class="kicker">The Lunar Almanac</span>
+      <span class="vol">Vol. X · MMXXVI · 38° north</span>
+    </div>
+    <div class="mast-main">
+      <h1>October <em>2026</em></h1>
+      <div class="site">
+        <span class="place">Lisbon, Portugal</span>
+        <span class="coords">38.7223° N · 9.1393° W</span>
+        <span>All times local</span>
+      </div>
+    </div>
+    <div class="mast-rule" aria-hidden="true"><span></span></div>
+  </header>
+
+  <main class="almanac" aria-label="Lunar almanac for October 2026">
+    <div class="main-grid">
+      <section class="calendar-pane" aria-label="October 2026 calendar">
+        <div class="calendar-kicker">
+          <span>Thirty-one nights</span>
+          <span class="gold">Moon phase · 12:00 UTC</span>
+        </div>
+        <div class="weekdays" id="weekdays"></div>
+        <div class="calendar-grid" id="calendar"></div>
+        <div class="calendar-foot">
+          <span class="key"><i aria-hidden="true"></i> principal phase</span>
+          <span class="phases">select a night to read the moon</span>
+        </div>
+      </section>
+
+      <aside class="detail" id="detail" aria-label="Selected night details" aria-live="polite">
+        <p class="detail-kicker"><span>Selected night</span><span class="trend" id="trend">waxing</span></p>
+        <div class="moon-stage">
+          <div class="moon-orbit" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <canvas id="bigMoon" width="760" height="760"></canvas>
+        </div>
+        <h2 class="phase-name" id="phaseName">First Quarter</h2>
+        <p class="phase-date" id="phaseDate">Sunday · 18 October 2026</p>
+        <div class="illum-row">
+          <span class="illum-num" id="illumNum">48.4</span>
+          <span class="illum-pct">%</span>
+          <span class="illum-label">illuminated</span>
+        </div>
+        <dl class="times">
+          <div><dt>Moonrise</dt><dd id="riseTime">13:20</dd></div>
+          <div><dt>Moonset</dt><dd id="setTime">01:38<sup>+1</sup></dd></div>
+          <div><dt>Phase age</dt><dd id="ageValue">7.1 d</dd></div>
+          <div><dt>Cycle</dt><dd id="cycleValue">Waxing</dd></div>
+        </dl>
+        <p class="moon-note" id="moonNote">Half light, half patience. The tide turns at the meridian.</p>
+        <button class="tonight-btn" id="tonightBtn" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+            <path d="M20.2 13.2A8.4 8.4 0 1 1 10.8 3.8a6.9 6.9 0 0 0 9.4 9.4Z"/>
+          </svg>
+          Return to tonight
+        </button>
+        <p class="tonight-cap" id="tonightCap">Tonight · 18 October</p>
+      </aside>
+    </div>
+
+    <section class="principal" aria-label="Principal phases of October 2026">
+      <div class="principal-head">
+        <span>Principal phases</span>
+        <span>October 2026</span>
+      </div>
+      <div class="principal-grid" id="principalGrid"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span class="note">
+      Lunar phases computed from the moon's elongation for 12:00 UTC.
+      Moonrise and moonset are local estimates for <b>38.7223° N, 9.1393° W</b>.
+    </span>
+    <span class="right">The Lunar Almanac · October MMXXVI<br>Set in serif &amp; silver · printed in the dark</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var YEAR = 2026;
+  var MONTH = 9; /* October, zero based */
+  var SYNODIC = 29.530588853;
+  var LOC = { lat: 38.7223, lon: -9.1393 };
+  var MONTH_NAME = "October";
+  var WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  var WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function pad(n) { return n < 10 ? "0" + n : String(n); }
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0;
+      a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ============================================================
+     Lunar phase: geocentric sun/moon longitudes (low-precision
+     series, ~0.3° — ample for an almanac).
+     ============================================================ */
+  var RAD = Math.PI / 180;
+
+  function phaseAngle(ms) {
+    var jd = ms / 86400000 + 2440587.5;
+    var T = (jd - 2451545) / 36525;
+    var n = jd - 2451545;
+
+    var L0 = 218.3164477 + 481267.88123421 * T;
+    var Mm = 134.9633964 + 477198.8675055 * T;
+    var D = 297.8501921 + 445267.1114034 * T;
+    var Ms = 357.5291092 + 35999.0502909 * T;
+    var F = 93.272095 + 483202.0175233 * T;
+
+    var moon =
+      L0 +
+      6.288774 * Math.sin(Mm * RAD) -
+      1.274027 * Math.sin((Mm - 2 * D) * RAD) +
+      0.658314 * Math.sin(2 * D * RAD) +
+      0.213618 * Math.sin(2 * Mm * RAD) -
+      0.185116 * Math.sin(Ms * RAD) -
+      0.114332 * Math.sin(2 * F * RAD) +
+      0.058793 * Math.sin((2 * D - 2 * Mm) * RAD) +
+      0.057066 * Math.sin((2 * D - Ms - Mm) * RAD) +
+      0.053322 * Math.sin((2 * D + Mm) * RAD) +
+      0.045758 * Math.sin((2 * D - Ms) * RAD) -
+      0.040923 * Math.sin((Mm - Ms) * RAD) -
+      0.034720 * Math.sin(D * RAD) -
+      0.030383 * Math.sin((Mm + Ms) * RAD) +
+      0.015327 * Math.sin((2 * D - 2 * F) * RAD) -
+      0.012528 * Math.sin((Mm + 2 * F) * RAD) +
+      0.010980 * Math.sin((Mm - 2 * F) * RAD) +
+      0.010675 * Math.sin((4 * D - Mm) * RAD) +
+      0.010034 * Math.sin(3 * Mm * RAD) +
+      0.008548 * Math.sin((4 * D - 2 * Mm) * RAD) -
+      0.007888 * Math.sin((2 * D + Ms - Mm) * RAD) -
+      0.006766 * Math.sin((2 * D + Ms) * RAD) -
+      0.005163 * Math.sin((D - Mm) * RAD) +
+      0.004987 * Math.sin((D + Ms) * RAD) +
+      0.004036 * Math.sin((2 * D - Ms + Mm) * RAD) +
+      0.003994 * Math.sin((2 * D + 2 * Mm) * RAD) +
+      0.003861 * Math.sin(4 * D * RAD) +
+      0.003665 * Math.sin((2 * D - 3 * Mm) * RAD);
+
+    var sun = 280.459 + 0.98564736 * n + 1.915 * Math.sin(Ms * RAD) + 0.020 * Math.sin(2 * Ms * RAD);
+    var elong = (moon - sun) % 360;
+    if (elong < 0) elong += 360;
+    return elong;
+  }
+
+  function illumination(angle) {
+    return (1 - Math.cos(angle * RAD)) / 2 * 100;
+  }
+
+  function phaseName(angle) {
+    var a = ((angle % 360) + 360) % 360;
+    if (a < 11.25 || a >= 348.75) return "New Moon";
+    if (a < 78.75) return "Waxing Crescent";
+    if (a < 101.25) return "First Quarter";
+    if (a < 168.75) return "Waxing Gibbous";
+    if (a < 191.25) return "Full Moon";
+    if (a < 258.75) return "Waning Gibbous";
+    if (a < 281.25) return "Last Quarter";
+    return "Waning Crescent";
+  }
+
+  function dayMs(day) {
+    return Date.UTC(YEAR, MONTH, day, 12, 0, 0);
+  }
+
+  /* approximate local times of moonrise / moonset */
+  function lisbonOffsetHours(day) {
+    /* WEST (UTC+1) through 24 October 2026; WET (UTC+0) from 25 October */
+    return day < 25 ? 1 : 0;
+  }
+
+  function moonTimes(day, angleDeg) {
+    var solarNoon = 12 - LOC.lon / 15 + lisbonOffsetHours(day);
+    var lag = angleDeg / 15;
+    if (lag > 12) lag -= 24;
+    if (lag <= -12) lag += 24;
+    var transit = solarNoon + lag;
+    var riseRaw = transit - 6.15;
+    var setRaw = transit + 6.15;
+
+    function clock(h) {
+      var total = Math.round(h * 60);
+      total = ((total % 1440) + 1440) % 1440;
+      return { hh: Math.floor(total / 60), mm: total % 60, total: total };
+    }
+    var rise = clock(riseRaw);
+    var set = clock(setRaw);
+    return {
+      rise: { text: pad(rise.hh) + ":" + pad(rise.mm), total: rise.total },
+      set: { text: pad(set.hh) + ":" + pad(set.mm), total: set.total, next: set.total < rise.total }
+    };
+  }
+
+  /* ============================================================
+     Moon rendering
+     ============================================================ */
+  function addLitPath(c, cx, cy, R, angleDeg) {
+    var waxing = angleDeg <= 180;
+    var e = waxing ? angleDeg : 360 - angleDeg;
+    var cos = Math.cos(e * RAD);
+    var k = Math.abs(cos);
+
+    c.save();
+    if (!waxing) {
+      c.translate(cx, cy);
+      c.scale(-1, 1);
+      c.translate(-cx, -cy);
+    }
+    /* right limb, top to bottom */
+    c.moveTo(cx, cy - R);
+    c.arc(cx, cy, R, -Math.PI / 2, Math.PI / 2, false);
+    /* terminator, bottom back to top */
+    c.ellipse(cx, cy, R * k, R, 0, Math.PI / 2, -Math.PI / 2, cos > 0);
+    c.closePath();
+    c.restore();
+  }
+
+  function drawMoon(canvas, angleDeg, big) {
+    var size = canvas.width;
+    var c = canvas.getContext("2d");
+    if (!c) return;
+    c.clearRect(0, 0, size, size);
+
+    var cx = size / 2;
+    var cy = size / 2;
+    var R = size * (big ? 0.375 : 0.365);
+    var rand = mulberry32(4042026);
+
+    /* halo */
+    var glow = c.createRadialGradient(cx, cy, R * 0.92, cx, cy, R * 1.5);
+    glow.addColorStop(0, "rgba(198,216,237,.19)");
+    glow.addColorStop(0.4, "rgba(198,216,237,.07)");
+    glow.addColorStop(1, "rgba(198,216,237,0)");
+    c.fillStyle = glow;
+    c.beginPath();
+    c.arc(cx, cy, R * 1.5, 0, Math.PI * 2);
+    c.fill();
+
+    /* full sphere: lit texture */
+    c.save();
+    c.beginPath();
+    c.arc(cx, cy, R, 0, Math.PI * 2);
+    c.clip();
+
+    var base = c.createRadialGradient(cx - R * 0.36, cy - R * 0.4, R * 0.08, cx, cy, R * 1.16);
+    base.addColorStop(0, "#f5f8fb");
+    base.addColorStop(0.32, "#e1e8ef");
+    base.addColorStop(0.62, "#bfcad7");
+    base.addColorStop(0.86, "#8fa0b2");
+    base.addColorStop(1, "#5d7085");
+    c.fillStyle = base;
+    c.beginPath();
+    c.arc(cx, cy, R, 0, Math.PI * 2);
+    c.fill();
+
+    /* faint maria */
+    for (var m = 0; m < 7; m++) {
+      var ma = rand() * Math.PI * 2;
+      var md = Math.sqrt(rand()) * R * 0.68;
+      var mx = cx + Math.cos(ma) * md;
+      var my = cy + Math.sin(ma) * md;
+      var mr = R * (0.12 + rand() * 0.19);
+      var mg = c.createRadialGradient(mx, my, 0, mx, my, mr);
+      mg.addColorStop(0, "rgba(92,108,126,.27)");
+      mg.addColorStop(0.7, "rgba(110,126,144,.13)");
+      mg.addColorStop(1, "rgba(110,126,144,0)");
+      c.fillStyle = mg;
+      c.beginPath();
+      c.arc(mx, my, mr, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    /* craters, fixed across the month */
+    for (var cr = 0; cr < 26; cr++) {
+      var a = rand() * Math.PI * 2;
+      var d = Math.sqrt(rand()) * R * 0.86;
+      var x = cx + Math.cos(a) * d;
+      var y = cy + Math.sin(a) * d;
+      var r = R * (0.012 + Math.pow(rand(), 2.2) * 0.052);
+      var cg = c.createRadialGradient(x - r * 0.4, y - r * 0.45, r * 0.1, x, y, r);
+      cg.addColorStop(0, "rgba(62,76,92,.34)");
+      cg.addColorStop(0.55, "rgba(80,94,110,.18)");
+      cg.addColorStop(1, "rgba(255,255,255,.05)");
+      c.fillStyle = cg;
+      c.beginPath();
+      c.arc(x, y, r, 0, Math.PI * 2);
+      c.fill();
+    }
+    /* bright highlands */
+    for (var br = 0; br < 9; br++) {
+      var ba = rand() * Math.PI * 2;
+      var bd = Math.sqrt(rand()) * R * 0.8;
+      var bx = cx + Math.cos(ba) * bd;
+      var by = cy + Math.sin(ba) * bd;
+      var brr = R * (0.018 + rand() * 0.05);
+      var bg = c.createRadialGradient(bx, by, 0, bx, by, brr);
+      bg.addColorStop(0, "rgba(255,255,255,.14)");
+      bg.addColorStop(1, "rgba(255,255,255,0)");
+      c.fillStyle = bg;
+      c.beginPath();
+      c.arc(bx, by, brr, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    c.restore();
+
+    /* shadow across the unlit portion */
+    c.save();
+    c.beginPath();
+    c.arc(cx, cy, R, 0, Math.PI * 2);
+    c.clip();
+    try { c.filter = "blur(" + Math.max(0.8, R * 0.022).toFixed(2) + "px)"; } catch (err) {}
+    c.beginPath();
+    c.arc(cx, cy, R, 0, Math.PI * 2);
+    addLitPath(c, cx, cy, R, angleDeg);
+    c.fillStyle = "rgba(4,9,18,.955)";
+    c.fill("evenodd");
+    if (c.filter !== undefined) c.filter = "none";
+
+    /* earthshine on the dark side */
+    var earth = c.createRadialGradient(cx - R * 0.2, cy - R * 0.3, R * 0.1, cx, cy, R * 1.02);
+    earth.addColorStop(0, "rgba(141,166,196,.065)");
+    earth.addColorStop(0.7, "rgba(64,88,118,.035)");
+    earth.addColorStop(1, "rgba(20,36,56,.01)");
+    c.fillStyle = earth;
+    c.beginPath();
+    c.arc(cx, cy, R, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+
+    /* rim */
+    c.beginPath();
+    c.arc(cx, cy, R, 0, Math.PI * 2);
+    c.strokeStyle = "rgba(203,218,236,.3)";
+    c.lineWidth = Math.max(0.6, R * 0.0055);
+    c.stroke();
+
+    /* inner limb shading */
+    var limb = c.createRadialGradient(cx, cy, R * 0.72, cx, cy, R);
+    limb.addColorStop(0, "rgba(3,7,14,0)");
+    limb.addColorStop(1, "rgba(3,7,14,.28)");
+    c.fillStyle = limb;
+    c.beginPath();
+    c.arc(cx, cy, R, 0, Math.PI * 2);
+    c.fill();
+  }
+
+  /* ============================================================
+     build UI
+     ============================================================ */
+  var starsWrap = document.getElementById("stars");
+  var calendarEl = document.getElementById("calendar");
+  var weekdaysEl = document.getElementById("weekdays");
+  var bigMoon = document.getElementById("bigMoon");
+  var phaseNameEl = document.getElementById("phaseName");
+  var phaseDateEl = document.getElementById("phaseDate");
+  var illumNumEl = document.getElementById("illumNum");
+  var riseEl = document.getElementById("riseTime");
+  var setEl = document.getElementById("setTime");
+  var ageEl = document.getElementById("ageValue");
+  var cycleEl = document.getElementById("cycleValue");
+  var trendEl = document.getElementById("trend");
+  var noteEl = document.getElementById("moonNote");
+  var tonightBtn = document.getElementById("tonightBtn");
+  var tonightCap = document.getElementById("tonightCap");
+  var principalGrid = document.getElementById("principalGrid");
+
+  var dayEls = {};
+  var selectedDay = null;
+  var phaseEvents = [];
+  var tonightDay = 18;
+
+  /* star field */
+  (function stars() {
+    var NS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 1200 900");
+    svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+    var rand = mulberry32(10826);
+    for (var i = 0; i < 170; i++) {
+      var cx = rand() * 1200;
+      var cy = rand() * 900;
+      var r = 0.35 + Math.pow(rand(), 2) * 1.15;
+      var circle = document.createElementNS(NS, "circle");
+      circle.setAttribute("cx", cx.toFixed(1));
+      circle.setAttribute("cy", cy.toFixed(1));
+      circle.setAttribute("r", r.toFixed(2));
+      circle.setAttribute("fill", i % 13 === 0 ? "#e5c78f" : "#dbe6f2");
+      circle.setAttribute("opacity", (0.16 + rand() * 0.62).toFixed(2));
+      if (i % 11 === 0 && !reduceMotion) {
+        circle.setAttribute("class", "twinkle");
+        circle.style.animationDelay = (rand() * 6).toFixed(1) + "s";
+        circle.style.animationDuration = (5 + rand() * 5).toFixed(1) + "s";
+      }
+      svg.appendChild(circle);
+    }
+    /* a few four-point sparkles */
+    for (var s = 0; s < 6; s++) {
+      var sx = 60 + rand() * 1080;
+      var sy = 40 + rand() * 800;
+      var sr = 2 + rand() * 2.4;
+      var path = document.createElementNS(NS, "path");
+      path.setAttribute("d", "M" + sx + " " + (sy - sr) + " L" + (sx + sr * 0.24) + " " + sy + " L" + sx + " " + (sy + sr) + " L" + (sx - sr * 0.24) + " " + sy + " Z M" + sx + " " + (sy - sr) + " L" + (sx - sr * 0.24) + " " + sy + " L" + sx + " " + (sy + sr) + " L" + (sx + sr * 0.24) + " " + sy + " Z");
+      path.setAttribute("fill", "#dce7f3");
+      path.setAttribute("opacity", "0.35");
+      svg.appendChild(path);
+    }
+    starsWrap.appendChild(svg);
+  })();
+
+  /* weekday headings */
+  WEEKDAYS.forEach(function (w, i) {
+    var el = document.createElement("div");
+    el.className = "weekday" + (i === 6 ? " sun" : "");
+    el.textContent = w;
+    weekdaysEl.appendChild(el);
+  });
+
+  /* determine "tonight" inside this fixed month */
+  (function findTonight() {
+    var now = new Date();
+    if (now.getFullYear() === YEAR && now.getMonth() === MONTH) {
+      tonightDay = now.getDate();
+    } else if (now < new Date(YEAR, MONTH, 1)) {
+      tonightDay = 1;
+    } else {
+      tonightDay = 31;
+    }
+    var real = now.getFullYear() === YEAR && now.getMonth() === MONTH;
+    tonightCap.textContent = (real ? "Tonight · " : "Closest night · ") + tonightDay + " " + MONTH_NAME;
+  })();
+
+  /* principal phase instants, by scanning hourly */
+  (function findPhaseEvents() {
+    var targets = [
+      { deg: 0, name: "New Moon" },
+      { deg: 90, name: "First Quarter" },
+      { deg: 180, name: "Full Moon" },
+      { deg: 270, name: "Last Quarter" }
+    ];
+    var t0 = Date.UTC(YEAR, MONTH - 1, 27, 0, 0, 0);
+    var prev = phaseAngle(t0);
+    var seen = {};
+    for (var h = 1; h <= 24 * 38; h++) {
+      var t = t0 + h * 3600000;
+      var cur = phaseAngle(t);
+      for (var k = 0; k < targets.length; k++) {
+        var target = targets[k];
+        var crossed = false;
+        var frac = 0;
+        if (target.deg === 0) {
+          if (prev > 300 && cur < 100) {
+            crossed = true;
+            frac = (360 - prev) / ((360 - prev) + cur);
+          }
+        } else if (prev < target.deg && cur >= target.deg) {
+          crossed = true;
+          frac = (target.deg - prev) / (cur - prev);
+        }
+        if (crossed) {
+          var ms = t - 3600000 + frac * 3600000;
+          if (ms >= Date.UTC(YEAR, MONTH, 1) && ms < Date.UTC(YEAR, MONTH + 1, 1)) {
+            var key = target.name;
+            if (!seen[key]) {
+              seen[key] = true;
+              phaseEvents.push({ name: target.name, deg: target.deg, ms: ms, day: new Date(ms).getUTCDate() });
+            }
+          }
+        }
+      }
+      prev = cur;
+    }
+  })();
+
+  var phaseDays = {};
+  phaseEvents.forEach(function (e) { phaseDays[e.day] = true; });
+
+  /* calendar cells */
+  var firstWeekday = (new Date(Date.UTC(YEAR, MONTH, 1)).getUTCDay() + 6) % 7;
+  for (var lead = 0; lead < firstWeekday; lead++) {
+    var blank = document.createElement("div");
+    blank.className = "cell-empty";
+    blank.setAttribute("aria-hidden", "true");
+    calendarEl.appendChild(blank);
+  }
+
+  for (var d = 1; d <= 31; d++) {
+    (function (day) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "day";
+      btn.dataset.day = String(day);
+      if (phaseDays[day]) btn.classList.add("is-phase");
+      if (day === tonightDay) btn.classList.add("is-tonight");
+
+      var canvas = document.createElement("canvas");
+      canvas.width = 180;
+      canvas.height = 180;
+      canvas.className = "day-moon";
+      canvas.setAttribute("aria-hidden", "true");
+
+      var angle = phaseAngle(dayMs(day));
+      var illum = illumination(angle);
+
+      var num = document.createElement("span");
+      num.className = "day-num";
+      num.textContent = String(day);
+
+      var pct = document.createElement("span");
+      pct.className = "day-illum";
+      pct.textContent = Math.round(illum) + "%";
+
+      btn.appendChild(num);
+      btn.appendChild(canvas);
+      btn.appendChild(pct);
+      btn.setAttribute("aria-label",
+        day + " " + MONTH_NAME + " " + YEAR + ", " + phaseName(angle) + ", " +
+        Math.round(illum) + " percent illuminated");
+      btn.addEventListener("click", function () { selectDay(day); });
+      calendarEl.appendChild(btn);
+      dayEls[day] = btn;
+      drawMoon(canvas, angle, false);
+    })(d);
+  }
+
+  /* principal phase cards */
+  var eventByName = {};
+  phaseEvents.forEach(function (e) { eventByName[e.name] = e; });
+  var canonical = [
+    { name: "New Moon", deg: 0 },
+    { name: "First Quarter", deg: 90 },
+    { name: "Full Moon", deg: 180 },
+    { name: "Last Quarter", deg: 270 }
+  ];
+  canonical.forEach(function (meta) {
+    var event = eventByName[meta.name];
+    if (!event) return;
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "phase-card";
+    btn.dataset.day = String(event.day);
+
+    var canvas = document.createElement("canvas");
+    canvas.width = 220;
+    canvas.height = 220;
+    canvas.setAttribute("aria-hidden", "true");
+    drawMoon(canvas, meta.deg, false);
+
+    var text = document.createElement("span");
+    text.className = "pc-text";
+    text.innerHTML =
+      '<span class="pc-name">' + meta.name + '</span>' +
+      '<span class="pc-date">' + event.day + " " + MONTH_NAME + '</span>';
+
+    btn.appendChild(canvas);
+    btn.appendChild(text);
+    btn.setAttribute("aria-label", "Select " + event.day + " " + MONTH_NAME + ", " + meta.name);
+    btn.addEventListener("click", function () { selectDay(event.day); });
+    principalGrid.appendChild(btn);
+  });
+
+  var MOON_NOTES = {
+    "New Moon": [
+      "A dark mirror at the start of the cycle. Begin quietly; the month is still unwritten.",
+      "The moon is lost in the sun’s glare. A good night for closing the curtains early.",
+      "Invisible above the western horizon. What is not yet lit can still be tended."
+    ],
+    "Waxing Crescent": [
+      "A thin silver hook in the west. Carry one small intention into the evening.",
+      "The first light returns at the edge of the sky. Walk home slowly and look up.",
+      "A sliver of borrowed light. It is enough to find the path by."
+    ],
+    "First Quarter": [
+      "Half light, half patience. The tide turns at the meridian.",
+      "A square of evening silver. The month has found its footing; so may you.",
+      "The moon stands at a right angle to the sun. Effort becomes visible tonight."
+    ],
+    "Waxing Gibbous": [
+      "The moon hurries toward fullness. Finish what the waxing light began.",
+      "A broad silver sail crossing the southern sky. Stay out a little longer.",
+      "Nearly whole, still growing. Leave the last stitch for the full moon."
+    ],
+    "Full Moon": [
+      "A lantern at the middle of the month. Look up; the sky is unusually generous.",
+      "The whole face is lit. Nothing needs to be added to this evening.",
+      "High silver and long shadows. The month is at its most legible."
+    ],
+    "Waning Gibbous": [
+      "Light begins to withdraw. Set down what no longer needs carrying.",
+      "The moon rises later each night, generous but already leaving.",
+      "A fat silver coin slipping westward. Spend the quiet part of the night well."
+    ],
+    "Last Quarter": [
+      "The last square of light. Edit, clear, make room.",
+      "Half a moon in the morning sky. The cycle asks for subtraction, not addition.",
+      "A quiet hinge between fullness and dark. Finish one thing properly."
+    ],
+    "Waning Crescent": [
+      "A final ribbon before the dark. Rest is part of the cycle.",
+      "The old moon rises just before dawn, a thin silver comma.",
+      "Almost gone from the sky. Leave a little empty space for what comes next."
+    ]
+  };
+
+  function selectDay(day) {
+    selectedDay = day;
+    var ms = dayMs(day);
+    var angle = phaseAngle(ms);
+    var illum = illumination(angle);
+    var name = phaseName(angle);
+    var date = new Date(ms);
+    var weekday = WEEKDAY_NAMES[date.getUTCDay()];
+    var times = moonTimes(day, angle);
+    var age = angle / 360 * SYNODIC;
+    var waning = angle > 180;
+
+    phaseNameEl.textContent = name;
+    phaseDateEl.textContent = weekday + " · " + day + " " + MONTH_NAME + " " + YEAR;
+    illumNumEl.textContent = illum.toFixed(1);
+    trendEl.textContent = (angle < 5 || angle > 355) ? "at the turn" : (waning ? "waning" : "waxing");
+    cycleEl.textContent = (angle < 5 || angle > 355) ? "New" : (waning ? "Waning" : "Waxing");
+    ageEl.textContent = age.toFixed(1) + " d";
+
+    riseEl.textContent = times.rise.text;
+    setEl.innerHTML = times.set.text + (times.set.next ? "<sup>+1</sup>" : "");
+
+    var notes = MOON_NOTES[name] || MOON_NOTES["First Quarter"];
+    noteEl.textContent = notes[day % notes.length];
+
+    bigMoon.setAttribute("aria-label",
+      "Moon on " + day + " " + MONTH_NAME + " " + YEAR + ": " + name + ", " +
+      illum.toFixed(1) + " percent illuminated");
+    drawMoon(bigMoon, angle, true);
+
+    Object.keys(dayEls).forEach(function (key) {
+      var el = dayEls[key];
+      var isSel = Number(key) === day;
+      el.classList.toggle("is-selected", isSel);
+      el.setAttribute("aria-pressed", isSel ? "true" : "false");
+    });
+
+    principalGrid.querySelectorAll(".phase-card").forEach(function (card) {
+      card.classList.toggle("is-active", Number(card.dataset.day) === day);
+    });
+
+    if (!reduceMotion) {
+      phaseNameEl.animate(
+        [{ opacity: 0.25, transform: "translateY(3px)" }, { opacity: 1, transform: "translateY(0)" }],
+        { duration: 280, easing: "ease-out" }
+      );
+      bigMoon.animate(
+        [{ opacity: 0.55, transform: "scale(.985)" }, { opacity: 1, transform: "scale(1)" }],
+        { duration: 320, easing: "ease-out" }
+      );
+    }
+  }
+
+  tonightBtn.addEventListener("click", function () {
+    selectDay(tonightDay);
+  });
+
+  selectDay(tonightDay);
+})();
+</script>
+</body>
+</html>

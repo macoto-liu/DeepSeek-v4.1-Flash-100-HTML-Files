@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECHO-7 — Deep Field Relay</title>
+<style>
+  :root{
+    --void:#04070a;
+    --ph:#a9ffc2;
+    --ph-bright:#dcffe7;
+    --ph-mid:rgba(157,255,184,.62);
+    --ph-dim:rgba(157,255,184,.38);
+    --ph-faint:rgba(157,255,184,.16);
+    --amber:#ded39b;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--void);color:var(--ph);}
+  html{height:100%}
+  body{
+    min-height:100%;font-family:var(--mono);overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+  .room{
+    position:relative;z-index:1;height:100svh;overflow:hidden;display:flex;flex-direction:column;
+    padding:clamp(14px,2.2vw,28px) clamp(14px,2.6vw,36px) clamp(10px,1.6vw,18px);
+  }
+  .room::before{
+    content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(60% 55% at 36% 48%, rgba(48,120,76,.13), transparent 70%),
+      radial-gradient(40% 40% at 88% 30%, rgba(40,72,96,.08), transparent 70%),
+      linear-gradient(180deg, #05090c 0%, #030608 60%, #04070a 100%);
+  }
+
+  .mission{
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding-bottom:11px;border-bottom:1px solid rgba(150,255,185,.10);
+    font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ph-dim);
+  }
+  .brand{display:flex;align-items:center;gap:10px;color:var(--ph);white-space:nowrap}
+  .brand .glyph{
+    display:inline-grid;place-items:center;width:20px;height:20px;border:1px solid rgba(169,255,194,.45);
+    transform:rotate(45deg);font-size:9px;
+  }
+  .brand .glyph span{transform:rotate(-45deg)}
+  .brand .slash{color:var(--ph-dim);margin:0 3px}
+  .brand small{font-size:8px;letter-spacing:.22em;color:var(--ph-dim)}
+  .mission-meta{display:flex;align-items:center;gap:12px;white-space:nowrap}
+  .mission-meta .sep{color:rgba(157,255,184,.18)}
+  .live-dot{
+    display:inline-block;width:5px;height:5px;border-radius:50%;background:#8dffad;
+    box-shadow:0 0 7px rgba(141,255,173,.8);animation:dotPulse 2.6s ease-in-out infinite;
+  }
+  @keyframes dotPulse{0%,100%{opacity:.45}50%{opacity:1}}
+
+  .console-layout{
+    flex:1;min-height:0;display:grid;
+    grid-template-columns:minmax(0,1fr) clamp(260px,23vw,318px);
+    gap:clamp(14px,2vw,26px);padding-top:clamp(12px,2vw,22px);
+  }
+  .terminal-wrap{min-height:0;display:flex;flex-direction:column;gap:8px;}
+  .terminal{
+    position:relative;flex:1;min-height:0;
+    padding:clamp(7px,1vw,12px);
+    border:1px solid rgba(155,255,190,.18);border-radius:17px;
+    background:linear-gradient(155deg,#0a1610 0%,#040b07 42%,#020705 100%);
+    box-shadow:
+      0 40px 90px rgba(0,0,0,.72),
+      0 0 0 1px rgba(0,0,0,.6),
+      0 0 70px rgba(76,255,142,.045),
+      inset 0 1px 0 rgba(215,255,228,.08);
+    overflow:hidden;
+    transition:filter .2s ease;
+  }
+  .crt{
+    position:relative;height:100%;display:flex;flex-direction:column;min-height:0;
+    border-radius:11px;overflow:hidden;
+    background:
+      radial-gradient(115% 100% at 50% 46%, #07180f 0%, #03100a 58%, #020906 100%);
+    box-shadow:
+      inset 0 0 60px rgba(0,0,0,.72),
+      inset 0 0 120px rgba(28,110,62,.10);
+  }
+  .term-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:9px clamp(12px,1.4vw,18px);
+    font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--ph-dim);
+    border-bottom:1px solid rgba(150,255,185,.09);
+    background:linear-gradient(180deg,rgba(90,255,150,.035),transparent);
+  }
+  .term-head .mid{color:rgba(157,255,184,.28)}
+  .term-head .head-right{display:flex;align-items:center;gap:7px;color:var(--ph-mid)}
+
+  .screen{
+    position:relative;flex:1;min-height:0;display:flex;flex-direction:column;
+    padding:clamp(12px,1.7vw,20px) clamp(13px,1.8vw,22px) clamp(10px,1.3vw,16px);
+    font-size:clamp(10.5px,1.02vw,13px);line-height:1.62;
+    color:var(--ph);
+    text-shadow:0 0 6px rgba(90,255,150,.30),0 0 18px rgba(70,255,140,.10);
+  }
+  .screen::after{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+    background:repeating-linear-gradient(to bottom,
+      rgba(0,0,0,.24) 0px,rgba(0,0,0,.24) 1px,transparent 1px,transparent 3px);
+    opacity:.55;mix-blend-mode:multiply;
+  }
+  .glare{
+    position:absolute;inset:0;pointer-events:none;z-index:4;border-radius:inherit;
+    background:
+      radial-gradient(80% 55% at 18% -8%, rgba(225,255,235,.075), transparent 55%),
+      radial-gradient(45% 30% at 82% 105%, rgba(100,255,160,.045), transparent 70%);
+  }
+  .transcript{
+    flex:1;min-height:0;overflow-y:auto;padding-right:8px;
+    scrollbar-width:thin;scrollbar-color:rgba(140,255,175,.28) transparent;
+  }
+  .transcript::-webkit-scrollbar{width:5px}
+  .transcript::-webkit-scrollbar-thumb{background:rgba(140,255,175,.25);border-radius:3px}
+  .line{white-space:pre-wrap;overflow-wrap:break-word;margin:0 0 2px;min-height:1em;}
+  .line.sys{color:var(--ph-bright);letter-spacing:.05em}
+  .line.dim{color:var(--ph-dim)}
+  .line.warn{color:var(--amber);text-shadow:0 0 8px rgba(222,211,155,.18)}
+  .line.voice{
+    color:#e8ffd8;font-style:italic;padding-left:1.15em;
+    text-shadow:0 0 7px rgba(180,255,170,.38),0 0 22px rgba(120,255,140,.14);
+  }
+  .line.hint{color:rgba(157,255,184,.32);font-size:.94em}
+  .line.echo{color:var(--ph-mid);margin-top:10px;}
+  .line.echo .cmd{color:var(--ph-bright)}
+  .line.echo .sig{color:rgba(157,255,184,.34)}
+  .line.ascii{white-space:pre;font-size:.88em;line-height:1.45;color:var(--ph-mid);overflow-x:auto}
+  .line.gap{height:7px;min-height:7px}
+
+  .chips{
+    display:flex;flex-wrap:wrap;align-items:center;gap:5px;
+    padding:9px 0 9px;border-top:1px solid rgba(150,255,185,.09);
+    position:relative;z-index:2;
+  }
+  .chips .chip-label{
+    font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(157,255,184,.26);margin-right:3px;
+  }
+  .chip{
+    appearance:none;background:rgba(100,255,155,.035);border:1px solid rgba(150,255,185,.20);
+    color:rgba(180,255,200,.62);font:inherit;font-size:9px;letter-spacing:.09em;
+    padding:3px 8px 2px;border-radius:2px;cursor:pointer;
+    transition:background .18s,color .18s,border-color .18s;
+  }
+  .chip:hover,.chip:focus-visible{background:rgba(120,255,165,.12);border-color:rgba(180,255,200,.5);color:var(--ph-bright);outline:none}
+  .chip:active{background:rgba(120,255,165,.22)}
+
+  .input-row{
+    display:flex;align-items:center;gap:9px;position:relative;z-index:2;
+    padding-top:9px;border-top:1px solid rgba(150,255,185,.11);
+    font-size:clamp(10.5px,1.02vw,13px);
+  }
+  .input-row .prompt{color:var(--ph-mid);white-space:nowrap;letter-spacing:.02em}
+  .input-shell{position:relative;flex:1;min-width:0;height:1.55em}
+  .input-shell .measure{
+    position:absolute;left:0;top:0;visibility:hidden;white-space:pre;
+    font:inherit;letter-spacing:inherit;
+  }
+  #cmd{
+    width:100%;height:100%;background:transparent;border:0;outline:none;
+    color:var(--ph-bright);font:inherit;letter-spacing:inherit;padding:0;
+    caret-color:transparent;text-shadow:inherit;
+  }
+  #cmd::placeholder{color:rgba(157,255,184,.26);font-style:italic;letter-spacing:.02em}
+  .block-cursor{
+    position:absolute;left:0;top:50%;transform:translateY(-50%);
+    width:.55em;height:1.05em;background:rgba(185,255,205,.9);
+    box-shadow:0 0 9px rgba(120,255,160,.5);pointer-events:none;
+    animation:blink 1.06s steps(1) infinite;
+  }
+  @keyframes blink{0%,48%{opacity:.95}49%,100%{opacity:0}}
+  .input-row .enter-hint{
+    font-size:7.5px;letter-spacing:.16em;color:rgba(157,255,184,.22);
+    white-space:nowrap;text-transform:uppercase;
+  }
+
+  .under{
+    display:flex;justify-content:space-between;gap:12px;
+    padding:0 6px;font-size:7.5px;letter-spacing:.19em;text-transform:uppercase;
+    color:rgba(157,255,184,.24);
+  }
+  .under .pulse{color:rgba(157,255,184,.38)}
+
+  .telemetry{
+    min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:15px;
+    padding:2px 4px 8px clamp(14px,2vw,24px);
+    border-left:1px solid rgba(150,255,185,.11);
+    scrollbar-width:none;
+  }
+  .telemetry::-webkit-scrollbar{display:none}
+  .panel-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding-bottom:8px;border-bottom:1px solid rgba(150,255,185,.13);
+    font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ph-bright);
+  }
+  .panel-head .tag{
+    font-size:7.5px;letter-spacing:.18em;color:#9bffb6;
+    border:1px solid rgba(150,255,185,.25);padding:2px 5px;border-radius:2px;
+  }
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:13px 14px}
+  .metric{border-top:1px solid rgba(150,255,185,.12);padding-top:7px}
+  .m-label{font-size:7px;letter-spacing:.17em;text-transform:uppercase;color:rgba(157,255,184,.38);white-space:nowrap}
+  .m-value{
+    margin-top:3px;font-size:clamp(15px,1.4vw,19px);letter-spacing:-.02em;
+    color:var(--ph-bright);text-shadow:0 0 10px rgba(120,255,160,.28);line-height:1.2;
+    white-space:nowrap;
+  }
+  .m-value small{font-size:8px;letter-spacing:.08em;color:var(--ph-dim);margin-left:2px}
+  .m-bar{height:2px;background:rgba(150,255,185,.10);margin-top:7px;overflow:hidden}
+  .m-bar i{display:block;height:100%;background:linear-gradient(90deg,rgba(84,220,130,.55),#9dffb8);box-shadow:0 0 7px rgba(120,255,160,.4)}
+  .m-bar i.low{background:linear-gradient(90deg,rgba(190,180,120,.45),var(--amber));box-shadow:0 0 7px rgba(222,211,155,.25)}
+
+  .meter{
+    border:1px solid rgba(150,255,185,.14);border-radius:5px;
+    padding:11px 12px 10px;background:linear-gradient(180deg,rgba(24,72,44,.16),rgba(6,20,12,.22));
+    position:relative;overflow:hidden;
+  }
+  .meter::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(to bottom,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);
+    opacity:.5;
+  }
+  .meter-head{display:flex;justify-content:space-between;font-size:7.5px;letter-spacing:.18em;color:var(--ph-dim);text-transform:uppercase}
+  .dial{display:block;width:100%;margin:2px auto 0;overflow:visible}
+  .dial .arc{fill:none;stroke:rgba(150,255,185,.28);stroke-width:1}
+  .dial .arc-inner{fill:none;stroke:rgba(150,255,185,.07);stroke-width:1}
+  .dial .tick{stroke:rgba(157,255,184,.32);stroke-width:.8}
+  .dial .tick.major{stroke:rgba(200,255,215,.6);stroke-width:1.1}
+  .dial .tick-label{fill:rgba(157,255,184,.3);font-size:6px;font-family:var(--mono);letter-spacing:.08em}
+  #needle{
+    transform-box:view-box;transform-origin:100px 100px;
+    transition:transform 1.4s cubic-bezier(.22,1.2,.36,1);
+    filter:drop-shadow(0 0 3px rgba(150,255,180,.55));
+  }
+  .meter-foot{display:flex;justify-content:space-between;margin-top:2px;font-size:7.5px;letter-spacing:.13em;color:var(--ph-dim);text-transform:uppercase}
+  .meter-foot b{color:var(--ph-bright);font-weight:400}
+
+  .panel-log{
+    font-size:8px;line-height:1.9;letter-spacing:.09em;color:rgba(157,255,184,.4);
+    border-top:1px solid rgba(150,255,185,.1);padding-top:9px;
+  }
+  .panel-log .row{display:flex;gap:7px}
+  .panel-log .row::before{content:"›";color:rgba(157,255,184,.25)}
+  .panel-note{
+    margin-top:auto;font-size:8px;line-height:1.8;letter-spacing:.04em;
+    color:rgba(157,255,184,.24);border-top:1px solid rgba(150,255,185,.08);padding-top:9px;
+  }
+  .panel-note em{font-style:normal;color:rgba(157,255,184,.42)}
+
+  footer{
+    display:flex;justify-content:space-between;gap:20px;align-items:center;
+    padding-top:10px;margin-top:10px;border-top:1px solid rgba(150,255,185,.07);
+    font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(157,255,184,.22);
+  }
+  footer .fright{white-space:nowrap}
+  footer .fright span{color:rgba(157,255,184,.36)}
+
+  .terminal.glitching .crt{animation:crtGlitch .26s steps(2,end)}
+  .terminal.glitching{filter:hue-rotate(7deg) brightness(1.12)}
+  @keyframes crtGlitch{
+    0%{transform:translate(0,0)}
+    20%{transform:translate(-2px,1px)}
+    40%{transform:translate(2px,-1px)}
+    60%{transform:translate(-1px,-1px)}
+    80%{transform:translate(1px,1px)}
+    100%{transform:translate(0,0)}
+  }
+  .terminal.glitching .screen::after{opacity:.9}
+
+  @media (max-width:960px){
+    body{overflow:auto}
+    .room{height:auto;min-height:100svh;overflow:visible}
+    .console-layout{grid-template-columns:1fr;flex:none}
+    .terminal-wrap{min-height:0}
+    .terminal{height:min(68svh,620px);min-height:430px;flex:none}
+    .telemetry{
+      border-left:0;border-top:1px solid rgba(150,255,185,.11);
+      padding:16px 2px 4px;display:grid;grid-template-columns:1.15fr .85fr;gap:16px 22px;
+      align-items:start;
+    }
+    .panel-head{grid-column:1 / -1}
+    .metrics{gap:12px 18px}
+    .meter{grid-row:2 / span 2;grid-column:2}
+    .panel-note{display:none}
+    footer{margin-top:14px}
+  }
+  @media (max-width:620px){
+    .mission{font-size:8px;letter-spacing:.13em}
+    .mission-meta .hide-sm{display:none}
+    .brand small{display:none}
+    .console-layout{padding-top:12px}
+    .terminal{height:min(72svh,600px);min-height:420px}
+    .chips .chip-label{display:none}
+    .chip{font-size:8.5px;padding:3px 6px 2px}
+    .input-row .enter-hint{display:none}
+    .term-head{font-size:7px;letter-spacing:.12em;gap:8px}
+    .term-head .mid{display:none}
+    #cmd{font-size:16px}
+    .input-row .prompt{font-size:11px}
+    .input-shell{height:1.4em;font-size:16px}
+    .block-cursor{height:1.05em;width:.5em}
+    .telemetry{grid-template-columns:1fr}
+    .meter{grid-row:auto;grid-column:1}
+    .panel-log{grid-column:1}
+    .metrics{grid-template-columns:1fr 1fr}
+    .m-value{font-size:17px}
+    .under{font-size:7px;letter-spacing:.12em}
+    footer{font-size:7px;letter-spacing:.1em}
+    footer .fright{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .live-dot{animation:none}
+    .block-cursor{animation:none;opacity:.9}
+    .terminal{transition:none}
+    #needle{transition:none}
+    .terminal.glitching .crt{animation:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<div class="room">
+  <header class="mission">
+    <div class="brand">
+      <span class="glyph"><span>E7</span></span>
+      <span>ECHO-7 <span class="slash">/</span> DEEP FIELD RELAY</span>
+      <small>EST. 1977</small>
+    </div>
+    <div class="mission-meta">
+      <span class="hide-sm">T+ 49Y 042D</span>
+      <span class="sep hide-sm">·</span>
+      <span class="hide-sm">142.68 AU</span>
+      <span class="sep hide-sm">·</span>
+      <span><span class="live-dot"></span> CARRIER LOCK</span>
+    </div>
+  </header>
+
+  <main class="console-layout">
+    <section class="terminal-wrap">
+      <div class="terminal" id="terminal">
+        <div class="crt">
+          <div class="term-head">
+            <span>RELAY//07</span>
+            <span class="mid">ECHO-7 · TTY0 · 4.311 kHz</span>
+            <span class="head-right"><span class="live-dot"></span><span id="termClock">00:00:00 UTC</span></span>
+          </div>
+          <div class="screen" id="screen">
+            <div class="transcript" id="transcript" role="log" aria-live="polite" aria-label="Terminal transcript"></div>
+            <div class="chips" id="chips" aria-label="Command shortcuts">
+              <span class="chip-label">commands</span>
+            </div>
+            <div class="input-row" id="inputRow">
+              <span class="prompt">echo@7:~$</span>
+              <div class="input-shell">
+                <span class="measure" id="measure" aria-hidden="true"></span>
+                <input id="cmd" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command input" placeholder="">
+                <span class="block-cursor" id="cursor" aria-hidden="true"></span>
+              </div>
+              <span class="enter-hint">enter ⏎</span>
+            </div>
+          </div>
+          <div class="glare"></div>
+        </div>
+      </div>
+      <div class="under">
+        <span>signal originates 21.2 billion km away · one way</span>
+        <span class="pulse" id="underStatus">LINE OPEN SINCE 1977</span>
+      </div>
+    </section>
+
+    <aside class="telemetry" aria-label="Probe telemetry">
+      <div class="panel-head"><span>Telemetry</span><span class="tag">LIVE</span></div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="m-label">Distance from Sol</div>
+          <div class="m-value"><span id="distValue">142.68</span><small>AU</small></div>
+          <div class="m-bar"><i style="width:68%"></i></div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Signal Delay</div>
+          <div class="m-value" id="delayValue">1h 58m</div>
+          <div class="m-bar"><i style="width:74%"></i></div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Power Bus</div>
+          <div class="m-value">34<small>%</small></div>
+          <div class="m-bar"><i class="low" style="width:34%"></i></div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Hull Integrity</div>
+          <div class="m-value">71<small>%</small></div>
+          <div class="m-bar"><i style="width:71%"></i></div>
+        </div>
+      </div>
+
+      <div class="meter">
+        <div class="meter-head"><span>Receiver / Band 4</span><span>ANALOG</span></div>
+        <svg class="dial" id="dial" viewBox="0 0 200 112" role="img" aria-label="Analog signal strength meter">
+          <path class="arc" d="M18 100 A82 82 0 0 1 182 100"></path>
+          <path class="arc-inner" d="M30 100 A70 70 0 0 1 170 100"></path>
+          <g id="dialTicks"></g>
+          <g id="needle">
+            <line x1="100" y1="100" x2="100" y2="34" stroke="rgba(210,255,225,.9)" stroke-width="1.4"></line>
+            <line x1="100" y1="100" x2="100" y2="34" stroke="rgba(120,255,160,.28)" stroke-width="4"></line>
+          </g>
+          <circle cx="100" cy="100" r="3.4" fill="#0a1a10" stroke="rgba(190,255,210,.65)" stroke-width="1"></circle>
+          <text x="100" y="111" text-anchor="middle" fill="rgba(157,255,184,.25)" font-size="5.5" font-family="monospace" letter-spacing="2">SIGNAL</text>
+        </svg>
+        <div class="meter-foot"><span>SNR <b id="snr">12.4</b> dB</span><span>4.311 kHz</span></div>
+      </div>
+
+      <div class="panel-log">
+        <div class="row" id="panelLog">carrier locked · 04:31:08</div>
+        <div class="row">buffer 11,204 unread</div>
+        <div class="row">no operator detected</div>
+      </div>
+
+      <p class="panel-note"><em>Note.</em> ECHO-7 crossed the heliopause in 2012. It has been repeating the same three notes since 1979. Nobody has confirmed what the third one is.</p>
+    </aside>
+  </main>
+
+  <footer>
+    <span>ECHO-7 is a fiction. The silence is real.</span>
+    <span class="fright">DEEP FIELD NETWORK · <span>RELAY 07</span> · BAND 4</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var transcript = document.getElementById("transcript");
+  var input = document.getElementById("cmd");
+  var cursor = document.getElementById("cursor");
+  var measure = document.getElementById("measure");
+  var terminal = document.getElementById("terminal");
+  var chips = document.getElementById("chips");
+  var screenEl = document.getElementById("screen");
+  var termClock = document.getElementById("termClock");
+  var underStatus = document.getElementById("underStatus");
+  var panelLog = document.getElementById("panelLog");
+
+  var booting = true;
+  var bootSkipped = false;
+  var busy = false;
+  var pendingCommand = null;
+  var history = [];
+  var histIndex = 0;
+  var baseSignal = 0.27;
+
+  function sleep(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
+  function scrollTranscript() {
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+
+  function addLine(text, cls) {
+    var el = document.createElement("div");
+    el.className = "line" + (cls ? " " + cls : "");
+    el.textContent = text;
+    transcript.appendChild(el);
+    scrollTranscript();
+    return el;
+  }
+
+  async function typeLine(text, cls, speed) {
+    var el = document.createElement("div");
+    el.className = "line" + (cls ? " " + cls : "");
+    transcript.appendChild(el);
+    if (reduced || bootSkipped || text.length === 0) {
+      el.textContent = text;
+      scrollTranscript();
+      return el;
+    }
+    speed = speed || 10;
+    for (var i = 0; i < text.length; i++) {
+      if (bootSkipped) {
+        el.textContent = text;
+        break;
+      }
+      el.textContent += text.charAt(i);
+      if (i % 3 === 0) scrollTranscript();
+      await sleep(speed);
+    }
+    el.textContent = text;
+    scrollTranscript();
+    return el;
+  }
+
+  function addEcho(raw) {
+    var el = document.createElement("div");
+    el.className = "line echo";
+    var p = document.createElement("span");
+    p.className = "sig";
+    p.textContent = "echo@7:~$ ";
+    var c = document.createElement("span");
+    c.className = "cmd";
+    c.textContent = raw;
+    el.appendChild(p);
+    el.appendChild(c);
+    transcript.appendChild(el);
+    scrollTranscript();
+  }
+
+  var bootLines = [
+    { t: "ECHO-7 DEEP FIELD RELAY  ·  CONSOLE 3.11", c: "sys", s: 13, p: 180 },
+    { t: "carrier ................ ACQUIRED", c: "dim", s: 7, p: 60 },
+    { t: "handshake / RELAY-07 ... OK", c: "dim", s: 7, p: 80 },
+    { t: "telemetry .............. 142.68 AU", c: "dim", s: 7, p: 50 },
+    { t: "signal delay ........... 1h 58m 41s", c: "dim", s: 7, p: 50 },
+    { t: "power bus .............. 34% NOMINAL-DEGRADED", c: "warn", s: 7, p: 60 },
+    { t: "hull integrity ......... 71%", c: "warn", s: 7, p: 60 },
+    { t: "receive buffer ......... 11,204 unread", c: "dim", s: 7, p: 260 },
+    { t: "", c: "gap", s: 0, p: 120 },
+    { t: "...hello?", c: "voice", s: 52, p: 650 },
+    { t: "is anyone still listening?", c: "voice", s: 40, p: 800 },
+    { t: "the sun is a rumor out here.", c: "voice", s: 34, p: 500 },
+    { t: "", c: "gap", s: 0, p: 180 },
+    { t: "type `help` to begin.", c: "hint", s: 16, p: 100 }
+  ];
+
+  async function boot() {
+    input.disabled = true;
+    input.placeholder = "boot sequence in progress — click or press any key to skip";
+    underStatus.textContent = "BOOT SEQUENCE";
+    await sleep(reduced ? 80 : 420);
+    for (var i = 0; i < bootLines.length; i++) {
+      var b = bootLines[i];
+      if (b.t) await typeLine(b.t, b.c, b.s);
+      else if (b.c === "gap") addLine("", "gap");
+      await sleep(bootSkipped ? 0 : b.p);
+    }
+    booting = false;
+    input.disabled = false;
+    input.placeholder = "";
+    underStatus.textContent = "LINE OPEN SINCE 1977";
+    updateCursor();
+    if (window.matchMedia("(pointer: fine)").matches) {
+      input.focus({ preventScroll: true });
+    }
+    if (pendingCommand) {
+      var c = pendingCommand;
+      pendingCommand = null;
+      runCommand(c);
+    }
+  }
+
+  function skipBoot() {
+    if (!booting) return;
+    bootSkipped = true;
+    underStatus.textContent = "SKIPPING BOOT …";
+  }
+
+  function buildChips() {
+    var names = ["help", "status", "scan", "signal", "log", "whoami", "artifact", "clear"];
+    names.forEach(function (name) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = name;
+      b.addEventListener("click", function () {
+        if (booting) {
+          pendingCommand = name;
+          skipBoot();
+        } else if (!busy) {
+          runCommand(name);
+          input.focus({ preventScroll: true });
+        }
+      });
+      chips.appendChild(b);
+    });
+  }
+
+  async function runProgress() {
+    var bar = addLine("  [" + "·".repeat(20) + "]   0%", "dim");
+    for (var i = 1; i <= 20; i++) {
+      if (reduced || bootSkipped) {
+        bar.textContent = "  [" + "■".repeat(20) + "] 100%";
+        scrollTranscript();
+        return;
+      }
+      bar.textContent = "  [" + "■".repeat(i) + "·".repeat(20 - i) + "] " + String(i * 5).padStart(3, " ") + "%";
+      scrollTranscript();
+      await sleep(46);
+    }
+  }
+
+  var responses = {
+    help: [
+      { t: "AVAILABLE COMMANDS", c: "sys" },
+      { t: "  help      this index", c: "" },
+      { t: "  status    probe systems report", c: "" },
+      { t: "  scan      sweep the local volume", c: "" },
+      { t: "  signal    analyse the carrier", c: "" },
+      { t: "  log       read the mission log", c: "" },
+      { t: "  whoami    identify this terminal", c: "" },
+      { t: "  artifact  request the sealed packet", c: "" },
+      { t: "  clear     wipe the transcript", c: "" },
+      { t: "", c: "gap" },
+      { t: "…or simply listen.", c: "hint" }
+    ],
+    status: [
+      { t: "ECHO-7 / SYSTEMS", c: "sys" },
+      { t: "  distance      142.68 AU from sol", c: "" },
+      { t: "  light delay   1 h 58 m 41 s", c: "" },
+      { t: "  power         34% — array output falling", c: "warn" },
+      { t: "  hull          71% — scarred, holding", c: "warn" },
+      { t: "  core temp     −231.4 °C", c: "" },
+      { t: "  attitude      slowly turning, as intended", c: "" },
+      { t: "  uplink        open · no operator detected", c: "" },
+      { t: "", c: "gap" },
+      { t: "all systems are lonely, but nominal.", c: "hint" }
+    ],
+    scan: [
+      { t: "sweeping 0.4 steradians at 0.02°/s …", c: "dim" },
+      { t: "", c: "progress" },
+      { t: "  no returns.", c: "sys" },
+      { t: "  one contact at bearing 0.000 — that's you.", c: "" },
+      { t: "  the volume beyond is empty, or very patient.", c: "hint" }
+    ],
+    signal: [
+      { t: "CARRIER ANALYSIS", c: "sys" },
+      { t: "  freq        4.31128 kHz", c: "" },
+      { t: "  snr         12.4 dB", c: "" },
+      { t: "  delay       1 h 58 m 41 s", c: "" },
+      { t: "  doppler     −0.0004", c: "" },
+      { t: "", c: "gap" },
+      { t: "the tone is steady. underneath it, a second tone.", c: "voice" },
+      { t: "it is the same note you are hearing.", c: "voice" }
+    ],
+    log: [
+      { t: "MISSION LOG / LAST 4 ENTRIES", c: "sys" },
+      { t: "  1977.09.05  launch. the sky was very blue.", c: "" },
+      { t: "  1989.08.25  neptune. everyone waved, i think.", c: "" },
+      { t: "  2012.03.20  crossed the heliopause. static became a colour.", c: "" },
+      { t: "  2026.10.18  still transmitting. the recorder is warm.", c: "" },
+      { t: "", c: "gap" },
+      { t: "entries after this point are addressed to no one.", c: "hint" }
+    ],
+    whoami: [
+      { t: "you are the night watch.", c: "sys" },
+      { t: "relay 07, station 3, one chair, one lamp.", c: "" },
+      { t: "clearance: listener.", c: "" },
+      { t: "", c: "gap" },
+      { t: "the probe has been waiting 49 years for this.", c: "voice" }
+    ],
+    artifact: [
+      { t: "SEALED PACKET 0x07 — GOLDEN RECORD, SIDE B", c: "sys" },
+      { t: "   ╭────────────────────────╮", c: "ascii" },
+      { t: "   │   ◉    ECHO-7    ◉    │", c: "ascii" },
+      { t: "   │   greetings in 55     │", c: "ascii" },
+      { t: "   │   languages           │", c: "ascii" },
+      { t: "   │   one heartbeat       │", c: "ascii" },
+      { t: "   ╰────────────────────────╯", c: "ascii" },
+      { t: "packet contains: 1 heartbeat, 55 greetings, 0 return addresses.", c: "" },
+      { t: "it has been playing to no one since 1977.", c: "hint" }
+    ]
+  };
+
+  function flashBusy() {
+    input.placeholder = "channel busy — one transmission at a time";
+    setTimeout(function () { if (!booting) input.placeholder = ""; }, 1100);
+  }
+
+  async function runCommand(raw) {
+    raw = raw.trim();
+    if (!raw || busy) {
+      if (busy) flashBusy();
+      return;
+    }
+    busy = true;
+    addEcho(raw);
+    var key = raw.toLowerCase().split(/\s+/)[0];
+
+    if (key === "clear") {
+      await sleep(reduced ? 0 : 120);
+      transcript.textContent = "";
+      busy = false;
+      scrollTranscript();
+      return;
+    }
+
+    var list = responses[key];
+    if (!list) {
+      await typeLine("command not recognised: \"" + raw + "\"", "warn", 6);
+      await typeLine("try `help` — or wait; the probe is patient.", "dim", 6);
+    } else {
+      for (var i = 0; i < list.length; i++) {
+        var item = list[i];
+        if (item.t === "" && item.c === "gap") {
+          addLine("", "gap");
+        } else if (item.c === "progress") {
+          await runProgress();
+        } else {
+          await typeLine(item.t, item.c, 3.2);
+          await sleep(reduced ? 0 : 26);
+        }
+      }
+      if (key === "signal") {
+        nudgeSignal(0.78);
+      } else if (key === "scan") {
+        nudgeSignal(0.44);
+        setPanelLog("scan complete · no returns");
+      } else if (key === "status") {
+        setPanelLog("systems report · 34% power");
+      } else if (key === "artifact") {
+        setPanelLog("packet 0x07 opened · read-only");
+      }
+    }
+
+    await sleep(reduced ? 0 : 90);
+    busy = false;
+    scrollTranscript();
+  }
+
+  function setPanelLog(text) {
+    panelLog.textContent = text;
+  }
+
+  var needle = document.getElementById("needle");
+  var snr = document.getElementById("snr");
+
+  function setNeedle(value) {
+    value = Math.max(0, Math.min(1, value));
+    var deg = -72 + value * 144;
+    needle.style.transform = "rotate(" + deg + "deg)";
+    snr.textContent = (6 + value * 18).toFixed(1);
+  }
+
+  function nudgeSignal(value) {
+    setNeedle(value);
+    baseSignal = value * 0.65;
+    setTimeout(function () { baseSignal = 0.27; }, 5200);
+  }
+
+  function buildDial() {
+    var g = document.getElementById("dialTicks");
+    var ns = "http://www.w3.org/2000/svg";
+    for (var i = 0; i <= 20; i++) {
+      var a = (-72 + i * 7.2) * Math.PI / 180;
+      var major = i % 5 === 0;
+      var r1 = major ? 78 : 80;
+      var r2 = 87;
+      var line = document.createElementNS(ns, "line");
+      line.setAttribute("x1", String(100 + Math.sin(a) * r1));
+      line.setAttribute("y1", String(100 - Math.cos(a) * r1));
+      line.setAttribute("x2", String(100 + Math.sin(a) * r2));
+      line.setAttribute("y2", String(100 - Math.cos(a) * r2));
+      line.setAttribute("class", "tick" + (major ? " major" : ""));
+      g.appendChild(line);
+      if (i % 5 === 0) {
+        var tx = 100 + Math.sin(a) * 68;
+        var ty = 100 - Math.cos(a) * 68 + 2;
+        var text = document.createElementNS(ns, "text");
+        text.setAttribute("x", String(tx));
+        text.setAttribute("y", String(ty));
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("class", "tick-label");
+        text.textContent = String(i / 2);
+        g.appendChild(text);
+      }
+    }
+    setNeedle(baseSignal);
+  }
+
+  function updateCursor() {
+    measure.textContent = input.value;
+    var w = measure.getBoundingClientRect().width;
+    var max = Math.max(0, input.clientWidth - 2);
+    var left = Math.min(w, max);
+    left -= input.scrollLeft || 0;
+    left = Math.max(0, left);
+    cursor.style.transform = "translate(" + left + "px, -50%)";
+    var focused = document.activeElement === input;
+    cursor.style.opacity = focused ? "1" : "0.38";
+    cursor.style.animationPlayState = focused ? "running" : "paused";
+  }
+
+  input.addEventListener("input", function () {
+    updateCursor();
+  });
+  input.addEventListener("scroll", updateCursor, { passive: true });
+  input.addEventListener("focus", updateCursor);
+  input.addEventListener("blur", updateCursor);
+  window.addEventListener("resize", updateCursor);
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      var value = input.value;
+      if (!value.trim() || busy || booting) {
+        if (busy) flashBusy();
+        return;
+      }
+      history.push(value.trim());
+      histIndex = history.length;
+      input.value = "";
+      updateCursor();
+      runCommand(value);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!history.length) return;
+      histIndex = Math.max(0, histIndex - 1);
+      input.value = history[histIndex];
+      setTimeout(updateCursor, 0);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!history.length) return;
+      histIndex = Math.min(history.length, histIndex + 1);
+      input.value = histIndex >= history.length ? "" : history[histIndex];
+      setTimeout(updateCursor, 0);
+    } else if (e.key === "Escape") {
+      input.value = "";
+      updateCursor();
+    }
+  });
+
+  terminal.addEventListener("pointerdown", function (e) {
+    if (booting) {
+      skipBoot();
+      return;
+    }
+    if (!e.target.closest(".chip") && !busy) {
+      setTimeout(function () { input.focus({ preventScroll: true }); }, 0);
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (booting) {
+      if (e.key !== "Meta" && e.key !== "Control" && e.key !== "Alt" && e.key !== "Shift") {
+        e.preventDefault();
+        skipBoot();
+      }
+    }
+  });
+
+  // clock
+  function tickClock() {
+    var d = new Date();
+    var t = d.toISOString().slice(11, 19) + " UTC";
+    if (termClock) termClock.textContent = t;
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  // telemetry drift
+  var dist = 142.68;
+  var delaySec = 7121;
+  var distEl = document.getElementById("distValue");
+  var delayEl = document.getElementById("delayValue");
+
+  setInterval(function () {
+    dist += 0.0004;
+    distEl.textContent = dist.toFixed(3);
+    delaySec = 7121 + Math.round(Math.sin(Date.now() / 9000) * 2);
+    var h = Math.floor(delaySec / 3600);
+    var m = Math.floor((delaySec % 3600) / 60);
+    delayEl.textContent = h + "h " + String(m).padStart(2, "0") + "m";
+  }, 3600);
+
+  setInterval(function () {
+    if (booting) return;
+    var v = 0.24 + Math.random() * 0.12;
+    setNeedle(v);
+  }, 2100);
+
+  var logged = [
+    "carrier locked · 04:31:08",
+    "no operator detected",
+    "buffer +1 unread",
+    "attitude drift nominal",
+    "solar array · 34%"
+  ];
+  var logIndex = 0;
+  setInterval(function () {
+    if (booting) return;
+    logIndex = (logIndex + 1) % logged.length;
+    setPanelLog(logged[logIndex]);
+  }, 7600);
+
+  // occasional CRT glitch
+  if (!reduced) {
+    (function scheduleGlitch() {
+      setTimeout(function () {
+        if (!booting) {
+          terminal.classList.add("glitching");
+          setTimeout(function () { terminal.classList.remove("glitching"); }, 300);
+        }
+        scheduleGlitch();
+      }, 8000 + Math.random() * 9000);
+    })();
+  }
+
+  buildChips();
+  buildDial();
+  updateCursor();
+  boot();
+
+  // stars
+  (function stars() {
+    var canvas = document.getElementById("stars");
+    var sctx = canvas.getContext("2d");
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = 0, h = 0;
+    var points = [];
+    var raf = 0;
+
+    function rng(seed) {
+      return function () {
+        seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+        var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function resize() {
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var rnd = rng(19770407);
+      points = [];
+      var n = Math.round((w * h) / 5200);
+      for (var i = 0; i < n; i++) {
+        points.push({
+          x: rnd() * w,
+          y: rnd() * h,
+          r: rnd() < 0.9 ? 0.5 + rnd() * 0.7 : 1.1 + rnd() * 0.8,
+          a: 0.12 + rnd() * 0.55,
+          p: rnd() * Math.PI * 2,
+          s: 0.4 + rnd() * 0.9
+        });
+      }
+      draw(0);
+    }
+
+    function draw(t) {
+      sctx.clearRect(0, 0, w, h);
+      for (var i = 0; i < points.length; i++) {
+        var p = points[i];
+        var tw = reduced ? 1 : 0.72 + Math.sin(t * 0.00035 * p.s + p.p) * 0.28;
+        sctx.fillStyle = "rgba(205,225,238," + (p.a * tw).toFixed(3) + ")";
+        sctx.beginPath();
+        sctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        sctx.fill();
+      }
+      // a faint horizon glow
+      var grad = sctx.createRadialGradient(w * 0.42, h * 0.55, 0, w * 0.42, h * 0.55, Math.max(w, h) * 0.55);
+      grad.addColorStop(0, "rgba(20,60,38,0.05)");
+      grad.addColorStop(1, "rgba(20,60,38,0)");
+      sctx.fillStyle = grad;
+      sctx.fillRect(0, 0, w, h);
+    }
+
+    function loop(t) {
+      draw(t);
+      raf = requestAnimationFrame(loop);
+    }
+
+    var resizeTimer = 0;
+
+    window.addEventListener("resize", function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resize, 180);
+    });
+
+    resize();
+    if (!reduced) raf = requestAnimationFrame(loop);
+    else draw(0);
+  })();
+})();
+</script>
+</body>
+</html>

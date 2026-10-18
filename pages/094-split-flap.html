@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Split-Flap — Station Clock</title>
+<style>
+  :root{
+    --bg:#09090b;
+    --board:#121215;
+    --ink:#f3ebda;
+    --cream:#efe5cf;
+    --cream-low:#e2d5ba;
+    --card-ink:#191410;
+    --amber:#e0a45e;
+    --amber-soft:rgba(224,164,94,.55);
+    --muted:#8c8377;
+    --muted-2:#665f56;
+    --line:rgba(243,235,218,.13);
+    --line-soft:rgba(243,235,218,.07);
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg)}
+  body{
+    margin:0;min-height:100vh;color:var(--ink);
+    font-family:var(--sans);
+    background:
+      radial-gradient(1200px 620px at 50% -8%, rgba(224,164,94,.13) 0%, rgba(224,164,94,0) 62%),
+      radial-gradient(900px 700px at 50% 115%, rgba(82,84,102,.13) 0%, rgba(9,9,11,0) 66%),
+      linear-gradient(180deg,#0b0b0e 0%,#08080a 100%);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      linear-gradient(90deg, transparent 0%, rgba(255,255,255,.016) 26%, transparent 52%, rgba(255,255,255,.012) 76%, transparent 100%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.014) 0 1px, transparent 1px 130px);
+    mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 70%);
+    -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 70%);
+  }
+  .page{
+    position:relative;z-index:1;
+    width:100%;max-width:1120px;margin:0 auto;
+    padding:clamp(16px,2.6vw,34px) clamp(16px,3.4vw,40px) 24px;
+    min-height:100vh;
+    display:flex;flex-direction:column;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    display:flex;justify-content:space-between;align-items:center;gap:20px;
+    padding-bottom:13px;border-bottom:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);
+  }
+  .station{display:flex;align-items:center;gap:10px;min-width:0;white-space:nowrap}
+  .station .lamp{
+    width:7px;height:7px;border-radius:50%;flex:none;
+    background:var(--amber);
+    box-shadow:0 0 10px 2px rgba(224,164,94,.45);
+  }
+  .station b{font-weight:500;color:#ddd4c3;letter-spacing:.2em}
+  .station .divider{width:18px;height:1px;background:var(--line);flex:none}
+  .station .sub{color:var(--muted-2);letter-spacing:.14em;text-transform:none;font-family:var(--sans);font-style:italic;font-size:11px;overflow:hidden;text-overflow:ellipsis}
+  .live{display:flex;align-items:center;gap:8px;white-space:nowrap;color:var(--muted)}
+  .live .pulse{width:4px;height:4px;border-radius:50%;background:#d9c9a9;position:relative;flex:none}
+  .live .pulse::after{
+    content:"";position:absolute;inset:-3px;border-radius:50%;border:1px solid rgba(217,201,169,.5);
+    animation:ping 2.6s ease-out infinite;
+  }
+  @keyframes ping{0%{transform:scale(.5);opacity:.8}70%,100%{transform:scale(1.8);opacity:0}}
+
+  /* ---------- board ---------- */
+  main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:clamp(22px,4.6vh,46px) 0 clamp(18px,3vh,30px)}
+  .board-wrap{position:relative;width:100%;max-width:980px;margin:0 auto}
+  .board-wrap::before{
+    content:"";position:absolute;left:6%;right:6%;top:-90px;height:260px;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 50%, rgba(224,164,94,.16) 0%, rgba(224,164,94,0) 68%);
+    filter:blur(16px);
+  }
+  .board{
+    --cw:clamp(52px,8.2vw,94px);
+    --ch:calc(var(--cw) * 1.4);
+    --card-gap:clamp(4px,.7vw,8px);
+    position:relative;
+    padding:clamp(13px,2.4vw,28px);
+    border-radius:7px;
+    background:
+      linear-gradient(180deg,#1c1b1f 0%,#121215 34%,#0d0d10 100%);
+    border:1px solid rgba(243,235,218,.11);
+    box-shadow:
+      0 70px 120px -46px rgba(0,0,0,.95),
+      0 22px 50px -28px rgba(0,0,0,.85),
+      inset 0 1px 0 rgba(255,255,255,.07),
+      inset 0 0 70px rgba(0,0,0,.55);
+    animation:boardIn .9s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes boardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .board::before{
+    content:"";position:absolute;inset:8px;pointer-events:none;border-radius:3px;
+    border:1px solid rgba(255,255,255,.035);
+    background:
+      radial-gradient(circle at 5px 5px, rgba(210,200,180,.5) 0 1.5px, #35322c 2px, rgba(0,0,0,.6) 3px, transparent 3.5px) left top/12px 12px no-repeat,
+      radial-gradient(circle at calc(100% - 5px) 5px, rgba(210,200,180,.42) 0 1.5px, #35322c 2px, rgba(0,0,0,.6) 3px, transparent 3.5px) right top/12px 12px no-repeat,
+      radial-gradient(circle at 5px calc(100% - 5px), rgba(210,200,180,.42) 0 1.5px, #35322c 2px, rgba(0,0,0,.6) 3px, transparent 3.5px) left bottom/12px 12px no-repeat,
+      radial-gradient(circle at calc(100% - 5px) calc(100% - 5px), rgba(210,200,180,.38) 0 1.5px, #35322c 2px, rgba(0,0,0,.6) 3px, transparent 3.5px) right bottom/12px 12px no-repeat;
+  }
+  .board.shudder{animation:shudder .42s ease-out}
+  @keyframes shudder{0%,100%{transform:none}20%{transform:translateY(1px)}45%{transform:translateY(-.5px)}70%{transform:translateY(.4px)}}
+
+  .board-kicker{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+    padding:0 2px 11px;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted-2);
+  }
+  .board-kicker .k-amber{color:var(--amber);opacity:.9}
+  .board-kicker .k-right{display:flex;gap:18px;white-space:nowrap}
+
+  /* destination plate */
+  .plate{
+    position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
+    padding:clamp(13px,2vw,21px) clamp(14px,2.2vw,22px);
+    border:1px solid rgba(243,235,218,.1);
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.045) 0%,rgba(255,255,255,.012) 42%,rgba(0,0,0,.16) 100%),
+      radial-gradient(120% 160% at 8% 0%, rgba(224,164,94,.07), transparent 60%);
+    overflow:hidden;
+  }
+  .plate::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,transparent,rgba(224,164,94,.7),transparent)}
+  .plate::after{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background:repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px);
+  }
+  .plate-left{position:relative;z-index:1;min-width:0}
+  .plate-label{
+    font-family:var(--mono);font-size:8px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);
+    margin-bottom:8px;display:flex;align-items:center;gap:9px;
+  }
+  .plate-label::after{content:"";width:36px;height:1px;background:rgba(224,164,94,.35)}
+  .dest{
+    margin:0;
+    font-family:var(--sans);font-weight:600;
+    font-size:clamp(2rem,4.6vw,3.55rem);
+    line-height:.95;letter-spacing:.13em;text-transform:uppercase;
+    color:#f5edda;
+    text-shadow:0 0 26px rgba(224,164,94,.16);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .dest-meta{
+    margin-top:9px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .plate-right{position:relative;z-index:1;display:flex;align-items:flex-end;gap:clamp(10px,1.8vw,20px);flex:none}
+  .offset-block{text-align:right}
+  .offset-label{font-family:var(--mono);font-size:7.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted-2);margin-bottom:7px}
+  .offset{
+    font-family:var(--mono);font-size:clamp(11px,1.3vw,14px);letter-spacing:.05em;color:#d9cfbb;
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .code-stamp{
+    display:flex;align-items:center;justify-content:center;
+    min-width:clamp(48px,5vw,64px);height:clamp(42px,4.4vw,56px);
+    padding:0 10px;
+    border:1px solid rgba(224,164,94,.35);
+    background:linear-gradient(180deg,rgba(224,164,94,.1),rgba(224,164,94,.02));
+    font-family:var(--mono);font-size:clamp(14px,1.7vw,19px);letter-spacing:.18em;color:var(--amber);
+  }
+  .plate.swap .dest,.plate.swap .dest-meta,.plate.swap .code-stamp,.plate.swap .offset{animation:plateFlip .55s cubic-bezier(.2,.7,.2,1) both}
+  .plate.swap .dest-meta{animation-delay:.04s}
+  .plate.swap .code-stamp{animation-delay:.08s}
+  @keyframes plateFlip{
+    0%{opacity:.2;transform:translateY(-7px) rotateX(35deg)}
+    55%{opacity:1;transform:translateY(1px) rotateX(0)}
+    100%{opacity:1;transform:none}
+  }
+
+  /* clock */
+  .clock-bay{
+    margin-top:clamp(10px,1.6vw,16px);
+    padding:clamp(10px,2vw,22px) clamp(8px,2vw,24px);
+    background:
+      radial-gradient(70% 130% at 50% -10%, #17161a 0%, #0a0a0c 70%),
+      #070708;
+    border:1px solid rgba(243,235,218,.07);
+    box-shadow:inset 0 10px 34px rgba(0,0,0,.85), inset 0 -1px 0 rgba(255,255,255,.035);
+    overflow:hidden;
+  }
+  .clock{
+    display:flex;align-items:center;justify-content:center;
+    gap:clamp(6px,1.2vw,16px);
+    perspective:1200px;
+  }
+  .digit-group{display:flex;gap:var(--card-gap)}
+  .card{
+    position:relative;
+    width:var(--cw);height:var(--ch);
+    flex:none;
+    perspective:700px;
+    border-radius:5px;
+    background:var(--cream);
+    box-shadow:
+      0 14px 26px -12px rgba(0,0,0,.9),
+      0 3px 6px rgba(0,0,0,.45),
+      inset 0 1px 0 rgba(255,255,255,.65);
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:5px;
+    background:
+      radial-gradient(circle at 4px 50%, #241f18 0 1.6px, rgba(255,255,255,.35) 2.2px, transparent 2.8px) left center/8px 8px no-repeat,
+      radial-gradient(circle at calc(100% - 4px) 50%, #241f18 0 1.6px, rgba(255,255,255,.35) 2.2px, transparent 2.8px) right center/8px 8px no-repeat;
+    opacity:.75;
+  }
+  .card::after{
+    content:"";position:absolute;left:0;right:0;top:50%;height:1px;z-index:6;pointer-events:none;
+    background:rgba(18,14,10,.65);
+    box-shadow:0 1px 0 rgba(255,255,255,.28);
+  }
+  .half,.lid{
+    position:absolute;left:0;width:100%;height:50%;overflow:hidden;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.014) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg,#f4ecd8 0%,#ece0c7 100%);
+  }
+  .half.top,.lid.top-lid{top:0;border-radius:5px 5px 0 0}
+  .half.bottom,.lid.bottom-lid{bottom:0;border-radius:0 0 5px 5px;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg,#e6d9bd 0%,#dccdb0 100%);
+  }
+  .half{position:absolute;z-index:1}
+  .glyph{
+    position:absolute;left:0;width:100%;height:var(--ch);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);
+    font-size:calc(var(--cw) * .82);
+    font-weight:500;
+    line-height:1;
+    color:var(--card-ink);
+    letter-spacing:-.04em;
+    font-variant-numeric:tabular-nums;
+    text-shadow:0 1px 0 rgba(255,255,255,.35);
+  }
+  .half.top .glyph,.lid.top-lid .glyph{top:0}
+  .half.bottom .glyph,.lid.bottom-lid .glyph{bottom:0}
+  .lid{
+    z-index:4;
+    transform-origin:center bottom;
+    backface-visibility:hidden;
+    will-change:transform;
+    box-shadow:0 0 0 rgba(0,0,0,0);
+  }
+  .lid.bottom-lid{transform-origin:center top;transform:rotateX(90deg)}
+  .lid::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.3));
+    opacity:0;transition:opacity .15s linear;
+  }
+  .lid.top-lid.flipping::after{opacity:1}
+  .lid.bottom-lid::after{background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(0,0,0,.18))}
+
+  .colon{
+    display:flex;flex-direction:column;justify-content:center;gap:calc(var(--cw) * .26);
+    height:var(--ch);padding:0 clamp(1px,.4vw,4px);flex:none;
+    transition:opacity .16s ease;
+  }
+  .colon i{
+    display:block;width:clamp(5px,.85vw,8px);height:clamp(5px,.85vw,8px);
+    border-radius:50%;background:#efe5cf;
+    box-shadow:0 0 12px rgba(239,229,207,.24),0 1px 0 rgba(0,0,0,.4);
+    transition:opacity .18s ease;
+  }
+  .colon.off i{opacity:.13}
+
+  .board-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:13px 2px 1px;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.19em;text-transform:uppercase;color:var(--muted);
+  }
+  .board-foot>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .board-status{display:flex;align-items:center;gap:8px;color:#bfb49f}
+  .board-status .dot{width:5px;height:5px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px rgba(224,164,94,.5);flex:none}
+  .board-zone{color:var(--amber);opacity:.85}
+  .board-date{color:var(--muted)}
+
+  /* ---------- console ---------- */
+  .console{
+    width:100%;max-width:980px;margin:clamp(16px,2.6vw,24px) auto 0;
+    display:grid;
+    grid-template-columns:1.55fr auto auto 1.15fr;
+    gap:clamp(14px,2.4vw,30px);
+    align-items:end;
+    padding:clamp(14px,1.9vw,20px) clamp(14px,2.2vw,22px);
+    border:1px solid rgba(243,235,218,.1);
+    background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.007));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+  }
+  .console-label{
+    font-family:var(--mono);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted-2);
+    margin-bottom:9px;
+  }
+  .city-list{display:flex;flex-wrap:wrap;gap:6px}
+  .city-btn,.seg-btn{
+    appearance:none;
+    background:transparent;
+    border:1px solid rgba(243,235,218,.16);
+    color:#9e9486;
+    font-family:var(--mono);font-size:9px;letter-spacing:.13em;text-transform:uppercase;
+    padding:9px 10px;cursor:pointer;
+    transition:color .18s ease,border-color .18s ease,background .18s ease;
+    white-space:nowrap;
+  }
+  .city-btn:hover,.seg-btn:hover{color:#e7ddca;border-color:rgba(243,235,218,.34)}
+  .city-btn:focus-visible,.seg-btn:focus-visible,.flip-btn:focus-visible{outline:1px solid var(--amber);outline-offset:2px}
+  .city-btn.active{
+    color:#f3ebda;border-color:rgba(224,164,94,.6);
+    background:rgba(224,164,94,.07);
+    box-shadow:inset 0 -2px 0 var(--amber);
+  }
+  .segmented{display:flex}
+  .seg-btn{padding:9px 12px}
+  .seg-btn + .seg-btn{border-left:none}
+  .seg-btn.active{color:#17130f;background:#e9dfc8;border-color:#e9dfc8}
+  .flip-btn{
+    appearance:none;display:flex;align-items:center;gap:9px;
+    padding:9px 13px;
+    background:transparent;border:1px solid rgba(224,164,94,.32);
+    color:#e9dfc8;font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+    cursor:pointer;transition:background .18s ease,border-color .18s ease;
+  }
+  .flip-btn:hover{background:rgba(224,164,94,.08);border-color:rgba(224,164,94,.6)}
+  .flip-btn svg{transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+  .flip-btn:hover svg{transform:rotate(180deg)}
+  .date-block{text-align:right;min-width:0}
+  .full-date{
+    font-size:clamp(11px,1.15vw,13.5px);color:#e5dccb;letter-spacing:.015em;line-height:1.3;
+    font-variant-numeric:tabular-nums;
+  }
+  .full-date-sub{
+    margin-top:5px;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--muted-2);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+    padding-top:14px;border-top:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:8px;letter-spacing:.17em;text-transform:uppercase;color:var(--muted-2);
+  }
+  footer .route{color:var(--muted);letter-spacing:.12em}
+  footer .foot-note{font-family:var(--sans);font-style:italic;font-size:11px;letter-spacing:.01em;text-transform:none;color:var(--muted)}
+  footer .foot-note span{color:#b8ae9b}
+
+  @media (prefers-reduced-motion:reduce){
+    .board{animation:none}
+    .board.shudder{animation:none}
+    .live .pulse::after{animation:none;opacity:0}
+    .plate.swap .dest,.plate.swap .dest-meta,.plate.swap .code-stamp,.plate.swap .offset{animation:none}
+    .colon.off i{opacity:1}
+  }
+  @media (max-width:860px){
+    .console{grid-template-columns:1fr 1fr;row-gap:18px}
+    .date-block{text-align:left;grid-column:1/-1}
+    .date-block .console-label{margin-bottom:7px}
+    .plate-right{gap:12px}
+    .station .sub{display:none}
+  }
+  @media (max-width:640px){
+    .board{--cw:clamp(40px,9vw,64px)}
+    .board-kicker{font-size:7.5px;letter-spacing:.2em}
+    .dest{letter-spacing:.1em}
+    .dest-meta{font-size:7.5px;letter-spacing:.1em}
+    .board-foot{font-size:7px;letter-spacing:.12em}
+    .masthead{font-size:8px;letter-spacing:.16em}
+    footer{flex-wrap:wrap;gap:8px}
+    footer .foot-note{display:none}
+  }
+  @media (max-width:480px){
+    .board{--cw:40px;--card-gap:4px;padding:11px}
+    .clock-bay{padding:9px 4px}
+    .clock{gap:4px}
+    .board-kicker .k-right span:first-child{display:none}
+    .board-kicker .k-right{gap:0}
+    .plate{padding:11px 12px;gap:10px}
+    .plate-left{flex:1}
+    .plate-label{font-size:6.5px;letter-spacing:.16em;white-space:nowrap;margin-bottom:6px}
+    .plate-label::after{width:18px}
+    .dest{font-size:1.9rem;letter-spacing:.06em}
+    .dest-meta{font-size:7px;letter-spacing:.06em}
+    .plate-right{gap:8px}
+    .offset{font-size:9px}
+    .offset-label{font-size:6.5px}
+    .code-stamp{min-width:40px;height:38px;font-size:12px;padding:0 7px}
+    .board-foot{font-size:6.5px;letter-spacing:.08em;padding-top:10px;gap:8px}
+    .board-date{display:none}
+    .console{grid-template-columns:1fr;padding:14px}
+    .city-list{display:grid;grid-template-columns:1fr 1fr}
+    .city-btn{text-align:center;padding:9px 6px}
+    .date-block{grid-column:auto}
+    .full-date{font-size:12px}
+    .page{padding-left:14px;padding-right:14px}
+  }
+  @media (max-width:380px){
+    .board{--cw:40px}
+    .dest{font-size:1.75rem}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <div class="station">
+      <span class="lamp" aria-hidden="true"></span>
+      <b>Helsinki Central</b>
+      <span class="divider" aria-hidden="true"></span>
+      <span class="sub">Rautatieasema</span>
+    </div>
+    <div class="live"><span class="pulse" aria-hidden="true"></span> Live clock · Track 3</div>
+  </header>
+
+  <main>
+    <div class="board-wrap">
+      <section class="board" id="board" aria-label="Split-flap departure clock">
+        <div class="board-kicker">
+          <span class="k-amber">Departures · Lähtevät</span>
+          <span class="k-right"><span>Destination local time</span><span>Platform 3 · Raide 3</span></span>
+        </div>
+
+        <div class="plate" id="plate">
+          <div class="plate-left">
+            <div class="plate-label">Destination · Määränpää</div>
+            <h1 class="dest" id="destName">Local</h1>
+            <div class="dest-meta" id="destMeta">—</div>
+          </div>
+          <div class="plate-right">
+            <div class="offset-block">
+              <div class="offset-label">Offset</div>
+              <div class="offset" id="destOffset">UTC+00:00</div>
+            </div>
+            <div class="code-stamp" id="destCode" aria-label="Destination code">LOC</div>
+          </div>
+        </div>
+
+        <div class="clock-bay">
+          <div class="clock" id="clock" role="timer" aria-live="off" aria-label="Station clock">
+            <div class="digit-group" id="hoursGroup" data-unit="hours"></div>
+            <div class="colon" aria-hidden="true"><i></i><i></i></div>
+            <div class="digit-group" id="minutesGroup" data-unit="minutes"></div>
+            <div class="colon" aria-hidden="true"><i></i><i></i></div>
+            <div class="digit-group" id="secondsGroup" data-unit="seconds"></div>
+          </div>
+        </div>
+
+        <div class="board-foot">
+          <span class="board-status"><span class="dot" aria-hidden="true"></span><span class="status-text">Service running normally</span></span>
+          <span class="board-date" id="boardDate">—</span>
+          <span class="board-zone" id="boardZone">24H · LOCAL</span>
+        </div>
+      </section>
+    </div>
+
+    <section class="console" aria-label="Board controls">
+      <div class="console-block">
+        <div class="console-label">Destination</div>
+        <div class="city-list" role="group" aria-label="Choose a city">
+          <button type="button" class="city-btn active" data-city="local" aria-pressed="true">Local</button>
+          <button type="button" class="city-btn" data-city="helsinki" aria-pressed="false">Helsinki</button>
+          <button type="button" class="city-btn" data-city="tokyo" aria-pressed="false">Tokyo</button>
+          <button type="button" class="city-btn" data-city="newyork" aria-pressed="false">New York</button>
+        </div>
+      </div>
+
+      <div class="console-block">
+        <div class="console-label">Time format</div>
+        <div class="segmented" role="group" aria-label="Clock format">
+          <button type="button" class="seg-btn active" id="fmt24" aria-pressed="true">24H</button>
+          <button type="button" class="seg-btn" id="fmt12" aria-pressed="false">12H</button>
+        </div>
+      </div>
+
+      <div class="console-block">
+        <div class="console-label">Test</div>
+        <button type="button" class="flip-btn" id="flipAll">
+          <span>Flip all</span>
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 5.2A5.1 5.1 0 0 1 11.6 4M12 8.8A5.1 5.1 0 0 1 2.4 10" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <path d="M1.7 2.2v3.4h3.4M12.3 11.8V8.4H8.9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="console-block date-block">
+        <div class="console-label">Today · selected city</div>
+        <div class="full-date" id="fullDate">—</div>
+        <div class="full-date-sub" id="fullDateSub">—</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span class="route" id="route">HKI → LOC</span>
+    <span class="foot-note">A mechanical board study · <span>every second flips</span></span>
+    <span>Rautatieasema · 60.1723° N</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var localTz = 'UTC';
+  try { localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (err) {}
+
+  var CITIES = {
+    local:    {name:'Local',     code:'LOC', zoneAbbr:'LOCAL', tz:localTz, country:'', abbr:''},
+    helsinki: {name:'Helsinki',  code:'HEL', zoneAbbr:'EET',   tz:'Europe/Helsinki', country:'Finland', abbr:'EET / EEST'},
+    tokyo:    {name:'Tokyo',     code:'TYO', zoneAbbr:'JST',   tz:'Asia/Tokyo',      country:'Japan',   abbr:'JST'},
+    newyork:  {name:'New York',  code:'NYC', zoneAbbr:'ET',    tz:'America/New_York',country:'United States', abbr:'EST / EDT'}
+  };
+
+  var state = {city:'local', is24:true};
+  var cards = [];
+  var colons = Array.prototype.slice.call(document.querySelectorAll('.colon'));
+  var busyUntil = 0;
+  var lastSecond = -1;
+  var lastDateKey = '';
+  var lastOffsetText = '';
+
+  var els = {
+    board: document.getElementById('board'),
+    plate: document.getElementById('plate'),
+    destName: document.getElementById('destName'),
+    destMeta: document.getElementById('destMeta'),
+    destOffset: document.getElementById('destOffset'),
+    destCode: document.getElementById('destCode'),
+    clock: document.getElementById('clock'),
+    boardDate: document.getElementById('boardDate'),
+    boardZone: document.getElementById('boardZone'),
+    fullDate: document.getElementById('fullDate'),
+    fullDateSub: document.getElementById('fullDateSub'),
+    route: document.getElementById('route'),
+    flipAll: document.getElementById('flipAll'),
+    fmt24: document.getElementById('fmt24'),
+    fmt12: document.getElementById('fmt12')
+  };
+
+  var formatter = makeTimeFormatter();
+
+  /* ---------- cards ---------- */
+  function makeCard(){
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.value = '0';
+    card.setAttribute('aria-hidden', 'true');
+    card.innerHTML =
+      '<div class="half top"><span class="glyph">0</span></div>' +
+      '<div class="half bottom"><span class="glyph">0</span></div>' +
+      '<div class="lid top-lid"><span class="glyph">0</span></div>' +
+      '<div class="lid bottom-lid"><span class="glyph">0</span></div>';
+    return card;
+  }
+  var groups = [
+    document.getElementById('hoursGroup'),
+    document.getElementById('minutesGroup'),
+    document.getElementById('secondsGroup')
+  ];
+  groups.forEach(function(g){
+    for (var i = 0; i < 2; i++) {
+      var c = makeCard();
+      cards.push(c);
+      g.appendChild(c);
+    }
+  });
+
+  function cardParts(card){
+    return {
+      topHalf: card.querySelector('.half.top .glyph'),
+      bottomHalf: card.querySelector('.half.bottom .glyph'),
+      topLid: card.querySelector('.lid.top-lid'),
+      bottomLid: card.querySelector('.lid.bottom-lid'),
+      topGlyph: card.querySelector('.lid.top-lid .glyph'),
+      bottomGlyph: card.querySelector('.lid.bottom-lid .glyph')
+    };
+  }
+
+  function setDigit(card, value, animate, delay){
+    var target = String(value);
+    var old = card.dataset.value;
+    if (old === undefined || old === '') old = target;
+    var p = cardParts(card);
+
+    if (card._timers) {
+      card._timers.forEach(function(t){ clearTimeout(t); });
+    }
+    card._timers = [];
+    card.dataset.value = target;
+
+    if (!animate || reduceMotion) {
+      p.topHalf.textContent = target;
+      p.bottomHalf.textContent = target;
+      p.topGlyph.textContent = target;
+      p.bottomGlyph.textContent = target;
+      p.topLid.style.transition = 'none';
+      p.bottomLid.style.transition = 'none';
+      p.topLid.style.transform = 'rotateX(-90deg)';
+      p.bottomLid.style.transform = 'rotateX(0deg)';
+      p.topLid.classList.remove('flipping');
+      return;
+    }
+
+    p.topLid.style.transition = 'none';
+    p.bottomLid.style.transition = 'none';
+    p.topLid.classList.remove('flipping');
+    p.topLid.style.transform = 'rotateX(0deg)';
+    p.bottomLid.style.transform = 'rotateX(90deg)';
+    p.topGlyph.textContent = old;
+    p.bottomGlyph.textContent = target;
+    p.topHalf.textContent = target;
+    p.bottomHalf.textContent = old;
+    // force the browser to commit the reset before animating
+    void card.offsetWidth;
+
+    var start = Math.max(0, delay || 0);
+    card._timers.push(setTimeout(function(){
+      p.topLid.style.transition = 'transform 155ms cubic-bezier(.42,.05,.72,.6)';
+      p.topLid.classList.add('flipping');
+      p.topLid.style.transform = 'rotateX(-90deg)';
+      card._timers.push(setTimeout(function(){
+        p.bottomHalf.textContent = target;
+        p.bottomLid.style.transition = 'transform 175ms cubic-bezier(.22,.7,.3,1)';
+        p.bottomLid.style.transform = 'rotateX(0deg)';
+      }, 148));
+    }, start));
+  }
+
+  /* ---------- formatters ---------- */
+  function makeTimeFormatter(){
+    return new Intl.DateTimeFormat('en-GB', {
+      timeZone: CITIES[state.city].tz,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: state.is24 ? 'h23' : 'h12'
+    });
+  }
+  function timeParts(date){
+    var parts = formatter.formatToParts(date);
+    function get(type){
+      for (var i = 0; i < parts.length; i++) if (parts[i].type === type) return parts[i].value;
+      return '';
+    }
+    return {
+      h: get('hour'), m: get('minute'), s: get('second'),
+      period: (get('dayPeriod') || '').toUpperCase()
+    };
+  }
+  function pad(v){ return String(v).padStart(2, '0'); }
+  function digitsFor(date){
+    var t = timeParts(date);
+    return (pad(t.h) + pad(t.m) + pad(t.s)).split('');
+  }
+  function offsetFor(tz){
+    var raw = '';
+    try {
+      var parts = new Intl.DateTimeFormat('en-US', {timeZone:tz, timeZoneName:'longOffset'}).formatToParts(new Date());
+      for (var i = 0; i < parts.length; i++) if (parts[i].type === 'timeZoneName') raw = parts[i].value;
+    } catch (err) {}
+    var m = raw.match(/^GMT(?:([+-])(\d{1,2})(?::?(\d{2}))?)?$/);
+    if (!m) return raw ? raw.replace('GMT', 'UTC') : 'UTC+00:00';
+    if (!m[1]) return 'UTC+00:00';
+    return 'UTC' + m[1] + pad(m[2]) + ':' + (m[3] || '00');
+  }
+
+  /* ---------- plate / dates ---------- */
+  function updatePlate(){
+    var c = CITIES[state.city];
+    els.destName.textContent = c.name;
+    els.destCode.textContent = c.code;
+    if (state.city === 'local') {
+      els.destMeta.textContent = localTz.replace(/_/g, ' ') + ' · your location';
+    } else {
+      els.destMeta.textContent = c.country + ' · ' + c.abbr;
+    }
+    els.route.textContent = 'HKI → ' + c.code;
+    els.clock.setAttribute('aria-label', 'Station clock showing local time in ' + c.name);
+  }
+  function updateDates(){
+    var c = CITIES[state.city];
+    var now = new Date();
+    var engine = new Intl.DateTimeFormat('en-GB', {
+      timeZone: c.tz, weekday:'long', day:'numeric', month:'long', year:'numeric'
+    });
+    var shortEngine = new Intl.DateTimeFormat('en-GB', {
+      timeZone: c.tz, weekday:'short', day:'numeric', month:'short'
+    });
+    var full = engine.format(now);
+    var short = shortEngine.format(now);
+    if (els.fullDate.textContent !== full) els.fullDate.textContent = full;
+    if (els.boardDate.textContent !== short) els.boardDate.textContent = short;
+    var offset = offsetFor(c.tz);
+    if (offset !== lastOffsetText) {
+      lastOffsetText = offset;
+      els.destOffset.textContent = offset;
+      var tzLabel = (state.city === 'local') ? localTz.replace(/_/g, ' ') : c.tz.replace(/_/g, ' ');
+      els.fullDateSub.textContent = tzLabel + ' · ' + offset;
+    }
+  }
+  function updateZoneLine(){
+    var c = CITIES[state.city];
+    var t = timeParts(new Date());
+    var prefix = state.is24 ? '24H' : (t.period || (parseInt(t.h, 10) >= 12 ? 'PM' : 'AM'));
+    els.boardZone.textContent = prefix + ' · ' + c.zoneAbbr;
+  }
+
+  /* ---------- clock ---------- */
+  function tick(forceAll){
+    if (Date.now() < busyUntil && !forceAll) return;
+    var now = new Date();
+    var t = timeParts(now);
+    var digits = (pad(t.h) + pad(t.m) + pad(t.s)).split('');
+
+    for (var i = 0; i < 6; i++) {
+      if (forceAll) {
+        setDigit(cards[i], digits[i], true, i * 65);
+      } else if (cards[i].dataset.value !== digits[i]) {
+        setDigit(cards[i], digits[i], true, 0);
+      }
+    }
+    var sec = parseInt(t.s, 10);
+    var off = (sec % 2) === 1;
+    colons.forEach(function(c){ c.classList.toggle('off', off); });
+
+    if (sec !== lastSecond) {
+      lastSecond = sec;
+      updateDates();
+      updateZoneLine();
+    }
+  }
+
+  function flipAll(){
+    busyUntil = Date.now() + 1350;
+    els.board.classList.remove('shudder');
+    void els.board.offsetWidth;
+    els.board.classList.add('shudder');
+    setTimeout(function(){ els.board.classList.remove('shudder'); }, 500);
+    var digits = digitsFor(new Date());
+    for (var i = 0; i < 6; i++) {
+      setDigit(cards[i], digits[i], true, i * 70);
+    }
+  }
+
+  function flipIndices(indices){
+    busyUntil = Date.now() + 700;
+    var digits = digitsFor(new Date());
+    indices.forEach(function(i, n){
+      setDigit(cards[i], digits[i], true, n * 70);
+    });
+  }
+
+  /* ---------- controls ---------- */
+  function applyCity(id){
+    if (!CITIES[id]) return;
+    state.city = id;
+    document.querySelectorAll('.city-btn').forEach(function(btn){
+      var on = btn.dataset.city === id;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    formatter = makeTimeFormatter();
+    updatePlate();
+    updateDates();
+    updateZoneLine();
+    els.plate.classList.remove('swap');
+    void els.plate.offsetWidth;
+    els.plate.classList.add('swap');
+    busyUntil = Date.now() + 1300;
+    var digits = digitsFor(new Date());
+    for (var i = 0; i < 6; i++) setDigit(cards[i], digits[i], true, i * 65);
+  }
+
+  document.querySelectorAll('.city-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){ applyCity(btn.dataset.city); });
+  });
+
+  function setFormat(twentyFour){
+    if (state.is24 === twentyFour) return;
+    state.is24 = twentyFour;
+    els.fmt24.classList.toggle('active', twentyFour);
+    els.fmt12.classList.toggle('active', !twentyFour);
+    els.fmt24.setAttribute('aria-pressed', twentyFour ? 'true' : 'false');
+    els.fmt12.setAttribute('aria-pressed', !twentyFour ? 'true' : 'false');
+    formatter = makeTimeFormatter();
+    updateZoneLine();
+    flipIndices([0, 1]);
+  }
+  els.fmt24.addEventListener('click', function(){ setFormat(true); });
+  els.fmt12.addEventListener('click', function(){ setFormat(false); });
+
+  els.flipAll.addEventListener('click', flipAll);
+
+  /* initialize */
+  updatePlate();
+  updateDates();
+  var firstDigits = digitsFor(new Date());
+  for (var i = 0; i < 6; i++) setDigit(cards[i], firstDigits[i], false, 0);
+  updateZoneLine();
+  tick(false);
+  setInterval(function(){ tick(false); }, 240);
+})();
+</script>
+</body>
+</html>

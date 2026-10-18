@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sentinel / Passive Array 04</title>
+<style>
+  :root{
+    --void:#020806;
+    --room:#04100c;
+    --panel:#05130e;
+    --green:#8dffb4;
+    --green-soft:#57c98b;
+    --green-dim:rgba(141,255,180,.42);
+    --green-faint:rgba(141,255,180,.13);
+    --green-ghost:rgba(141,255,180,.055);
+    --cyan:#8fe6f4;
+    --cyan-dim:rgba(143,230,244,.45);
+    --paper:#dff5e7;
+    --muted:rgba(200,235,216,.55);
+    --hair:rgba(141,255,180,.16);
+    --serif:"Bodoni 72","Bodoni MT",Didot,"Times New Roman",Times,serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{min-height:100%}
+  html{overflow-x:hidden}
+  body{
+    margin:0;
+    background:var(--void);
+    color:var(--paper);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* background room */
+  .room{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(58% 62% at 74% 44%, rgba(31,120,78,.19) 0%, rgba(9,38,27,.10) 46%, rgba(2,8,6,0) 72%),
+      radial-gradient(40% 40% at 8% 8%, rgba(22,92,68,.12), transparent 70%),
+      linear-gradient(160deg,#04110c 0%,#020806 55%,#030c09 100%);
+  }
+  .room::before{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(141,255,180,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(141,255,180,.035) 1px, transparent 1px);
+    background-size:44px 44px;
+    mask-image:radial-gradient(120% 100% at 50% 40%,rgba(0,0,0,.9),rgba(0,0,0,.25) 75%,transparent);
+    -webkit-mask-image:radial-gradient(120% 100% at 50% 40%,rgba(0,0,0,.9),rgba(0,0,0,.25) 75%,transparent);
+  }
+  .scanlines{
+    position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.34;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.36) 0 1px, transparent 1px 3px);
+    mix-blend-mode:multiply;
+  }
+  .scanlines::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg, transparent, rgba(120,255,170,.035) 48%, transparent 52%);
+    height:26%;animation:drift 11s linear infinite;opacity:.5;
+  }
+  @keyframes drift{from{transform:translateY(-100%)}to{transform:translateY(500%)}}
+
+  .shell{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;gap:20px;
+    padding:17px 40px;border-bottom:1px solid var(--hair);
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);
+    background:rgba(2,10,7,.55);
+  }
+  .sys{display:flex;align-items:center;gap:12px;color:var(--paper);font-size:11px;letter-spacing:.28em}
+  .sys .glyph{
+    width:10px;height:10px;border:1px solid var(--green);position:relative;display:inline-block;
+  }
+  .sys .glyph::after{content:"";position:absolute;inset:2px;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .sys .slash{color:var(--green-dim)}
+  .topmeta{display:flex;align-items:center;gap:22px}
+  .live{display:inline-flex;align-items:center;gap:7px;color:var(--green)}
+  .live i{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:live 2.6s ease-in-out infinite}
+  @keyframes live{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ---------- layout ---------- */
+  .layout{
+    flex:1;
+    display:grid;
+    grid-template-columns:minmax(300px,400px) minmax(0,1fr);
+    gap:clamp(32px,5vw,88px);
+    align-items:center;
+    width:100%;max-width:1560px;margin:0 auto;
+    padding:clamp(28px,4.2vh,54px) 40px 112px;
+  }
+
+  /* ---------- editorial ---------- */
+  .editorial{position:relative;padding-bottom:6px}
+  .kicker{
+    display:flex;align-items:center;gap:12px;
+    font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--green-soft);
+    margin-bottom:26px;
+  }
+  .kicker::before{content:"";width:22px;height:1px;background:var(--green-soft);opacity:.6}
+  h1{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(2.9rem,4.6vw,4.9rem);
+    line-height:.94;letter-spacing:-.022em;
+    margin:0 0 28px;color:#e8f8ec;
+    text-wrap:balance;
+  }
+  h1 em{font-style:italic;color:var(--green)}
+  .intro{
+    margin:0 0 30px;max-width:38ch;
+    font-family:var(--mono);
+    font-size:11.5px;line-height:1.95;letter-spacing:.015em;
+    color:var(--muted);
+  }
+  .intro b{color:var(--paper);font-weight:400}
+  .range-block{margin-bottom:24px}
+  .label-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);
+    margin-bottom:9px;
+  }
+  .label-row .value{color:var(--green);letter-spacing:.14em;font-size:10px}
+  .ranges{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+  .ranges button{
+    appearance:none;cursor:pointer;
+    border:1px solid var(--hair);
+    background:rgba(141,255,180,.018);
+    color:var(--muted);
+    padding:11px 4px 10px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+    transition:border-color .25s ease,background .25s ease,color .25s ease,box-shadow .25s ease;
+    position:relative;
+  }
+  .ranges button small{display:block;font-size:7px;letter-spacing:.22em;color:rgba(200,235,216,.35);margin-top:3px}
+  .ranges button:hover{border-color:rgba(141,255,180,.45);color:var(--paper)}
+  .ranges button:focus-visible{outline:1px solid var(--green);outline-offset:2px}
+  .ranges button[aria-pressed="true"]{
+    border-color:rgba(141,255,180,.68);color:var(--green);
+    background:rgba(141,255,180,.075);
+    box-shadow:inset 0 0 18px rgba(141,255,180,.055),0 0 12px rgba(141,255,180,.05);
+  }
+  .ranges button[aria-pressed="true"]::after{
+    content:"";position:absolute;top:-1px;left:-1px;width:7px;height:7px;
+    border-top:1px solid var(--green);border-left:1px solid var(--green);
+  }
+  .ranges button[aria-pressed="true"] small{color:rgba(141,255,180,.6)}
+
+  .scan-btn{
+    appearance:none;cursor:pointer;width:100%;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 16px;
+    border:1px solid rgba(141,255,180,.5);
+    background:linear-gradient(90deg, rgba(141,255,180,.10), rgba(141,255,180,.028));
+    color:var(--green);
+    font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+    clip-path:polygon(0 0,calc(100% - 11px) 0,100% 11px,100% 100%,11px 100%,0 calc(100% - 11px));
+    transition:background .25s ease,box-shadow .25s ease,border-color .25s ease;
+  }
+  .scan-btn:hover{background:linear-gradient(90deg, rgba(141,255,180,.18), rgba(141,255,180,.05));box-shadow:0 0 26px rgba(141,255,180,.09)}
+  .scan-btn:active{background:rgba(141,255,180,.22)}
+  .scan-btn:focus-visible{outline:1px solid var(--cyan);outline-offset:3px}
+  .scan-btn .left{display:flex;align-items:center;gap:12px}
+  .scan-btn svg{width:16px;height:16px;display:block}
+  .scan-btn .key{font-size:8px;letter-spacing:.18em;color:rgba(141,255,180,.42)}
+  .scan-btn.busy .left svg{animation:spin 1.1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .readout{
+    margin-top:24px;
+    border:1px solid var(--hair);
+    background:linear-gradient(180deg,rgba(5,24,16,.75),rgba(3,14,10,.55));
+    padding:18px 18px 16px;
+    position:relative;
+    transition:border-color .3s ease,background .3s ease;
+  }
+  .readout::before{
+    content:"";position:absolute;top:-1px;left:-1px;right:-1px;height:1px;
+    background:linear-gradient(90deg,var(--green),transparent 62%);
+    opacity:.65;
+  }
+  .readout.active{border-color:rgba(141,255,180,.36);background:linear-gradient(180deg,rgba(8,36,23,.8),rgba(3,14,10,.6))}
+  .ro-head{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:8px;letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(200,235,216,.42);margin-bottom:13px;
+  }
+  .ro-head .tag{
+    display:inline-flex;align-items:center;gap:6px;color:var(--green-soft);
+  }
+  .ro-head .tag i{width:4px;height:4px;background:var(--green-soft);border-radius:50%}
+  .ro-desig{
+    font-family:var(--serif);font-size:clamp(1.5rem,2.1vw,2rem);
+    letter-spacing:.035em;line-height:1;color:#eaf9ee;margin:0 0 15px;
+    font-variant-numeric:tabular-nums;
+    transition:color .25s ease;
+  }
+  .readout.active .ro-desig{color:var(--green)}
+  .ro-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:11px 16px;
+    border-top:1px solid rgba(141,255,180,.11);padding-top:13px;
+  }
+  .ro-cell span{
+    display:block;font-size:8px;letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(200,235,216,.4);margin-bottom:5px;
+  }
+  .ro-cell strong{
+    font-weight:400;font-size:13px;letter-spacing:.06em;color:var(--paper);
+    font-variant-numeric:tabular-nums;
+  }
+  .ro-cell.signal strong{display:flex;align-items:center;gap:7px;color:var(--cyan)}
+  .sigbars{display:inline-flex;gap:2px;align-items:flex-end;height:11px}
+  .sigbars i{width:2px;background:var(--cyan);opacity:.22;display:block}
+  .sigbars i:nth-child(1){height:3px}
+  .sigbars i:nth-child(2){height:5px}
+  .sigbars i:nth-child(3){height:7px}
+  .sigbars i:nth-child(4){height:9px}
+  .sigbars i:nth-child(5){height:11px}
+  .sigbars i.on{opacity:.95;box-shadow:0 0 5px rgba(143,230,244,.55)}
+  .ro-note{
+    margin:13px 0 0;font-size:9px;line-height:1.7;letter-spacing:.045em;
+    color:rgba(200,235,216,.38);
+  }
+  .readout.active .ro-note{color:rgba(200,235,216,.52)}
+
+  .telemetry{
+    display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;
+    margin-top:26px;padding-top:16px;border-top:1px solid rgba(141,255,180,.09);
+    font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:rgba(200,235,216,.32);
+  }
+  .telemetry div{display:flex;justify-content:space-between;gap:10px}
+  .telemetry b{font-weight:400;color:rgba(141,255,180,.6)}
+
+  /* ---------- radar ---------- */
+  .radar-column{display:flex;flex-direction:column;align-items:center;min-width:0}
+  .radar-meta{
+    width:100%;max-width:640px;
+    display:flex;justify-content:space-between;gap:14px;
+    font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,235,216,.4);
+    margin-bottom:12px;
+  }
+  .radar-meta b{font-weight:400;color:var(--green-soft)}
+  .radar-shell{
+    position:relative;width:100%;max-width:640px;aspect-ratio:1/1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .radar-shell::before{
+    content:"";position:absolute;inset:-5%;border-radius:50%;
+    background:radial-gradient(circle,rgba(60,180,120,.10),rgba(20,80,55,.03) 48%,transparent 68%);
+    pointer-events:none;
+  }
+  .radar{
+    position:relative;width:100%;height:100%;border-radius:50%;overflow:hidden;
+    background:
+      radial-gradient(circle at 50% 46%, rgba(19,62,43,.28) 0%, rgba(6,24,16,.42) 58%, rgba(2,10,7,.62) 100%);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.55),0 0 80px rgba(22,90,58,.12);
+    cursor:crosshair;
+    touch-action:manipulation;
+  }
+  .radar::after{
+    content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(141,255,180,.22);
+  }
+  #radarBase,#radarContacts{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #radarBase{pointer-events:none}
+  #radarContacts{overflow:visible}
+  .sweep{
+    position:absolute;inset:6.2%;border-radius:50%;
+    pointer-events:none;z-index:2;overflow:hidden;
+    background:conic-gradient(from 0deg,
+      rgba(141,255,180,0) 0deg,
+      rgba(141,255,180,0) 288deg,
+      rgba(141,255,180,.022) 322deg,
+      rgba(141,255,180,.085) 348deg,
+      rgba(170,255,200,.20) 357deg,
+      rgba(200,255,218,.38) 359.6deg,
+      rgba(200,255,218,.55) 360deg);
+    animation:sweep-turn 9s linear infinite;
+    mix-blend-mode:screen;
+  }
+  .sweep-line{
+    position:absolute;left:50%;top:6.2%;width:1px;height:43.8%;z-index:2;
+    transform-origin:50% 100%;
+    background:linear-gradient(to top,rgba(170,255,200,.42),rgba(170,255,200,.05));
+    animation:sweep-turn 9s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes sweep-turn{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  .radar.reveal .sweep,.radar.reveal .sweep-line{animation:none}
+
+  .radar-foot{
+    width:100%;max-width:640px;
+    display:flex;justify-content:space-between;gap:12px;
+    padding-top:12px;border-top:1px solid rgba(141,255,180,.1);
+    font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,235,216,.36);
+  }
+  .radar-foot span{display:inline-flex;align-items:center;gap:6px}
+  .radar-foot i{width:3px;height:3px;background:var(--green-soft);border-radius:50%;opacity:.6}
+
+  /* svg base */
+  .ring{fill:none;stroke:rgba(141,255,180,.15);stroke-width:1}
+  .ring.major{stroke:rgba(141,255,180,.22)}
+  .crosshair{stroke:rgba(141,255,180,.13);stroke-width:1}
+  .crosshair.dash{stroke-dasharray:2 7;stroke:rgba(141,255,180,.13)}
+  .tick{stroke:rgba(141,255,180,.24);stroke-width:1}
+  .tick.minor{stroke:rgba(141,255,180,.13);stroke-width:.8}
+  .bearing-label{
+    fill:rgba(180,235,202,.5);font-family:var(--mono);font-size:11px;
+    letter-spacing:1px;text-anchor:middle;dominant-baseline:middle;
+  }
+  .bearing-label.axis{fill:rgba(143,230,244,.65)}
+  .blip-vector{stroke:rgba(141,255,180,.4);stroke-width:1;stroke-dasharray:2 4;opacity:0;transition:opacity .25s ease}
+  .contact .hit{fill:transparent;cursor:pointer}
+  .contact .pulse{
+    fill:none;stroke:rgba(141,255,180,.55);stroke-width:1;
+    transform-box:fill-box;transform-origin:center;
+    animation:pulse 3.4s cubic-bezier(.2,.6,.3,1) infinite;
+  }
+  .contact .pulse.p2{animation-delay:1.7s}
+  .contact .dot{
+    fill:var(--green);filter:drop-shadow(0 0 4px rgba(141,255,180,.85));
+    transform-box:fill-box;transform-origin:center;transition:transform .22s ease,fill .22s ease;
+  }
+  .contact .halo{fill:rgba(141,255,180,.10);opacity:0;transition:opacity .22s ease;transform-box:fill-box;transform-origin:center}
+  .contact .blip-label{
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+    fill:rgba(210,250,224,.86);opacity:0;transition:opacity .22s ease;
+    paint-order:stroke;stroke:rgba(2,10,7,.85);stroke-width:3px;
+  }
+  .contact:hover .blip-label,.contact:focus-visible .blip-label{opacity:1}
+  .contact:hover .dot,.contact:focus-visible .dot,.contact.active .dot{transform:scale(1.35);fill:#b8ffd0}
+  .contact:hover .halo,.contact:focus-visible .halo,.contact.active .halo{opacity:1}
+  .contact:hover .blip-vector,.contact:focus-visible .blip-vector,.contact.active .blip-vector{opacity:1}
+  .contact:focus{outline:none}
+  .contact:focus-visible .dot{stroke:var(--cyan);stroke-width:1}
+  .contact.arrive{animation:arrive .8s ease both}
+  @keyframes arrive{from{opacity:0}to{opacity:1}}
+  @keyframes pulse{
+    0%{transform:scale(.5);opacity:.75}
+    70%{opacity:.12}
+    100%{transform:scale(2.9);opacity:0}
+  }
+  .contact.new .dot{fill:#c9ffdb}
+
+  /* ---------- status strip ---------- */
+  .status{
+    position:fixed;left:0;right:0;bottom:0;z-index:10;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:0 40px;height:42px;
+    background:rgba(2,9,6,.94);
+    border-top:1px solid rgba(141,255,180,.2);
+    font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(200,235,216,.42);
+    backdrop-filter:blur(6px);
+  }
+  .status-group{display:flex;align-items:center;gap:22px;white-space:nowrap;min-width:0}
+  .status-item{display:inline-flex;align-items:center;gap:8px}
+  .status-item b{font-weight:400;color:var(--green);letter-spacing:.12em}
+  .status-item .ok{width:4px;height:4px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+  .utc b{color:var(--paper);font-size:10px;letter-spacing:.14em;font-variant-numeric:tabular-nums}
+  .status .sep{color:rgba(141,255,180,.2)}
+  .health-bar{width:52px;height:3px;background:rgba(141,255,180,.12);position:relative;overflow:hidden}
+  .health-bar i{position:absolute;inset:0;width:97.4%;background:var(--green);opacity:.7;box-shadow:0 0 6px var(--green)}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1080px){
+    .layout{grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:36px;padding-left:28px;padding-right:28px}
+    .topbar,.status{padding-left:28px;padding-right:28px}
+    .radar-meta,.radar-foot{max-width:560px}
+    .radar-shell{max-width:560px}
+  }
+  @media (max-width:880px){
+    body{overflow-y:auto}
+    .layout{grid-template-columns:1fr;gap:42px;padding:32px 22px 100px;align-items:start}
+    .topbar{padding:14px 22px;font-size:8.5px;letter-spacing:.16em;flex-wrap:wrap;gap:8px 16px}
+    .topmeta{gap:12px}
+    .topmeta .coords{display:none}
+    .kicker{margin-bottom:18px}
+    h1{font-size:clamp(2.65rem,11vw,4rem);max-width:12ch}
+    .intro{max-width:100%}
+    .ranges button{padding:12px 4px 11px}
+    .readout{margin-top:20px}
+    .telemetry{display:none}
+    .radar-shell{max-width:520px;margin:0 auto}
+    .radar-meta,.radar-foot{max-width:520px}
+    .radar-meta{font-size:7.5px;letter-spacing:.13em}
+    .radar-foot{font-size:7px;letter-spacing:.12em}
+    .status{padding:0 22px;height:38px;font-size:7.5px;letter-spacing:.13em}
+    .status .receiver,.status .optional{display:none}
+    .health-bar{display:none}
+    .scan-btn{padding:13px 14px}
+  }
+  @media (max-width:520px){
+    .layout{padding:24px 18px 84px}
+    .topbar{padding:12px 18px}
+    .sys{font-size:9.5px;letter-spacing:.18em}
+    .sys .slash{display:none}
+    .topmeta{font-size:8px;letter-spacing:.14em}
+    h1{font-size:clamp(2.5rem,12.6vw,3.4rem)}
+    .intro{font-size:10.5px;line-height:1.85}
+    .radar-shell{max-width:100%}
+    .radar-meta,.radar-foot{max-width:100%}
+    .radar-foot span:nth-child(3){display:none}
+    .status{padding:0 16px;gap:10px}
+    .status-group{gap:12px}
+    .status-item{font-size:7px;letter-spacing:.1em}
+    .status .contacts,.status .array-state,.status .sep{display:none}
+    .utc b{font-size:9px}
+    .ro-grid{gap:9px 12px}
+    .readout{padding:15px}
+    .telemetry{font-size:7.5px;letter-spacing:.08em;gap:7px 12px}
+  }
+  @media (max-height:700px) and (min-width:881px){
+    .layout{padding-top:20px}
+    h1{font-size:clamp(2.5rem,3.8vw,3.9rem);margin-bottom:18px}
+    .kicker{margin-bottom:16px}
+    .intro{margin-bottom:20px;line-height:1.7}
+    .readout{margin-top:16px;padding:14px}
+    .telemetry{display:none}
+    .ro-note{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .sweep,.sweep-line,.contact .pulse,.live i,.scanlines::after{animation:none}
+    .contact.arrive{animation:none}
+  }
+</style>
+</head>
+<body>
+<div class="room" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="sys">
+      <span class="glyph" aria-hidden="true"></span>
+      Sentinel <span class="slash">/</span> Passive Array 04
+    </div>
+    <div class="topmeta">
+      <span><span class="live"><i aria-hidden="true"></i>Live</span></span>
+      <span class="coords">61° 13′ N &nbsp; 149° 54′ W</span>
+      <span>Band L · 1.4 GHz</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="editorial" aria-labelledby="title">
+      <div class="kicker">Passive listening station · sector 04</div>
+      <h1 id="title">Nothing is<br>empty <em>space.</em></h1>
+      <p class="intro">
+        The array does not transmit. It only listens — to weather fronts, to shipping lanes,
+        to the long low murmur of the sea floor. Every return is a small argument
+        that <b>something is there.</b>
+      </p>
+
+      <div class="range-block">
+        <div class="label-row">
+          <span>Display range</span>
+          <span class="value" id="rangeValue">25 km</span>
+        </div>
+        <div class="ranges" role="group" aria-label="Radar range">
+          <button type="button" data-range="10" aria-pressed="false">10<small>km</small></button>
+          <button type="button" data-range="25" aria-pressed="true">25<small>km</small></button>
+          <button type="button" data-range="50" aria-pressed="false">50<small>km</small></button>
+        </div>
+      </div>
+
+      <button class="scan-btn" id="scanBtn" type="button">
+        <span class="left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="2.1"/>
+            <path d="M12 12 18 6.2"/>
+          </svg>
+          <span id="scanLabel">Scan array</span>
+        </span>
+        <span class="key">Space</span>
+      </button>
+
+      <div class="readout" id="readout" aria-live="polite">
+        <div class="ro-head">
+          <span>Contact readout</span>
+          <span class="tag"><i aria-hidden="true"></i><span id="roState">Idle</span></span>
+        </div>
+        <p class="ro-desig" id="roDesig">—</p>
+        <div class="ro-grid">
+          <div class="ro-cell"><span>Bearing</span><strong id="roBearing">---°</strong></div>
+          <div class="ro-cell"><span>Range</span><strong id="roRange">—</strong></div>
+          <div class="ro-cell signal"><span>Signal</span><strong><span id="roSignal">—</span><span class="sigbars" id="sigbars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></strong></div>
+          <div class="ro-cell"><span>Classification</span><strong id="roClass">Unresolved</strong></div>
+        </div>
+        <p class="ro-note" id="roNote">No contact selected. Hover a return to interrogate it.</p>
+      </div>
+
+      <div class="telemetry" aria-label="Array telemetry">
+        <div><span>Sensitivity</span><b>−114 dBm</b></div>
+        <div><span>Noise floor</span><b>−121 dBm</b></div>
+        <div><span>Sweep period</span><b>9.0 s</b></div>
+        <div><span>Elements</span><b>64 / 64</b></div>
+      </div>
+    </section>
+
+    <section class="radar-column" aria-label="Passive radar display">
+      <div class="radar-meta">
+        <span>Array aperture <b>360°</b></span>
+        <span id="rangeMeta">25 km · 6.25 km/ring</span>
+      </div>
+
+      <div class="radar-shell">
+        <div class="radar" id="radar">
+          <svg id="radarBase" viewBox="0 0 800 800" aria-hidden="true">
+            <circle cx="400" cy="400" r="350" class="ring major"/>
+            <circle cx="400" cy="400" r="262.5" class="ring"/>
+            <circle cx="400" cy="400" r="175" class="ring"/>
+            <circle cx="400" cy="400" r="87.5" class="ring"/>
+            <line x1="50" y1="400" x2="750" y2="400" class="crosshair"/>
+            <line x1="400" y1="50" x2="400" y2="750" class="crosshair"/>
+            <line x1="152.4" y1="152.4" x2="647.6" y2="647.6" class="crosshair dash"/>
+            <line x1="647.6" y1="152.4" x2="152.4" y2="647.6" class="crosshair dash"/>
+            <circle cx="400" cy="400" r="7" fill="none" stroke="rgba(143,230,244,.4)" stroke-width="1"/>
+            <circle cx="400" cy="400" r="1.8" fill="rgba(143,230,244,.75)"/>
+            <g id="ticks"></g>
+            <g id="bearings"></g>
+          </svg>
+          <div class="sweep" aria-hidden="true"></div>
+          <div class="sweep-line" aria-hidden="true"></div>
+          <svg id="radarContacts" viewBox="0 0 800 800" aria-label="Contacts. Click empty radar to add a contact.">
+            <g id="contactLayer"></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="radar-foot">
+        <span><i aria-hidden="true"></i>Passive only</span>
+        <span>Doppler —</span>
+        <span>Sector 04 / North</span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="status">
+  <div class="status-group">
+    <span class="status-item utc">UTC <b id="utcClock">00:00:00</b></span>
+    <span class="sep optional">/</span>
+    <span class="status-item health-item">Array health <b id="health">97.4%</b><span class="health-bar" aria-hidden="true"><i id="healthFill"></i></span></span>
+  </div>
+  <div class="status-group">
+    <span class="status-item receiver optional"><span class="ok" aria-hidden="true"></span>Receiver nominal</span>
+    <span class="sep optional">/</span>
+    <span class="status-item contacts">Contacts <b id="contactCount">07</b></span>
+    <span class="sep optional">/</span>
+    <span class="status-item array-state" id="arrayState">Array nominal</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  var C = 400, R = 350;
+
+  var radar = document.getElementById("radar");
+  var svg = document.getElementById("radarContacts");
+  var layer = document.getElementById("contactLayer");
+  var ticks = document.getElementById("ticks");
+  var bearings = document.getElementById("bearings");
+  var readout = document.getElementById("readout");
+  var roDesig = document.getElementById("roDesig");
+  var roBearing = document.getElementById("roBearing");
+  var roRange = document.getElementById("roRange");
+  var roSignal = document.getElementById("roSignal");
+  var roClass = document.getElementById("roClass");
+  var roNote = document.getElementById("roNote");
+  var roState = document.getElementById("roState");
+  var sigbars = document.getElementById("sigbars");
+  var scanBtn = document.getElementById("scanBtn");
+  var scanLabel = document.getElementById("scanLabel");
+  var contactCount = document.getElementById("contactCount");
+  var rangeValue = document.getElementById("rangeValue");
+  var rangeMeta = document.getElementById("rangeMeta");
+  var utcClock = document.getElementById("utcClock");
+  var health = document.getElementById("health");
+  var healthFill = document.getElementById("healthFill");
+  var arrayState = document.getElementById("arrayState");
+
+  var state = { range: 25, contacts: [], hovered: null };
+
+  var prefixPool = ["KESTREL","MERIDIAN","ASH","LANTERN","HOLLOW","VESPER","TIDEWATCH","BASALT","ORISON","PALE","SEVERN","MARLOW","CINDER","LOWELL","BRINE"];
+  var classPool = ["Surface vessel","Unclassified","Low-altitude","Sonobuoy","Weather balloon","Unresolved"];
+  var usedPrefix = {};
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function pad3(n){ return String(n).padStart(3,"0"); }
+
+  function makeId(){
+    var p, n, guard = 0;
+    do{
+      p = prefixPool[Math.floor(Math.random()*prefixPool.length)];
+      n = Math.floor(Math.random()*89) + 2;
+      guard++;
+    } while(usedPrefix[p+"-"+n] && guard < 60);
+    usedPrefix[p+"-"+n] = true;
+    return p + "-" + pad2(n);
+  }
+
+  function makeContact(fixedBearing, fixedFrac){
+    var bearing = fixedBearing !== undefined ? fixedBearing : Math.random()*360;
+    var frac = fixedFrac !== undefined ? fixedFrac : 0.12 + Math.random()*0.8;
+    var sig = -30 - Math.random()*38;
+    return {
+      id: makeId(),
+      bearing: bearing,
+      frac: frac,
+      signal: Math.round(sig),
+      cls: classPool[Math.floor(Math.random()*classPool.length)],
+      conf: Math.round(64 + Math.random()*34),
+      drift: Math.random() > .6 ? (Math.random()-.5)*.5 : 0,
+      phase: Math.random()*10
+    };
+  }
+
+  function pointFor(c){
+    var rad = (c.bearing - 90) * Math.PI / 180;
+    var dist = c.frac * R;
+    return { x: C + Math.cos(rad)*dist, y: C + Math.sin(rad)*dist };
+  }
+
+  function buildBase(){
+    var tickMarkup = "";
+    for(var deg=0; deg<360; deg+=5){
+      var major = deg % 30 === 0;
+      var rad = (deg - 90) * Math.PI/180;
+      var r1 = major ? 338 : 343;
+      var x1 = C + Math.cos(rad)*r1;
+      var y1 = C + Math.sin(rad)*r1;
+      var x2 = C + Math.cos(rad)*350;
+      var y2 = C + Math.sin(rad)*350;
+      tickMarkup += '<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" class="tick'+(major?'':' minor')+'"/>';
+    }
+    ticks.innerHTML = tickMarkup;
+
+    var labelMarkup = "";
+    for(var b=0; b<360; b+=30){
+      var r = 315;
+      var a = (b - 90) * Math.PI/180;
+      var x = C + Math.cos(a)*r;
+      var y = C + Math.sin(a)*r;
+      labelMarkup += '<text x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" class="bearing-label'+(b%90===0?' axis':'')+'">'+pad3(b)+'</text>';
+    }
+    bearings.innerHTML = labelMarkup;
+  }
+
+  function sigBarCount(signal){
+    var bars = Math.round((signal + 72) / 8);
+    return Math.max(1, Math.min(5, bars));
+  }
+
+  function setBars(n){
+    var nodes = sigbars.querySelectorAll("i");
+    for(var i=0;i<nodes.length;i++){
+      nodes[i].classList.toggle("on", i < n);
+    }
+  }
+
+  function clearReadout(){
+    state.hovered = null;
+    readout.classList.remove("active");
+    roDesig.textContent = "—";
+    roBearing.textContent = "---°";
+    roRange.textContent = "—";
+    roSignal.textContent = "—";
+    roClass.textContent = "Unresolved";
+    roState.textContent = "Idle";
+    roNote.textContent = "No contact selected. Hover a return to interrogate it.";
+    setBars(0);
+    var all = layer.querySelectorAll(".contact");
+    for(var i=0;i<all.length;i++) all[i].classList.remove("active");
+  }
+
+  function updateReadout(c){
+    state.hovered = c;
+    readout.classList.add("active");
+    roDesig.textContent = c.id;
+    roBearing.textContent = pad3(Math.round(c.bearing)) + "°";
+    roRange.textContent = (c.frac * state.range).toFixed(1) + " km";
+    roSignal.textContent = "−" + Math.abs(c.signal) + " dBm";
+    roClass.textContent = c.cls;
+    roState.textContent = "Tracked";
+    roNote.textContent = "Confidence " + c.conf + "% · passive return · no active emission detected.";
+    setBars(sigBarCount(c.signal));
+    if(c.node){
+      var all = layer.querySelectorAll(".contact");
+      for(var i=0;i<all.length;i++) all[i].classList.toggle("active", all[i] === c.node);
+    }
+  }
+
+  function renderContacts(){
+    layer.innerHTML = "";
+    state.hovered = null;
+    state.contacts.forEach(function(c, idx){
+      var p = pointFor(c);
+      var g = document.createElementNS(NS, "g");
+      g.setAttribute("class", "contact arrive");
+      g.setAttribute("transform", "translate(" + p.x.toFixed(1) + " " + p.y.toFixed(1) + ")");
+      g.setAttribute("tabindex", "0");
+      g.setAttribute("role", "button");
+      g.setAttribute("aria-label", c.id + ", bearing " + pad3(Math.round(c.bearing)) + " degrees, range " + (c.frac*state.range).toFixed(1) + " kilometres");
+
+      var vec = document.createElementNS(NS, "line");
+      vec.setAttribute("x1","0"); vec.setAttribute("y1","0");
+      vec.setAttribute("x2", (-p.x + C).toFixed(1));
+      vec.setAttribute("y2", (-p.y + C).toFixed(1));
+      vec.setAttribute("class","blip-vector");
+      g.appendChild(vec);
+
+      var halo = document.createElementNS(NS, "circle");
+      halo.setAttribute("r","13"); halo.setAttribute("class","halo");
+      g.appendChild(halo);
+
+      var pulse = document.createElementNS(NS, "circle");
+      pulse.setAttribute("r","9"); pulse.setAttribute("class","pulse");
+      pulse.style.animationDelay = (-idx*0.47) + "s";
+      g.appendChild(pulse);
+
+      var pulse2 = document.createElementNS(NS, "circle");
+      pulse2.setAttribute("r","9"); pulse2.setAttribute("class","pulse p2");
+      pulse2.style.animationDelay = (-idx*0.47 - 1.7) + "s";
+      g.appendChild(pulse2);
+
+      var dot = document.createElementNS(NS, "circle");
+      dot.setAttribute("r", idx === 0 ? "4" : "3.4");
+      dot.setAttribute("class","dot");
+      g.appendChild(dot);
+
+      var hit = document.createElementNS(NS, "circle");
+      hit.setAttribute("r","20"); hit.setAttribute("class","hit");
+      g.appendChild(hit);
+
+      var label = document.createElementNS(NS, "text");
+      label.setAttribute("x","14"); label.setAttribute("y","-12");
+      label.setAttribute("class","blip-label");
+      label.textContent = c.id;
+      g.appendChild(label);
+
+      g.addEventListener("mouseenter", function(e){ updateReadout(c); });
+      g.addEventListener("focus", function(e){ updateReadout(c); });
+      g.addEventListener("mouseleave", function(){
+        if(state.hovered === c) clearReadout();
+      });
+      g.addEventListener("blur", function(){
+        if(state.hovered === c) clearReadout();
+      });
+      g.addEventListener("click", function(e){
+        e.stopPropagation();
+        updateReadout(c);
+      });
+
+      c.node = g;
+      layer.appendChild(g);
+    });
+
+    contactCount.textContent = pad2(state.contacts.length);
+    clearReadout();
+  }
+
+  function regenerate(){
+    var count = 5 + Math.floor(Math.random()*4);
+    state.contacts = [];
+    usedPrefix = {};
+    for(var i=0;i<count;i++){
+      var b = Math.random()*360;
+      var f = 0.14 + Math.random()*0.79;
+      /* keep contacts visually separated */
+      var tries = 0;
+      while(tries < 20){
+        var conflict = state.contacts.some(function(o){
+          return Math.abs(o.bearing - b) < 18 && Math.abs(o.frac - f) < 0.1;
+        });
+        if(!conflict) break;
+        b = Math.random()*360; f = 0.14 + Math.random()*0.79; tries++;
+      }
+      state.contacts.push(makeContact(b, f));
+    }
+    renderContacts();
+    arrayState.textContent = "Field updated";
+    window.setTimeout(function(){ arrayState.textContent = "Array nominal"; }, 2400);
+  }
+
+  /* initial field: deterministic authored placement */
+  function seededField(){
+    var seeds = [
+      {b:32, f:.70}, {b:76, f:.36}, {b:118, f:.55},
+      {b:161, f:.82}, {b:214, f:.28}, {b:268, f:.62},
+      {b:318, f:.44}
+    ];
+    state.contacts = seeds.map(function(s){
+      return makeContact(s.b, s.f);
+    });
+    renderContacts();
+  }
+
+  function addContactAt(x, y){
+    var dx = x - C, dy = y - C;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    var bearing = (Math.atan2(dx, -dy) * 180/Math.PI + 360) % 360;
+    var frac = Math.min(.96, Math.max(.06, dist / R));
+    var c = makeContact(bearing, frac);
+    c.conf = Math.round(70 + Math.random()*29);
+    state.contacts.push(c);
+    renderContacts();
+    /* mark and highlight the new one */
+    var node = layer.lastElementChild;
+    if(node){
+      node.classList.add("new");
+      updateReadout(c);
+    }
+    contactCount.textContent = pad2(state.contacts.length);
+    arrayState.textContent = "Return logged";
+    window.setTimeout(function(){ arrayState.textContent = "Array nominal"; }, 2200);
+  }
+
+  function svgPoint(evt){
+    var rect = svg.getBoundingClientRect();
+    return {
+      x: (evt.clientX - rect.left) / rect.width * 800,
+      y: (evt.clientY - rect.top) / rect.height * 800
+    };
+  }
+
+  radar.addEventListener("click", function(e){
+    if(e.target.closest && e.target.closest(".contact")) return;
+    var p = svgPoint(e);
+    var dx = p.x - C, dy = p.y - C;
+    if(Math.sqrt(dx*dx + dy*dy) > R - 4) return;
+    addContactAt(p.x, p.y);
+  });
+
+  /* keyboard add? keep focusable blips; radar click only */
+
+  var scanning = false;
+  function scan(){
+    if(scanning) return;
+    scanning = true;
+    scanBtn.classList.add("busy");
+    scanBtn.disabled = true;
+    scanLabel.textContent = "Scanning…";
+    radar.classList.add("reveal");
+    arrayState.textContent = "Sweep active";
+    var sweep = radar.querySelector(".sweep");
+    var line = radar.querySelector(".sweep-line");
+    [sweep, line].forEach(function(el){
+      el.style.animation = "none";
+      void el.offsetWidth;
+      el.style.animation = "";
+    });
+    window.setTimeout(function(){
+      regenerate();
+      radar.classList.remove("reveal");
+      scanBtn.classList.remove("busy");
+      scanBtn.disabled = false;
+      scanLabel.textContent = "Scan array";
+      scanning = false;
+      arrayState.textContent = "Field regenerated";
+      window.setTimeout(function(){ arrayState.textContent = "Array nominal"; }, 2600);
+    }, 760);
+  }
+
+  scanBtn.addEventListener("click", scan);
+
+  document.addEventListener("keydown", function(e){
+    if(e.code === "Space" && !/INPUT|TEXTAREA|SELECT|BUTTON/.test(document.activeElement.tagName)){
+      e.preventDefault();
+      scan();
+    }
+  });
+
+  var rangeButtons = document.querySelectorAll(".ranges button");
+  function setRange(km){
+    state.range = km;
+    rangeValue.textContent = km + " km";
+    rangeMeta.textContent = km + " km · " + parseFloat((km/4).toFixed(2)) + " km/ring";
+    for(var i=0;i<rangeButtons.length;i++){
+      rangeButtons[i].setAttribute("aria-pressed", String(Number(rangeButtons[i].dataset.range) === km));
+    }
+    if(state.hovered){
+      updateReadout(state.hovered);
+    }
+    arrayState.textContent = "Range " + km + " km";
+    window.setTimeout(function(){ arrayState.textContent = "Array nominal"; }, 1900);
+  }
+  for(var i=0;i<rangeButtons.length;i++){
+    rangeButtons[i].addEventListener("click", function(){
+      setRange(Number(this.dataset.range));
+    });
+  }
+
+  function clock(){
+    var d = new Date();
+    utcClock.textContent = pad2(d.getUTCHours()) + ":" + pad2(d.getUTCMinutes()) + ":" + pad2(d.getUTCSeconds());
+  }
+  clock();
+  window.setInterval(clock, 1000);
+
+  var healthVal = 97.4;
+  function healthTick(){
+    healthVal = 96.1 + Math.random()*2.6;
+    var txt = healthVal.toFixed(1) + "%";
+    health.textContent = txt;
+    if(healthFill) healthFill.style.width = healthVal + "%";
+  }
+  window.setInterval(healthTick, 5200);
+
+  buildBase();
+  seededField();
+})();
+</script>
+</body>
+</html>

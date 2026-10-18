@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GOO — A softer kind of sweet</title>
+<style>
+  :root{
+    --ink:#3c1a2b;
+    --ink-soft:#654353;
+    --paper:#fff8e8;
+    --accent:#e51d70;
+    --wash:#ff8fc0;
+    --gummy-a:#ffb3d1;
+    --gummy-b:#ff4f94;
+    --gummy-c:#cf1260;
+    --gummy-deep:#8e0b42;
+    --chip-bg:rgba(255,255,255,.42);
+    --round:"Arial Rounded MT Bold","Trebuchet MS",ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  body[data-flavour="mango"]{
+    --accent:#e07800;--wash:#ffb84d;
+    --gummy-a:#ffe39b;--gummy-b:#ffb12e;--gummy-c:#ef8200;--gummy-deep:#a95400;
+  }
+  body[data-flavour="lime"]{
+    --accent:#5f9418;--wash:#c3e975;
+    --gummy-a:#e9fbb4;--gummy-b:#a9df55;--gummy-c:#6cb326;--gummy-deep:#47780f;
+  }
+  body[data-flavour="grape"]{
+    --accent:#6b3ec4;--wash:#b78cff;
+    --gummy-a:#e1caff;--gummy-b:#a678f5;--gummy-c:#7040ca;--gummy-deep:#4c2496;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:#ffe9da;color:var(--ink);
+    font-family:var(--round);-webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    transition:color .4s ease;
+  }
+  body.no-scroll{overflow:hidden}
+  a{color:inherit}
+  ::selection{background:#ffd1e2;color:#421428}
+
+  /* ---------- background scene ---------- */
+  .scene{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+    background:linear-gradient(128deg,#fff7e1 0%,#fff0d8 18%,#ffe4df 40%,#ffd4e4 64%,#ffbfdc 84%,#ffaccf 100%);
+  }
+  .blob{position:absolute;border-radius:50%;filter:blur(58px);opacity:.55;will-change:transform}
+  .blob.b1{width:48vw;height:48vw;left:-14vw;top:-18vw;background:#ffe6a8;opacity:.7;animation:float1 24s ease-in-out infinite}
+  .blob.b2{width:54vw;height:54vw;right:-16vw;top:4vh;background:#ff9ec9;opacity:.55;animation:float2 30s ease-in-out infinite}
+  .blob.b3{width:44vw;height:40vw;left:24vw;bottom:-22vw;background:#ffd7b0;opacity:.6;animation:float1 27s ease-in-out infinite reverse}
+  .blob.b4{width:26vw;height:26vw;right:20vw;bottom:8vh;background:#fff3c9;opacity:.5;filter:blur(70px);animation:float2 21s ease-in-out infinite}
+  @keyframes float1{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(3vw,4vh,0) scale(1.07)}}
+  @keyframes float2{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-4vw,2vh,0) scale(.95)}}
+
+  .flavour-wash{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:var(--wash);opacity:.10;mix-blend-mode:soft-light;
+    transition:background-color .9s ease,opacity .9s ease;
+  }
+  .hero-glow{
+    position:absolute;z-index:0;right:4vw;top:16vh;
+    width:min(62vw,780px);aspect-ratio:1/1;border-radius:50%;
+    background:var(--wash);opacity:.42;filter:blur(80px);
+    transition:background-color 1s ease;
+    animation:glowpulse 12s ease-in-out infinite;
+  }
+  @keyframes glowpulse{0%,100%{opacity:.36;transform:scale(1)}50%{opacity:.5;transform:scale(1.05)}}
+
+  .confetti{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  .candy-dot{position:absolute;border-radius:50%;opacity:.6;box-shadow:inset 0 -2px 3px rgba(120,30,70,.10)}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    padding:16px 40px;
+    background:rgba(255,245,228,.55);
+    backdrop-filter:blur(16px) saturate(1.2);
+    -webkit-backdrop-filter:blur(16px) saturate(1.2);
+    border-bottom:1px solid rgba(60,26,43,.08);
+  }
+  .brand{display:flex;align-items:baseline;gap:13px;text-decoration:none;line-height:1}
+  .brand-word{
+    font-size:36px;font-weight:900;letter-spacing:-.075em;color:var(--ink);
+    line-height:.8;display:inline-block;transform:translateY(2px);
+  }
+  .brand-word .o{
+    color:var(--accent);display:inline-block;
+    transition:color .7s ease;
+  }
+  .brand-sub{
+    font-family:var(--serif);font-style:italic;font-size:12px;color:var(--ink-soft);
+    letter-spacing:.01em;opacity:.8;
+  }
+  .nav{display:flex;align-items:center;gap:26px;font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:700}
+  .nav a{text-decoration:none;position:relative;padding:5px 0;color:var(--ink-soft)}
+  .nav a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--ink);transition:right .3s ease}
+  .nav a:hover{color:var(--ink)}
+  .nav a:hover::after{right:0}
+  .nav a:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+  .bag{
+    display:inline-flex;align-items:center;gap:9px;
+    background:rgba(255,255,255,.55);
+    border:1px solid rgba(60,26,43,.16);
+    padding:9px 14px 9px 12px;border-radius:999px;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+    white-space:nowrap;
+  }
+  .bag svg{width:14px;height:14px;opacity:.75}
+  .bag .bag-count{
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:19px;height:19px;padding:0 5px;border-radius:999px;
+    background:var(--ink);color:var(--paper);font-size:10px;letter-spacing:0;
+    transition:background-color .5s ease;
+    font-variant-numeric:tabular-nums;
+  }
+  .bag .bag-count.bump{animation:bump .45s cubic-bezier(.3,1.5,.5,1)}
+  @keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.45)}100%{transform:scale(1)}}
+
+  /* ---------- hero ---------- */
+  .page{position:relative;z-index:2}
+  .hero{
+    width:100%;max-width:1380px;margin:0 auto;
+    padding:clamp(28px,4.5vh,56px) 40px 0;
+    display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
+    align-items:center;gap:24px;
+    min-height:calc(100svh - 76px);
+  }
+  .copy{padding:clamp(10px,2vh,28px) 0 clamp(30px,4vh,54px);max-width:620px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;
+    background:rgba(255,255,255,.45);
+    border:1px solid rgba(60,26,43,.13);
+    border-radius:999px;padding:7px 13px;
+    font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);
+    margin-bottom:clamp(20px,3.6vh,34px);
+  }
+  .eyebrow .star{color:var(--accent);font-size:12px;line-height:1;transition:color .6s ease}
+  h1{
+    margin:0;
+    font-family:var(--round);font-weight:900;
+    font-size:clamp(3.1rem,6.4vw,6.5rem);
+    line-height:.9;letter-spacing:-.045em;color:var(--ink);
+    text-wrap:balance;
+  }
+  h1 .soft{
+    color:var(--accent);
+    transition:color .65s ease;
+    position:relative;
+    display:inline-block;
+  }
+  h1 .soft::after{
+    content:"";position:absolute;left:1%;right:2%;bottom:.04em;height:.09em;
+    background:rgba(255,255,255,.55);border-radius:999px;
+    transform:rotate(-1.1deg);z-index:-1;
+  }
+  .note{
+    margin:clamp(20px,3.2vh,30px) 0 0;max-width:41ch;
+    font-family:var(--serif);font-size:clamp(.98rem,1.15vw,1.1rem);
+    line-height:1.7;color:#5b3b4a;letter-spacing:.005em;
+  }
+
+  .flavours{margin-top:clamp(24px,3.6vh,34px);scroll-margin-top:96px}
+  .flavour-head{
+    display:flex;align-items:baseline;justify-content:flex-start;gap:14px;flex-wrap:wrap;
+    margin-bottom:10px;
+    font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--ink-soft);
+  }
+  .flavour-head .current{
+    color:var(--accent);display:inline-flex;align-items:center;gap:7px;
+    transition:color .6s ease;letter-spacing:.13em;
+    padding-left:13px;border-left:1px solid rgba(60,26,43,.16);
+  }
+  .flavour-head .current::before{
+    content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 3px rgba(255,255,255,.45);
+    transition:background-color .6s ease;
+  }
+  .flavour-grid{display:flex;flex-wrap:wrap;gap:8px}
+  .flavour{
+    appearance:none;cursor:pointer;
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid rgba(60,26,43,.16);
+    background:var(--chip-bg);
+    border-radius:999px;padding:10px 14px 10px 11px;
+    font-family:var(--round);font-size:11px;font-weight:700;letter-spacing:.02em;color:var(--ink-soft);
+    transition:background .25s ease,border-color .25s ease,color .25s ease,transform .2s ease,box-shadow .25s ease;
+  }
+  .flavour .swatch{
+    width:13px;height:13px;border-radius:50%;
+    background:var(--sw);
+    box-shadow:inset 0 1px 2px rgba(255,255,255,.7),inset 0 -2px 3px rgba(80,10,40,.18);
+    transition:transform .25s ease;
+  }
+  .flavour:hover{border-color:rgba(60,26,43,.38);background:rgba(255,255,255,.65);transform:translateY(-1px)}
+  .flavour:active{transform:translateY(0) scale(.98)}
+  .flavour:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .flavour[aria-pressed="true"]{
+    background:var(--ink);color:var(--paper);border-color:var(--ink);
+    box-shadow:0 6px 16px -8px rgba(60,26,43,.5);
+  }
+  .flavour[aria-pressed="true"] .swatch{box-shadow:0 0 0 2px rgba(255,248,232,.35),inset 0 1px 2px rgba(255,255,255,.7);transform:scale(1.05)}
+
+  .buy{
+    display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+    margin-top:clamp(22px,3.2vh,30px);
+  }
+  .price{display:flex;align-items:flex-start;gap:2px;line-height:1;color:var(--ink)}
+  .price .cur{font-size:18px;font-weight:800;margin-top:6px}
+  .price .whole{font-size:clamp(2.3rem,3.1vw,2.8rem);font-weight:900;letter-spacing:-.04em}
+  .price .cents{font-size:18px;font-weight:800;margin-top:6px}
+  .price .per{
+    font-family:var(--serif);font-style:italic;font-size:11px;color:var(--ink-soft);
+    align-self:flex-end;margin:0 0 6px 8px;white-space:nowrap;
+  }
+  .add-btn{
+    appearance:none;cursor:pointer;border:0;
+    display:inline-flex;align-items:center;gap:18px;
+    background:var(--ink);color:var(--paper);
+    border-radius:999px;padding:16px 22px 16px 26px;
+    font-family:var(--round);font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+    box-shadow:0 14px 24px -14px rgba(60,26,43,.7);
+    transition:background .3s ease,transform .2s ease,box-shadow .3s ease,color .3s ease;
+  }
+  .add-btn .arrow{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:24px;height:24px;border-radius:50%;background:rgba(255,248,232,.16);
+    transition:transform .3s ease,background .3s ease;
+  }
+  .add-btn .arrow svg{width:12px;height:12px;display:block}
+  .add-btn:hover{transform:translateY(-2px);box-shadow:0 18px 30px -14px rgba(60,26,43,.65)}
+  .add-btn:hover .arrow{transform:translateX(2px);background:rgba(255,248,232,.26)}
+  .add-btn:active{transform:translateY(0) scale(.985)}
+  .add-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .add-btn.added{background:var(--accent);color:#fff}
+  .micro{
+    display:flex;align-items:center;gap:8px;
+    margin-top:14px;font-family:var(--serif);font-style:italic;font-size:11px;color:#8a6474;
+  }
+  .micro .leaf{width:12px;height:12px;color:#7c9b55}
+
+  /* ---------- bear stage ---------- */
+  .bear-stage{
+    position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:clamp(430px,62vh,660px);
+    padding:10px 0 30px;
+  }
+  .stage-tag{
+    position:absolute;top:clamp(10px,5vh,46px);right:clamp(0px,2vw,20px);
+    transform:rotate(4deg);
+    background:rgba(255,250,236,.78);
+    border:1px solid rgba(60,26,43,.2);
+    border-radius:14px;
+    padding:10px 14px 9px;
+    display:flex;flex-direction:column;gap:3px;
+    box-shadow:0 10px 22px -14px rgba(60,26,43,.35);
+    z-index:4;min-width:112px;
+  }
+  .stage-tag .no{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#9a7385;font-weight:700}
+  .stage-tag .name{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ink);line-height:1.1}
+  .stage-tag .taste{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:800;transition:color .6s ease}
+  .bear-float{
+    position:relative;z-index:2;
+    width:clamp(300px,37vw,510px);max-width:88vw;
+    animation:hover 8s ease-in-out infinite;
+    filter:drop-shadow(0 30px 34px rgba(196,63,118,.18));
+  }
+  @keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .bear-wrap{
+    width:100%;display:block;cursor:pointer;
+    transform-origin:50% 82%;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .bear-wrap svg{width:100%;height:auto;display:block;overflow:visible}
+  .bear-wrap:focus-visible{outline:none}
+  .bear-wrap:focus-visible .bear-focus{opacity:1}
+  .bear-focus{
+    fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:3 7;
+    opacity:0;transition:opacity .25s ease;
+  }
+  .bear-wrap.wobble{animation:wobble .95s cubic-bezier(.3,.7,.3,1)}
+  @keyframes wobble{
+    0%,100%{transform:rotate(0) scale(1)}
+    12%{transform:rotate(-3.2deg) scale(1.03,.975)}
+    27%{transform:rotate(2.6deg) scale(.985,1.02)}
+    42%{transform:rotate(-2deg) scale(1.015,.99)}
+    58%{transform:rotate(1.3deg) scale(.995,1.008)}
+    74%{transform:rotate(-.7deg) scale(1.005,1)}
+    88%{transform:rotate(.3deg) scale(1)}
+  }
+  @keyframes flavourPop{0%{transform:scale(1)}35%{transform:scale(1.04)}100%{transform:scale(1)}}
+  .bear-float.flavour-pop{animation:flavourPop .7s cubic-bezier(.3,1.2,.5,1),hover 8s ease-in-out infinite}
+
+  .bear-shadow{
+    position:absolute;left:50%;bottom:clamp(56px,10vh,90px);
+    width:58%;height:26px;transform:translateX(-50%);
+    background:radial-gradient(ellipse at 50% 50%,rgba(160,47,96,.30),rgba(160,47,96,.08) 52%,transparent 72%);
+    filter:blur(7px);z-index:1;
+  }
+  .stage-caption{
+    position:relative;z-index:3;margin:14px 0 0;
+    font-family:var(--serif);font-style:italic;font-size:12px;color:#8a6474;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .stage-caption svg{width:14px;height:14px;opacity:.65}
+  .release-layer{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:visible}
+  .mini{
+    position:absolute;width:var(--size);height:var(--size);
+    transform:translate(-50%,-50%);
+    color:var(--gummy-b);
+    animation:miniFly 1.55s cubic-bezier(.18,.72,.32,1) forwards;
+    filter:drop-shadow(0 6px 8px rgba(120,30,70,.2));
+    will-change:transform,opacity;
+  }
+  .mini svg{width:100%;height:100%;display:block;overflow:visible}
+  @keyframes miniFly{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.15) rotate(0deg)}
+    18%{opacity:1}
+    58%{opacity:1}
+    100%{opacity:0;transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(.9) rotate(var(--rot))}
+  }
+
+  /* svg fills */
+  .g-a{stop-color:var(--gummy-a);transition:stop-color .7s ease}
+  .g-b{stop-color:var(--gummy-b);transition:stop-color .7s ease}
+  .g-c{stop-color:var(--gummy-c);transition:stop-color .7s ease}
+  .g-d{stop-color:var(--gummy-deep);transition:stop-color .7s ease}
+  .gummy-shape{fill:url(#gummyBody);transition:fill .7s ease}
+  .ear-shape{fill:url(#gummyEar)}
+  .gummy-soft{fill:rgba(255,255,255,.16)}
+  .sugar{fill:rgba(255,255,255,.82)}
+  .twinkle{animation:twinkle 4.8s ease-in-out infinite}
+  .twinkle.t2{animation-delay:1.4s}
+  .twinkle.t3{animation-delay:2.6s}
+  @keyframes twinkle{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:.95;transform:scale(1.15)}}
+
+  /* ---------- promises ---------- */
+  .promises-wrap{width:100%;max-width:1380px;margin:0 auto;padding:0 40px clamp(44px,7vh,78px)}
+  .promises{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    background:rgba(255,250,238,.62);
+    border:1px solid rgba(60,26,43,.12);
+    border-radius:26px;
+    backdrop-filter:blur(8px);
+    overflow:hidden;
+    scroll-margin-top:100px;
+  }
+  .promise{
+    padding:26px 28px 28px;
+    display:flex;gap:16px;align-items:flex-start;
+    position:relative;
+  }
+  .promise + .promise{border-left:1px solid rgba(60,26,43,.1)}
+  .promise .icon{
+    flex:0 0 38px;width:38px;height:38px;border-radius:50%;
+    background:rgba(255,255,255,.6);border:1px solid rgba(60,26,43,.12);
+    display:flex;align-items:center;justify-content:center;color:var(--accent);
+    transition:color .6s ease;
+  }
+  .promise .icon svg{width:18px;height:18px;display:block}
+  .promise h3{margin:1px 0 5px;font-size:13px;font-weight:900;letter-spacing:-.01em}
+  .promise p{margin:0;font-family:var(--serif);font-size:12px;line-height:1.5;color:#7a5a68;max-width:30ch}
+  .promise .num{
+    position:absolute;top:18px;right:22px;
+    font-family:var(--serif);font-style:italic;font-size:11px;color:#b393a1;
+  }
+
+  /* ---------- footer ---------- */
+  .site-foot{
+    position:relative;z-index:2;
+    background:var(--ink);color:#ffeede;
+    border-radius:34px 34px 0 0;
+    padding:clamp(38px,6vh,64px) 40px 26px;
+    margin-top:10px;
+  }
+  .foot-top{
+    max-width:1300px;margin:0 auto;
+    display:grid;grid-template-columns:1.4fr .7fr .8fr;gap:40px;
+    padding-bottom:38px;border-bottom:1px solid rgba(255,238,222,.14);
+  }
+  .foot-brand .logo{
+    font-size:clamp(48px,6vw,72px);font-weight:900;letter-spacing:-.08em;line-height:.8;
+    display:inline-block;color:#ffeede;
+  }
+  .foot-brand .logo span{color:var(--wash);transition:color .8s ease}
+  .foot-brand p{
+    font-family:var(--serif);font-style:italic;font-size:14px;color:rgba(255,238,222,.66);
+    margin:18px 0 0;max-width:28ch;line-height:1.6;
+  }
+  .foot-col{
+    font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,238,222,.5);
+    font-weight:700;
+  }
+  .foot-col a{
+    display:block;text-decoration:none;color:#ffeede;font-size:11px;letter-spacing:.06em;
+    text-transform:none;font-weight:400;font-family:var(--serif);font-size:15px;
+    margin-top:12px;transition:color .25s ease,transform .25s ease;width:fit-content;
+  }
+  .foot-col a:hover{color:var(--wash);transform:translateX(3px)}
+  .foot-col a:focus-visible{outline:2px solid var(--wash);outline-offset:3px;border-radius:2px}
+  .foot-note{
+    margin-top:12px;font-family:var(--serif);font-size:13px;line-height:1.7;
+    color:rgba(255,238,222,.66);text-transform:none;letter-spacing:.01em;font-weight:400;
+    max-width:26ch;
+  }
+  .foot-bottom{
+    max-width:1300px;margin:0 auto;padding-top:20px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,238,222,.4);
+  }
+  .foot-bottom .dots{display:flex;gap:5px}
+  .foot-bottom .dots i{width:5px;height:5px;border-radius:50%;background:var(--wash);display:block;opacity:.75;transition:background-color .8s ease}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;z-index:80;
+    transform:translate(-50%,16px);
+    background:var(--ink);color:#ffeede;
+    padding:13px 22px;border-radius:999px;
+    font-size:10.5px;font-weight:700;letter-spacing:.09em;
+    box-shadow:0 18px 38px -18px rgba(40,10,25,.65);
+    opacity:0;pointer-events:none;
+    transition:opacity .35s ease,transform .35s ease;
+    display:flex;align-items:center;gap:9px;
+    max-width:calc(100vw - 32px);white-space:nowrap;
+  }
+  .toast::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--wash);flex:none;transition:background-color .6s}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1080px){
+    .hero{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);padding-left:32px;padding-right:32px;gap:10px}
+    .topbar{padding-left:32px;padding-right:32px}
+    .promises-wrap{padding-left:32px;padding-right:32px}
+    .site-foot{padding-left:32px;padding-right:32px}
+    .bear-float{width:clamp(290px,36vw,430px)}
+    h1{font-size:clamp(3rem,5.8vw,5rem)}
+  }
+  @media (max-width:860px){
+    .topbar{padding:13px 22px}
+    .nav{gap:18px;font-size:10px}
+    .brand-word{font-size:32px}
+    .hero{
+      grid-template-columns:1fr;gap:0;
+      min-height:0;padding:30px 22px 0;
+    }
+    .copy{max-width:100%;padding-bottom:0;text-align:left}
+    h1{font-size:clamp(3rem,11.6vw,5rem);max-width:11ch}
+    .note{max-width:46ch}
+    .flavour-grid{gap:7px}
+    .bear-stage{min-height:430px;padding-top:2px;margin-top:4px}
+    .bear-float{width:min(76vw,400px)}
+    .stage-tag{top:6px;right:10px}
+    .promises-wrap{padding:0 22px 50px}
+    .promises{grid-template-columns:1fr;border-radius:22px}
+    .promise + .promise{border-left:0;border-top:1px solid rgba(60,26,43,.1)}
+    .promise{padding:20px 22px}
+    .site-foot{border-radius:26px 26px 0 0;padding:36px 22px 24px}
+    .foot-top{grid-template-columns:1fr 1fr;gap:30px}
+    .foot-brand{grid-column:1/-1}
+    .foot-brand p{margin-top:12px}
+    .toast{bottom:18px}
+  }
+  @media (max-width:560px){
+    .topbar{padding:12px 16px;gap:10px}
+    .brand-sub{display:none}
+    .brand-word{font-size:30px}
+    .nav{display:none}
+    .bag{padding:8px 11px 8px 10px;font-size:9px;gap:7px}
+    .bag svg{width:13px;height:13px}
+    .hero{padding:22px 16px 0}
+    .eyebrow{font-size:8px;padding:6px 11px;margin-bottom:18px}
+    h1{font-size:clamp(2.85rem,14.2vw,4rem);letter-spacing:-.05em}
+    .note{font-size:.96rem;margin-top:16px;max-width:36ch}
+    .flavours{margin-top:22px}
+    .flavour-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .flavour{justify-content:flex-start;padding:10px 12px;font-size:10.5px}
+    .flavour-head{font-size:8px;letter-spacing:.12em}
+    .buy{gap:12px;margin-top:22px;justify-content:space-between}
+    .price .whole{font-size:2.2rem}
+    .price .per{display:block;font-size:10px;margin-left:0;align-self:center}
+    .price{flex-wrap:wrap;max-width:110px;row-gap:2px}
+    .price .cur,.price .cents{margin-top:5px}
+    .add-btn{flex:1;justify-content:space-between;padding:14px 16px 14px 20px;font-size:11px;min-width:170px}
+    .micro{font-size:10px;margin-top:12px}
+    .bear-stage{min-height:360px}
+    .bear-float{width:min(84vw,350px)}
+    .stage-tag{top:0;right:2px;padding:8px 11px;min-width:99px;border-radius:11px}
+    .stage-tag .name{font-size:14px}
+    .stage-tag .taste{font-size:6.5px}
+    .stage-caption{font-size:11px;margin-top:8px}
+    .promises-wrap{padding:0 16px 40px}
+    .site-foot{padding:30px 20px 22px}
+    .foot-top{grid-template-columns:1fr;gap:24px}
+    .foot-brand .logo{font-size:52px}
+    .foot-bottom{flex-direction:column;align-items:flex-start;gap:10px;font-size:8px}
+    .toast{white-space:normal;text-align:center;font-size:10px;line-height:1.4;border-radius:18px;padding:12px 18px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .blob,.bear-float,.hero-glow,.twinkle,.bear-wrap.wobble{animation:none}
+    .bear-float.flavour-pop{animation:none}
+    .mini{animation:miniFade 1.2s ease forwards}
+    @keyframes miniFade{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  }
+</style>
+</head>
+<body data-flavour="raspberry">
+<div class="scene" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="blob b4"></div>
+  <div class="hero-glow"></div>
+  <div class="confetti" id="confetti"></div>
+</div>
+<div class="flavour-wash" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="miniBear" viewBox="0 0 100 100">
+    <g fill="currentColor">
+      <circle cx="30" cy="24" r="14"/>
+      <circle cx="70" cy="24" r="14"/>
+      <ellipse cx="50" cy="38" rx="29" ry="26"/>
+      <ellipse cx="50" cy="68" rx="25" ry="23"/>
+      <ellipse cx="29" cy="69" rx="11" ry="17" transform="rotate(-16 29 69)"/>
+      <ellipse cx="71" cy="69" rx="11" ry="17" transform="rotate(16 71 69)"/>
+      <ellipse cx="16" cy="52" rx="9" ry="15" transform="rotate(-28 16 52)"/>
+      <ellipse cx="84" cy="52" rx="9" ry="15" transform="rotate(28 84 52)"/>
+    </g>
+    <ellipse cx="39" cy="49" rx="13" ry="10" fill="rgba(255,255,255,.28)"/>
+    <circle cx="34" cy="36" r="2.2" fill="rgba(70,20,45,.5)"/>
+    <circle cx="66" cy="36" r="2.2" fill="rgba(70,20,45,.5)"/>
+  </symbol>
+</svg>
+
+<header class="topbar" id="top">
+  <a class="brand" href="#top" aria-label="GOO — back to top">
+    <span class="brand-word">G<span class="o">O</span>O</span>
+    <span class="brand-sub">gummy bears, softly made</span>
+  </a>
+  <nav class="nav" aria-label="Primary">
+    <a href="#flavours">Flavours</a>
+    <a href="#promises">Our promise</a>
+  </nav>
+  <div class="bag" aria-label="Shopping bag">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6.4a3 3 0 0 1 6 0V8"/>
+    </svg>
+    <span>Bag</span>
+    <span class="bag-count" id="bagCount" aria-live="polite" aria-atomic="true">0</span>
+  </div>
+</header>
+
+<div class="page">
+  <main class="hero">
+    <section class="copy" aria-labelledby="headline">
+      <div class="eyebrow"><span class="star" aria-hidden="true">✳</span> Gummy bears · small batch 014</div>
+      <h1 id="headline">A <span class="soft">softer</span><br>kind of sweet.</h1>
+      <p class="note">
+        Slow-cooked fruit, a whisper of sour, and a texture that gives way.
+        Our bears are translucent on purpose — you should be able to see the light through them.
+      </p>
+
+      <div class="flavours" id="flavours">
+        <div class="flavour-head">
+          <span>Choose your flavour</span>
+          <span class="current" id="flavourName">Raspberry</span>
+        </div>
+        <div class="flavour-grid" role="group" aria-label="Flavour">
+          <button class="flavour" type="button" data-flavour="raspberry" aria-pressed="true" style="--sw:#ff4f94">
+            <span class="swatch" aria-hidden="true"></span>Raspberry
+          </button>
+          <button class="flavour" type="button" data-flavour="mango" aria-pressed="false" style="--sw:#ffb12e">
+            <span class="swatch" aria-hidden="true"></span>Mango
+          </button>
+          <button class="flavour" type="button" data-flavour="lime" aria-pressed="false" style="--sw:#a9df55">
+            <span class="swatch" aria-hidden="true"></span>Lime
+          </button>
+          <button class="flavour" type="button" data-flavour="grape" aria-pressed="false" style="--sw:#a678f5">
+            <span class="swatch" aria-hidden="true"></span>Grape
+          </button>
+        </div>
+      </div>
+
+      <div class="buy">
+        <div class="price" aria-label="Price, six dollars fifty per ninety gram bag">
+          <span class="cur">$</span><span class="whole">6</span><span class="cents">.50</span>
+          <span class="per">/ 90 g bag</span>
+        </div>
+        <button class="add-btn" id="addBtn" type="button">
+          <span class="btn-label">Add to bag</span>
+          <span class="arrow" aria-hidden="true">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1.5 6h9M7 2.5 10.5 6 7 9.5"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+      <div class="micro">
+        <svg class="leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M20 4c0 8-5 12-11 12H5c0-8 5-12 11-12h4Z"/><path d="M4 20c2-5 6-8 11-10"/>
+        </svg>
+        Free shipping over $30 · packed in compostable pouches
+      </div>
+    </section>
+
+    <section class="bear-stage" aria-label="Interactive gummy bear">
+      <div class="stage-tag" aria-hidden="true">
+        <span class="no">Flavour no. 04</span>
+        <span class="name" id="stageFlavour">Raspberry</span>
+        <span class="taste" id="stageTaste">tart · juicy · pink</span>
+      </div>
+
+      <div class="bear-shadow" aria-hidden="true"></div>
+      <div class="bear-float" id="bearFloat">
+        <div class="bear-wrap" id="bearWrap" role="button" tabindex="0" aria-label="GOO raspberry gummy bear. Activate to give it a wobble.">
+          <svg viewBox="0 0 460 470" aria-hidden="true">
+            <defs>
+              <radialGradient id="gummyBody" cx="36%" cy="22%" r="82%">
+                <stop offset="0%" class="g-a"/>
+                <stop offset="48%" class="g-b"/>
+                <stop offset="100%" class="g-c"/>
+              </radialGradient>
+              <radialGradient id="gummyEar" cx="42%" cy="26%" r="80%">
+                <stop offset="0%" class="g-a"/>
+                <stop offset="70%" class="g-b"/>
+                <stop offset="100%" class="g-c"/>
+              </radialGradient>
+              <radialGradient id="gummyBelly" cx="42%" cy="32%" r="75%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity=".26"/>
+                <stop offset="70%" stop-color="#ffffff" stop-opacity=".07"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="muzzle" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity=".38"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity=".08"/>
+              </linearGradient>
+              <filter id="bearBlur" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="8"/>
+              </filter>
+            </defs>
+
+            <!-- contact shadow -->
+            <ellipse cx="230" cy="431" rx="152" ry="21" fill="rgba(142,42,82,.22)" filter="url(#bearBlur)"/>
+
+            <g opacity=".93">
+              <!-- ears behind head -->
+              <circle cx="128" cy="96" r="52" fill="url(#gummyEar)" stroke="rgba(255,255,255,.38)" stroke-width="2"/>
+              <circle cx="332" cy="96" r="52" fill="url(#gummyEar)" stroke="rgba(255,255,255,.38)" stroke-width="2"/>
+              <circle cx="128" cy="96" r="26" fill="rgba(255,255,255,.18)"/>
+              <circle cx="332" cy="96" r="26" fill="rgba(255,255,255,.18)"/>
+              <ellipse cx="113" cy="79" rx="17" ry="9" fill="rgba(255,255,255,.34)" transform="rotate(-24 113 79)"/>
+              <ellipse cx="347" cy="79" rx="17" ry="9" fill="rgba(255,255,255,.22)" transform="rotate(24 347 79)"/>
+
+              <!-- arms behind body -->
+              <ellipse cx="100" cy="262" rx="44" ry="76" fill="url(#gummyBody)" stroke="rgba(255,255,255,.3)" stroke-width="2" transform="rotate(-22 100 262)"/>
+              <ellipse cx="360" cy="262" rx="44" ry="76" fill="url(#gummyBody)" stroke="rgba(255,255,255,.3)" stroke-width="2" transform="rotate(22 360 262)"/>
+              <ellipse cx="86" cy="292" rx="26" ry="34" fill="rgba(255,255,255,.12)" transform="rotate(-22 86 292)"/>
+
+              <!-- legs -->
+              <ellipse cx="162" cy="378" rx="55" ry="45" fill="url(#gummyBody)" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+              <ellipse cx="298" cy="378" rx="55" ry="45" fill="url(#gummyBody)" stroke="rgba(255,255,255,.3)" stroke-width="2"/>
+              <ellipse cx="145" cy="369" rx="23" ry="11" fill="rgba(255,255,255,.2)" transform="rotate(-14 145 369)"/>
+              <ellipse cx="315" cy="369" rx="23" ry="11" fill="rgba(255,255,255,.12)" transform="rotate(14 315 369)"/>
+
+              <!-- body -->
+              <path d="M230 150c66 0 98 48 97 113 0 59-21 101-48 124-26 22-72 22-98 0-27-23-48-65-48-124-1-65 31-113 97-113Z"
+                    fill="url(#gummyBody)" stroke="rgba(255,255,255,.32)" stroke-width="2"/>
+              <ellipse cx="230" cy="288" rx="82" ry="89" fill="url(#gummyBelly)"/>
+
+              <!-- head -->
+              <ellipse cx="230" cy="150" rx="101" ry="95" fill="url(#gummyBody)" stroke="rgba(255,255,255,.38)" stroke-width="2"/>
+              <ellipse cx="230" cy="177" rx="53" ry="43" fill="url(#muzzle)"/>
+              <!-- ears inner accent on top of head edge -->
+              <ellipse cx="128" cy="94" rx="20" ry="12" fill="rgba(255,255,255,.18)" transform="rotate(-18 128 94)"/>
+
+              <!-- eyes -->
+              <ellipse cx="194" cy="137" rx="7.5" ry="8.5" fill="rgba(74,20,49,.68)"/>
+              <ellipse cx="266" cy="137" rx="7.5" ry="8.5" fill="rgba(74,20,49,.68)"/>
+              <circle cx="191.5" cy="134" r="2.1" fill="rgba(255,255,255,.9)"/>
+              <circle cx="263.5" cy="134" r="2.1" fill="rgba(255,255,255,.9)"/>
+
+              <!-- cheeks -->
+              <ellipse cx="172" cy="171" rx="18" ry="10" fill="rgba(255,255,255,.18)"/>
+              <ellipse cx="288" cy="171" rx="18" ry="10" fill="rgba(255,255,255,.18)"/>
+
+              <!-- nose + mouth -->
+              <path d="M216 157c4-6 24-6 28 0 2 7-5 15-14 15s-16-8-14-15Z" fill="rgba(74,20,49,.55)"/>
+              <path d="M230 172v7M230 179c-4 8-12 8-17 3M230 179c4 8 12 8 17 3" fill="none" stroke="rgba(74,20,49,.5)" stroke-width="2.6" stroke-linecap="round"/>
+
+              <!-- glossy highlights -->
+              <path d="M155 114c16-38 48-57 88-56-37 13-64 34-74 70Z" fill="rgba(255,255,255,.42)"/>
+              <path d="M158 114c12-30 36-47 68-51" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="4" stroke-linecap="round"/>
+              <path d="M151 238c-4 48 4 86 24 110-18-32-22-74-14-115Z" fill="rgba(255,255,255,.28)"/>
+              <path d="M280 208c14 22 20 49 17 79" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="5" stroke-linecap="round"/>
+              <path d="M176 326c24 15 60 19 90 6" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="4" stroke-linecap="round"/>
+
+              <!-- sugar sparkle -->
+              <g class="sugar">
+                <path class="twinkle" d="M318 206l2.2 7.8L328 216l-7.8 2.2L318 226l-2.2-7.8L308 216l7.8-2.2Z" opacity=".7"/>
+                <circle class="twinkle t2" cx="142" cy="212" r="2.2" opacity=".6"/>
+                <path class="twinkle t3" d="M296 322l1.5 5.2 5.2 1.5-5.2 1.5-1.5 5.2-1.5-5.2-5.2-1.5 5.2-1.5Z" opacity=".55"/>
+                <circle cx="262" cy="82" r="1.6" opacity=".6"/>
+                <circle cx="180" cy="102" r="1.2" opacity=".55"/>
+                <circle cx="340" cy="300" r="1.8" opacity=".45"/>
+              </g>
+
+              <!-- focus ring -->
+              <ellipse class="bear-focus" cx="230" cy="252" rx="188" ry="200"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <p class="stage-caption">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+          <path d="M9 11V6.5a1.5 1.5 0 0 1 3 0V11m0-1.5a1.5 1.5 0 0 1 3 0V12m0-1a1.5 1.5 0 0 1 3 0v4.2c0 3.2-2.4 5.8-5.6 5.8h-1.1a5 5 0 0 1-3.9-1.9L5 15.8a1.6 1.6 0 0 1 2.5-2L9 15"/>
+        </svg>
+        Click the bear. It likes that.
+      </p>
+
+      <div class="release-layer" id="releaseLayer" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <section class="promises-wrap" id="promises" aria-labelledby="promisesTitle">
+    <h2 id="promisesTitle" class="sr-only">Our promises</h2>
+    <div class="promises">
+      <div class="promise">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <path d="M20 4c0 8-5 12-11 12H5c0-8 5-12 11-12h4Z"/><path d="M4 20c2-5 6-8 11-10"/>
+          </svg>
+        </span>
+        <div>
+          <h3>Real fruit, always</h3>
+          <p>Pressed fruit and nothing pretending to be it. No gelatine, no artificial colours.</p>
+        </div>
+        <span class="num" aria-hidden="true">01</span>
+      </div>
+      <div class="promise">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3c3.2 4 6 7.2 6 11a6 6 0 0 1-12 0c0-3.8 2.8-7 6-11Z"/><path d="M9.5 14.5a2.8 2.8 0 0 0 2.8 2.8"/>
+          </svg>
+        </span>
+        <div>
+          <h3>A softer chew</h3>
+          <p>Cooked low and slow for a tender, giving bite. The kind you finish before you notice.</p>
+        </div>
+        <span class="num" aria-hidden="true">02</span>
+      </div>
+      <div class="promise">
+        <span class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20s-7-4.3-7-9.2A4.2 4.2 0 0 1 12 8a4.2 4.2 0 0 1 7 2.8C19 15.7 12 20 12 20Z"/>
+          </svg>
+        </span>
+        <div>
+          <h3>Small batches only</h3>
+          <p>Made a little at a time, packed in compostable pouches, sent out while still soft.</p>
+        </div>
+        <span class="num" aria-hidden="true">03</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-foot">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <span class="logo">G<span>O</span>O</span>
+        <p>A softer kind of sweet. Made slowly, in small batches, from fruit you could name.</p>
+      </div>
+      <div class="foot-col">
+        Find your flavour
+        <a href="#flavours" data-footer-flavour="raspberry">Raspberry</a>
+        <a href="#flavours" data-footer-flavour="mango">Mango</a>
+        <a href="#flavours" data-footer-flavour="lime">Lime</a>
+        <a href="#flavours" data-footer-flavour="grape">Grape</a>
+      </div>
+      <div class="foot-col">
+        Good to know
+        <a href="#promises">Our promise</a>
+        <a href="#top">Back to top</a>
+        <p class="foot-note">Free shipping over $30. Orders leave the kitchen every Tuesday.</p>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 GOO Confectionery · Small batch 014</span>
+      <span class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span>Made with fruit &amp; patience</span>
+    </div>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  var body = document.body;
+  var flavours = {
+    raspberry:{ name:"Raspberry", taste:"tart · juicy · pink" },
+    mango:{ name:"Mango", taste:"soft · golden · sunny" },
+    lime:{ name:"Lime", taste:"bright · zesty · green" },
+    grape:{ name:"Grape", taste:"round · sweet · violet" }
+  };
+  var flavourButtons = document.querySelectorAll(".flavour");
+  var flavourName = document.getElementById("flavourName");
+  var stageFlavour = document.getElementById("stageFlavour");
+  var stageTaste = document.getElementById("stageTaste");
+  var bearWrap = document.getElementById("bearWrap");
+  var bearFloat = document.getElementById("bearFloat");
+  var releaseLayer = document.getElementById("releaseLayer");
+  var addBtn = document.getElementById("addBtn");
+  var addLabel = addBtn.querySelector(".btn-label");
+  var bagCount = document.getElementById("bagCount");
+  var toast = document.getElementById("toast");
+
+  var bag = 0;
+  var toastTimer = null;
+  var addTimer = null;
+  var popTimer = null;
+  var current = "raspberry";
+
+  /* ---------- deterministic candy dots ---------- */
+  (function confetti(){
+    var host = document.getElementById("confetti");
+    var seed = 20260418;
+    function rnd(){
+      seed = (seed * 16807) % 2147483647;
+      return (seed - 1) / 2147483646;
+    }
+    var colors = ["#ff8fbe","#ffd36e","#b7e46a","#c9a6ff","#fff4dd","#ff6aa9","#ffc39e"];
+    var count = 46;
+    for(var i=0;i<count;i++){
+      var d = document.createElement("span");
+      d.className = "candy-dot";
+      var size = 4 + rnd()*9;
+      d.style.width = size + "px";
+      d.style.left = (rnd()*100).toFixed(2) + "%";
+      d.style.top = (rnd()*100).toFixed(2) + "%";
+      d.style.background = colors[Math.floor(rnd()*colors.length)];
+      d.style.opacity = (0.28 + rnd()*0.5).toFixed(2);
+      if(rnd() > 0.68){
+        d.style.height = (size*0.45).toFixed(1) + "px";
+        d.style.borderRadius = "999px";
+      } else {
+        d.style.height = size + "px";
+      }
+      d.style.transform = "rotate(" + Math.round(rnd()*180) + "deg)";
+      if(rnd() > 0.86){
+        d.style.background = "transparent";
+        d.style.border = "1.5px solid " + colors[Math.floor(rnd()*colors.length)];
+        d.style.boxShadow = "none";
+      }
+      host.appendChild(d);
+    }
+  })();
+
+  /* ---------- flavour selection ---------- */
+  function setFlavour(key, silent){
+    if(!flavours[key]) return;
+    current = key;
+    body.setAttribute("data-flavour", key);
+    for(var i=0;i<flavourButtons.length;i++){
+      flavourButtons[i].setAttribute("aria-pressed", String(flavourButtons[i].dataset.flavour === key));
+    }
+    flavourName.textContent = flavours[key].name;
+    stageFlavour.textContent = flavours[key].name;
+    stageTaste.textContent = flavours[key].taste;
+    bearWrap.setAttribute("aria-label", "GOO " + flavours[key].name.toLowerCase() + " gummy bear. Activate to give it a wobble.");
+    if(!silent){
+      clearTimeout(popTimer);
+      bearFloat.classList.remove("flavour-pop");
+      void bearFloat.offsetWidth;
+      bearFloat.classList.add("flavour-pop");
+      popTimer = setTimeout(function(){ bearFloat.classList.remove("flavour-pop"); }, 720);
+    }
+  }
+
+  for(var i=0;i<flavourButtons.length;i++){
+    flavourButtons[i].addEventListener("click", function(){
+      setFlavour(this.dataset.flavour, false);
+    });
+  }
+
+  /* ---------- bear wobble + mini gummies ---------- */
+  function wobble(){
+    bearWrap.classList.remove("wobble");
+    void bearWrap.offsetWidth;
+    bearWrap.classList.add("wobble");
+    window.setTimeout(function(){ bearWrap.classList.remove("wobble"); }, 980);
+    release();
+  }
+
+  bearWrap.addEventListener("click", wobble);
+  bearWrap.addEventListener("keydown", function(e){
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      wobble();
+    }
+  });
+
+  function release(){
+    var n = 7;
+    for(var i=0;i<n;i++){
+      var el = document.createElement("span");
+      el.className = "mini";
+      var angle = (-160 + Math.random()*320) * Math.PI/180;
+      var dist = 70 + Math.random()*160;
+      var tx = Math.cos(angle) * dist;
+      var ty = Math.sin(angle) * dist - 30;
+      var size = 18 + Math.random()*26;
+      el.style.setProperty("--tx", tx.toFixed(0) + "px");
+      el.style.setProperty("--ty", ty.toFixed(0) + "px");
+      el.style.setProperty("--rot", (Math.random()*140 - 70).toFixed(0) + "deg");
+      el.style.setProperty("--size", size.toFixed(0) + "px");
+      el.style.left = (48 + Math.random()*8) + "%";
+      el.style.top = (48 + Math.random()*10) + "%";
+      el.style.animationDelay = (Math.random()*0.1).toFixed(2) + "s";
+      el.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#miniBear"></use></svg>';
+      releaseLayer.appendChild(el);
+      (function(node){
+        window.setTimeout(function(){ node.remove(); }, 1800);
+      })(el);
+    }
+  }
+
+  /* ---------- add to bag ---------- */
+  function showToast(text){
+    toast.textContent = text;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 3200);
+  }
+
+  function addToBag(){
+    bag++;
+    bagCount.textContent = String(bag);
+    bagCount.classList.remove("bump");
+    void bagCount.offsetWidth;
+    bagCount.classList.add("bump");
+    addBtn.classList.add("added");
+    addLabel.textContent = "Added to bag";
+    showToast(flavours[current].name + " added to your bag.");
+    clearTimeout(addTimer);
+    addTimer = setTimeout(function(){
+      addBtn.classList.remove("added");
+      addLabel.textContent = "Add to bag";
+    }, 1700);
+  }
+
+  addBtn.addEventListener("click", addToBag);
+  bagCount.addEventListener("animationend", function(){ bagCount.classList.remove("bump"); });
+
+  /* subtle nav focus handling for sticky header */
+  var navLinks = document.querySelectorAll('a[href^="#"]');
+  for(var n=0;n<navLinks.length;n++){
+    navLinks[n].addEventListener("click", function(e){
+      var target = document.querySelector(this.getAttribute("href"));
+      if(target && target !== document.body && target !== document.documentElement){
+        e.preventDefault();
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
+
+  var footerFlavours = document.querySelectorAll("[data-footer-flavour]");
+  for(var q=0;q<footerFlavours.length;q++){
+    footerFlavours[q].addEventListener("click", function(){
+      setFlavour(this.dataset.footerFlavour, false);
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Isoline — A City, One Block at a Time</title>
+<style>
+  :root{
+    --ink:#3b2a20;
+    --ink-soft:#6b5240;
+    --muted:#947b66;
+    --line:rgba(59,42,32,.2);
+    --paper:#fbf3e4;
+    --accent:#ad6444;
+    --sky-top:#f3c6a3;
+    --sky-bottom:#fbf1e0;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    background:var(--sky-top);
+    overflow-x:hidden;
+  }
+  .stage{
+    position:relative;
+    min-height:100svh;
+    padding:30px 42px 22px;
+    overflow:hidden;
+    background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-bottom) 72%,var(--sky-bottom) 100%);
+    transition:background-color .8s ease;
+  }
+  .stage.night{
+    background:linear-gradient(180deg,#11182c 0%,#2c2b46 46%,#7c5e66 100%);
+  }
+  .stage::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    z-index:6;
+    opacity:.24;
+    background-image:radial-gradient(rgba(90,60,40,.22) .55px, transparent .65px);
+    background-size:4px 4px;
+    mix-blend-mode:multiply;
+  }
+
+  /* ---------------- sky ---------------- */
+  .sky{
+    position:absolute; inset:0;
+    overflow:hidden;
+    z-index:0;
+    pointer-events:none;
+  }
+  .sun{
+    position:absolute;
+    right:13%; top:9%;
+    width:190px; height:190px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,240,203,.95) 0%, rgba(255,211,151,.55) 34%, rgba(255,198,138,.18) 58%, transparent 72%);
+    filter:blur(2px);
+    transition:opacity .9s ease;
+  }
+  .moon{
+    position:absolute;
+    right:16%; top:11%;
+    width:74px; height:74px;
+    border-radius:50%;
+    background:radial-gradient(circle at 36% 32%, #fdf6e3 0%, #e8e2cd 55%, #c9c8bb 100%);
+    box-shadow:0 0 34px 10px rgba(238,235,210,.18), 0 0 100px 30px rgba(220,225,220,.10);
+    opacity:0;
+    transition:opacity .9s ease;
+  }
+  .moon::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:50%;
+    background:
+      radial-gradient(circle at 62% 64%, rgba(151,152,135,.3) 0 9%, transparent 10%),
+      radial-gradient(circle at 38% 46%, rgba(151,152,135,.22) 0 6%, transparent 7%),
+      radial-gradient(circle at 58% 30%, rgba(151,152,135,.18) 0 4%, transparent 5%);
+  }
+  .stage.night .sun{opacity:0}
+  .stage.night .moon{opacity:1}
+
+  .stars{position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease}
+  .stage.night .stars{opacity:1}
+  .star{
+    position:absolute;
+    width:2px; height:2px;
+    border-radius:50%;
+    background:#f7eeda;
+    box-shadow:0 0 4px rgba(247,238,218,.7);
+    animation:twinkle 5s ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{opacity:.35}
+    50%{opacity:.95}
+  }
+
+  .cloud{
+    position:absolute;
+    width:300px; height:66px;
+    border-radius:100px;
+    background:rgba(255,246,234,.55);
+    filter:blur(14px);
+    opacity:.85;
+    animation:cloudDrift linear infinite;
+    transition:opacity 1s ease;
+  }
+  .cloud::before,.cloud::after{
+    content:"";
+    position:absolute;
+    background:inherit;
+    border-radius:50%;
+  }
+  .cloud::before{width:110px;height:110px;left:38px;top:-48px}
+  .cloud::after{width:150px;height:130px;left:128px;top:-64px}
+  .cloud.cl1{top:20%; animation-duration:150s; animation-delay:-40s; scale:.9}
+  .cloud.cl2{top:37%; animation-duration:190s; animation-delay:-120s; scale:1.4; opacity:.5}
+  .cloud.cl3{top:8%; animation-duration:120s; animation-delay:-90s; scale:.65; opacity:.6}
+  @keyframes cloudDrift{
+    from{transform:translateX(-30vw)}
+    to{transform:translateX(120vw)}
+  }
+  .stage.night .cloud{opacity:.12}
+
+  .bird{
+    position:absolute;
+    width:18px; height:7px;
+    opacity:.5;
+    animation:birdDrift linear infinite;
+  }
+  .bird svg{display:block; width:100%; height:100%; fill:none; stroke:#5c4433; stroke-width:1.2; stroke-linecap:round}
+  .bird.b1{top:15%; animation-duration:44s; animation-delay:-8s; scale:.9}
+  .bird.b2{top:20%; animation-duration:56s; animation-delay:-30s; scale:.65}
+  .bird.b3{top:11%; animation-duration:38s; animation-delay:-20s; scale:.55}
+  @keyframes birdDrift{
+    from{transform:translateX(-10vw)}
+    to{transform:translateX(112vw)}
+  }
+  .stage.night .bird{opacity:0}
+
+  /* ---------------- masthead ---------------- */
+  .masthead{
+    position:relative;
+    z-index:4;
+    width:660px;
+    max-width:660px;
+    padding-top:2px;
+    color:var(--ink);
+    transition:color .8s ease;
+    pointer-events:none;
+  }
+  .stage.night .masthead{color:#f4e9d5}
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0;
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    transition:color .8s ease;
+  }
+  .stage.night .eyebrow{color:rgba(244,233,213,.68)}
+  .eyebrow::before{
+    content:"";
+    width:6px;height:6px;
+    border-radius:50%;
+    background:var(--accent);
+    display:inline-block;
+  }
+  h1{
+    margin:16px 0 0;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(50px,7.2vw,104px);
+    line-height:.9;
+    letter-spacing:-.035em;
+    max-width:12ch;
+  }
+  h1 .it{
+    font-style:italic;
+    color:var(--accent);
+    transition:color .8s ease;
+  }
+  .stage.night h1 .it{color:#e8b391}
+  .mast-foot{
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+    margin-top:20px;
+  }
+  .rule{
+    width:54px;
+    height:1px;
+    background:currentColor;
+    opacity:.35;
+    margin-top:8px;
+    flex:0 0 auto;
+  }
+  .lede{
+    margin:0;
+    max-width:330px;
+    font-size:12.5px;
+    line-height:1.7;
+    color:var(--ink-soft);
+    transition:color .8s ease;
+  }
+  .stage.night .lede{color:rgba(244,233,213,.74)}
+  .lede strong{font-weight:500; color:var(--ink)}
+  .stage.night .lede strong{color:#f4e9d5}
+
+  /* ---------------- city ---------------- */
+  .city-wrap{
+    position:absolute;
+    z-index:2;
+    top:0;
+    bottom:86px;
+    left:330px;
+    right:0;
+    min-height:0;
+    margin:0;
+  }
+  .city-wrap svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    overflow:visible;
+    transition:opacity .22s ease, transform .22s ease;
+  }
+  .city-wrap.regen svg{opacity:.15; transform:translateY(6px) scale(.995)}
+  .lot{cursor:pointer}
+  .lot .lot-ground{transition:filter .2s ease}
+  .lot:hover .lot-ground{filter:brightness(1.045)}
+  .lot:hover .lot-hover,
+  .lot:focus .lot-hover{opacity:.9 !important}
+  .lot.fresh{animation:lotBuild .45s cubic-bezier(.2,.8,.2,1) both; transform-box:fill-box; transform-origin:50% 100%}
+  @keyframes lotBuild{
+    from{opacity:.15; transform:translateY(10px) scale(.97)}
+    to{opacity:1; transform:none}
+  }
+
+  /* ---------------- bottom bar ---------------- */
+  .bottombar{
+    position:absolute;
+    left:42px;
+    right:42px;
+    bottom:18px;
+    z-index:5;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    padding-top:4px;
+  }
+  .colophon{
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    line-height:1.9;
+    transition:color .8s ease;
+  }
+  .colophon b{
+    display:block;
+    font-weight:500;
+    letter-spacing:.18em;
+    color:var(--ink);
+  }
+  .stage.night .colophon{color:rgba(244,233,213,.55)}
+  .stage.night .colophon b{color:rgba(244,233,213,.82)}
+
+  .controls-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:6px;
+  }
+  .status{
+    margin:0;
+    min-height:12px;
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.08em;
+    color:var(--ink-soft);
+    text-align:right;
+    transition:opacity .3s ease, color .8s ease;
+  }
+  .stage.night .status{color:rgba(244,233,213,.66)}
+  .controls{
+    display:flex;
+    align-items:stretch;
+    background:rgba(255,249,238,.78);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border:1px solid rgba(59,42,32,.24);
+    border-radius:5px;
+    box-shadow:0 10px 24px -14px rgba(59,42,32,.5), inset 0 1px 0 rgba(255,255,255,.7);
+    overflow:hidden;
+  }
+  .count{
+    padding:8px 16px 7px;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    border-right:1px solid rgba(59,42,32,.18);
+  }
+  .count strong{
+    font-family:var(--serif);
+    font-size:28px;
+    font-weight:400;
+    line-height:1;
+    letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink);
+  }
+  .count span{
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .ctrl{
+    appearance:none;
+    border:0;
+    border-left:1px solid rgba(59,42,32,.18);
+    background:transparent;
+    color:var(--ink);
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    padding:9px 14px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+    white-space:nowrap;
+  }
+  .ctrl:hover{background:var(--ink); color:#f8efdf}
+  .ctrl:active{background:#241810}
+  .ctrl:focus-visible{outline:2px solid var(--accent); outline-offset:-4px}
+  .ctrl svg{width:12px; height:12px; flex:0 0 auto}
+  .ctrl.primary{background:var(--ink); color:#f8efdf}
+  .ctrl.primary:hover{background:var(--accent)}
+
+  .sr-only{
+    position:absolute;
+    width:1px;height:1px;
+    padding:0;margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+
+  @media (max-width:1100px){
+    .stage{display:flex; flex-direction:column; padding:24px 28px 18px}
+    .masthead{position:relative; width:auto; max-width:600px}
+    h1{font-size:clamp(46px,7vw,84px)}
+    .city-wrap{
+      position:relative;
+      inset:auto;
+      flex:1 1 auto;
+      min-height:340px;
+      margin:2px -6px 0;
+    }
+    .bottombar{position:relative; left:auto; right:auto; bottom:auto; padding-top:4px}
+  }
+  @media (max-width:720px){
+    .stage{padding:18px 16px 14px; min-height:100svh}
+    h1{font-size:clamp(40px,10.5vw,64px); margin-top:12px; max-width:10ch}
+    .mast-foot{margin-top:14px; gap:12px}
+    .lede{font-size:11.5px; line-height:1.65; max-width:270px}
+    .city-wrap{min-height:300px; margin-top:0}
+    .city-wrap svg{width:140%; left:-20%; inset:auto 0 0 -20%; height:auto}
+    .colophon{display:none}
+    .bottombar{justify-content:flex-end; padding-top:8px}
+    .controls-wrap{width:100%; align-items:stretch}
+    .status{text-align:left; padding-left:2px; font-size:7px}
+    .controls{width:100%; justify-content:space-between}
+    .count{flex:1 1 auto; padding:7px 12px 6px}
+    .count strong{font-size:25px}
+    .ctrl{padding:8px 10px; font-size:7.5px; letter-spacing:.1em}
+    .ctrl svg{width:11px;height:11px}
+    .stage::after{opacity:.18}
+  }
+  @media (max-width:420px){
+    h1{font-size:44px}
+    .eyebrow{font-size:7px; letter-spacing:.18em}
+    .lede{font-size:10.5px; max-width:240px}
+    .city-wrap{min-height:288px}
+    .ctrl .label-long{display:none}
+    .ctrl{padding:8px 9px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .cloud,.bird,.star{animation:none !important}
+    .city-wrap svg,.lot.fresh{transition:none !important; animation:none !important}
+  }
+</style>
+</head>
+<body>
+<main class="stage" id="stage">
+  <div class="sky" aria-hidden="true">
+    <div class="sun"></div>
+    <div class="moon"></div>
+    <div class="stars" id="stars"></div>
+    <div class="cloud cl1"></div>
+    <div class="cloud cl2"></div>
+    <div class="cloud cl3"></div>
+    <span class="bird b1"><svg viewBox="0 0 18 7"><path d="M1 5c2.8 0 3.6-3.2 5.4-3.2S10.2 5 10.2 5s2.2-3.2 4-3.2S16 5 17 5"/></svg></span>
+    <span class="bird b2"><svg viewBox="0 0 18 7"><path d="M1 5c2.8 0 3.6-3.2 5.4-3.2S10.2 5 10.2 5s2.2-3.2 4-3.2S16 5 17 5"/></svg></span>
+    <span class="bird b3"><svg viewBox="0 0 18 7"><path d="M1 5c2.8 0 3.6-3.2 5.4-3.2S10.2 5 10.2 5s2.2-3.2 4-3.2S16 5 17 5"/></svg></span>
+  </div>
+
+  <header class="masthead">
+    <p class="eyebrow">Isoline · An isometric study · No. 08</p>
+    <h1>A city,<br><span class="it">one block</span><br>at a time.</h1>
+    <div class="mast-foot">
+      <span class="rule" aria-hidden="true"></span>
+      <p class="lede">Sixty-four lots, drawn in isometric. <strong>Click any lot</strong> to add a building; click again to raise it. Every new city begins with a fresh palette and skyline.</p>
+    </div>
+  </header>
+
+  <div class="city-wrap" id="cityWrap">
+    <svg id="citySvg" viewBox="0 0 1120 700" preserveAspectRatio="xMidYMax meet" role="img" aria-label="An isometric city of 48 buildings across 64 lots"></svg>
+  </div>
+
+  <div class="bottombar">
+    <div class="colophon" aria-hidden="true">
+      <b>Isoline Municipal Survey</b>
+      8 × 8 lots · drawn in isometric<br>
+      Day / night · edition MMXXVI
+    </div>
+    <div class="controls-wrap">
+      <p class="status" id="status" aria-live="polite"></p>
+      <div class="controls" role="group" aria-label="City controls">
+        <div class="count" aria-live="polite">
+          <strong id="countNum">48</strong>
+          <span>buildings<br>/ 64 lots</span>
+        </div>
+        <button class="ctrl primary" id="newCity" type="button">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.4 6.5A5.6 5.6 0 1 0 14 9.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M13.8 2.6v4h-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          New city
+        </button>
+        <button class="ctrl" id="dayNight" type="button" aria-pressed="false">
+          <svg class="icon-moon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.2 9.9A5.8 5.8 0 0 1 6.1 2.8 5.8 5.8 0 1 0 13.2 9.9Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
+          <span id="dayNightLabel">Night</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p class="sr-only" id="live" aria-live="polite"></p>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     palette + city data
+     ============================================================ */
+  var PALETTES = [
+    {
+      name: 'Peach plaster',
+      skyTop: '#f3c6a3', skyBottom: '#fbf1e0',
+      platform: '#ead6b8', platformSide: '#c9a680',
+      paving: '#e7d4b6', pavingAlt: '#e2cdae', line: '#c2a27f',
+      facades: ['#efd3b9','#e5b9a5','#cfd9c4','#f1e2c6','#d9b9ad','#bcd0c4','#e7ccb2','#d9c0c8'],
+      accent: '#ad6444',
+      greens: ['#8ea580','#6f8d68','#a3b592']
+    },
+    {
+      name: 'Apricot light',
+      skyTop: '#f7d0a8', skyBottom: '#fdf4e4',
+      platform: '#eedbbc', platformSide: '#cfae85',
+      paving: '#ecd9ba', pavingAlt: '#e6d2b1', line: '#c7a983',
+      facades: ['#f0ceb1','#e9c4ab','#c8d5c4','#f4e5ca','#dcc0ae','#c3d2ca','#efd6b7','#d4c2cf'],
+      accent: '#b8683c',
+      greens: ['#94aa85','#778f6d','#aab99a']
+    },
+    {
+      name: 'Rose plaster',
+      skyTop: '#efbda9', skyBottom: '#f9eadc',
+      platform: '#e8cfba', platformSide: '#c6a087',
+      paving: '#e5d0bb', pavingAlt: '#dfc8b2', line: '#bfa087',
+      facades: ['#e9c3b4','#ddafa8','#c8d2bc','#f0ddc7','#d8b3b0','#b9cabe','#ebcdb8','#cfb9c5'],
+      accent: '#a35645',
+      greens: ['#8ba37e','#6e896b','#a2b395']
+    },
+    {
+      name: 'Lemon grove',
+      skyTop: '#f6d7a3', skyBottom: '#fcf3de',
+      platform: '#e9d5b0', platformSide: '#c8a87a',
+      paving: '#e7d4b2', pavingAlt: '#e1ccaa', line: '#c1a276',
+      facades: ['#efdfb6','#e6cf9f','#c3d2b8','#f2e6c9','#d6c4a4','#bccbc1','#e9d0a7','#daceb7'],
+      accent: '#a9693c',
+      greens: ['#90a877','#718c63','#a9b88b']
+    },
+    {
+      name: 'Mint air',
+      skyTop: '#ddd6c0', skyBottom: '#f7f1e2',
+      platform: '#e2d7c2', platformSide: '#bfae93',
+      paving: '#e4d9c4', pavingAlt: '#ded3bd', line: '#bdaa8e',
+      facades: ['#e3d7c2','#d4c7b8','#c1d1c7','#f0e5d0','#d8c4b8','#b9c8c8','#eadbc1','#cfc3d1'],
+      accent: '#8f654c',
+      greens: ['#8ba394','#6e8879','#a6b7a8']
+    }
+  ];
+
+  var W = 50, H = 25;
+  var CX = 560, BASE = 255;
+
+  var paletteIndex = 0;
+  var palette = PALETTES[0];
+  var cityNumber = 0;
+  var seed = 20261018;
+  var cells = [];
+  var nightMode = false;
+  var freshIndex = -1;
+
+  var stage = document.getElementById('stage');
+  var svg = document.getElementById('citySvg');
+  var cityWrap = document.getElementById('cityWrap');
+  var countNum = document.getElementById('countNum');
+  var statusEl = document.getElementById('status');
+  var liveEl = document.getElementById('live');
+  var newCityBtn = document.getElementById('newCity');
+  var dayNightBtn = document.getElementById('dayNight');
+  var dayNightLabel = document.getElementById('dayNightLabel');
+  var statusTimer = null;
+
+  /* ============================================================
+     deterministic random + helpers
+     ============================================================ */
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  function parseColor(c){
+    if (c.charAt(0) === '#'){
+      var n = parseInt(c.slice(1), 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+    var m = c.match(/rgba?\(([^)]+)\)/);
+    if (m){
+      var parts = m[1].split(',').map(function(v){ return parseFloat(v); });
+      return { r: parts[0] || 0, g: parts[1] || 0, b: parts[2] || 0 };
+    }
+    return { r: 200, g: 190, b: 175 };
+  }
+
+  function shade(hex, amt){
+    var c = parseColor(hex);
+    var r = c.r, g = c.g, b = c.b;
+    if (amt >= 0){
+      r += (255 - r) * amt; g += (255 - g) * amt; b += (255 - b) * amt;
+    } else {
+      var t = -amt;
+      r += (44 - r) * t; g += (30 - g) * t; b += (22 - b) * t;
+    }
+    return 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
+  }
+
+  function hashLit(seedVal, a, b, c){
+    var v = Math.sin(seedVal * 12.9898 + a * 78.233 + b * 37.719 + c * 11.131) * 43758.5453;
+    return v - Math.floor(v);
+  }
+
+  function pts(arr){
+    return arr.map(function(p){ return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+  }
+  function poly(points, fill, attrs){
+    return '<polygon points="' + pts(points) + '" fill="' + fill + '" ' + (attrs || '') + '/>';
+  }
+  function line(p1, p2, stroke, width, attrs){
+    return '<line x1="' + p1[0].toFixed(1) + '" y1="' + p1[1].toFixed(1) +
+      '" x2="' + p2[0].toFixed(1) + '" y2="' + p2[1].toFixed(1) +
+      '" stroke="' + stroke + '" stroke-width="' + width + '" ' + (attrs || '') + '/>';
+  }
+  function lerpP(p, q, t){
+    return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+  }
+
+  /* ============================================================
+     city generation
+     ============================================================ */
+  function generateCity(seedVal){
+    var rng = mulberry32(seedVal);
+    var next = [];
+    for (var r = 0; r < 8; r++){
+      for (var c = 0; c < 8; c++){
+        var roll = rng();
+        var type = 'building';
+        if (roll < 0.15) type = 'empty';
+        else if (roll < 0.24) type = 'tree';
+
+        var core = 1 - Math.min(1, Math.hypot(c - 3.5, r - 3.5) / 5.4);
+        var floors = clamp(1 + Math.floor(rng() * 3 + core * 4.1), 1, 8);
+        if (type === 'building' && rng() < 0.1) floors = 1;
+        if (type === 'building' && rng() < 0.08) floors = clamp(floors + 2, 2, 8);
+
+        next.push({
+          idx: r * 8 + c,
+          row: r,
+          col: c,
+          type: type,
+          floors: floors,
+          facade: Math.floor(rng() * 8),
+          variant: Math.floor(rng() * 4),
+          seed: Math.floor(rng() * 1000000),
+          treeCount: roll > 0.19 ? 2 : 1
+        });
+      }
+    }
+
+    /* a deliberate tall landmark near the middle */
+    var landmark = next[3 * 8 + 3];
+    landmark.type = 'building';
+    landmark.floors = 8;
+    landmark.variant = 1;
+    landmark.facade = (paletteIndex + 2) % 8;
+
+    cells = next;
+  }
+
+  /* ============================================================
+     SVG rendering
+     ============================================================ */
+  function tileCenter(cell){
+    return {
+      x: CX + (cell.col - cell.row) * W,
+      y: BASE + (cell.row + cell.col) * H
+    };
+  }
+
+  function renderTree(x, y, scale){
+    var g1 = palette.greens[0], g2 = palette.greens[1], g3 = palette.greens[2];
+    if (nightMode){
+      g1 = shade(g1, -0.4); g2 = shade(g2, -0.42); g3 = shade(g3, -0.36);
+    }
+    var s = '<g opacity=".95">';
+    s += '<ellipse cx="' + (x + 5) + '" cy="' + (y + 2) + '" rx="' + (13 * scale) + '" ry="' + (5.5 * scale) + '" fill="rgba(70,48,34,.16)"/>';
+    s += '<line x1="' + x + '" y1="' + y + '" x2="' + x + '" y2="' + (y - 18 * scale) + '" stroke="' + (nightMode ? '#4e3c30' : '#8b6a4d') + '" stroke-width="' + (2.2 * scale) + '" stroke-linecap="round"/>';
+    s += '<circle cx="' + (x - 5 * scale) + '" cy="' + (y - 20 * scale) + '" r="' + (9 * scale) + '" fill="' + g2 + '"/>';
+    s += '<circle cx="' + (x + 5 * scale) + '" cy="' + (y - 23 * scale) + '" r="' + (8.5 * scale) + '" fill="' + g1 + '"/>';
+    s += '<circle cx="' + (x + 1 * scale) + '" cy="' + (y - 30 * scale) + '" r="' + (8 * scale) + '" fill="' + g3 + '"/>';
+    s += '<circle cx="' + (x - 2 * scale) + '" cy="' + (y - 25 * scale) + '" r="' + (5 * scale) + '" fill="' + g1 + '" opacity=".8"/>';
+    s += '</g>';
+    return s;
+  }
+
+  function renderWindows(origin, edge, h, cols, rows, cell, face, facadeColor){
+    var out = '';
+    var winW = 0.145, winH = 0.44;
+    for (var r = 0; r < rows; r++){
+      for (var c = 0; c < cols; c++){
+        var u0 = 0.13 + (c / cols) * 0.76;
+        var v0 = 0.08 + (r / rows) * 0.82;
+        var du = winW;
+        var dv = (0.82 / rows) * winH;
+        var p1 = [origin[0] + edge[0] * u0, origin[1] + edge[1] * u0 + h * v0];
+        var p2 = [p1[0] + edge[0] * du, p1[1] + edge[1] * du];
+        var p4 = [p1[0], p1[1] + h * dv];
+        var p3 = [p2[0], p2[1] + h * dv];
+        var lit = hashLit(cell.seed, face, r, c) < 0.58;
+        var fill, opacity, stroke;
+        if (nightMode){
+          if (lit){
+            fill = '#ffd489';
+            opacity = '0.95';
+            stroke = 'rgba(255,214,140,.32)';
+          } else {
+            fill = shade(facadeColor, -0.62);
+            opacity = '0.9';
+            stroke = 'rgba(20,20,30,.18)';
+          }
+        } else {
+          fill = lit ? '#f5f3e5' : '#dfe8e4';
+          opacity = lit ? '0.72' : '0.55';
+          stroke = 'rgba(70,55,42,.16)';
+        }
+        out += poly([p1, p2, p3, p4], fill,
+          'opacity="' + opacity + '" stroke="' + stroke + '" stroke-width=".45"');
+      }
+    }
+    return out;
+  }
+
+  function isoBox(cx, cy, hw, hh, height, color){
+    var baseT = [cx, cy - hh], baseR = [cx + hw, cy], baseB = [cx, cy + hh], baseL = [cx - hw, cy];
+    var topT = [baseT[0], baseT[1] - height], topR = [baseR[0], baseR[1] - height],
+        topB = [baseB[0], baseB[1] - height], topL = [baseL[0], baseL[1] - height];
+    var s = '';
+    s += poly([topL, topB, baseB, baseL], shade(color, -0.08));
+    s += poly([topR, topB, baseB, baseR], shade(color, -0.22));
+    s += poly([topT, topR, topB, topL], shade(color, 0.24));
+    return s;
+  }
+
+  function renderBuilding(cell){
+    var center = tileCenter(cell);
+    var x = center.x, y = center.y;
+    var floors = cell.floors;
+    var h = 20 + floors * 23;
+    var fw = W * 0.8, fh = H * 0.8;
+
+    var base = {
+      T: [x, y - fh], R: [x + fw, y], B: [x, y + fh], L: [x - fw, y]
+    };
+    var top = {
+      T: [base.T[0], base.T[1] - h], R: [base.R[0], base.R[1] - h],
+      B: [base.B[0], base.B[1] - h], L: [base.L[0], base.L[1] - h]
+    };
+
+    var fHex = palette.facades[cell.facade % palette.facades.length];
+    var facade = nightMode ? shade(fHex, -0.34) : fHex;
+    var topFill = shade(facade, nightMode ? 0.06 : 0.27);
+    var leftFill = shade(facade, nightMode ? -0.18 : -0.03);
+    var rightFill = shade(facade, nightMode ? -0.34 : -0.17);
+
+    var s = '<g class="building">';
+
+    /* cast shadow */
+    var off = 7 + h * 0.045;
+    var shadowCol = nightMode ? 'rgba(8,10,22,.34)' : 'rgba(92,64,45,.15)';
+    s += poly([
+      [base.T[0] + off, base.T[1] + off * 0.5],
+      [base.R[0] + off, base.R[1] + off * 0.5],
+      [base.B[0] + off * 0.7, base.B[1] + off * 0.55],
+      [base.L[0] + off * 0.7, base.L[1] + off * 0.55]
+    ], shadowCol, 'pointer-events="none"');
+
+    /* two visible walls */
+    s += poly([top.L, top.B, base.B, base.L], leftFill, 'stroke="rgba(60,40,28,.12)" stroke-width=".5"');
+    s += poly([top.R, top.B, base.B, base.R], rightFill, 'stroke="rgba(60,40,28,.12)" stroke-width=".5"');
+
+    /* windows */
+    s += renderWindows(top.L, [top.B[0] - top.L[0], top.B[1] - top.L[1]], h, 3, floors, cell, 0, facade);
+    s += renderWindows(top.R, [top.B[0] - top.R[0], top.B[1] - top.R[1]], h, 3, floors, cell, 1, facade);
+
+    /* base plinth */
+    var plinthH = h * 0.055;
+    s += poly([
+      [top.L[0], base.L[1] - plinthH], [top.B[0], base.B[1] - plinthH],
+      [base.B[0], base.B[1]], [base.L[0], base.L[1]]
+    ], shade(facade, nightMode ? -0.5 : -0.22), 'opacity=".85" pointer-events="none"');
+    s += poly([
+      [top.R[0], base.R[1] - plinthH], [top.B[0], base.B[1] - plinthH],
+      [base.B[0], base.B[1]], [base.R[0], base.R[1]]
+    ], shade(facade, nightMode ? -0.6 : -0.32), 'opacity=".85" pointer-events="none"');
+
+    /* roof */
+    s += poly([top.T, top.R, top.B, top.L], topFill, 'stroke="' + shade(facade, nightMode ? -0.05 : 0.08) + '" stroke-width=".7"');
+
+    /* parapet line */
+    var inset = 0.88;
+    s += poly([
+      lerpP(top.T, top.B, (1 - inset) / 2),
+      lerpP(top.R, top.L, (1 - inset) / 2),
+      lerpP(top.B, top.T, (1 - inset) / 2),
+      lerpP(top.L, top.R, (1 - inset) / 2)
+    ], 'none', 'stroke="' + shade(facade, nightMode ? -0.24 : -0.08) + '" stroke-width=".6" opacity=".65"');
+
+    /* front corner */
+    s += line(top.B, base.B, shade(facade, nightMode ? -0.52 : -0.28), 0.8, 'opacity=".55"');
+
+    /* rooftop detail */
+    var roofC = [x, y - h];
+    if (cell.variant === 0 && floors >= 2){
+      var tankCol = nightMode ? shade(palette.accent, -0.4) : palette.accent;
+      s += '<g>';
+      s += line([roofC[0] - 5, roofC[1]], [roofC[0] - 5, roofC[1] - 8], shade(tankCol, -0.3), 1.2);
+      s += line([roofC[0] + 5, roofC[1]], [roofC[0] + 5, roofC[1] - 8], shade(tankCol, -0.3), 1.2);
+      s += '<rect x="' + (roofC[0] - 6) + '" y="' + (roofC[1] - 22) + '" width="12" height="15" rx="2" fill="' + tankCol + '"/>';
+      s += '<ellipse cx="' + roofC[0] + '" cy="' + (roofC[1] - 22) + '" rx="6" ry="2.6" fill="' + shade(tankCol, 0.24) + '"/>';
+      s += '</g>';
+    } else if (cell.variant === 1){
+      s += line([roofC[0], roofC[1]], [roofC[0], roofC[1] - 28], shade(facade, nightMode ? -0.45 : -0.3), 1.1, 'opacity=".75"');
+      s += '<circle cx="' + roofC[0] + '" cy="' + (roofC[1] - 29) + '" r="1.6" fill="' + (nightMode ? '#ff8f7a' : palette.accent) + '"/>';
+    } else if (cell.variant === 2){
+      s += isoBox(roofC[0], roofC[1] - 1, 9, 4.5, 9, nightMode ? shade(facade, -0.28) : shade(facade, -0.04));
+    } else if (floors >= 3){
+      s += isoBox(roofC[0] - 3, roofC[1], 5, 2.5, 6, nightMode ? shade(facade, -0.25) : shade(facade, 0.02));
+    }
+
+    s += '</g>';
+    return s;
+  }
+
+  function renderLot(cell){
+    var center = tileCenter(cell);
+    var x = center.x, y = center.y;
+    var T = [x, y - H], R = [x + W, y], B = [x, y + H], L = [x - W, y];
+
+    var groundBase = nightMode ? shade(palette.paving, -0.46) : palette.paving;
+    var groundAlt = nightMode ? shade(palette.pavingAlt, -0.48) : palette.pavingAlt;
+    var ground = (cell.row + cell.col) % 2 === 0 ? groundBase : groundAlt;
+    var lineCol = nightMode ? 'rgba(30,26,30,.4)' : palette.line;
+
+    var s = '<g class="lot" data-idx="' + cell.idx + '" data-type="' + cell.type + '"' +
+      (cell.type === 'building' ? ' data-floors="' + cell.floors + '"' : '') + '>';
+    s += poly([T, R, B, L], ground, 'class="lot-ground" stroke="' + lineCol + '" stroke-width=".7" opacity=".98"');
+
+    /* paving seams */
+    for (var k = 1; k <= 2; k++){
+      var t = k / 3;
+      s += line(lerpP(T, R, t), lerpP(L, B, t), lineCol, 0.45, 'opacity=".55" pointer-events="none"');
+      s += line(lerpP(T, L, t), lerpP(R, B, t), lineCol, 0.45, 'opacity=".55" pointer-events="none"');
+    }
+
+    if (cell.type === 'tree'){
+      var grass = nightMode ? shade('#c9d3ae', -0.44) : '#d3dcb9';
+      s += poly([
+        [x, y - H * 0.56], [x + W * 0.56, y], [x, y + H * 0.56], [x - W * 0.56, y]
+      ], grass, 'opacity=".9" pointer-events="none"');
+      s += renderTree(x - 9, y - 1, 1);
+      if (cell.treeCount > 1) s += renderTree(x + 12, y + 5, 0.82);
+      s += renderTree(x + 2, y + 8, 0.55);
+    } else if (cell.type === 'empty'){
+      s += '<circle cx="' + (x - 10) + '" cy="' + (y + 5) + '" r="2.2" fill="' + (nightMode ? '#5b4a44' : '#c3a482') + '" opacity=".7"/>';
+      s += '<circle cx="' + (x + 9) + '" cy="' + (y - 4) + '" r="1.5" fill="' + (nightMode ? '#5b4a44' : '#c3a482') + '" opacity=".6"/>';
+    } else {
+      s += renderBuilding(cell);
+    }
+
+    s += poly([T, R, B, L], 'none', 'class="lot-hover" stroke="' + (nightMode ? '#f2d3af' : palette.accent) + '" stroke-width="1.3" opacity="0" pointer-events="none"');
+    s += '</g>';
+    return s;
+  }
+
+  function renderCity(){
+    var platform = {
+      T: [CX, BASE - H - 22],
+      R: [CX + 8 * W + 22, BASE + 7 * H],
+      B: [CX, BASE + 15 * H + 26],
+      L: [CX - 8 * W - 22, BASE + 7 * H]
+    };
+    var platFill = nightMode ? shade(palette.platform, -0.5) : palette.platform;
+    var platSide = nightMode ? shade(palette.platformSide, -0.5) : palette.platformSide;
+    var platLine = nightMode ? 'rgba(30,24,28,.55)' : 'rgba(120,88,58,.4)';
+
+    var defs = '<defs>' +
+      '<filter id="softShadow" x="-20%" y="-40%" width="140%" height="170%">' +
+      '<feGaussianBlur stdDeviation="14"/></filter>' +
+      '<filter id="tinyShadow" x="-40%" y="-40%" width="180%" height="200%">' +
+      '<feGaussianBlur stdDeviation="4"/></filter>' +
+      '</defs>';
+
+    var html = defs;
+
+    /* island shadow */
+    html += '<g aria-hidden="true">' +
+      poly(platform.T ? [
+        [platform.T[0], platform.T[1] + 26],
+        [platform.R[0], platform.R[1] + 26],
+        [platform.B[0], platform.B[1] + 26],
+        [platform.L[0], platform.L[1] + 26]
+      ] : [], 'rgba(90,58,40,.18)', 'filter="url(#softShadow)" pointer-events="none"') + '</g>';
+
+    /* island side */
+    html += poly([
+      [platform.T[0], platform.T[1] + 16],
+      [platform.R[0], platform.R[1] + 16],
+      [platform.B[0], platform.B[1] + 16],
+      [platform.L[0], platform.L[1] + 16]
+    ], platSide, 'pointer-events="none"');
+    html += poly([platform.T, platform.R, platform.B, platform.L], platFill,
+      'stroke="' + platLine + '" stroke-width="1" pointer-events="none"');
+
+    /* thin border inside the platform */
+    var inset = 0.965;
+    html += poly([
+      lerpP(platform.T, platform.B, (1 - inset) / 2),
+      lerpP(platform.R, platform.L, (1 - inset) / 2),
+      lerpP(platform.B, platform.T, (1 - inset) / 2),
+      lerpP(platform.L, platform.R, (1 - inset) / 2)
+    ], 'none', 'stroke="' + platLine + '" stroke-width=".7" opacity=".6" pointer-events="none"');
+
+    var ordered = cells.slice().sort(function(a, b){
+      return (a.row + a.col) - (b.row + b.col) || a.row - b.row;
+    });
+    for (var i = 0; i < ordered.length; i++){
+      html += renderLot(ordered[i]);
+    }
+
+    svg.innerHTML = html;
+
+    if (freshIndex >= 0){
+      var g = svg.querySelector('[data-idx="' + freshIndex + '"]');
+      if (g) g.classList.add('fresh');
+    }
+
+    var count = cells.filter(function(c){ return c.type === 'building'; }).length;
+    countNum.textContent = count;
+    svg.setAttribute('aria-label', 'An isometric city of ' + count + ' buildings across 64 lots. Click a lot to build or raise it.');
+    freshIndex = -1;
+  }
+
+  /* ============================================================
+     palette + UI
+     ============================================================ */
+  function applyPalette(){
+    stage.style.setProperty('--sky-top', palette.skyTop);
+    stage.style.setProperty('--sky-bottom', palette.skyBottom);
+    stage.style.setProperty('--accent', palette.accent);
+  }
+
+  function setStatus(msg){
+    statusEl.textContent = msg;
+    liveEl.textContent = msg;
+    if (statusTimer) clearTimeout(statusTimer);
+    statusTimer = setTimeout(function(){ statusEl.textContent = ''; }, 3200);
+  }
+
+  function updateCount(){
+    var count = cells.filter(function(c){ return c.type === 'building'; }).length;
+    countNum.textContent = count;
+    svg.setAttribute('aria-label', 'An isometric city of ' + count + ' buildings across 64 lots. Click a lot to build or raise it.');
+  }
+
+  function newCity(){
+    cityNumber++;
+    paletteIndex = cityNumber % PALETTES.length;
+    palette = PALETTES[paletteIndex];
+    seed = 20261018 + cityNumber * 7919;
+
+    cityWrap.classList.add('regen');
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var delay = reduced ? 0 : 170;
+
+    setTimeout(function(){
+      generateCity(seed);
+      applyPalette();
+      renderCity();
+      cityWrap.classList.remove('regen');
+      setStatus('New city surveyed — ' + palette.name.toLowerCase() + '.');
+    }, delay);
+  }
+
+  function toggleDayNight(){
+    nightMode = !nightMode;
+    stage.classList.toggle('night', nightMode);
+    dayNightBtn.setAttribute('aria-pressed', String(nightMode));
+    dayNightLabel.textContent = nightMode ? 'Day' : 'Night';
+    dayNightBtn.querySelector('svg').innerHTML = nightMode
+      ? '<circle cx="8" cy="8" r="3.1" stroke="currentColor" stroke-width="1.25"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>'
+      : '<path d="M13.2 9.9A5.8 5.8 0 0 1 6.1 2.8 5.8 5.8 0 1 0 13.2 9.9Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/>';
+    renderCity();
+    setStatus(nightMode ? 'The city lights come on.' : 'Morning returns to Isoline.');
+  }
+
+  /* ============================================================
+     events
+     ============================================================ */
+  svg.addEventListener('click', function(e){
+    var group = e.target.closest ? e.target.closest('.lot') : null;
+    if (!group) return;
+    var idx = Number(group.dataset.idx);
+    var cell = cells[idx];
+    if (!cell) return;
+
+    if (cell.type !== 'building'){
+      var rng = mulberry32(cell.seed + Date.now() % 100000);
+      cell.type = 'building';
+      cell.floors = 2;
+      cell.facade = Math.floor(rng() * palette.facades.length);
+      cell.variant = Math.floor(rng() * 4);
+      cell.seed = Math.floor(rng() * 1000000);
+      setStatus('New building at lot ' + (cell.col + 1) + '·' + (cell.row + 1) + '.');
+      freshIndex = idx;
+      renderCity();
+      updateCount();
+    } else if (cell.floors < 8){
+      cell.floors++;
+      cell.seed += 37;
+      setStatus('Lot ' + (cell.col + 1) + '·' + (cell.row + 1) + ' raised to ' + cell.floors + ' floors.');
+      freshIndex = idx;
+      renderCity();
+      updateCount();
+    } else {
+      setStatus('Lot ' + (cell.col + 1) + '·' + (cell.row + 1) + ' is already at its tallest.');
+    }
+  });
+
+  svg.addEventListener('mouseover', function(e){
+    var group = e.target.closest ? e.target.closest('.lot') : null;
+    if (!group) return;
+    var cell = cells[Number(group.dataset.idx)];
+    if (!cell) return;
+    if (cell.type === 'building'){
+      group.setAttribute('aria-label', 'Lot ' + (cell.col + 1) + '·' + (cell.row + 1) + ', ' + cell.floors + ' floors. Click to raise.');
+    } else {
+      group.setAttribute('aria-label', 'Lot ' + (cell.col + 1) + '·' + (cell.row + 1) + ', ' + (cell.type === 'tree' ? 'garden' : 'vacant') + '. Click to build.');
+    }
+  });
+
+  newCityBtn.addEventListener('click', newCity);
+  dayNightBtn.addEventListener('click', toggleDayNight);
+
+  /* ============================================================
+     stars + init
+     ============================================================ */
+  function buildStars(){
+    var container = document.getElementById('stars');
+    var rng = mulberry32(88421);
+    for (var i = 0; i < 46; i++){
+      var s = document.createElement('span');
+      s.className = 'star';
+      s.style.left = (rng() * 100).toFixed(2) + '%';
+      s.style.top = (rng() * 58).toFixed(2) + '%';
+      var sz = 1 + rng() * 1.7;
+      s.style.width = sz.toFixed(1) + 'px';
+      s.style.height = sz.toFixed(1) + 'px';
+      s.style.opacity = (0.3 + rng() * 0.6).toFixed(2);
+      s.style.animationDelay = (-rng() * 6).toFixed(2) + 's';
+      s.style.animationDuration = (4 + rng() * 5).toFixed(1) + 's';
+      container.appendChild(s);
+    }
+  }
+
+  buildStars();
+  generateCity(seed);
+  applyPalette();
+  renderCity();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Silverball, table 03</title>
+<style>
+  :root{
+    --room:#050408;
+    --panel:#0c0815;
+    --chrome:#c8d3e2;
+    --cyan:#7ef9ff;
+    --magenta:#ff5fd2;
+    --violet:#a78bfa;
+    --amber:#ffd28a;
+    --dim:#7f7595;
+    --line:rgba(167,139,250,.22);
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --display:"Arial Black","Helvetica Neue",Impact,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%}
+  body{
+    background:var(--room);
+    color:#ded8ec;
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 44% at 50% 6%,rgba(88,46,156,.34),transparent 70%),
+      radial-gradient(ellipse 40% 34% at 16% 74%,rgba(255,95,210,.08),transparent 70%),
+      radial-gradient(ellipse 38% 32% at 86% 68%,rgba(126,249,255,.07),transparent 70%),
+      radial-gradient(ellipse 90% 40% at 50% 105%,rgba(10,4,22,.9),#050408 75%);
+  }
+  .floor{
+    position:fixed;
+    left:-30%;
+    right:-30%;
+    bottom:-6%;
+    height:46%;
+    z-index:0;
+    pointer-events:none;
+    transform:perspective(420px) rotateX(63deg);
+    transform-origin:bottom center;
+    background-image:
+      linear-gradient(rgba(126,249,255,.14) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,95,210,.12) 1px,transparent 1px);
+    background-size:54px 42px;
+    opacity:.8;
+    -webkit-mask-image:linear-gradient(to top,#000 0%,rgba(0,0,0,.55) 48%,transparent 100%);
+    mask-image:linear-gradient(to top,#000 0%,rgba(0,0,0,.55) 48%,transparent 100%);
+  }
+  .room{
+    position:relative;
+    z-index:1;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(28px,4.5vw,72px);
+    padding:clamp(12px,2.4vh,26px) 18px;
+  }
+
+  .side-note{
+    width:190px;
+    flex:0 0 auto;
+    align-self:center;
+    color:var(--dim);
+  }
+  .side-note .sn-kicker{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin:0 0 14px;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--magenta);
+  }
+  .side-note .sn-kicker::before{content:"";width:20px;height:1px;background:currentColor;opacity:.7}
+  .side-note h3{
+    font-family:var(--display);
+    font-weight:900;
+    font-size:30px;
+    line-height:.96;
+    letter-spacing:-.02em;
+    margin:0 0 16px;
+    color:#f2ecff;
+    text-shadow:0 0 18px rgba(167,139,250,.3);
+  }
+  .side-note h3 em{
+    font-style:normal;
+    color:var(--cyan);
+    text-shadow:0 0 14px rgba(126,249,255,.5);
+  }
+  .side-note ul{
+    list-style:none;
+    margin:0;
+    padding:0;
+    font-size:11.5px;
+    line-height:1.65;
+    color:#8d83a8;
+  }
+  .side-note li{
+    padding:6px 0;
+    border-top:1px solid rgba(167,139,250,.12);
+  }
+  .side-note li b{color:#cfc6e6;font-weight:500}
+  .side-note.right{text-align:right}
+  .side-note.right .sn-kicker{justify-content:flex-end}
+  .side-note.right .sn-kicker::before{order:1}
+  .sn-high{
+    font-family:var(--mono);
+    font-size:30px;
+    letter-spacing:.1em;
+    color:var(--amber);
+    text-shadow:0 0 18px rgba(255,210,138,.45);
+    margin:2px 0 10px;
+  }
+  .side-note.right p{
+    margin:0;
+    font-size:11.5px;
+    line-height:1.65;
+    color:#8d83a8;
+  }
+  .side-note.right .fine{
+    margin-top:18px;
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(141,131,168,.65);
+  }
+
+  .machine{
+    width:min(92vw,400px);
+    flex:0 0 auto;
+    position:relative;
+    filter:drop-shadow(0 40px 70px rgba(0,0,0,.72));
+  }
+  .machine::after{
+    content:"";
+    position:absolute;
+    left:6%;
+    right:6%;
+    bottom:-24px;
+    height:46px;
+    background:radial-gradient(ellipse at center,rgba(167,139,250,.34),rgba(255,95,210,.12) 45%,transparent 72%);
+    filter:blur(12px);
+    z-index:-1;
+    pointer-events:none;
+  }
+
+  .marquee{
+    position:relative;
+    padding:14px 16px 13px;
+    background:
+      linear-gradient(180deg,rgba(255,95,210,.09),transparent 44%),
+      linear-gradient(180deg,#1c1130 0%,#100a1e 52%,#090612 100%);
+    border:1px solid #3d2d59;
+    border-bottom:0;
+    border-radius:16px 16px 3px 3px;
+    overflow:hidden;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -18px 30px rgba(0,0,0,.5);
+  }
+  .marquee::before{
+    content:"";
+    position:absolute;
+    inset:4px;
+    border:1px solid rgba(255,255,255,.055);
+    border-radius:12px 12px 1px 1px;
+    pointer-events:none;
+  }
+  .bulbs{
+    position:absolute;
+    top:5px;left:7px;right:7px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .bulbs i{
+    width:3px;height:3px;
+    border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 6px rgba(255,210,138,.9);
+    animation:blink 2.4s infinite;
+    animation-delay:calc(var(--i) * -.16s);
+    opacity:.85;
+  }
+  @keyframes blink{
+    0%,100%{opacity:.25;box-shadow:0 0 3px rgba(255,210,138,.4)}
+    50%{opacity:1;box-shadow:0 0 8px rgba(255,210,138,1)}
+  }
+  .marquee-inner{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:5px;
+  }
+  .brand-wrap{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .brand{
+    font-family:var(--display);
+    font-weight:900;
+    font-size:clamp(29px,7vw,39px);
+    line-height:.86;
+    letter-spacing:.035em;
+    color:#fbf7ff;
+    text-shadow:
+      0 0 2px #fff,
+      0 0 9px rgba(255,95,210,.95),
+      0 0 22px rgba(255,46,166,.7),
+      0 0 46px rgba(255,46,166,.35);
+    white-space:nowrap;
+  }
+  .brand-sub{
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.36em;
+    text-transform:uppercase;
+    color:rgba(126,249,255,.72);
+    text-shadow:0 0 8px rgba(126,249,255,.4);
+    padding-left:2px;
+  }
+  .table-badge{
+    flex:0 0 auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    padding:6px 9px;
+    border:1px solid rgba(126,249,255,.4);
+    border-radius:3px;
+    font-family:var(--mono);
+    line-height:1;
+    color:var(--cyan);
+    box-shadow:inset 0 0 14px rgba(126,249,255,.08),0 0 14px rgba(126,249,255,.08);
+    transform:rotate(-2deg);
+  }
+  .table-badge span{font-size:6px;letter-spacing:.22em;opacity:.65}
+  .table-badge strong{font-size:16px;letter-spacing:.08em;font-weight:400;text-shadow:0 0 8px rgba(126,249,255,.6)}
+
+  .hud{
+    display:grid;
+    grid-template-columns:1.35fr .72fr 1.35fr;
+    gap:10px;
+    padding:7px 13px 8px;
+    background:linear-gradient(180deg,#21192f,#0d0916);
+    border-left:1px solid #3d2d59;
+    border-right:1px solid #3d2d59;
+    border-top:1px solid rgba(255,255,255,.06);
+    box-shadow:inset 0 -8px 16px rgba(0,0,0,.5);
+  }
+  .hud-cell{min-width:0}
+  .hud-cell span{
+    display:block;
+    font-family:var(--mono);
+    font-size:6.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:rgba(141,131,168,.85);
+    margin-bottom:2px;
+  }
+  .hud-cell strong{
+    display:block;
+    font-family:var(--mono);
+    font-weight:400;
+    font-size:18px;
+    letter-spacing:.13em;
+    line-height:1;
+    color:var(--cyan);
+    text-shadow:0 0 7px rgba(126,249,255,.7),0 0 18px rgba(126,249,255,.25);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .hud-cell:nth-child(2){text-align:center}
+  .hud-cell:nth-child(2) strong{color:var(--magenta);text-shadow:0 0 8px rgba(255,95,210,.7),0 0 20px rgba(255,95,210,.25)}
+  .hud-cell:nth-child(3){text-align:right}
+  .hud-cell:nth-child(3) strong{color:var(--amber);text-shadow:0 0 8px rgba(255,210,138,.6),0 0 18px rgba(255,210,138,.2)}
+
+  .statusbar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:17px;
+    background:#08050f;
+    border-left:1px solid #3d2d59;
+    border-right:1px solid #3d2d59;
+    border-top:1px solid rgba(126,249,255,.09);
+    font-family:var(--mono);
+    font-size:6.5px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:rgba(126,249,255,.55);
+    white-space:nowrap;
+    overflow:hidden;
+  }
+
+  .playfield{
+    position:relative;
+    border-left:6px solid #171020;
+    border-right:6px solid #171020;
+    background:#06030c;
+    overflow:hidden;
+    box-shadow:inset 0 0 0 1px rgba(167,139,250,.2),inset 0 0 42px rgba(0,0,0,.8);
+    touch-action:none;
+  }
+  #table{
+    display:block;
+    width:100%;
+    aspect-ratio:480 / 800;
+    height:auto;
+  }
+  .glass{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    background:
+      linear-gradient(116deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.025) 17%,transparent 33%,transparent 68%,rgba(126,249,255,.035) 100%),
+      radial-gradient(120% 60% at 20% 0%,rgba(255,255,255,.05),transparent 60%);
+    mix-blend-mode:screen;
+  }
+
+  .overlay{
+    position:absolute;
+    inset:0;
+    z-index:5;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:26px;
+    background:
+      radial-gradient(ellipse at 50% 34%,rgba(46,22,90,.2),rgba(5,3,10,.5) 80%),
+      rgba(4,2,8,.3);
+    -webkit-backdrop-filter:blur(.8px);
+    backdrop-filter:blur(.8px);
+    opacity:1;
+    visibility:visible;
+    transition:opacity .35s ease,visibility .35s ease;
+    text-align:center;
+  }
+  .overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+  .screen{max-width:296px;position:relative;z-index:1;padding:14px 6px}
+  .screen::before{
+    content:"";
+    position:absolute;
+    inset:-12px -18px;
+    z-index:-1;
+    background:radial-gradient(ellipse at center,rgba(5,3,10,.72) 0%,rgba(5,3,10,.45) 52%,rgba(5,3,10,0) 78%);
+    filter:blur(7px);
+    pointer-events:none;
+  }
+  .screen.hidden{display:none}
+  .screen .ov-eyebrow{
+    margin:0 0 12px;
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    opacity:.8;
+  }
+  .screen h1{
+    font-family:var(--display);
+    font-weight:900;
+    font-size:clamp(38px,11vw,56px);
+    line-height:.86;
+    letter-spacing:-.03em;
+    margin:0 0 16px;
+    color:#fbf7ff;
+    text-shadow:0 0 3px #fff,0 0 14px rgba(255,95,210,.8),0 0 34px rgba(255,46,166,.45);
+  }
+  .screen h1.over{
+    color:#ffeaf8;
+    text-shadow:0 0 3px #fff,0 0 14px rgba(255,95,210,.65),0 0 40px rgba(255,46,166,.35);
+  }
+  .screen p{
+    margin:0 auto 18px;
+    max-width:250px;
+    font-size:12px;
+    line-height:1.6;
+    color:#a99fbf;
+  }
+  .screen .final-score{
+    font-family:var(--mono);
+    font-size:30px;
+    letter-spacing:.12em;
+    color:var(--amber);
+    margin:4px 0 4px;
+    text-shadow:0 0 16px rgba(255,210,138,.5);
+  }
+  .screen .record{
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin-bottom:18px;
+  }
+  .ov-btn{
+    appearance:none;
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 22px;
+    border:1px solid var(--magenta);
+    border-radius:2px;
+    background:rgba(255,95,210,.1);
+    color:#ffe6f8;
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    cursor:pointer;
+    box-shadow:0 0 24px rgba(255,95,210,.22),inset 0 0 18px rgba(255,95,210,.08);
+    transition:background .2s ease,box-shadow .25s ease,transform .15s ease;
+  }
+  .ov-btn strong{font-weight:400;color:var(--cyan)}
+  .ov-btn:hover{background:rgba(255,95,210,.2);box-shadow:0 0 34px rgba(255,95,210,.35),inset 0 0 22px rgba(255,95,210,.1)}
+  .ov-btn:active{transform:translateY(1px)}
+  .ov-btn:focus-visible{outline:1px solid var(--cyan);outline-offset:4px}
+  .ov-hint{
+    margin:16px 0 0 !important;
+    font-family:var(--mono);
+    font-size:6.5px !important;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(141,131,168,.75) !important;
+  }
+
+  .apron{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:8px 10px 8px 13px;
+    background:linear-gradient(180deg,#1a1226,#0a0612);
+    border:1px solid #34264c;
+    border-top:1px solid rgba(255,255,255,.06);
+    border-radius:0 0 12px 12px;
+    box-shadow:inset 0 8px 16px rgba(0,0,0,.4);
+  }
+  .instructions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px 10px;
+    font-family:var(--mono);
+    font-size:6.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#8d83a8;
+    line-height:1.6;
+  }
+  .instructions span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+  kbd{
+    display:inline-block;
+    padding:1px 4px;
+    border:1px solid #4a3b63;
+    border-radius:2px;
+    background:#241a36;
+    color:#d9d0ec;
+    font-family:var(--mono);
+    font-size:6.5px;
+    box-shadow:0 1px 0 rgba(0,0,0,.6);
+  }
+  .launch{
+    appearance:none;
+    flex:0 0 auto;
+    padding:7px 13px;
+    border:1px solid rgba(126,249,255,.55);
+    border-radius:3px;
+    background:rgba(126,249,255,.08);
+    color:var(--cyan);
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .2s ease,box-shadow .25s ease,color .2s ease,opacity .2s ease;
+    box-shadow:0 0 14px rgba(126,249,255,.12);
+  }
+  .launch:disabled{
+    opacity:.32;
+    cursor:default;
+    border-color:rgba(120,105,150,.35);
+    color:#7c7294;
+    box-shadow:none;
+  }
+  .launch.ready{
+    color:#071016;
+    background:var(--cyan);
+    border-color:var(--cyan);
+    box-shadow:0 0 20px rgba(126,249,255,.4);
+    animation:launchPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes launchPulse{
+    0%,100%{box-shadow:0 0 10px rgba(126,249,255,.25)}
+    50%{box-shadow:0 0 26px rgba(126,249,255,.6)}
+  }
+  .launch:focus-visible{outline:1px solid var(--cyan);outline-offset:3px}
+
+  @media (max-width:1080px){
+    .side-note{display:none}
+  }
+  @media (max-width:480px){
+    .room{padding:10px 8px}
+    .machine{width:94vw}
+    .marquee{padding:12px 12px 10px}
+    .hud{padding:6px 9px 7px;gap:6px}
+    .hud-cell strong{font-size:15px;letter-spacing:.08em}
+    .apron{flex-wrap:wrap;gap:7px;padding:7px 8px 8px 10px}
+    .instructions{font-size:6px;gap:3px 7px}
+    .tap{display:none !important}
+    .launch{padding:6px 11px;font-size:7px}
+  }
+  @media (max-height:760px) and (min-width:1081px){
+    .machine{width:min(88vw,360px)}
+    .side-note{width:170px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .bulbs i,.launch.ready{animation:none}
+    .overlay,.ov-btn,.launch{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="floor" aria-hidden="true"></div>
+
+<div class="room">
+  <aside class="side-note left" aria-label="How to play">
+    <p class="sn-kicker">How to play</p>
+    <h3>Keep it<br><em>alive.</em></h3>
+    <ul>
+      <li><b>← →</b> snap the flippers</li>
+      <li><b>Space</b> launches from the right lane</li>
+      <li><b>Tap</b> the left or right side of the glass</li>
+      <li>Pegs pay <b>25</b>. Bumpers pay <b>100</b>.</li>
+    </ul>
+  </aside>
+
+  <div class="machine">
+    <div class="marquee">
+      <div class="bulbs" aria-hidden="true">
+        <i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i>
+        <i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i>
+        <i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i>
+        <i style="--i:12"></i><i style="--i:13"></i><i style="--i:14"></i><i style="--i:15"></i>
+      </div>
+      <div class="marquee-inner">
+        <div class="brand-wrap">
+          <div class="brand">SILVERBALL</div>
+          <div class="brand-sub">Neon pinball · three ball play</div>
+        </div>
+        <div class="table-badge"><span>Table</span><strong>03</strong></div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="hud-cell"><span>Score</span><strong id="score">000000</strong></div>
+      <div class="hud-cell"><span>Balls</span><strong id="balls">3</strong></div>
+      <div class="hud-cell"><span>High</span><strong id="high">000000</strong></div>
+    </div>
+    <div class="statusbar" id="statusbar" aria-live="polite">PRESS START</div>
+
+    <div class="playfield" id="playfield">
+      <canvas id="table" width="480" height="800" aria-label="Silverball pinball table"></canvas>
+      <div class="glass" aria-hidden="true"></div>
+      <div class="overlay" id="overlay">
+        <div class="screen" id="startScreen">
+          <p class="ov-eyebrow">Table 03 · three ball play</p>
+          <h1>READY<br>PLAYER?</h1>
+          <p>Three balls. One chrome heartbeat. Pegs pay, bumpers pay more, and the drain is always listening.</p>
+          <button class="ov-btn" id="startBtn" type="button"><strong>Insert coin</strong> Start</button>
+          <p class="ov-hint">← → flippers · space launches</p>
+        </div>
+        <div class="screen hidden" id="overScreen">
+          <p class="ov-eyebrow">Table 03 · final ball</p>
+          <h1 class="over">GAME<br>OVER</h1>
+          <div class="final-score" id="finalScore">000000</div>
+          <p>Final score</p>
+          <div class="record" id="recordLine">High score 000000</div>
+          <button class="ov-btn" id="againBtn" type="button"><strong>One more</strong> Play again</button>
+          <p class="ov-hint">Space to start</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="apron">
+      <div class="instructions">
+        <span><kbd>←</kbd><kbd>→</kbd> Flippers</span>
+        <span><kbd>Space</kbd> Launch</span>
+        <span class="tap">Tap sides to flip</span>
+      </div>
+      <button class="launch" id="launchBtn" type="button" disabled>Launch</button>
+    </div>
+  </div>
+
+  <aside class="side-note right" aria-label="Table record">
+    <p class="sn-kicker">Table record</p>
+    <div class="sn-high" id="highSide">000000</div>
+    <p>House high score. The machine remembers every ball, every lucky bounce.</p>
+    <p class="fine">Neon pinball<br>Built for one player</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById("table");
+  var ctx = canvas.getContext("2d");
+  var scoreEl = document.getElementById("score");
+  var ballsEl = document.getElementById("balls");
+  var highEl = document.getElementById("high");
+  var highSide = document.getElementById("highSide");
+  var statusbar = document.getElementById("statusbar");
+  var launchBtn = document.getElementById("launchBtn");
+  var overlay = document.getElementById("overlay");
+  var startScreen = document.getElementById("startScreen");
+  var overScreen = document.getElementById("overScreen");
+  var startBtn = document.getElementById("startBtn");
+  var againBtn = document.getElementById("againBtn");
+  var finalScore = document.getElementById("finalScore");
+  var recordLine = document.getElementById("recordLine");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var PW = 480, PH = 800;
+  var BALL_R = 8;
+  var GRAVITY = 640;
+  var state = "attract";
+  var score = 0;
+  var balls = 3;
+  var high = 0;
+  var canLaunch = false;
+
+  try {
+    var stored = parseInt(window.localStorage.getItem("silverball.high.v1") || "0", 10);
+    if(!isNaN(stored) && stored > 0) high = stored;
+  } catch (e) {}
+
+  var ball = { x: 445, y: 746, vx: 0, vy: 0, r: BALL_R };
+  var inLane = true;
+  var trail = [];
+  var particles = [];
+  var popups = [];
+  var time = 0;
+  var lastFrame = 0;
+  var frameCount = 0;
+
+  var bumpers = [
+    { x: 151, y: 254, r: 27, color: "#ff5fd2", flash: 0, label: "100", score: 100 },
+    { x: 309, y: 246, r: 27, color: "#7ef9ff", flash: 0, label: "100", score: 100 },
+    { x: 230, y: 358, r: 27, color: "#a78bfa", flash: 0, label: "100", score: 100 }
+  ];
+
+  var pegs = [
+    { x: 89, y: 162, r: 6 }, { x: 176, y: 143, r: 6 }, { x: 266, y: 146, r: 6 }, { x: 360, y: 164, r: 6 },
+    { x: 58, y: 250, r: 6 }, { x: 400, y: 242, r: 6 },
+    { x: 74, y: 344, r: 6 }, { x: 386, y: 350, r: 6 },
+    { x: 116, y: 445, r: 6 }, { x: 344, y: 438, r: 6 },
+    { x: 60, y: 532, r: 6 }, { x: 419, y: 522, r: 6 },
+    { x: 158, y: 505, r: 6 }, { x: 300, y: 512, r: 6 },
+    { x: 214, y: 558, r: 6 }, { x: 250, y: 558, r: 6 },
+    { x: 132, y: 598, r: 6 }, { x: 332, y: 596, r: 6 }
+  ];
+  pegs.forEach(function(p){ p.flash = 0; });
+
+  var slings = [
+    { x: 92, y: 636, r: 15, color: "#ffd28a", flash: 0 },
+    { x: 388, y: 636, r: 15, color: "#ffd28a", flash: 0 }
+  ];
+
+  var walls = [
+    { x1: 18, y1: 22, x2: 18, y2: 800, r: 3 },
+    { x1: 462, y1: 22, x2: 462, y2: 800, r: 3 },
+    { x1: 18, y1: 22, x2: 462, y2: 22, r: 3 },
+    { x1: 424, y1: 150, x2: 424, y2: 742, r: 3 }
+  ];
+
+  var leftFlipper = {
+    pivot: { x: 148, y: 692 }, len: 88,
+    rest: 0.42, activeAngle: -0.52,
+    angle: 0.42, omega: 0, active: false
+  };
+  var rightFlipper = {
+    pivot: { x: 332, y: 692 }, len: 88,
+    rest: Math.PI - 0.42, activeAngle: Math.PI + 0.52,
+    angle: Math.PI - 0.42, omega: 0, active: false
+  };
+
+  var keyLeft = false, keyRight = false;
+  var touchCounts = { left: 0, right: 0 };
+  var pointerSides = {};
+
+  function pad(n, size){
+    var s = String(Math.max(0, Math.round(n)));
+    while(s.length < size) s = "0" + s;
+    return s;
+  }
+
+  function updateHud(){
+    scoreEl.textContent = pad(score, 6);
+    ballsEl.textContent = String(Math.max(0, balls));
+    highEl.textContent = pad(high, 6);
+    highSide.textContent = pad(high, 6);
+  }
+
+  function setStatus(text){
+    statusbar.textContent = text;
+  }
+
+  function saveHigh(){
+    try { window.localStorage.setItem("silverball.high.v1", String(high)); } catch (e) {}
+  }
+
+  function addScore(n, x, y, color){
+    score += n;
+    if(score > high){ high = score; saveHigh(); }
+    updateHud();
+    popups.push({ x: x, y: y, text: "+" + n, life: 1, max: 1, color: color || "#ffd28a" });
+  }
+
+  function burst(x, y, color, n, power){
+    for(var i = 0; i < n; i++){
+      var a = Math.random() * Math.PI * 2;
+      var sp = (40 + Math.random() * 170) * power;
+      particles.push({
+        x: x, y: y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 40,
+        life: 0.35 + Math.random() * 0.6,
+        max: 0.95,
+        size: 1 + Math.random() * 2.6,
+        color: color
+      });
+    }
+    if(particles.length > 320) particles.splice(0, particles.length - 320);
+  }
+
+  function resetBall(){
+    ball.x = 445; ball.y = 746;
+    ball.vx = 0; ball.vy = 0;
+    ball.r = BALL_R;
+    inLane = true;
+    trail = [];
+    leftFlipper.active = false;
+    rightFlipper.active = false;
+  }
+
+  function startGame(){
+    state = "ready";
+    score = 0;
+    balls = 3;
+    canLaunch = true;
+    resetBall();
+    updateHud();
+    overlay.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+    overScreen.classList.add("hidden");
+    launchBtn.disabled = false;
+    launchBtn.classList.add("ready");
+    setStatus("BALL 1 \u00b7 PRESS SPACE TO LAUNCH");
+  }
+
+  function launch(){
+    if(state !== "ready" || !canLaunch) return;
+    canLaunch = false;
+    state = "play";
+    ball.vx = -8;
+    ball.vy = -1190;
+    launchBtn.disabled = true;
+    launchBtn.classList.remove("ready");
+    setStatus("BALL " + (4 - balls) + " \u00b7 LIVE");
+  }
+
+  function endGame(){
+    state = "over";
+    canLaunch = false;
+    launchBtn.disabled = true;
+    launchBtn.classList.remove("ready");
+    setStatus("GAME OVER \u00b7 PRESS SPACE");
+    if(score > high) high = score;
+    saveHigh();
+    finalScore.textContent = pad(score, 6);
+    recordLine.textContent = "High score " + pad(high, 6);
+    startScreen.classList.add("hidden");
+    overScreen.classList.remove("hidden");
+    overlay.classList.remove("hidden");
+    burst(240, 790, "#ff5fd2", 40, 1.4);
+  }
+
+  function loseBall(){
+    if(state !== "play") return;
+    burst(ball.x, Math.min(790, ball.y), "#ff5fd2", 22, 1.1);
+    balls -= 1;
+    updateHud();
+    if(balls <= 0){
+      endGame();
+      return;
+    }
+    state = "ready";
+    canLaunch = true;
+    resetBall();
+    launchBtn.disabled = false;
+    launchBtn.classList.add("ready");
+    setStatus("BALL " + (4 - balls) + " \u00b7 PRESS SPACE TO LAUNCH");
+  }
+
+  function flipperEnds(f){
+    return {
+      x: f.pivot.x + Math.cos(f.angle) * f.len,
+      y: f.pivot.y + Math.sin(f.angle) * f.len
+    };
+  }
+
+  function closestPointOnSegment(px, py, x1, y1, x2, y2){
+    var dx = x2 - x1, dy = y2 - y1;
+    var l2 = dx * dx + dy * dy;
+    if(l2 === 0) return { x: x1, y: y1 };
+    var t = ((px - x1) * dx + (py - y1) * dy) / l2;
+    t = Math.max(0, Math.min(1, t));
+    return { x: x1 + dx * t, y: y1 + dy * t };
+  }
+
+  function collideCircle(cx, cy, radius, restitution, boost, color, kind){
+    var dx = ball.x - cx;
+    var dy = ball.y - cy;
+    var dist = Math.hypot(dx, dy);
+    var min = ball.r + radius;
+    if(dist >= min) return false;
+    if(dist < 0.001){ dx = 0; dy = -1; dist = 1; }
+    var nx = dx / dist, ny = dy / dist;
+    ball.x = cx + nx * min;
+    ball.y = cy + ny * min;
+    var vn = ball.vx * nx + ball.vy * ny;
+    if(vn < 0){
+      ball.vx -= (1 + restitution) * vn * nx;
+      ball.vy -= (1 + restitution) * vn * ny;
+    }
+    if(boost){
+      ball.vx += nx * boost;
+      ball.vy += ny * boost;
+    }
+    burst(cx + nx * radius, cy + ny * radius, color, kind === "bumper" ? 16 : 8, 1);
+    return true;
+  }
+
+  function collideSegments(){
+    for(var i = 0; i < walls.length; i++){
+      var w = walls[i];
+      if(inLane && i === 3) continue;
+      var cp = closestPointOnSegment(ball.x, ball.y, w.x1, w.y1, w.x2, w.y2);
+      var dx = ball.x - cp.x, dy = ball.y - cp.y;
+      var dist = Math.hypot(dx, dy);
+      var min = ball.r + w.r;
+      if(dist < min){
+        if(dist < 0.001){ dx = 0; dy = -1; dist = 1; }
+        var nx = dx / dist, ny = dy / dist;
+        ball.x = cp.x + nx * min;
+        ball.y = cp.y + ny * min;
+        var vn = ball.vx * nx + ball.vy * ny;
+        if(vn < 0){
+          ball.vx -= 1.62 * vn * nx;
+          ball.vy -= 1.62 * vn * ny;
+        }
+      }
+    }
+    if(inLane){
+      if(ball.x < 428 + ball.r){ ball.x = 428 + ball.r; if(ball.vx < 0) ball.vx *= -0.5; }
+      if(ball.x > 462 - ball.r){ ball.x = 462 - ball.r; if(ball.vx > 0) ball.vx *= -0.5; }
+      if(ball.y < 134){
+        inLane = false;
+        ball.x = 418;
+        ball.vx = -310;
+        ball.vy = Math.min(ball.vy, -420);
+      }
+    }
+  }
+
+  function collideFlipper(f){
+    var end = flipperEnds(f);
+    var cp = closestPointOnSegment(ball.x, ball.y, f.pivot.x, f.pivot.y, end.x, end.y);
+    var dx = ball.x - cp.x, dy = ball.y - cp.y;
+    var dist = Math.hypot(dx, dy);
+    var min = ball.r + 8;
+    if(dist >= min) return;
+    if(dist < 0.001){ dx = 0; dy = -1; dist = 1; }
+    var nx = dx / dist, ny = dy / dist;
+    ball.x = cp.x + nx * min;
+    ball.y = cp.y + ny * min;
+    if(f.active && Math.abs(f.omega) > 1.2 && ny < 0.85){
+      ball.vx = nx * 240 + (240 - ball.x) * 0.32;
+      ball.vy = -640 - Math.min(220, Math.abs(f.omega) * 18);
+      addScore(10, cp.x, cp.y - 8, "#7ef9ff");
+      burst(cp.x, cp.y, "#7ef9ff", 10, 1.1);
+    } else {
+      var vn = ball.vx * nx + ball.vy * ny;
+      if(vn < 0){
+        ball.vx -= 1.45 * vn * nx;
+        ball.vy -= 1.45 * vn * ny;
+      }
+    }
+  }
+
+  function stepFlipper(f, dt){
+    var target = f.active ? f.activeAngle : f.rest;
+    var maxStep = 30 * dt;
+    var diff = target - f.angle;
+    var step = Math.max(-maxStep, Math.min(maxStep, diff));
+    f.angle += step;
+    f.omega = dt > 0 ? step / dt : 0;
+  }
+
+  function physicsStep(dt){
+    if(state !== "play") return;
+
+    ball.vy += GRAVITY * dt;
+    ball.vx *= (1 - 0.06 * dt);
+    ball.x += ball.vx * dt;
+    ball.y += ball.vy * dt;
+
+    collideSegments();
+
+    if(!inLane){
+      for(var i = 0; i < pegs.length; i++){
+        var p = pegs[i];
+        if(collideCircle(p.x, p.y, p.r, 0.82, 0, "#7ef9ff", "peg")){
+          p.flash = 1;
+          addScore(25, p.x, p.y - 10, "#ffd28a");
+        }
+      }
+      for(var b = 0; b < bumpers.length; b++){
+        var bm = bumpers[b];
+        if(collideCircle(bm.x, bm.y, bm.r, 0.9, 330, bm.color, "bumper")){
+          bm.flash = 1;
+          addScore(bm.score, bm.x, bm.y - 24, bm.color);
+        }
+      }
+      for(var s = 0; s < slings.length; s++){
+        var sl = slings[s];
+        if(collideCircle(sl.x, sl.y, sl.r, 0.9, 470, sl.color, "sling")){
+          sl.flash = 1;
+          addScore(50, sl.x, sl.y - 16, sl.color);
+        }
+      }
+    }
+
+    collideFlipper(leftFlipper);
+    collideFlipper(rightFlipper);
+
+    var speed = Math.hypot(ball.vx, ball.vy);
+    if(speed > 1380){
+      ball.vx *= 1380 / speed;
+      ball.vy *= 1380 / speed;
+    }
+
+    if(ball.y > PH + 14){
+      loseBall();
+    }
+  }
+
+  function update(dt){
+    time += dt;
+
+    stepFlipper(leftFlipper, dt);
+    stepFlipper(rightFlipper, dt);
+
+    if(state === "play"){
+      var SUB = 3;
+      for(var i = 0; i < SUB; i++) physicsStep(dt / SUB);
+
+      if(state === "play"){
+        if(frameCount % 2 === 0 && Math.hypot(ball.vx, ball.vy) > 90){
+          trail.push({ x: ball.x, y: ball.y });
+          if(trail.length > 14) trail.shift();
+        }
+      }
+    }
+
+    for(var p = particles.length - 1; p >= 0; p--){
+      var pt = particles[p];
+      pt.life -= dt;
+      if(pt.life <= 0){ particles.splice(p, 1); continue; }
+      pt.vy += 300 * dt;
+      pt.vx *= 0.985;
+      pt.x += pt.vx * dt;
+      pt.y += pt.vy * dt;
+    }
+    for(var u = popups.length - 1; u >= 0; u--){
+      popups[u].life -= dt * 1.1;
+      if(popups[u].life <= 0) popups.splice(u, 1);
+    }
+    for(var k = 0; k < bumpers.length; k++){
+      bumpers[k].flash = Math.max(0, bumpers[k].flash - dt * 3.2);
+    }
+    for(var g = 0; g < pegs.length; g++){
+      pegs[g].flash = Math.max(0, pegs[g].flash - dt * 5);
+    }
+    for(var q = 0; q < slings.length; q++){
+      slings[q].flash = Math.max(0, slings[q].flash - dt * 4);
+    }
+    if(trail.length && frameCount % 2 === 0) trail.forEach(function(t){ t.alpha = (t.alpha === undefined ? 1 : t.alpha * 0.94); });
+    frameCount++;
+  }
+
+  function drawRounded(x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function drawBackground(){
+    ctx.fillStyle = "#06030c";
+    ctx.fillRect(0, 0, PW, PH);
+
+    var g1 = ctx.createRadialGradient(240, 300, 20, 240, 300, 390);
+    g1.addColorStop(0, "rgba(112,58,204,.17)");
+    g1.addColorStop(0.55, "rgba(74,36,140,.07)");
+    g1.addColorStop(1, "rgba(10,4,20,0)");
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, PW, PH);
+
+    var g2 = ctx.createRadialGradient(445, 130, 0, 445, 130, 240);
+    g2.addColorStop(0, "rgba(255,95,210,.10)");
+    g2.addColorStop(1, "rgba(255,95,210,0)");
+    ctx.fillStyle = g2;
+    ctx.fillRect(0, 0, PW, PH);
+
+    // faint rings
+    ctx.save();
+    ctx.strokeStyle = "rgba(167,139,250,.07)";
+    ctx.lineWidth = 1;
+    for(var i = 0; i < 3; i++){
+      ctx.beginPath();
+      ctx.arc(240, 372, 118 + i * 34, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // watermark table number
+    ctx.save();
+    ctx.font = "900 186px 'Arial Black',Arial,sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.strokeStyle = "rgba(255,255,255,.028)";
+    ctx.lineWidth = 2;
+    ctx.strokeText("03", 240, 455);
+    ctx.fillStyle = "rgba(255,255,255,.008)";
+    ctx.fillText("03", 240, 455);
+    ctx.restore();
+
+    // launch lane
+    ctx.fillStyle = "rgba(126,249,255,.035)";
+    ctx.fillRect(430, 150, 32, 592);
+
+    // lane chevrons
+    ctx.save();
+    ctx.strokeStyle = "rgba(126,249,255,.35)";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    for(var c = 0; c < 4; c++){
+      var cy = 690 - c * 46;
+      ctx.beginPath();
+      ctx.moveTo(438, cy + 7);
+      ctx.lineTo(446, cy - 1);
+      ctx.lineTo(454, cy + 7);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // gate arc at top of lane
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,95,210,.45)";
+    ctx.lineWidth = 2;
+    ctx.shadowColor = "rgba(255,95,210,.5)";
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(424, 154);
+    ctx.quadraticCurveTo(430, 108, 462, 100);
+    ctx.stroke();
+    ctx.restore();
+
+    // divider
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,95,210,.48)";
+    ctx.lineWidth = 4;
+    ctx.shadowColor = "rgba(255,95,210,.55)";
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(424, 152);
+    ctx.lineTo(424, 742);
+    ctx.stroke();
+    ctx.restore();
+
+    // outer rails
+    ctx.save();
+    ctx.strokeStyle = "rgba(126,249,255,.5)";
+    ctx.lineWidth = 3;
+    ctx.shadowColor = "rgba(126,249,255,.45)";
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.moveTo(19, 800);
+    ctx.lineTo(19, 22);
+    ctx.lineTo(461, 22);
+    ctx.lineTo(461, 800);
+    ctx.stroke();
+    ctx.restore();
+
+    // drain mouth
+    var dg = ctx.createLinearGradient(0, 748, 0, 800);
+    dg.addColorStop(0, "rgba(255,95,210,0)");
+    dg.addColorStop(1, "rgba(255,50,160,.18)");
+    ctx.fillStyle = dg;
+    ctx.fillRect(20, 748, 402, 52);
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,95,210,.35)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 7]);
+    ctx.beginPath();
+    ctx.moveTo(26, 788);
+    ctx.lineTo(414, 788);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(255,95,210,.38)";
+    ctx.font = "7px 'SFMono-Regular',Menlo,monospace";
+    ctx.textAlign = "center";
+    ctx.letterSpacing = "3px";
+    ctx.fillText("D R A I N", 220, 780);
+    ctx.restore();
+
+    // small table lettering
+    ctx.save();
+    ctx.fillStyle = "rgba(167,139,250,.18)";
+    ctx.font = "7px 'SFMono-Regular',Menlo,monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("TABLE 03 / NEON SERIES", 28, 44);
+    ctx.textAlign = "right";
+    ctx.fillText("3 BALL", 410, 44);
+    ctx.restore();
+  }
+
+  function drawPegs(){
+    for(var i = 0; i < pegs.length; i++){
+      var p = pegs[i];
+      var fresh = p.flash;
+      ctx.save();
+      ctx.shadowColor = fresh > 0 ? "rgba(255,255,255,.95)" : "rgba(126,249,255,.7)";
+      ctx.shadowBlur = 10 + fresh * 16;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r + fresh * 2, 0, Math.PI * 2);
+      ctx.fillStyle = fresh > 0 ? "#ffffff" : "rgba(126,249,255,.9)";
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.x - 1.5, p.y - 1.5, p.r * 0.42, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawSlings(){
+    for(var i = 0; i < slings.length; i++){
+      var s = slings[i];
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(i === 0 ? -0.25 : 0.25);
+      ctx.shadowColor = "rgba(255,210,138,.8)";
+      ctx.shadowBlur = 16 + s.flash * 20;
+      ctx.beginPath();
+      ctx.moveTo(-17, 12);
+      ctx.lineTo(0, -16);
+      ctx.lineTo(17, 12);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(255,210,138," + (0.13 + s.flash * 0.3) + ")";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,210,138,.8)";
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-7, 5);
+      ctx.lineTo(0, -5);
+      ctx.lineTo(7, 5);
+      ctx.strokeStyle = "rgba(255,255,255,.75)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawBumpers(){
+    for(var i = 0; i < bumpers.length; i++){
+      var b = bumpers[i];
+      var pulse = reduceMotion ? 0 : 0.028 * Math.sin(time * 2.2 + i * 2.1);
+      var scale = 1 + pulse + b.flash * 0.12;
+
+      ctx.save();
+      ctx.translate(b.x, b.y);
+
+      var glow = ctx.createRadialGradient(0, 0, b.r * 0.4, 0, 0, b.r * 2.4);
+      glow.addColorStop(0, hexAlpha(b.color, 0.32 + b.flash * 0.28));
+      glow.addColorStop(0.55, hexAlpha(b.color, 0.12 + b.flash * 0.12));
+      glow.addColorStop(1, hexAlpha(b.color, 0));
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(0, 0, b.r * 2.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowColor = b.color;
+      ctx.shadowBlur = 22 + b.flash * 30;
+      ctx.beginPath();
+      ctx.arc(0, 0, b.r * scale, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(10,5,18,.86)";
+      ctx.fill();
+      ctx.strokeStyle = b.color;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(0, 0, b.r * scale - 8, 0, Math.PI * 2);
+      ctx.strokeStyle = hexAlpha(b.color, 0.42 + b.flash * 0.3);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.fillStyle = hexAlpha(b.color, 0.34 + b.flash * 0.4);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(-2, -2, 3, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      ctx.fill();
+
+      ctx.fillStyle = b.color;
+      ctx.font = "7px 'SFMono-Regular',Menlo,monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(b.label, 0, b.r + 12);
+      ctx.restore();
+    }
+  }
+
+  function hexAlpha(hex, a){
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    return "rgba(" + r + "," + g + "," + b + "," + a + ")";
+  }
+
+  function drawFlipper(f, isLeft){
+    var end = flipperEnds(f);
+    var active = f.active;
+    var main = active ? "#ffb3ea" : "#ff5fd2";
+    ctx.save();
+    ctx.lineCap = "round";
+
+    ctx.strokeStyle = "rgba(0,0,0,.65)";
+    ctx.lineWidth = 19;
+    ctx.beginPath();
+    ctx.moveTo(f.pivot.x, f.pivot.y + 2);
+    ctx.lineTo(end.x, end.y + 2);
+    ctx.stroke();
+
+    var grad = ctx.createLinearGradient(f.pivot.x, f.pivot.y, end.x, end.y);
+    grad.addColorStop(0, active ? "#ffd28a" : "#a78bfa");
+    grad.addColorStop(0.55, main);
+    grad.addColorStop(1, active ? "#ffffff" : "#7ef9ff");
+    ctx.strokeStyle = grad;
+    ctx.shadowColor = active ? "rgba(255,210,138,.9)" : "rgba(255,95,210,.65)";
+    ctx.shadowBlur = active ? 26 : 14;
+    ctx.lineWidth = 14;
+    ctx.beginPath();
+    ctx.moveTo(f.pivot.x, f.pivot.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(255,255,255,.45)";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(f.pivot.x + Math.cos(f.angle) * 10, f.pivot.y + Math.sin(f.angle) * 10);
+    ctx.lineTo(f.pivot.x + Math.cos(f.angle) * 74, f.pivot.y + Math.sin(f.angle) * 74);
+    ctx.stroke();
+
+    // pivot
+    var pg = ctx.createRadialGradient(f.pivot.x - 3, f.pivot.y - 3, 1, f.pivot.x, f.pivot.y, 11);
+    pg.addColorStop(0, "#ffffff");
+    pg.addColorStop(0.4, "#b9c7d9");
+    pg.addColorStop(1, "#354157");
+    ctx.beginPath();
+    ctx.arc(f.pivot.x, f.pivot.y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = pg;
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.5)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawTrail(){
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for(var i = 0; i < trail.length; i++){
+      var t = trail[i];
+      var f = (i + 1) / trail.length;
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(126,249,255," + (f * f * 0.13) + ")";
+      ctx.arc(t.x, t.y, ball.r * (0.35 + f * 0.75), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawBall(){
+    if(state === "attract" || state === "over") return;
+    var bx = ball.x, by = ball.y, r = ball.r;
+    ctx.save();
+    ctx.shadowColor = "rgba(160,235,255,.75)";
+    ctx.shadowBlur = 20;
+
+    var g = ctx.createRadialGradient(bx - 3.5, by - 4.5, 0.8, bx + 1, by + 1, r + 2);
+    g.addColorStop(0, "#ffffff");
+    g.addColorStop(0.22, "#f2f8ff");
+    g.addColorStop(0.48, "#b9cbe0");
+    g.addColorStop(0.72, "#70819c");
+    g.addColorStop(0.9, "#39445e");
+    g.addColorStop(1, "#1b2233");
+    ctx.beginPath();
+    ctx.arc(bx, by, r, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(bx - 2.6, by - 3.2, 2.1, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255,.95)";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(bx, by, r - 0.8, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,.2)";
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawParticles(){
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for(var i = 0; i < particles.length; i++){
+      var p = particles[i];
+      var a = Math.max(0, p.life / p.max);
+      ctx.globalAlpha = a;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * (0.45 + a * 0.7), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawPopups(){
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.font = "700 12px 'SFMono-Regular',Menlo,monospace";
+    for(var i = 0; i < popups.length; i++){
+      var p = popups[i];
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 8;
+      ctx.fillText(p.text, p.x, p.y - (1 - p.life) * 26);
+    }
+    ctx.restore();
+  }
+
+  function drawLaneHint(){
+    if(state === "ready"){
+      var pulse = 0.45 + 0.3 * Math.sin(time * 4);
+      ctx.save();
+      ctx.fillStyle = "rgba(126,249,255," + pulse + ")";
+      ctx.font = "7px 'SFMono-Regular',Menlo,monospace";
+      ctx.textAlign = "center";
+      ctx.fillText("LAUNCH", 446, 704);
+      ctx.restore();
+    }
+  }
+
+  function draw(){
+    drawBackground();
+    drawSlings();
+    drawPegs();
+    drawBumpers();
+    drawFlipper(leftFlipper, true);
+    drawFlipper(rightFlipper, false);
+    drawTrail();
+    drawParticles();
+    drawBall();
+    drawPopups();
+    drawLaneHint();
+  }
+
+  function loop(ts){
+    if(!lastFrame) lastFrame = ts;
+    var dt = Math.min(0.036, Math.max(0, (ts - lastFrame) / 1000));
+    lastFrame = ts;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var scale = (rect.width / PW) * dpr;
+    canvas.width = Math.round(PW * scale);
+    canvas.height = Math.round(PH * scale);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  }
+
+  function syncFlippers(){
+    leftFlipper.active = keyLeft || touchCounts.left > 0;
+    rightFlipper.active = keyRight || touchCounts.right > 0;
+  }
+
+  launchBtn.addEventListener("click", launch);
+  startBtn.addEventListener("click", startGame);
+  againBtn.addEventListener("click", startGame);
+
+  window.addEventListener("keydown", function(e){
+    if(e.code === "ArrowLeft" || e.key === "ArrowLeft"){
+      keyLeft = true;
+      syncFlippers();
+      e.preventDefault();
+    } else if(e.code === "ArrowRight" || e.key === "ArrowRight"){
+      keyRight = true;
+      syncFlippers();
+      e.preventDefault();
+    } else if(e.code === "Space" || e.key === " "){
+      e.preventDefault();
+      if(state === "attract" || state === "over") startGame();
+      else if(state === "ready") launch();
+    }
+  });
+
+  window.addEventListener("keyup", function(e){
+    if(e.code === "ArrowLeft" || e.key === "ArrowLeft"){
+      keyLeft = false;
+      syncFlippers();
+    } else if(e.code === "ArrowRight" || e.key === "ArrowRight"){
+      keyRight = false;
+      syncFlippers();
+    }
+  });
+
+  canvas.addEventListener("pointerdown", function(e){
+    if(state === "attract" || state === "over") return;
+    var rect = canvas.getBoundingClientRect();
+    var side = (e.clientX - rect.left) < rect.width / 2 ? "left" : "right";
+    pointerSides[e.pointerId] = side;
+    touchCounts[side]++;
+    syncFlippers();
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+
+  window.addEventListener("pointerup", function(e){
+    var side = pointerSides[e.pointerId];
+    if(!side) return;
+    touchCounts[side] = Math.max(0, touchCounts[side] - 1);
+    delete pointerSides[e.pointerId];
+    syncFlippers();
+  });
+
+  window.addEventListener("pointercancel", function(e){
+    var side = pointerSides[e.pointerId];
+    if(!side) return;
+    touchCounts[side] = Math.max(0, touchCounts[side] - 1);
+    delete pointerSides[e.pointerId];
+    syncFlippers();
+  });
+
+  if(window.ResizeObserver){
+    new ResizeObserver(resize).observe(canvas);
+  } else {
+    window.addEventListener("resize", resize);
+  }
+
+  updateHud();
+  resize();
+  resetBall();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

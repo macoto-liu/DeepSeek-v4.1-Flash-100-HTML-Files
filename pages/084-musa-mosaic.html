@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUSA — atelier musivo</title>
+<style>
+  :root{
+    --stone:#e8dfd2;
+    --stone-deep:#ddcfbc;
+    --ink:#3e352c;
+    --ink-soft:#6e6253;
+    --ink-faint:#948674;
+    --line:rgba(78,62,44,.2);
+    --gold:#b28a50;
+    --gold-light:#e8cf9b;
+    --terra:#b45e3f;
+    --ochre:#c99a4b;
+    --sea:#5e8c8b;
+    --ivory:#e7dcc7;
+    --black:#2e2a26;
+    --olive:#7c8258;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;min-height:100%}
+  body{
+    background:
+      radial-gradient(100% 70% at 12% 0%,#f2eadf 0%,rgba(242,234,223,0) 58%),
+      radial-gradient(90% 70% at 100% 100%,#dccfbd 0%,rgba(220,207,189,0) 62%),
+      var(--stone);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background-image:
+      radial-gradient(rgba(94,74,52,.05) .6px,transparent .6px),
+      radial-gradient(rgba(255,250,240,.22) .6px,transparent .6px);
+    background-size:5px 5px,9px 9px;
+    background-position:0 0,2px 3px;
+    opacity:.7;
+    mix-blend-mode:multiply;
+  }
+  .page{
+    position:relative;
+    z-index:1;
+    max-width:1260px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:clamp(20px,3.2vw,38px) clamp(16px,3.4vw,40px) 18px;
+  }
+
+  .masthead{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:clamp(18px,2.6vw,28px);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:clamp(14px,2vw,24px);
+    flex-wrap:wrap;
+  }
+  .brand h1{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(28px,3vw,38px);
+    letter-spacing:.34em;
+    line-height:1;
+    margin:0;
+    margin-right:-.34em;
+    color:var(--ink);
+  }
+  .brand .tagline{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:clamp(13px,1.15vw,15px);
+    letter-spacing:.015em;
+    color:var(--ink-soft);
+    padding-bottom:3px;
+  }
+  .head-meta{
+    display:flex;
+    gap:clamp(16px,2.4vw,34px);
+    font-family:var(--mono);
+    font-size:7.5px;
+    line-height:1.8;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    text-align:right;
+  }
+  .head-meta span:last-child{color:var(--ink-soft)}
+
+  .workbench{
+    display:grid;
+    grid-template-columns:minmax(0,920px) 196px;
+    gap:clamp(24px,3.2vw,44px);
+    align-items:start;
+    justify-content:center;
+  }
+
+  .panel-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:9px;
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .panel-head span:first-child{color:var(--ink-soft)}
+  .panel-head span:last-child{letter-spacing:.14em}
+
+  .frame{
+    position:relative;
+    padding:clamp(10px,1.4vw,17px);
+    background:
+      linear-gradient(135deg,#7d5b30 0%,#c6a468 9%,#f2e0b1 20%,#b48c52 34%,#e9cf97 50%,#a37b44 66%,#e6cd95 80%,#8b6739 100%);
+    box-shadow:
+      0 30px 60px -26px rgba(75,52,30,.55),
+      0 8px 20px -12px rgba(75,52,30,.4),
+      inset 0 1px 0 rgba(255,248,225,.55);
+    border-radius:2px;
+  }
+  .frame::before{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:1px solid rgba(70,46,21,.48);
+    pointer-events:none;
+    z-index:2;
+  }
+  .frame::after{
+    content:"";
+    position:absolute;
+    inset:10px;
+    border:1px solid rgba(255,247,222,.4);
+    pointer-events:none;
+    z-index:2;
+  }
+  .mat{
+    background:linear-gradient(180deg,#f4ecdd 0%,#ede2d1 100%);
+    padding:clamp(6px,.75vw,10px);
+    box-shadow:
+      inset 0 0 0 1px rgba(92,67,40,.2),
+      inset 0 2px 10px rgba(92,67,40,.09);
+    position:relative;
+  }
+  .fillet{
+    padding:clamp(3px,.34vw,4px);
+    background:linear-gradient(135deg,#8e6a3c,#e5ca92 35%,#b28a50 60%,#f0dca9 85%,#8e6a3c);
+    box-shadow:0 1px 3px rgba(60,40,20,.25);
+  }
+  #mosaic{
+    display:block;
+    width:100%;
+    aspect-ratio:3 / 2;
+    background:#c8b8a1;
+    cursor:crosshair;
+    box-shadow:inset 0 0 14px rgba(62,42,24,.28);
+    touch-action:none;
+  }
+
+  .plaque{
+    position:relative;
+    display:flex;
+    align-items:baseline;
+    gap:16px;
+    max-width:585px;
+    margin-top:15px;
+    padding:11px 16px 12px;
+    background:linear-gradient(180deg,#f6efe2,#eee3d2);
+    border:1px solid rgba(92,67,40,.26);
+    box-shadow:0 10px 24px -16px rgba(75,52,30,.5),inset 0 1px 0 rgba(255,252,244,.7);
+  }
+  .plaque::before{
+    content:"";
+    position:absolute;
+    left:0;right:0;top:0;
+    height:2px;
+    background:linear-gradient(90deg,var(--gold),rgba(178,138,80,.15));
+  }
+  .plaque-seal{
+    flex:0 0 auto;
+    width:30px;height:30px;
+    display:grid;place-items:center;
+    border:1px solid rgba(178,138,80,.55);
+    color:var(--gold);
+    font-family:var(--serif);
+    font-size:15px;
+    align-self:center;
+    transform:rotate(-2deg);
+  }
+  .plaque-body{flex:1;min-width:0}
+  .plaque-kicker{
+    margin:0 0 3px;
+    font-family:var(--mono);
+    font-size:6.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .plaque h2{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(16px,1.55vw,20px);
+    line-height:1.15;
+    letter-spacing:-.005em;
+    margin:0 0 3px;
+    color:var(--ink);
+  }
+  .plaque p{
+    margin:0;
+    font-family:var(--serif);
+    font-size:10.5px;
+    line-height:1.45;
+    color:var(--ink-soft);
+    letter-spacing:.02em;
+  }
+  .plaque-no{
+    flex:0 0 auto;
+    align-self:center;
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    text-align:right;
+    line-height:1.7;
+  }
+
+  .rail{
+    border-left:1px solid var(--line);
+    padding-left:clamp(18px,2vw,28px);
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    padding-top:2px;
+  }
+  .rail-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:8px;
+    padding-bottom:11px;
+    border-bottom:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .rail-head span:first-child{color:var(--ink-soft)}
+  .rail-label{
+    margin:0 0 9px;
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .stones{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .stone{
+    appearance:none;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    padding:6px 7px 6px 5px;
+    border:1px solid transparent;
+    border-radius:1px;
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:var(--sans);
+    font-size:11px;
+    letter-spacing:.02em;
+    text-align:left;
+    cursor:pointer;
+    transition:background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .stone .sw{
+    width:15px;height:15px;
+    flex:0 0 auto;
+    border-radius:2px 3px 2px 4px;
+    background:
+      radial-gradient(circle at 30% 24%,rgba(255,255,255,.4),transparent 55%),
+      var(--c);
+    box-shadow:inset 0 0 0 1px rgba(40,25,15,.16),0 1px 2px rgba(60,40,20,.16);
+  }
+  .stone .name{flex:1}
+  .stone em{
+    font-family:var(--mono);
+    font-style:normal;
+    font-size:6.5px;
+    letter-spacing:.1em;
+    color:var(--ink-faint);
+    opacity:.75;
+  }
+  .stone:hover{background:rgba(255,252,244,.5);color:var(--ink)}
+  .stone[aria-pressed="true"]{
+    background:rgba(255,252,244,.72);
+    border-color:rgba(92,67,40,.26);
+    color:var(--ink);
+    box-shadow:inset 2px 0 0 var(--gold);
+  }
+  .stone[aria-pressed="true"] em{color:var(--gold);opacity:1}
+  .stone:focus-visible{outline:1px solid var(--ink);outline-offset:2px}
+
+  .patterns{display:flex;flex-direction:column;gap:2px}
+  .pattern{
+    appearance:none;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    padding:8px 7px;
+    border:1px solid transparent;
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:var(--sans);
+    font-size:11px;
+    letter-spacing:.02em;
+    text-align:left;
+    cursor:pointer;
+    transition:background .2s ease,color .2s ease,border-color .2s ease;
+  }
+  .pattern svg{width:15px;height:15px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.1;opacity:.8}
+  .pattern span{flex:1}
+  .pattern em{
+    font-family:var(--mono);
+    font-style:normal;
+    font-size:6.5px;
+    letter-spacing:.1em;
+    color:var(--ink-faint);
+  }
+  .pattern:hover{background:rgba(255,252,244,.5);color:var(--ink)}
+  .pattern[aria-pressed="true"]{
+    background:rgba(255,252,244,.72);
+    border-color:rgba(92,67,40,.26);
+    color:var(--ink);
+    box-shadow:inset 2px 0 0 var(--gold);
+  }
+  .pattern[aria-pressed="true"] svg{opacity:1;stroke:var(--gold)}
+  .pattern:focus-visible{outline:1px solid var(--ink);outline-offset:2px}
+
+  .rail-actions{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    padding-top:2px;
+    border-top:1px solid var(--line);
+  }
+  .clear{
+    appearance:none;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:13px;
+    padding:9px 11px;
+    border:1px solid rgba(92,67,40,.35);
+    background:rgba(255,252,244,.28);
+    color:var(--ink-soft);
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .2s ease,color .2s ease,border-color .2s ease;
+  }
+  .clear svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.1;opacity:.7}
+  .clear:hover{background:#f6efe2;color:var(--ink);border-color:rgba(92,67,40,.55)}
+  .clear:active{background:#ece0ce}
+  .clear:focus-visible{outline:1px solid var(--ink);outline-offset:2px}
+  .counter{
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
+    padding-top:2px;
+  }
+  .counter .num{
+    font-family:var(--serif);
+    font-size:clamp(32px,3.2vw,42px);
+    line-height:.85;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-.02em;
+  }
+  .counter .cap{
+    font-family:var(--mono);
+    font-size:6.5px;
+    line-height:1.65;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    padding-bottom:2px;
+  }
+  .counter .cap em{
+    font-style:normal;
+    color:rgba(110,98,83,.7);
+  }
+  .rail-note{
+    margin:0;
+    padding-top:14px;
+    border-top:1px solid rgba(78,62,44,.12);
+    font-family:var(--serif);
+    font-size:10.5px;
+    line-height:1.55;
+    color:var(--ink-faint);
+    max-width:22em;
+  }
+
+  .foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    margin-top:auto;
+    padding-top:clamp(20px,3vw,32px);
+    font-family:var(--mono);
+    font-size:6.5px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .foot span:nth-child(2){
+    color:rgba(148,134,116,.8);
+    text-align:center;
+  }
+  .foot span:last-child{text-align:right}
+
+  @media (max-width:1050px){
+    .workbench{grid-template-columns:minmax(0,1fr);gap:26px}
+    .rail{
+      border-left:0;
+      border-top:1px solid var(--line);
+      padding-left:0;
+      padding-top:18px;
+      display:grid;
+      grid-template-columns:1.15fr 1fr .9fr;
+      gap:18px 30px;
+      align-items:start;
+    }
+    .rail-head{grid-column:1/-1;padding-bottom:8px;margin-bottom:-4px}
+    .rail-actions{flex-direction:row;align-items:flex-end;justify-content:space-between;border-top:0;padding-top:0;gap:20px}
+    .clear{margin-top:0;flex:1}
+    .counter{flex:0 0 auto;padding-top:0}
+    .rail-note{grid-column:1/-1;padding-top:12px;max-width:none}
+    .plaque{max-width:none}
+  }
+  @media (max-width:760px){
+    .head-meta{display:none}
+    .masthead{padding-bottom:12px;margin-bottom:16px}
+    .brand{flex-direction:column;align-items:flex-start;gap:6px}
+    .brand .tagline{padding-bottom:0}
+    .panel-head{font-size:6.5px;letter-spacing:.14em}
+    .plaque{flex-wrap:wrap;gap:10px;padding:10px 12px}
+    .plaque-seal{width:26px;height:26px;font-size:13px}
+    .plaque h2{font-size:16px}
+    .plaque-no{width:100%;text-align:left;padding-left:36px;margin-top:-6px}
+    .rail{grid-template-columns:1fr;gap:18px}
+    .stones{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+    .stone{padding:6px 5px;gap:7px}
+    .stone .name{font-size:10px}
+    .stone em{display:none}
+    .patterns{flex-direction:row;gap:4px}
+    .pattern{flex:1;padding:7px 6px;justify-content:center;gap:6px}
+    .pattern span{flex:0 1 auto}
+    .pattern em{display:none}
+    .rail-actions{flex-direction:row;align-items:flex-end}
+    .clear{width:auto;flex:0 0 auto;min-width:108px;margin-top:0}
+    .counter{margin-left:auto;padding-top:0}
+    .counter .num{font-size:34px}
+    .rail-note{font-size:10px}
+    .foot{flex-direction:column;align-items:flex-start;gap:6px}
+    .foot span:nth-child(2){text-align:left}
+    .foot span:last-child{text-align:left}
+  }
+  @media (max-width:420px){
+    .frame{padding:9px}
+    .mat{padding:6px}
+    .fillet{padding:3px}
+    .stone{gap:6px}
+    .stone .sw{width:13px;height:13px}
+    .pattern{font-size:10px;gap:4px;padding:7px 4px}
+    .pattern svg{width:12px;height:12px}
+    .clear{min-width:96px;font-size:7px;padding:8px}
+    .counter .num{font-size:30px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <div class="brand">
+      <h1>MUSA</h1>
+      <p class="tagline">A tactile mosaic studio</p>
+    </div>
+    <div class="head-meta">
+      <span>Atelier musivo<br>Ravenna, Italia</span>
+      <span>Composition N° 084<br>Opus tessellatum</span>
+    </div>
+  </header>
+
+  <main class="workbench">
+    <section class="panel-col" aria-label="Mosaic panel">
+      <div class="panel-head">
+        <span>Panel N° 04 — Rosette</span>
+        <span>24 × 16 · 384 tesserae</span>
+      </div>
+
+      <div class="frame">
+        <div class="mat">
+          <div class="fillet">
+            <canvas id="mosaic" width="960" height="640" aria-label="Mosaic panel with 24 by 16 tesserae. Click or drag to set tiles."></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="plaque">
+        <div class="plaque-seal" aria-hidden="true">M</div>
+        <div class="plaque-body">
+          <p class="plaque-kicker">MUSA · Museo delle Tessere</p>
+          <h2>Rosette, after the antique</h2>
+          <p>Opus tessellatum · limestone &amp; glass · 24 × 16 tesserae · Ravenna, MMXXVI</p>
+        </div>
+        <div class="plaque-no">Inv. 084<br>Hall II</div>
+      </div>
+    </section>
+
+    <aside class="rail" aria-label="Atelier controls">
+      <div class="rail-head"><span>Atelier</span><span>Studio N° 04</span></div>
+
+      <div>
+        <p class="rail-label">Stone</p>
+        <div class="stones" role="group" aria-label="Stone colour">
+          <button class="stone" type="button" data-color="terracotta" aria-pressed="true">
+            <i class="sw" style="--c:#b45e3f"></i><span class="name">Terracotta</span><em>01</em>
+          </button>
+          <button class="stone" type="button" data-color="ochre" aria-pressed="false">
+            <i class="sw" style="--c:#c99a4b"></i><span class="name">Ochre</span><em>02</em>
+          </button>
+          <button class="stone" type="button" data-color="sea" aria-pressed="false">
+            <i class="sw" style="--c:#5e8c8b"></i><span class="name">Sea</span><em>03</em>
+          </button>
+          <button class="stone" type="button" data-color="ivory" aria-pressed="false">
+            <i class="sw" style="--c:#e7dcc7"></i><span class="name">Ivory</span><em>04</em>
+          </button>
+          <button class="stone" type="button" data-color="black" aria-pressed="false">
+            <i class="sw" style="--c:#2e2a26"></i><span class="name">Black</span><em>05</em>
+          </button>
+          <button class="stone" type="button" data-color="olive" aria-pressed="false">
+            <i class="sw" style="--c:#7c8258"></i><span class="name">Olive</span><em>06</em>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p class="rail-label">Composition</p>
+        <div class="patterns" role="group" aria-label="Pattern">
+          <button class="pattern" type="button" data-pattern="medallion" aria-pressed="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2.2"/></svg>
+            <span>Medallion</span><em>01</em>
+          </button>
+          <button class="pattern" type="button" data-pattern="wave" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 10c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 4-4"/><path d="M1 13c2.5 0 2.5-4 5-4s2.5 4 5 4 2.5-4 4-4" opacity=".55"/></svg>
+            <span>Wave</span><em>02</em>
+          </button>
+          <button class="pattern" type="button" data-pattern="scatter" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="4" r="1"/><circle cx="9" cy="3.5" r="1"/><circle cx="13" cy="7" r="1"/><circle cx="6" cy="8.5" r="1"/><circle cx="11" cy="12" r="1"/><circle cx="3.5" cy="12.5" r="1"/></svg>
+            <span>Scatter</span><em>03</em>
+          </button>
+        </div>
+      </div>
+
+      <div class="rail-actions">
+        <button class="clear" type="button" id="clearBtn">
+          <span>Clear</span>
+          <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2h10v10H2z"/><path d="M4.5 4.5h5v5h-5z" opacity=".5"/></svg>
+        </button>
+        <div class="counter">
+          <span class="num" id="count">384</span>
+          <span class="cap">tesserae placed<br><em>of 384</em></span>
+        </div>
+      </div>
+
+      <p class="rail-note">Point, click, or drag across the panel. Each tessera is cut a little differently, and set by hand.</p>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <span>MUSA · atelier musivo, Ravenna</span>
+    <span>Lime, stone &amp; glass · set one tessera at a time</span>
+    <span>Est. MCMLXXXVII</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById("mosaic");
+  var ctx = canvas.getContext("2d");
+  var countEl = document.getElementById("count");
+  var clearBtn = document.getElementById("clearBtn");
+  var stoneBtns = Array.prototype.slice.call(document.querySelectorAll(".stone"));
+  var patternBtns = Array.prototype.slice.call(document.querySelectorAll(".pattern"));
+
+  var COLS = 24, ROWS = 16, CELL = 40;
+  var W = COLS * CELL, H = ROWS * CELL;
+  var GAP = 3.4;
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var colors = {
+    terracotta: "#b45e3f",
+    ochre: "#c99a4b",
+    sea: "#5e8c8b",
+    ivory: "#e7dcc7",
+    black: "#2e2a26",
+    olive: "#7c8258"
+  };
+
+  var grid = new Array(COLS * ROWS).fill(null);
+  var selected = "terracotta";
+  var activePattern = "medallion";
+  var patternSeed = 1404;
+  var tileSeed = 1404;
+  var painting = false;
+  var hover = null;
+  var count = 0;
+  var lastPlaced = null;
+  var flashStart = 0;
+
+  var baseSeeds = { medallion: 1404, wave: 2711, scatter: 4491 };
+  var generations = { medallion: 0, wave: 0, scatter: 0 };
+
+  function hash(x, y, s){
+    var n = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453123;
+    return n - Math.floor(n);
+  }
+
+  function clamp(v, a, b){ return v < a ? a : v > b ? b : v; }
+
+  function shade(hex, amount){
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    r = clamp(Math.round(r + amount), 0, 255);
+    g = clamp(Math.round(g + amount * 0.92), 0, 255);
+    b = clamp(Math.round(b + amount * 0.8), 0, 255);
+    return "rgb(" + r + "," + g + "," + b + ")";
+  }
+
+  function setCount(next){
+    count = next;
+    countEl.textContent = String(count);
+  }
+
+  function recalcCount(){
+    var n = 0;
+    for(var i = 0; i < grid.length; i++) if(grid[i]) n++;
+    setCount(n);
+  }
+
+  function setPatternButton(name){
+    patternBtns.forEach(function(b){
+      b.setAttribute("aria-pressed", b.dataset.pattern === name ? "true" : "false");
+    });
+    activePattern = name;
+  }
+
+  function medallion(seed){
+    var g = new Array(COLS * ROWS).fill(null);
+    var cx = 11.5, cy = 7.5;
+    for(var y = 0; y < ROWS; y++){
+      for(var x = 0; x < COLS; x++){
+        var dx = x - cx, dy = y - cy;
+        var r = Math.hypot(dx, dy);
+        var a = Math.atan2(dy, dx);
+        var c = "terracotta";
+
+        if(x === 0 || y === 0 || x === COLS - 1 || y === ROWS - 1){
+          c = "black";
+        } else if(x === 1 || y === 1 || x === COLS - 2 || y === ROWS - 2){
+          c = ((x + y) % 2 === 0) ? "ochre" : "ivory";
+        } else if(r > 7.05){
+          c = "terracotta";
+          if((x < 5 || x > 18) && (y < 4 || y > 11)){
+            c = (hash(x, y, seed) > 0.52) ? "olive" : "terracotta";
+          }
+        } else if(r > 6.55){
+          c = "black";
+        } else if(r > 5.35){
+          c = (Math.cos(a * 8) > 0.12) ? "sea" : "ivory";
+        } else if(r > 4.72){
+          c = "ochre";
+        } else if(r > 3.28){
+          c = (Math.cos(a * 8 + 0.39) > -0.04) ? "ivory" : "terracotta";
+        } else if(r > 2.86){
+          c = "black";
+        } else if(r > 1.5){
+          c = (Math.cos(a * 6 - 0.35) > 0.02) ? "ochre" : "sea";
+        } else if(r > 0.78){
+          c = "black";
+        } else {
+          c = "ivory";
+        }
+
+        // ochre keys punctuate the outer black ring
+        if(r > 6.55 && r <= 7.05){
+          var key = ((Math.round(((a + Math.PI) / (Math.PI * 2)) * 24) % 3) + 3) % 3;
+          if(key === 0) c = "ochre";
+        }
+        // tiny ivory points on the inner transition ring
+        if(r > 2.86 && r <= 3.28 && Math.cos(a * 16) > 0.82) c = "ochre";
+
+        g[y * COLS + x] = c;
+      }
+    }
+    return g;
+  }
+
+  function wave(seed){
+    var g = new Array(COLS * ROWS).fill(null);
+    for(var y = 0; y < ROWS; y++){
+      for(var x = 0; x < COLS; x++){
+        var mx = x < 12 ? x : 23 - x;
+        var c = "ivory";
+        if(x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1){
+          c = "black";
+        } else if(y === 1 || y === ROWS - 2){
+          c = "ochre";
+        } else if(y === 2 || y === ROWS - 3){
+          c = "ivory";
+        } else if(y === 7 || y === 8){
+          c = "black";
+        } else {
+          var s = Math.sin(mx * 0.62 + (y < 7 ? y : 15 - y) * 0.52 + seed * 0.003);
+          if(y < 7){
+            c = s > 0.34 ? "sea" : s > -0.28 ? "ivory" : "ochre";
+            if(s > 0.72 && y === 4) c = "black";
+          } else {
+            c = s > 0.34 ? "terracotta" : s > -0.28 ? "ivory" : "olive";
+            if(s > 0.72 && y === 10) c = "black";
+          }
+        }
+        // stepped nicks along the crests
+        if(y === 4 && mx > 2 && mx < 10 && mx % 3 === 0) c = "black";
+        if(y === 11 && mx > 2 && mx < 10 && mx % 3 === 0) c = "ochre";
+        g[y * COLS + x] = c;
+      }
+    }
+    return g;
+  }
+
+  function scatter(seed){
+    var g = new Array(COLS * ROWS).fill(null);
+    var rng = mulberry32(seed + 77);
+    for(var y = 0; y < ROWS; y++){
+      for(var x = 0; x < COLS; x++){
+        if(x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1){
+          g[y * COLS + x] = "black";
+          continue;
+        }
+        var u = (x - 11.5) / 8;
+        var v = (y - 7.5) / 5.2;
+        var field =
+          Math.sin(x * 0.63 + seed * 0.017) * Math.cos(y * 0.5 - seed * 0.011) +
+          Math.sin((x + y) * 0.31 + 1.4) * 0.65 +
+          Math.cos(Math.hypot(u, v) * 2.8) * 0.4;
+        var roll = rng();
+        var c;
+        if(field > 1.05) c = "ochre";
+        else if(field > 0.35) c = "terracotta";
+        else if(field > -0.3) c = "ivory";
+        else if(field > -0.95) c = "olive";
+        else c = "sea";
+        if(roll < 0.075) c = "black";
+        if(roll < 0.22 && field < 0.3) c = null;
+        if((x === 1 || x === COLS - 2) && y > 2 && y < 13 && (y % 2 === 0)) c = "ochre";
+        if((y === 1 || y === ROWS - 2) && x > 2 && x < 21 && (x % 3 === 0)) c = "olive";
+        g[y * COLS + x] = c;
+      }
+    }
+    return g;
+  }
+
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function generate(name, isInitial){
+    var seed = baseSeeds[name] + generations[name] * 101;
+    if(!isInitial) generations[name]++;
+    patternSeed = seed;
+    tileSeed = seed;
+    if(name === "medallion") grid = medallion(seed);
+    else if(name === "wave") grid = wave(seed);
+    else grid = scatter(seed);
+    recalcCount();
+    setPatternButton(name);
+    lastPlaced = null;
+    draw();
+  }
+
+  function drawGrout(){
+    ctx.fillStyle = "#c7b7a0";
+    ctx.fillRect(0, 0, W, H);
+
+    var shadow = ctx.createLinearGradient(0, 0, W, H);
+    shadow.addColorStop(0, "rgba(255,248,235,.12)");
+    shadow.addColorStop(0.5, "rgba(90,68,44,.03)");
+    shadow.addColorStop(1, "rgba(70,50,30,.08)");
+    ctx.fillStyle = shadow;
+    ctx.fillRect(0, 0, W, H);
+
+    // mortar flecks
+    for(var i = 0; i < 900; i++){
+      var x = hash(i, 3, 7) * W;
+      var y = hash(i, 9, 13) * H;
+      var r = 0.35 + hash(i, 4, 19) * 0.9;
+      ctx.beginPath();
+      ctx.fillStyle = hash(i, 8, 23) > 0.5
+        ? "rgba(255,250,240,.16)"
+        : "rgba(78,58,38,.10)";
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function tilePolygon(x, y, idx){
+    var x0 = x * CELL + GAP, y0 = y * CELL + GAP;
+    var x1 = (x + 1) * CELL - GAP, y1 = (y + 1) * CELL - GAP;
+    var j = 1.35;
+    var a1 = (hash(idx, 1, tileSeed) - 0.5) * j * 2;
+    var a2 = (hash(idx, 2, tileSeed) - 0.5) * j * 2;
+    var b1 = (hash(idx, 3, tileSeed) - 0.5) * j * 2;
+    var b2 = (hash(idx, 4, tileSeed) - 0.5) * j * 2;
+    var c1 = (hash(idx, 5, tileSeed) - 0.5) * j * 2;
+    var c2 = (hash(idx, 6, tileSeed) - 0.5) * j * 2;
+    var d1 = (hash(idx, 7, tileSeed) - 0.5) * j * 2;
+    var d2 = (hash(idx, 8, tileSeed) - 0.5) * j * 2;
+    return [
+      { x: x0 + a1, y: y0 + a2 },
+      { x: x1 + b1, y: y0 + b2 },
+      { x: x1 + c1, y: y1 + c2 },
+      { x: x0 + d1, y: y1 + d2 }
+    ];
+  }
+
+  function drawTile(x, y, colorName, idx){
+    var pts = tilePolygon(x, y, idx);
+    var base = colors[colorName];
+    var amt = (hash(x, y, tileSeed + 31) - 0.5) * 14;
+    var fill = shade(base, amt);
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for(var i = 1; i < 4; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+
+    // top / left bevel
+    ctx.beginPath();
+    ctx.moveTo(pts[3].x, pts[3].y);
+    ctx.lineTo(pts[0].x, pts[0].y);
+    ctx.lineTo(pts[1].x, pts[1].y);
+    ctx.strokeStyle = "rgba(255,250,238,.24)";
+    ctx.lineWidth = 0.9;
+    ctx.stroke();
+
+    // bottom / right shadow
+    ctx.beginPath();
+    ctx.moveTo(pts[1].x, pts[1].y);
+    ctx.lineTo(pts[2].x, pts[2].y);
+    ctx.lineTo(pts[3].x, pts[3].y);
+    ctx.strokeStyle = "rgba(48,32,18,.20)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // occasional limestone speck
+    if(hash(x, y, tileSeed + 88) > 0.76){
+      var sx = x * CELL + 10 + hash(x, y, 5) * 20;
+      var sy = y * CELL + 10 + hash(x, y, 9) * 20;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 0.8 + hash(x, y, 12) * 0.7, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,252,244,.22)";
+      ctx.fill();
+    }
+  }
+
+  function drawHover(){
+    if(!hover) return;
+    var x = hover.x * CELL, y = hover.y * CELL;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,249,232,.92)";
+    ctx.lineWidth = 1.6;
+    ctx.shadowColor = "rgba(255,238,200,.7)";
+    ctx.shadowBlur = 7;
+    ctx.strokeRect(x + GAP - 0.5, y + GAP - 0.5, CELL - GAP * 2 + 1, CELL - GAP * 2 + 1);
+    ctx.restore();
+  }
+
+  function drawFlash(){
+    if(!lastPlaced) return;
+    var elapsed = performance.now() - flashStart;
+    if(elapsed > 380){ lastPlaced = null; return; }
+    var p = 1 - elapsed / 380;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,236,192," + (p * 0.85) + ")";
+    ctx.lineWidth = 1.4;
+    ctx.shadowColor = "rgba(255,220,150,.8)";
+    ctx.shadowBlur = 10 * p;
+    ctx.strokeRect(lastPlaced.x * CELL + 4, lastPlaced.y * CELL + 4, CELL - 8, CELL - 8);
+    ctx.restore();
+  }
+
+  function draw(){
+    drawGrout();
+    for(var y = 0; y < ROWS; y++){
+      for(var x = 0; x < COLS; x++){
+        var idx = y * COLS + x;
+        if(grid[idx]) drawTile(x, y, grid[idx], idx);
+      }
+    }
+    drawHover();
+    drawFlash();
+  }
+
+  function cellFromEvent(e){
+    var rect = canvas.getBoundingClientRect();
+    var px = (e.clientX - rect.left) / rect.width * W;
+    var py = (e.clientY - rect.top) / rect.height * H;
+    if(px < 0 || py < 0 || px >= W || py >= H) return null;
+    return { x: Math.floor(px / CELL), y: Math.floor(py / CELL) };
+  }
+
+  function paintCell(cell){
+    if(!cell) return;
+    var idx = cell.y * COLS + cell.x;
+    if(grid[idx] === selected){
+      lastPlaced = { x: cell.x, y: cell.y };
+      flashStart = performance.now();
+      return;
+    }
+    grid[idx] = selected;
+    recalcCount();
+    lastPlaced = { x: cell.x, y: cell.y };
+    flashStart = performance.now();
+    draw();
+  }
+
+  function animateFlash(){
+    if(!lastPlaced) return;
+    draw();
+    requestAnimationFrame(animateFlash);
+  }
+
+  function updateHover(cell){
+    var changed = (!hover && cell) || (hover && !cell) || (hover && cell && (hover.x !== cell.x || hover.y !== cell.y));
+    hover = cell;
+    if(changed) draw();
+  }
+
+  stoneBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      selected = btn.dataset.color;
+      stoneBtns.forEach(function(b){
+        b.setAttribute("aria-pressed", b.dataset.color === selected ? "true" : "false");
+      });
+    });
+  });
+
+  patternBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      generate(btn.dataset.pattern, false);
+    });
+  });
+
+  clearBtn.addEventListener("click", function(){
+    grid = new Array(COLS * ROWS).fill(null);
+    setCount(0);
+    lastPlaced = null;
+    activePattern = null;
+    patternBtns.forEach(function(b){ b.setAttribute("aria-pressed", "false"); });
+    draw();
+  });
+
+  canvas.addEventListener("pointerdown", function(e){
+    var cell = cellFromEvent(e);
+    if(!cell) return;
+    painting = true;
+    try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+    paintCell(cell);
+    updateHover(cell);
+    e.preventDefault();
+  });
+
+  canvas.addEventListener("pointermove", function(e){
+    var cell = cellFromEvent(e);
+    updateHover(cell);
+    if(painting) paintCell(cell);
+  });
+
+  function stopPainting(){
+    painting = false;
+  }
+  window.addEventListener("pointerup", stopPainting);
+  window.addEventListener("pointercancel", stopPainting);
+
+  canvas.addEventListener("pointerleave", function(){
+    if(!painting){
+      hover = null;
+      draw();
+    }
+  });
+
+  canvas.addEventListener("pointerenter", function(e){
+    updateHover(cellFromEvent(e));
+  });
+
+  // redraw flash with rAF only while active
+  var flashLoop = window.setInterval(function(){
+    if(lastPlaced){
+      draw();
+    }
+  }, 60);
+
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    var dpr = Math.min(2.5, window.devicePixelRatio || 1);
+    var w = Math.max(1, Math.round(rect.width * dpr));
+    var h = Math.max(1, Math.round(rect.height * dpr));
+    if(canvas.width !== w || canvas.height !== h){
+      canvas.width = w;
+      canvas.height = h;
+    }
+    ctx.setTransform(w / W, 0, 0, h / H, 0, 0);
+    draw();
+  }
+
+  if(window.ResizeObserver){
+    new ResizeObserver(resize).observe(canvas);
+  } else {
+    window.addEventListener("resize", resize);
+  }
+
+  resize();
+  generate("medallion", true);
+})();
+</script>
+</body>
+</html>

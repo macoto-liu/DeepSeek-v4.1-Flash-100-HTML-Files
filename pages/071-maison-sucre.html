@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maison Sucré — The sweet course</title>
+<style>
+  :root{
+    --forest:#0b241d;
+    --forest-mid:#0f2e24;
+    --forest-deep:#071a14;
+    --cream:#f4ead7;
+    --cream-warm:#f8f0e1;
+    --cream-deep:#ecdfc7;
+    --ink:#2f2a20;
+    --ink-soft:#544b3b;
+    --muted:#7c6f5b;
+    --gold:#b0894a;
+    --gold-bright:#c9a86a;
+    --gold-dark:#8d682f;
+    --gold-line:rgba(176,137,74,.38);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--forest-deep)}
+  body{
+    margin:0;
+    min-height:100dvh;
+    color:var(--cream);
+    font-family:var(--sans);
+    background:
+      radial-gradient(1100px 760px at 50% -10%, #174638 0%, #0f2e24 42%, #0a2019 72%, #071a14 100%);
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(rgba(201,168,106,.11) 1px, transparent 1.2px);
+    background-size:30px 30px;
+    opacity:.24;
+    -webkit-mask-image:radial-gradient(ellipse at 50% 20%, #000 0%, transparent 74%);
+    mask-image:radial-gradient(ellipse at 50% 20%, #000 0%, transparent 74%);
+  }
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+  .sprite{position:absolute;width:0;height:0;overflow:hidden}
+
+  .botanical{
+    position:fixed;z-index:0;pointer-events:none;
+    color:var(--gold-bright);
+    opacity:.2;
+  }
+  .b-left{left:-40px;bottom:-80px;width:min(330px,26vw);height:auto;transform:rotate(-6deg)}
+  .b-right{right:-60px;top:60px;width:min(290px,22vw);height:auto;transform:scaleX(-1) rotate(8deg)}
+
+  .shell{position:relative;z-index:1;width:100%;max-width:1180px;margin:0 auto;padding:0 clamp(18px,3.4vw,44px)}
+
+  .masthead{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:26px;
+    padding-top:24px;
+    padding-bottom:20px;
+    border-bottom:1px solid rgba(201,168,106,.24);
+  }
+  .brand-block{display:flex;flex-direction:column;gap:7px}
+  .brand{
+    display:flex;align-items:center;gap:12px;
+    font-family:var(--serif);
+    font-size:clamp(19px,2.2vw,25px);
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--cream);
+    line-height:1;
+  }
+  .brand .fleuron{color:var(--gold-bright);font-size:15px;letter-spacing:0;transform:translateY(-1px)}
+  .tagline{
+    padding-left:31px;
+    font:400 8.5px/1 var(--mono);
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:rgba(244,234,215,.5);
+  }
+  .service{
+    display:flex;align-items:flex-start;gap:20px;
+    text-align:right;
+    font:400 9px/1.7 var(--mono);
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(244,234,215,.52);
+  }
+  .service .hours{
+    display:flex;flex-direction:column;align-items:flex-end;gap:4px;
+  }
+  .service .label{color:var(--gold-bright);letter-spacing:.24em}
+  .service strong{
+    font-family:var(--serif);
+    font-size:16px;
+    font-weight:400;
+    letter-spacing:.1em;
+    color:var(--cream);
+  }
+  .service em{font-style:normal;color:rgba(244,234,215,.38);letter-spacing:.16em}
+  .service .sep{width:1px;align-self:stretch;background:rgba(201,168,106,.25)}
+
+  main{padding:clamp(34px,5vh,58px) 0 0}
+
+  .card{
+    position:relative;
+    padding:clamp(24px,4vw,52px);
+    background:
+      radial-gradient(1000px 520px at 12% -10%, #fbf4e6 0%, rgba(251,244,230,0) 60%),
+      linear-gradient(155deg,#f6eddb 0%,#f1e6d1 62%,#ebddc5 100%);
+    color:var(--ink);
+    border:1px solid rgba(201,168,106,.55);
+    box-shadow:0 40px 90px -34px rgba(0,0,0,.75), 0 2px 0 rgba(255,255,255,.1) inset;
+  }
+  .card::before{
+    content:"";
+    position:absolute;inset:9px;
+    border:1px solid rgba(176,137,74,.32);
+    pointer-events:none;
+    z-index:1;
+  }
+  .card::after{
+    content:"";
+    position:absolute;inset:13px;
+    border:1px solid rgba(176,137,74,.14);
+    pointer-events:none;
+    z-index:1;
+  }
+  .paper-grain{
+    position:absolute;inset:0;width:100%;height:100%;
+    z-index:2;opacity:.22;mix-blend-mode:multiply;pointer-events:none;
+  }
+  .menu{
+    position:relative;
+    z-index:3;
+    display:grid;
+    grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+    gap:clamp(30px,4.6vw,64px);
+  }
+  .list-panel{min-width:0;padding-top:4px}
+  .eyebrow{
+    display:flex;align-items:center;gap:10px;
+    margin:0 0 18px;
+    font:500 8.5px/1 var(--mono);
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--gold-dark);
+  }
+  .eyebrow::after{content:"";height:1px;width:38px;background:var(--gold);opacity:.55}
+  h1{
+    margin:0;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(40px,5.1vw,60px);
+    line-height:.98;
+    letter-spacing:-.03em;
+    color:var(--ink);
+  }
+  h1 em{font-style:italic;color:var(--gold-dark);letter-spacing:-.02em}
+  .lede{
+    max-width:40ch;
+    margin:17px 0 0;
+    font-family:var(--serif);
+    font-size:14.5px;
+    line-height:1.65;
+    color:var(--ink-soft);
+  }
+
+  .tabs{
+    display:flex;
+    gap:26px;
+    margin-top:clamp(24px,3.6vh,34px);
+    border-bottom:1px solid rgba(176,137,74,.3);
+  }
+  .tab{
+    position:relative;
+    appearance:none;
+    border:0;
+    background:transparent;
+    padding:0 0 11px;
+    margin:0;
+    color:var(--muted);
+    font:500 9.5px/1 var(--mono);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:color .2s;
+  }
+  .tab::after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:-1px;
+    height:1.5px;
+    background:var(--gold-dark);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  }
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{color:var(--ink)}
+  .tab[aria-selected="true"]::after{transform:scaleX(1)}
+  .tab:focus-visible{outline:1px solid var(--gold-dark);outline-offset:4px}
+
+  .items{
+    margin-top:8px;
+    display:flex;
+    flex-direction:column;
+  }
+  .item{
+    position:relative;
+    appearance:none;
+    border:0;
+    border-bottom:1px solid rgba(176,137,74,.18);
+    background:transparent;
+    text-align:left;
+    padding:15px 12px 14px 14px;
+    color:var(--ink);
+    cursor:pointer;
+    transition:background .22s;
+  }
+  .item::before{
+    content:"";
+    position:absolute;left:0;top:50%;
+    width:4px;height:4px;
+    margin-top:-2px;
+    background:var(--gold-dark);
+    transform:rotate(45deg) scale(0);
+    transition:transform .25s;
+  }
+  .item:hover{background:rgba(176,137,74,.055)}
+  .item:focus-visible{outline:1px solid var(--gold-dark);outline-offset:-1px}
+  .item[aria-current="true"]{background:rgba(176,137,74,.09)}
+  .item[aria-current="true"]::before{transform:rotate(45deg) scale(1)}
+  .item-top{
+    display:flex;align-items:baseline;gap:9px;
+  }
+  .item-name{
+    font-family:var(--serif);
+    font-size:clamp(17px,1.8vw,20px);
+    letter-spacing:-.005em;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .leader{
+    flex:1;
+    min-width:14px;
+    margin:0 2px 3px;
+    border-bottom:1px dotted rgba(84,75,59,.5);
+    transform:translateY(-3px);
+  }
+  .item-price{
+    font-family:var(--serif);
+    font-size:15.5px;
+    color:var(--gold-dark);
+    white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .item-desc{
+    display:block;
+    margin-top:4px;
+    padding-right:24px;
+    font:400 11px/1.5 var(--sans);
+    letter-spacing:.015em;
+    color:var(--muted);
+  }
+  .item-chosen{
+    position:absolute;right:9px;bottom:13px;
+    font:500 7.5px/1 var(--mono);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--gold-dark);
+    opacity:0;
+    transition:opacity .2s;
+  }
+  .item.chosen .item-chosen{opacity:1}
+  .list-note{
+    margin:20px 0 0;
+    font:400 8.5px/1.8 var(--mono);
+    letter-spacing:.17em;
+    text-transform:uppercase;
+    color:rgba(84,75,59,.55);
+  }
+
+  .detail{
+    position:relative;
+    min-width:0;
+    padding-left:clamp(26px,3.4vw,52px);
+    border-left:1px solid rgba(176,137,74,.3);
+    display:flex;
+    flex-direction:column;
+  }
+  .plate-stage{
+    position:relative;
+    padding:8px 6px 0;
+    background:
+      radial-gradient(70% 80% at 50% 44%, #fcf6e9 0%, rgba(252,246,233,0) 72%);
+  }
+  .plate-art{
+    display:block;width:100%;height:auto;
+    overflow:visible;
+  }
+  .plate-art.anim{animation:artIn .55s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes artIn{
+    from{transform:translateY(7px) scale(.985)}
+    to{transform:none}
+  }
+  .stamp{
+    position:absolute;
+    right:clamp(4px,2vw,18px);
+    bottom:clamp(2px,2vw,14px);
+    width:86px;height:86px;
+    border:1px solid var(--gold-dark);
+    border-radius:50%;
+    display:grid;place-content:center;gap:3px;
+    text-align:center;
+    color:var(--gold-dark);
+    background:rgba(248,240,225,.72);
+    box-shadow:inset 0 0 0 4px rgba(176,137,74,.12);
+    transform:rotate(-12deg) scale(.8);
+    opacity:0;
+    transition:opacity .3s,transform .35s cubic-bezier(.2,.9,.25,1);
+    pointer-events:none;
+  }
+  .stamp::before{
+    content:"";
+    position:absolute;inset:5px;
+    border:1px dashed rgba(141,104,47,.6);
+    border-radius:50%;
+  }
+  .stamp span{
+    font-family:var(--serif);
+    font-size:17px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    font-style:italic;
+  }
+  .stamp small{
+    font:500 6px/1 var(--mono);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.7;
+  }
+  .detail.is-chosen .stamp{opacity:.92;transform:rotate(-12deg) scale(1)}
+
+  .detail-content{padding-top:clamp(12px,2vh,20px)}
+  .detail-content.anim{animation:detailIn .45s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes detailIn{
+    from{transform:translateY(8px)}
+    to{transform:none}
+  }
+  .detail-kicker{
+    margin:0 0 9px;
+    font:500 8.5px/1 var(--mono);
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--gold-dark);
+  }
+  .detail-name{
+    margin:0;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(29px,3.2vw,38px);
+    line-height:1.06;
+    letter-spacing:-.025em;
+    color:var(--ink);
+  }
+  .detail-desc{
+    margin:14px 0 0;
+    font-family:var(--serif);
+    font-size:14.5px;
+    line-height:1.72;
+    color:var(--ink-soft);
+  }
+  .pairing{
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px dotted rgba(141,104,47,.45);
+  }
+  .pairing .label{
+    display:block;
+    margin-bottom:5px;
+    font:500 8px/1 var(--mono);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--gold-dark);
+  }
+  .pairing p{
+    margin:0;
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:15px;
+    line-height:1.5;
+    color:var(--ink);
+  }
+  .detail-foot{
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    margin-top:22px;
+    padding-top:16px;
+    border-top:1px solid rgba(176,137,74,.28);
+  }
+  .price{display:flex;flex-direction:column;gap:4px}
+  .price .label{
+    font:500 7.5px/1 var(--mono);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .price output{
+    font-family:var(--serif);
+    font-size:27px;
+    line-height:1;
+    color:var(--gold-dark);
+    font-variant-numeric:tabular-nums;
+  }
+  .choose{
+    appearance:none;
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    padding:13px 20px;
+    border:1px solid var(--gold-dark);
+    background:transparent;
+    color:var(--gold-dark);
+    font:500 9px/1 var(--mono);
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .24s,color .24s,box-shadow .24s;
+    white-space:nowrap;
+  }
+  .choose:hover{background:var(--gold-dark);color:var(--cream)}
+  .choose:focus-visible{outline:1px solid var(--gold-dark);outline-offset:4px}
+  .choose.is-chosen{background:var(--gold-dark);color:var(--cream);box-shadow:0 8px 20px -12px rgba(70,50,20,.8)}
+  .choose .check{display:none;font-size:11px;line-height:1;letter-spacing:0}
+  .choose.is-chosen .check{display:inline}
+  .chosen-note{
+    min-height:18px;
+    margin:11px 0 0;
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:12.5px;
+    line-height:1.5;
+    color:var(--gold-dark);
+    opacity:0;
+    transition:opacity .25s;
+  }
+  .chosen-note.show{opacity:1}
+
+  .seal{
+    position:absolute;
+    z-index:6;
+    top:-26px;
+    right:-8px;
+    width:104px;height:104px;
+    filter:drop-shadow(0 10px 18px rgba(60,40,15,.35));
+    transform:rotate(-7deg);
+  }
+
+  .card-foot{
+    position:relative;
+    z-index:3;
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    margin-top:clamp(26px,4vh,42px);
+    padding-top:16px;
+    border-top:1px solid rgba(176,137,74,.28);
+    font:400 8px/1.6 var(--mono);
+    letter-spacing:.19em;
+    text-transform:uppercase;
+    color:rgba(84,75,59,.6);
+  }
+
+  .page-footer{
+    position:relative;z-index:1;
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    align-items:center;
+    gap:16px 28px;
+    margin-top:clamp(28px,4.6vh,48px);
+    padding-top:24px;
+    padding-bottom:34px;
+    border-top:1px solid rgba(201,168,106,.2);
+    font:400 8.5px/1.8 var(--mono);
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(244,234,215,.42);
+  }
+  .page-footer .fmark{
+    font-family:var(--serif);
+    font-size:14px;
+    letter-spacing:.24em;
+    color:rgba(244,234,215,.7);
+  }
+  .page-footer a{color:rgba(244,234,215,.55);text-decoration:none;border-bottom:1px solid rgba(201,168,106,.3)}
+  .page-footer a:hover{color:var(--cream)}
+  .page-footer .right{text-align:right;color:rgba(201,168,106,.6)}
+
+  @media (max-width:920px){
+    .menu{grid-template-columns:minmax(0,1fr);gap:28px}
+    .detail{
+      border-left:0;
+      border-top:1px solid rgba(176,137,74,.3);
+      padding-left:0;
+      padding-top:26px;
+    }
+    .plate-stage{max-width:520px;margin:0 auto;width:100%}
+    .detail-content,.detail-foot{max-width:560px;margin-left:auto;margin-right:auto}
+    .detail-content{text-align:left}
+    .detail-foot{width:100%}
+    .seal{width:88px;height:88px;top:-22px;right:2px}
+  }
+  @media (max-width:620px){
+    .masthead{flex-direction:column;gap:14px;padding-top:18px}
+    .service{text-align:left;width:100%;justify-content:space-between}
+    .service .hours{align-items:flex-start}
+    .tagline{padding-left:0}
+    .brand{font-size:18px;letter-spacing:.16em}
+    .card{padding:26px 18px 24px}
+    .card::before{inset:6px}
+    .card::after{inset:9px}
+    main{padding-top:30px}
+    h1{font-size:clamp(36px,10.6vw,48px)}
+    .lede{font-size:13.5px}
+    .tabs{gap:22px}
+    .item{padding:13px 8px 13px 10px}
+    .item-name{font-size:17px;white-space:normal}
+    .item-price{font-size:14px}
+    .item-desc{font-size:10.5px;padding-right:0}
+    .item-chosen{bottom:11px}
+    .seal{width:72px;height:72px;top:-16px;right:0}
+    .detail-foot{flex-wrap:wrap;gap:12px}
+    .choose{flex:1;min-width:150px}
+    .page-footer{grid-template-columns:1fr;gap:8px}
+    .page-footer .right{text-align:left}
+    .b-left,.b-right{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="gPlate" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fdf8ec"/>
+        <stop offset=".55" stop-color="#f1e4cb"/>
+        <stop offset="1" stop-color="#ddc8a4"/>
+      </linearGradient>
+      <radialGradient id="gPlateIn" cx=".42" cy=".32" r=".82">
+        <stop offset="0" stop-color="#fffdf6"/>
+        <stop offset="1" stop-color="#eedfc5"/>
+      </radialGradient>
+      <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#e2ca8e"/>
+        <stop offset=".5" stop-color="#b38c4a"/>
+        <stop offset="1" stop-color="#8d682f"/>
+      </linearGradient>
+      <linearGradient id="gLemon" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fbe08a"/>
+        <stop offset=".55" stop-color="#f2c845"/>
+        <stop offset="1" stop-color="#dfa92c"/>
+      </linearGradient>
+      <linearGradient id="gCream" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fffaf0"/>
+        <stop offset=".6" stop-color="#f5e7ce"/>
+        <stop offset="1" stop-color="#e6d1ae"/>
+      </linearGradient>
+      <linearGradient id="gChoc" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#7a4a2a"/>
+        <stop offset=".55" stop-color="#54301c"/>
+        <stop offset="1" stop-color="#341d11"/>
+      </linearGradient>
+      <linearGradient id="gSouffle" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f9e6cb"/>
+        <stop offset=".55" stop-color="#d8a878"/>
+        <stop offset="1" stop-color="#a96b41"/>
+      </linearGradient>
+      <radialGradient id="gBerry" cx=".35" cy=".3" r=".8">
+        <stop offset="0" stop-color="#ef7b88"/>
+        <stop offset=".55" stop-color="#c93f52"/>
+        <stop offset="1" stop-color="#8e2335"/>
+      </radialGradient>
+      <linearGradient id="gLavender" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#dfd2f3"/>
+        <stop offset=".5" stop-color="#c3aee6"/>
+        <stop offset="1" stop-color="#a98dcc"/>
+      </linearGradient>
+      <linearGradient id="gBaked" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f4d9a2"/>
+        <stop offset=".6" stop-color="#e0b56f"/>
+        <stop offset="1" stop-color="#c9954f"/>
+      </linearGradient>
+      <linearGradient id="gPistachio" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ccd59a"/>
+        <stop offset="1" stop-color="#8d9a4e"/>
+      </linearGradient>
+
+      <symbol id="s-plate" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="238" rx="148" ry="21" fill="#3b2a18" opacity=".16"/>
+        <ellipse cx="210" cy="216" rx="164" ry="47" fill="url(#gPlate)" stroke="#b08a4a" stroke-width="1" stroke-opacity=".55"/>
+        <ellipse cx="210" cy="212" rx="136" ry="36" fill="none" stroke="#a9813f" stroke-width=".8" stroke-dasharray="1.5 5" stroke-opacity=".55"/>
+        <ellipse cx="210" cy="211" rx="112" ry="29" fill="url(#gPlateIn)"/>
+        <path d="M58 214c14 22 76 38 152 38s138-16 152-38" fill="none" stroke="#fffaf0" stroke-width="2" stroke-opacity=".55"/>
+        <ellipse cx="210" cy="216" rx="164" ry="47" fill="none" stroke="#8d682f" stroke-width=".5" stroke-opacity=".25"/>
+      </symbol>
+
+      <symbol id="d-tarte" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="206" rx="88" ry="19" fill="#5a401f" opacity=".14"/>
+        <ellipse cx="210" cy="194" rx="82" ry="25" fill="#c99a56"/>
+        <ellipse cx="210" cy="194" rx="82" ry="25" fill="none" stroke="#a9762f" stroke-width="5" stroke-dasharray="2.5 7" opacity=".5"/>
+        <ellipse cx="210" cy="189" rx="69" ry="20" fill="#e7c489"/>
+        <ellipse cx="210" cy="187" rx="63" ry="17" fill="url(#gLemon)"/>
+        <ellipse cx="197" cy="181" rx="28" ry="5" fill="#ffe58b" opacity=".55"/>
+        <g stroke="#dcc59a" stroke-width=".9">
+          <g transform="translate(152 172)">
+            <circle r="13" fill="url(#gCream)"/>
+            <path d="M-6 1c0-6 5-9 8-5c4-4 7 1 3 4c3 5-3 8-5 3" fill="none" stroke="#cdb184" stroke-width="1.1"/>
+            <path d="M-3-8c2-3 5-3 6 0" fill="none" stroke="#c49a5f" stroke-width="1.2" opacity=".55"/>
+          </g>
+          <g transform="translate(177 163)">
+            <circle r="12" fill="url(#gCream)"/>
+            <path d="M-5 1c0-5 4-8 7-4c3-4 6 0 3 3c2 4-3 7-5 3" fill="none" stroke="#cdb184" stroke-width="1.1"/>
+            <path d="M-2-7c2-3 4-3 5 0" fill="none" stroke="#c49a5f" stroke-width="1.2" opacity=".5"/>
+          </g>
+          <g transform="translate(210 158)">
+            <circle r="14" fill="url(#gCream)"/>
+            <path d="M-7 1c0-6 5-9 8-5c4-4 7 1 3 4c3 5-3 8-5 3" fill="none" stroke="#cdb184" stroke-width="1.1"/>
+            <path d="M-3-9c2-3 5-3 6 0" fill="none" stroke="#c49a5f" stroke-width="1.2" opacity=".5"/>
+          </g>
+          <g transform="translate(243 163)">
+            <circle r="12" fill="url(#gCream)"/>
+            <path d="M-5 1c0-5 4-8 7-4c3-4 6 0 3 3c2 4-3 7-5 3" fill="none" stroke="#cdb184" stroke-width="1.1"/>
+          </g>
+          <g transform="translate(268 172)">
+            <circle r="11" fill="url(#gCream)"/>
+            <path d="M-5 1c0-5 4-8 7-4c3-4 6 0 3 3c2 4-3 7-5 3" fill="none" stroke="#cdb184" stroke-width="1.1"/>
+          </g>
+        </g>
+        <path d="M300 186c10-2 18-8 22-16c-2 12-8 20-19 24z" fill="#8d9a4e" opacity=".85"/>
+      </symbol>
+
+      <symbol id="d-framboise" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="206" rx="88" ry="19" fill="#5a401f" opacity=".14"/>
+        <ellipse cx="210" cy="194" rx="82" ry="25" fill="#c99a56"/>
+        <ellipse cx="210" cy="194" rx="82" ry="25" fill="none" stroke="#a9762f" stroke-width="5" stroke-dasharray="2.5 7" opacity=".5"/>
+        <ellipse cx="210" cy="188" rx="70" ry="20" fill="#e8c6a8"/>
+        <ellipse cx="210" cy="186" rx="64" ry="17" fill="#f5e4da"/>
+        <ellipse cx="198" cy="181" rx="30" ry="5" fill="#fdf3ed" opacity=".75"/>
+        <g>
+          <g transform="translate(172 179)">
+            <circle r="10" fill="url(#gBerry)"/>
+            <circle cx="-3" cy="-3" r="2.6" fill="#f39aa4" opacity=".55"/>
+            <circle cx="3" cy="3" r="2" fill="#7e1b2b" opacity=".5"/>
+            <circle cx="1" cy="-1" r="8" fill="none" stroke="#8e2635" stroke-width=".6" opacity=".5"/>
+          </g>
+          <g transform="translate(196 171)">
+            <circle r="10" fill="url(#gBerry)"/>
+            <circle cx="-3" cy="-3" r="2.6" fill="#f39aa4" opacity=".55"/>
+            <circle cx="3" cy="3" r="2" fill="#7e1b2b" opacity=".5"/>
+            <circle cx="1" cy="-1" r="8" fill="none" stroke="#8e2635" stroke-width=".6" opacity=".5"/>
+          </g>
+          <g transform="translate(222 168)">
+            <circle r="10" fill="url(#gBerry)"/>
+            <circle cx="-3" cy="-3" r="2.6" fill="#f39aa4" opacity=".55"/>
+            <circle cx="3" cy="3" r="2" fill="#7e1b2b" opacity=".5"/>
+            <circle cx="1" cy="-1" r="8" fill="none" stroke="#8e2635" stroke-width=".6" opacity=".5"/>
+          </g>
+          <g transform="translate(247 176)">
+            <circle r="9.5" fill="url(#gBerry)"/>
+            <circle cx="-3" cy="-3" r="2.4" fill="#f39aa4" opacity=".55"/>
+            <circle cx="3" cy="3" r="2" fill="#7e1b2b" opacity=".5"/>
+          </g>
+          <g transform="translate(184 192)">
+            <circle r="9.5" fill="url(#gBerry)"/>
+            <circle cx="-3" cy="-3" r="2.4" fill="#f39aa4" opacity=".55"/>
+            <circle cx="3" cy="3" r="2" fill="#7e1b2b" opacity=".5"/>
+          </g>
+          <g transform="translate(211 190)">
+            <circle r="10" fill="url(#gBerry)"/>
+            <circle cx="-3" cy="-3" r="2.6" fill="#f39aa4" opacity=".55"/>
+            <circle cx="3" cy="3" r="2" fill="#7e1b2b" opacity=".5"/>
+          </g>
+          <g transform="translate(237 192)">
+            <circle r="9.5" fill="url(#gBerry)"/>
+            <circle cx="-3" cy="-3" r="2.4" fill="#f39aa4" opacity=".55"/>
+          </g>
+        </g>
+        <path d="M210 162c7-12 20-16 30-12c-7 12-19 17-30 12z" fill="#93a25a"/>
+        <path d="M210 162c-10-8-22-8-29-2c9 9 21 10 29 2z" fill="#7f8f48"/>
+        <g fill="#fbf4e6" opacity=".8">
+          <circle cx="160" cy="188" r=".9"/><circle cx="230" cy="202" r=".9"/><circle cx="264" cy="190" r=".8"/><circle cx="196" cy="204" r=".8"/>
+        </g>
+      </symbol>
+
+      <symbol id="d-souffle" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="204" rx="82" ry="18" fill="#5a401f" opacity=".14"/>
+        <path d="M148 148h124l-12 46c-2 9-18 15-50 15s-48-6-50-15z" fill="#f7eedc" stroke="#cbb794" stroke-width="1.1"/>
+        <ellipse cx="210" cy="149" rx="62" ry="13" fill="#e2cfad"/>
+        <ellipse cx="210" cy="149" rx="52" ry="9" fill="#8a5a33"/>
+        <path d="M158 149c0-35 22-56 52-56s52 21 52 56z" fill="url(#gSouffle)"/>
+        <path d="M178 148c2-26 13-41 32-44c-20 13-25 29-25 44z" fill="#f8e7cf" opacity=".5"/>
+        <path d="M212 96c-8 10-11 20-8 29" stroke="#a96b41" stroke-width="1.1" fill="none" opacity=".55"/>
+        <path d="M206 150c-1-9 1-16 4-22" stroke="#f2d9bb" stroke-width="1.4" fill="none" opacity=".5"/>
+        <g fill="#6b3f26" opacity=".55">
+          <circle cx="187" cy="120" r="1"/><circle cx="226" cy="112" r=".9"/><circle cx="235" cy="133" r=".8"/><circle cx="196" cy="139" r=".8"/><circle cx="215" cy="124" r=".9"/>
+        </g>
+        <ellipse cx="172" cy="188" rx="7" ry="3" fill="#cbb794" opacity=".6"/>
+        <ellipse cx="252" cy="188" rx="7" ry="3" fill="#cbb794" opacity=".6"/>
+        <path d="M300 194c14-4 24-14 26-26c2 15-6 27-20 32z" fill="#93a25a" opacity=".7"/>
+      </symbol>
+
+      <symbol id="d-parisbrest" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="202" rx="94" ry="21" fill="#5a401f" opacity=".14"/>
+        <ellipse cx="210" cy="174" rx="86" ry="45" fill="none" stroke="#a9762f" stroke-width="38" opacity=".85"/>
+        <ellipse cx="210" cy="172" rx="86" ry="45" fill="none" stroke="#cf9f58" stroke-width="30"/>
+        <ellipse cx="210" cy="169" rx="86" ry="45" fill="none" stroke="#efdcb9" stroke-width="16" stroke-dasharray="20 8"/>
+        <g fill="url(#gCream)" stroke="#d3b88a" stroke-width=".8">
+          <circle cx="210" cy="127" r="11"/>
+          <circle cx="262" cy="141" r="10"/>
+          <circle cx="285" cy="175" r="10.5"/>
+          <circle cx="262" cy="208" r="10"/>
+          <circle cx="210" cy="223" r="11"/>
+          <circle cx="158" cy="208" r="10"/>
+          <circle cx="135" cy="175" r="10.5"/>
+          <circle cx="158" cy="141" r="10"/>
+        </g>
+        <g fill="none" stroke="#cdb184" stroke-width="1">
+          <path d="M204 127c0-5 4-7 7-4c3-3 6 1 3 3"/>
+          <path d="M278 175c0-5 4-7 7-4c3-3 6 1 3 3"/>
+          <path d="M204 223c0-5 4-7 7-4c3-3 6 1 3 3"/>
+          <path d="M129 175c0-5 4-7 7-4c3-3 6 1 3 3"/>
+        </g>
+        <g fill="#8a5a33">
+          <ellipse cx="231" cy="150" rx="4" ry="3"/>
+          <ellipse cx="245" cy="194" rx="4" ry="3"/>
+          <ellipse cx="176" cy="188" rx="4" ry="3"/>
+          <ellipse cx="190" cy="158" rx="3.4" ry="2.6"/>
+        </g>
+        <g fill="#fdf8ec" opacity=".9">
+          <circle cx="210" cy="145" r="1.1"/><circle cx="247" cy="166" r="1"/><circle cx="230" cy="207" r="1"/><circle cx="172" cy="170" r="1"/><circle cx="190" cy="198" r=".9"/>
+        </g>
+      </symbol>
+
+      <symbol id="d-macaron" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="207" rx="72" ry="15" fill="#5a401f" opacity=".13"/>
+        <g transform="translate(266 164) rotate(8) scale(.78)">
+          <ellipse cx="0" cy="12" rx="54" ry="18" fill="#e4cfa9"/>
+          <ellipse cx="0" cy="4" rx="54" ry="18" fill="#f6e9cf"/>
+          <ellipse cx="0" cy="16" rx="50" ry="7" fill="#fbf3e2"/>
+          <ellipse cx="0" cy="26" rx="54" ry="17" fill="#e8d3b0"/>
+          <ellipse cx="-18" cy="-1" rx="17" ry="5" fill="#fffaee" opacity=".7"/>
+        </g>
+        <g transform="rotate(-4 196 180)">
+          <ellipse cx="196" cy="202" rx="62" ry="14" fill="#5a401f" opacity=".1"/>
+          <ellipse cx="196" cy="187" rx="58" ry="19" fill="#b49bd6"/>
+          <path d="M138 173q58 13 116 0v8q-58 14-116 0z" fill="#cbb7e8"/>
+          <ellipse cx="196" cy="176" rx="52" ry="8" fill="#f7ecd8"/>
+          <ellipse cx="196" cy="162" rx="58" ry="20" fill="url(#gLavender)"/>
+          <ellipse cx="178" cy="154" rx="20" ry="7" fill="#eee4fa" opacity=".6"/>
+          <ellipse cx="196" cy="191" rx="58" ry="15" fill="none" stroke="#a98dcc" stroke-width=".8" opacity=".6"/>
+        </g>
+        <g fill="#8d682f" opacity=".6">
+          <circle cx="150" cy="198" r="1"/><circle cx="246" cy="204" r=".9"/><circle cx="228" cy="210" r=".8"/>
+        </g>
+      </symbol>
+
+      <symbol id="d-canele" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="206" rx="78" ry="17" fill="#5a401f" opacity=".14"/>
+        <g transform="translate(262 156) scale(.68)" opacity=".92">
+          <path d="M-40 0q40-10 80 0l-9 44q-3 12-31 12t-31-12z" fill="url(#gChoc)" stroke="#6b3a1e" stroke-width="1.2"/>
+          <ellipse cx="0" cy="0" rx="40" ry="10" fill="#7a4424"/>
+          <ellipse cx="0" cy="-1" rx="30" ry="6" fill="#4a2614"/>
+        </g>
+        <g>
+          <path d="M166 144q44-11 88 0l-10 48q-3 13-34 13t-34-13z" fill="url(#gChoc)" stroke="#5c321c" stroke-width="1.2"/>
+          <ellipse cx="210" cy="144" rx="44" ry="11" fill="#7a4424"/>
+          <ellipse cx="210" cy="143" rx="33" ry="7" fill="#40220f"/>
+          <ellipse cx="203" cy="142" rx="18" ry="3.6" fill="#8d5a33" opacity=".55"/>
+          <g stroke="#4a2716" stroke-width="2" opacity=".55" fill="none">
+            <path d="M178 150l-5 38"/>
+            <path d="M196 152l-3 40"/>
+            <path d="M224 152l3 40"/>
+            <path d="M242 150l5 38"/>
+          </g>
+          <ellipse cx="192" cy="160" rx="9" ry="15" fill="#b47d4e" opacity=".22"/>
+          <ellipse cx="210" cy="204" rx="34" ry="5" fill="#2a160b" opacity=".5"/>
+        </g>
+      </symbol>
+
+      <symbol id="d-madeleine" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="205" rx="82" ry="16" fill="#5a401f" opacity=".13"/>
+        <g transform="translate(258 158) rotate(-12) scale(.8)">
+          <path d="M-58 6c0-25 26-43 58-43s58 18 58 43c0 19-24 30-58 30s-58-11-58-30z" fill="url(#gBaked)" stroke="#bb9559" stroke-width="1"/>
+          <g stroke="#a97f46" stroke-width=".7" opacity=".5">
+            <path d="M0 34V-32"/><path d="M0 34L-24-27"/><path d="M0 34L24-27"/><path d="M0 34L-42-14"/><path d="M0 34L42-14"/><path d="M0 34L-54 2"/><path d="M0 34L54 2"/>
+          </g>
+        </g>
+        <g transform="translate(184 174) rotate(-4)">
+          <path d="M-66 4c0-27 29-46 66-46s66 19 66 46c0 21-27 33-66 33s-66-12-66-33z" fill="url(#gBaked)" stroke="#b98f52" stroke-width="1"/>
+          <g stroke="#a97f46" stroke-width=".8" opacity=".55">
+            <path d="M0 37V-38"/><path d="M0 37L-27-32"/><path d="M0 37L27-32"/><path d="M0 37L-48-17"/><path d="M0 37L48-17"/><path d="M0 37L-60 3"/><path d="M0 37L60 3"/>
+          </g>
+          <ellipse cx="-22" cy="-16" rx="26" ry="10" fill="#fbe8bf" opacity=".4"/>
+          <g fill="#fffaf0" opacity=".8">
+            <circle cx="-32" cy="8" r="1"/><circle cx="18" cy="-14" r=".9"/><circle cx="38" cy="10" r="1"/><circle cx="-6" cy="22" r=".9"/>
+          </g>
+        </g>
+      </symbol>
+
+      <symbol id="d-pave" viewBox="0 0 420 300">
+        <ellipse cx="210" cy="220" rx="92" ry="18" fill="#5a401f" opacity=".15"/>
+        <path d="M150 166L202 146l76 14l-50 20z" fill="#7a4a2a"/>
+        <path d="M150 166l78 14v36l-78-14z" fill="#4a2c1b"/>
+        <path d="M228 180l50-20v34l-50 24z" fill="#603a22"/>
+        <path d="M150 166l78 14l50-20" fill="none" stroke="#8d5a33" stroke-width=".8" opacity=".7"/>
+        <path d="M158 169l66 12v10l-66-12z" fill="#a06a3e" opacity=".35"/>
+        <path d="M172 173c14 4 26 8 38 12c4 8 10 16 18 22" fill="none" stroke="#c98a45" stroke-width="3" opacity=".7"/>
+        <g fill="url(#gGold)">
+          <path d="M196 154l10-3l4 6l-11 3z"/>
+          <path d="M236 165l7-4l4 4l-8 4z"/>
+          <path d="M166 178l8-2l3 4l-9 2z"/>
+        </g>
+        <g fill="#2f1a10" opacity=".55">
+          <circle cx="186" cy="190" r="1.2"/><circle cx="210" cy="196" r="1"/><circle cx="232" cy="200" r="1.1"/>
+        </g>
+        <g transform="translate(300 188)">
+          <ellipse cx="0" cy="6" rx="26" ry="9" fill="#5a401f" opacity=".12"/>
+          <path d="M-22 2c4-12 16-18 27-14c10 3 14 12 11 19c-8 5-28 5-38-5z" fill="url(#gCream)" stroke="#d6bd93" stroke-width=".9"/>
+          <path d="M-14-3c5-5 11-6 16-3" fill="none" stroke="#c9ab7c" stroke-width="1.2" opacity=".7"/>
+        </g>
+        <path d="M282 168c8-5 15-12 17-20c2 10-3 19-13 24z" fill="#93a25a" opacity=".7"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <svg class="botanical b-left" viewBox="0 0 300 600" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="1.1">
+      <path d="M42 610C64 480 46 382 74 282c16-58 44-114 76-168"/>
+      <path d="M74 282C54 258 32 246 8 244M74 282c26-14 46-34 56-60M86 230c-14-30-38-48-64-54M88 226c30-6 54-22 68-44M110 176c-10-30-30-50-54-60M116 168c30-2 54-14 72-34M148 118c-4-30-18-54-38-70M158 108c26 4 48 0 66-12"/>
+      <g fill="currentColor" stroke="none" opacity=".85">
+        <ellipse cx="8" cy="244" rx="10" ry="4" transform="rotate(-8 8 244)"/>
+        <ellipse cx="130" cy="222" rx="12" ry="4" transform="rotate(-42 130 222)"/>
+        <ellipse cx="22" cy="176" rx="11" ry="4" transform="rotate(18 22 176)"/>
+        <ellipse cx="156" cy="182" rx="11" ry="4" transform="rotate(-34 156 182)"/>
+        <ellipse cx="56" cy="116" rx="12" ry="4" transform="rotate(24 56 116)"/>
+        <ellipse cx="188" cy="134" rx="11" ry="4" transform="rotate(-28 188 134)"/>
+        <ellipse cx="110" cy="48" rx="10" ry="4" transform="rotate(38 110 48)"/>
+        <ellipse cx="224" cy="96" rx="10" ry="4" transform="rotate(-20 224 96)"/>
+      </g>
+    </g>
+  </svg>
+  <svg class="botanical b-right" viewBox="0 0 300 500" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="1.1">
+      <path d="M60 510C84 410 106 330 154 252c28-46 66-84 110-112"/>
+      <path d="M154 252c-32 0-58-12-76-34M154 252c10-30 10-58 0-82M182 206c-28-8-48-26-58-52M188 198c0-26 8-48 24-66M220 164c-18-6-32-20-40-38"/>
+      <g fill="currentColor" stroke="none" opacity=".85">
+        <ellipse cx="78" cy="218" rx="11" ry="4" transform="rotate(-52 78 218)"/>
+        <ellipse cx="154" cy="170" rx="11" ry="4" transform="rotate(-90 154 170)"/>
+        <ellipse cx="124" cy="154" rx="10" ry="4" transform="rotate(-30 124 154)"/>
+        <ellipse cx="212" cy="132" rx="10" ry="4" transform="rotate(-74 212 132)"/>
+        <ellipse cx="180" cy="126" rx="10" ry="4" transform="rotate(-20 180 126)"/>
+      </g>
+    </g>
+  </svg>
+
+  <header class="masthead shell">
+    <div class="brand-block">
+      <div class="brand"><span class="fleuron" aria-hidden="true">✦</span>Maison Sucré</div>
+      <div class="tagline">Pâtisserie · Salon de thé · Paris</div>
+    </div>
+    <div class="service">
+      <div class="hours">
+        <span class="label">Service</span>
+        <strong>12h — 22h</strong>
+        <em>Fermé le lundi</em>
+      </div>
+      <div class="sep" aria-hidden="true"></div>
+      <div class="hours">
+        <span class="label">Depuis</span>
+        <strong>1924</strong>
+        <em>15 rue de la Paix</em>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <article class="card" aria-label="Maison Sucré menu">
+      <svg class="paper-grain" aria-hidden="true" focusable="false">
+        <filter id="paperGrain">
+          <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="3" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#paperGrain)" opacity=".5"/>
+      </svg>
+
+      <div class="menu">
+        <section class="list-panel" aria-labelledby="course-title">
+          <p class="eyebrow">La carte · Automne</p>
+          <h1 id="course-title">The sweet <em>course.</em></h1>
+          <p class="lede">Four desserts, four petits fours, and the last hour of the evening. Everything is made in the small kitchen behind the green door.</p>
+
+          <div class="tabs" role="tablist" aria-label="Menu category">
+            <button class="tab" type="button" role="tab" id="tab-desserts" data-tab="desserts" aria-selected="true" aria-controls="items">Desserts</button>
+            <button class="tab" type="button" role="tab" id="tab-petits" data-tab="petits" aria-selected="false" aria-controls="items" tabindex="-1">Petits Fours</button>
+          </div>
+
+          <div class="items" id="items" role="tabpanel" aria-labelledby="tab-desserts"></div>
+
+          <p class="list-note">Service compris · Menu de saison<br>Allergies? Please tell the maître d’.</p>
+        </section>
+
+        <section class="detail" id="detail" aria-label="Selected dessert">
+          <div class="plate-stage">
+            <svg class="plate-art" id="plateArt" viewBox="0 0 420 300" role="img" aria-label="Illustration of the selected dessert">
+              <use href="#s-plate"></use>
+              <use id="dessertUse" href="#d-tarte"></use>
+            </svg>
+            <svg class="seal" viewBox="0 0 130 130" role="img" aria-label="Maison Sucré seal, Paris, since 1924">
+              <defs>
+                <path id="sealTextPath" d="M65 65 m-48 0 a48 48 0 1 1 96 0 a48 48 0 1 1 -96 0"/>
+              </defs>
+              <circle cx="65" cy="65" r="62" fill="#f6eddb" stroke="#b0894a" stroke-width="1"/>
+              <circle cx="65" cy="65" r="57" fill="none" stroke="#b0894a" stroke-width="1.7"/>
+              <circle cx="65" cy="65" r="43" fill="none" stroke="#b0894a" stroke-width=".7" opacity=".55"/>
+              <text font-family="ui-monospace, Menlo, monospace" font-size="6.2" fill="#8d682f" letter-spacing="1.7">
+                <textPath href="#sealTextPath" startOffset="0">MAISON SUCRÉ · PÂTISSERIE · PARIS · DEPUIS 1924 ·</textPath>
+              </text>
+              <text x="65" y="66" text-anchor="middle" font-family="Georgia, serif" font-size="25" fill="#8d682f" letter-spacing="1">MS</text>
+              <text x="65" y="81" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="5" fill="#8d682f" letter-spacing="1.6" opacity=".8">PARIS</text>
+              <path d="M36 65h8M86 65h8" stroke="#b0894a" stroke-width=".8" opacity=".7"/>
+            </svg>
+            <div class="stamp" id="stamp" aria-hidden="true">
+              <span>Choisi</span>
+              <small>Maison Sucré</small>
+            </div>
+          </div>
+
+          <div class="detail-content" id="detailContent">
+            <p class="detail-kicker" id="detailKicker">Dessert · 01</p>
+            <h2 class="detail-name" id="detailName">Tarte au citron</h2>
+            <p class="detail-desc" id="detailDesc"></p>
+            <div class="pairing">
+              <span class="label">The pairing</span>
+              <p id="detailPairing"></p>
+            </div>
+            <div class="detail-foot">
+              <div class="price"><span class="label">Price</span><output id="detailPrice">€ 12</output></div>
+              <button class="choose" id="choose" type="button" aria-pressed="false">
+                <span id="chooseLabel">Choose this</span><span class="check" aria-hidden="true">✓</span>
+              </button>
+            </div>
+            <p class="chosen-note" id="chosenNote" aria-live="polite"></p>
+          </div>
+        </section>
+      </div>
+
+      <div class="card-foot">
+        <span>Maison Sucré · 15 rue de la Paix, 75002 Paris</span>
+        <span>Une maison de famille depuis 1924</span>
+      </div>
+    </article>
+  </main>
+
+  <footer class="page-footer shell">
+    <span class="fmark">M · S</span>
+    <span>Service continu de 12h à 22h · Fermé le lundi · <a href="mailto:bonjour@maisonsucre.example">bonjour@maisonsucre.example</a></span>
+    <span class="right">La maison vous remercie</span>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var menu = {
+    desserts: [
+      {
+        id: "citron",
+        name: "Tarte au citron",
+        short: "Lemon curd, torched meringue, almond shortcrust",
+        price: "€ 12",
+        symbol: "#d-tarte",
+        desc: "A thin round of almond shortcrust, blind-baked until it smells of toasted butter, then filled with a sharp lemon curd and finished with meringue kissed by the torch. Served just cool enough to keep its edges.",
+        pairing: "Jasmin impérial — a green tea, no sugar."
+      },
+      {
+        id: "souffle",
+        name: "Soufflé au chocolat",
+        short: "Valrhona 70%, crème anglaise, cocoa",
+        price: "€ 14",
+        symbol: "#d-souffle",
+        desc: "Valrhona at seventy per cent, folded into a cloud that waits in the oven until the moment you order. We bring it tall, and you have perhaps ninety seconds before it sighs. A jug of crème anglaise, poured at the table.",
+        pairing: "Armagnac, vintage 1998."
+      },
+      {
+        id: "framboise",
+        name: "Tarte aux framboises",
+        short: "Raspberries, rose cream, pistachio",
+        price: "€ 13",
+        symbol: "#d-framboise",
+        desc: "Raspberries from the Loire, arranged shoulder to shoulder on a bed of rose-scented crème pâtissière. Pistachio and a little gold, because it is Tuesday.",
+        pairing: "Champagne rosé, very cold."
+      },
+      {
+        id: "parisbrest",
+        name: "Paris-Brest",
+        short: "Hazelnut praline, choux, pearl sugar",
+        price: "€ 12",
+        symbol: "#d-parisbrest",
+        desc: "Choux baked in a ring, split and filled with an unapologetic hazelnut praline. Pearl sugar on top for the crunch, a spoon of crème chantilly for the manners.",
+        pairing: "Café filtre, dark roast."
+      }
+    ],
+    petits: [
+      {
+        id: "macaron",
+        name: "Macaron à la lavande",
+        short: "Lavender ganache, wildflower honey",
+        price: "€ 4",
+        symbol: "#d-macaron",
+        desc: "Two shells with a heart of lavender ganache and wildflower honey. We make them at dawn; by afternoon they have found their texture. Two bites, or four if you are disciplined.",
+        pairing: "Verveine, fresh from the garden."
+      },
+      {
+        id: "canele",
+        name: "Canelé de Bordeaux",
+        short: "Rum, vanilla, caramelised crust",
+        price: "€ 3.5",
+        symbol: "#d-canele",
+        desc: "Custard, rum and vanilla in a copper mould, baked until the outside is almost burnt. The inside stays trembling. Best eaten standing up, we find.",
+        pairing: "Black coffee, no ceremony."
+      },
+      {
+        id: "madeleine",
+        name: "Madeleine au miel",
+        short: "Brown butter, acacia honey, sugar",
+        price: "€ 3",
+        symbol: "#d-madeleine",
+        desc: "Brown butter and acacia honey, folded by hand and baked in a scalloped mould. Still warm when they reach the table, dusted with sugar and nothing else.",
+        pairing: "Sauternes, a small glass."
+      },
+      {
+        id: "pave",
+        name: "Pavé au chocolat",
+        short: "Salted caramel, cocoa nib, gold leaf",
+        price: "€ 4.5",
+        symbol: "#d-pave",
+        desc: "A dense little block of dark chocolate and salted caramel, with cocoa nib and a leaf of gold. The end of a meal, or the middle of a good afternoon.",
+        pairing: "Banyuls, slightly chilled."
+      }
+    ]
+  };
+
+  var groups = [
+    { key: "desserts", label: "Dessert", plural: "Desserts" },
+    { key: "petits", label: "Petit four", plural: "Petits Fours" }
+  ];
+
+  var activeTab = "desserts";
+  var activeIndex = 0;
+  var chosen = null;
+  var lastFocusTab = null;
+
+  var itemsEl = document.getElementById("items");
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var detail = document.getElementById("detail");
+  var detailContent = document.getElementById("detailContent");
+  var detailKicker = document.getElementById("detailKicker");
+  var detailName = document.getElementById("detailName");
+  var detailDesc = document.getElementById("detailDesc");
+  var detailPairing = document.getElementById("detailPairing");
+  var detailPrice = document.getElementById("detailPrice");
+  var dessertUse = document.getElementById("dessertUse");
+  var plateArt = document.getElementById("plateArt");
+  var chooseBtn = document.getElementById("choose");
+  var chooseLabel = document.getElementById("chooseLabel");
+  var chosenNote = document.getElementById("chosenNote");
+  var itemsPanel = document.getElementById("items");
+
+  function groupInfo(key){
+    for (var i = 0; i < groups.length; i++){
+      if (groups[i].key === key) return groups[i];
+    }
+    return groups[0];
+  }
+
+  function currentGroup(){ return menu[activeTab]; }
+  function currentItem(){ return currentGroup()[activeIndex]; }
+
+  function pad(n){ return n < 10 ? "0" + n : String(n); }
+
+  function renderItems(){
+    var list = currentGroup();
+    var html = "";
+    for (var i = 0; i < list.length; i++){
+      var item = list[i];
+      html += '<button class="item' + (item.id === chosen ? " chosen" : "") + '" type="button" data-index="' + i + '"' +
+        (i === activeIndex ? ' aria-current="true"' : '') + '>' +
+        '<span class="item-top">' +
+          '<span class="item-name">' + item.name + '</span>' +
+          '<span class="leader" aria-hidden="true"></span>' +
+          '<span class="item-price">' + item.price + '</span>' +
+        '</span>' +
+        '<span class="item-desc">' + item.short + '</span>' +
+        '<span class="item-chosen" aria-hidden="true">Chosen</span>' +
+      '</button>';
+    }
+    itemsEl.innerHTML = html;
+    itemsEl.setAttribute("aria-labelledby", activeTab === "desserts" ? "tab-desserts" : "tab-petits");
+  }
+
+  function syncItemStates(){
+    var buttons = itemsEl.querySelectorAll(".item");
+    for (var i = 0; i < buttons.length; i++){
+      var idx = Number(buttons[i].getAttribute("data-index"));
+      buttons[i].setAttribute("aria-current", idx === activeIndex ? "true" : "false");
+      var item = currentGroup()[idx];
+      buttons[i].classList.toggle("chosen", !!item && item.id === chosen);
+    }
+  }
+
+  function updateChoose(){
+    var item = currentItem();
+    var isChosen = !!chosen && chosen === item.id;
+    chooseBtn.classList.toggle("is-chosen", isChosen);
+    chooseBtn.setAttribute("aria-pressed", isChosen ? "true" : "false");
+    chooseLabel.textContent = isChosen ? "Chosen" : "Choose this";
+    chosenNote.textContent = isChosen ? "Merci — the " + item.name + " will close your table." : "";
+    chosenNote.classList.toggle("show", isChosen);
+    detail.classList.toggle("is-chosen", isChosen);
+  }
+
+  function updateDetail(animate){
+    var item = currentItem();
+    var info = groupInfo(activeTab);
+
+    detailKicker.textContent = info.label + " · " + pad(activeIndex + 1);
+    detailName.textContent = item.name;
+    detailDesc.textContent = item.desc;
+    detailPairing.textContent = item.pairing;
+    detailPrice.textContent = item.price;
+    dessertUse.setAttribute("href", item.symbol);
+    plateArt.setAttribute("aria-label", "Illustration of " + item.name + " on a plate");
+
+    if (animate){
+      detailContent.classList.remove("anim");
+      plateArt.classList.remove("anim");
+      void detailContent.offsetWidth;
+      detailContent.classList.add("anim");
+      plateArt.classList.add("anim");
+    }
+
+    updateChoose();
+    syncItemStates();
+    itemsEl.setAttribute("aria-labelledby", activeTab === "desserts" ? "tab-desserts" : "tab-petits");
+  }
+
+  function selectTab(key, focus){
+    if (!menu[key] || key === activeTab) return;
+    activeTab = key;
+    activeIndex = 0;
+    tabs.forEach(function(tab){
+      var on = tab.getAttribute("data-tab") === key;
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+      tab.tabIndex = on ? 0 : -1;
+    });
+    renderItems();
+    updateDetail(true);
+    if (focus) {
+      var tab = document.getElementById(key === "desserts" ? "tab-desserts" : "tab-petits");
+      tab.focus();
+    }
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      selectTab(tab.getAttribute("data-tab"), false);
+    });
+  });
+
+  tabs.forEach(function(tab){
+    tab.addEventListener("keydown", function(e){
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft" || e.key === "Home" || e.key === "End"){
+        e.preventDefault();
+        var idx = activeTab === "desserts" ? 0 : 1;
+        if (e.key === "ArrowRight" || e.key === "ArrowLeft") idx = 1 - idx;
+        if (e.key === "Home") idx = 0;
+        if (e.key === "End") idx = 1;
+        selectTab(idx === 0 ? "desserts" : "petits", true);
+      }
+    });
+  });
+
+  itemsEl.addEventListener("click", function(e){
+    var btn = e.target.closest ? e.target.closest(".item") : null;
+    if (!btn) return;
+    activeIndex = Number(btn.getAttribute("data-index"));
+    updateDetail(true);
+    if (!e.detail) btn.focus();
+  });
+
+  chooseBtn.addEventListener("click", function(){
+    var item = currentItem();
+    chosen = chosen === item.id ? null : item.id;
+    updateChoose();
+    syncItemStates();
+  });
+
+  renderItems();
+  updateDetail(false);
+
+  // Keep initial animation smooth without a flash.
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    detailContent.classList.remove("anim");
+    plateArt.classList.remove("anim");
+  }
+})();
+</script>
+</body>
+</html>

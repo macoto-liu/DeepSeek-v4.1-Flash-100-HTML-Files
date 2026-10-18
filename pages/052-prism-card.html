@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRISM — The Card That Shouldn't Exist</title>
+<style>
+  :root{
+    --bg:#04050d;
+    --ink:#eef2ff;
+    --muted:rgba(208,219,255,.58);
+    --faint:rgba(160,180,255,.34);
+    --line:rgba(150,175,255,.16);
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Courier New",monospace;
+    --cw:min(300px,80vw);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100svh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(140,170,255,.35);color:#fff;}
+  button{font:inherit;color:inherit;}
+  a{color:inherit;}
+
+  /* ---------------- room ---------------- */
+  .room{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+  .stars{position:absolute;inset:0;}
+  .stars i{
+    position:absolute;
+    display:block;
+    border-radius:50%;
+    background:#e7eeff;
+    opacity:var(--o,.5);
+    box-shadow:0 0 6px rgba(185,210,255,.7);
+    animation:twinkle var(--t,6s) ease-in-out infinite;
+    animation-delay:var(--d,0s);
+  }
+  .stars i.big{
+    background:#fff;
+    box-shadow:0 0 14px rgba(200,225,255,.9);
+  }
+  @keyframes twinkle{
+    0%,100%{opacity:calc(var(--o,.5) * .35);transform:scale(.85);}
+    50%{opacity:var(--o,.5);transform:scale(1);}
+  }
+  .grid-floor{
+    position:absolute;
+    left:-18%;right:-18%;bottom:-10%;
+    height:52%;
+    background-image:
+      linear-gradient(rgba(120,155,255,.15) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(120,155,255,.13) 1px,transparent 1px);
+    background-size:64px 64px;
+    transform:perspective(430px) rotateX(69deg);
+    transform-origin:50% 100%;
+    opacity:.55;
+    -webkit-mask-image:linear-gradient(to top,#000 0%,rgba(0,0,0,.55) 55%,transparent 100%);
+    mask-image:linear-gradient(to top,#000 0%,rgba(0,0,0,.55) 55%,transparent 100%);
+  }
+  .grid-wall{
+    position:absolute;
+    inset:0;
+    background:
+      repeating-linear-gradient(90deg,rgba(120,150,255,.045) 0 1px,transparent 1px 10%),
+      repeating-linear-gradient(0deg,rgba(120,150,255,.035) 0 1px,transparent 1px 12.5%);
+    -webkit-mask-image:radial-gradient(ellipse at 50% 48%,#000 0%,transparent 72%);
+    mask-image:radial-gradient(ellipse at 50% 48%,#000 0%,transparent 72%);
+  }
+  .prism-glow{
+    position:absolute;
+    left:50%;top:50%;
+    width:min(900px,90vw);
+    aspect-ratio:1;
+    transform:translate(-50%,-52%);
+    border-radius:50%;
+    background:conic-gradient(from 190deg at 50% 50%,rgba(255,80,200,.16),rgba(255,200,90,.10),rgba(90,255,210,.12),rgba(90,150,255,.16),rgba(170,100,255,.14),rgba(255,80,200,.16));
+    filter:blur(70px);
+    opacity:.9;
+  }
+  .vignette{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse at 50% 46%,transparent 38%,rgba(2,3,9,.55) 82%,rgba(2,3,9,.92) 100%),
+      linear-gradient(180deg,rgba(2,3,9,.35),transparent 24%,transparent 76%,rgba(2,3,9,.65));
+  }
+  .room-noise{
+    position:absolute;inset:0;
+    opacity:.28;
+    background-image:
+      radial-gradient(rgba(255,255,255,.16) .4px,transparent .5px),
+      radial-gradient(rgba(140,170,255,.15) .4px,transparent .5px);
+    background-size:5px 5px,8px 8px;
+    background-position:0 0,2px 3px;
+  }
+
+  /* ---------------- layout ---------------- */
+  .page{
+    position:relative;
+    z-index:2;
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+  }
+  .site-head{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    padding:20px clamp(18px,3.6vw,46px);
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(4,5,13,.7),rgba(4,5,13,0));
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+  }
+  .logo{
+    display:flex;align-items:center;gap:11px;
+    text-decoration:none;
+    font-size:.78rem;
+    letter-spacing:.4em;
+    text-transform:uppercase;
+    color:#f2f6ff;
+  }
+  .logo svg{width:17px;height:17px;display:block;color:#a9c6ff;}
+  .head-meta{
+    display:flex;align-items:center;gap:clamp(14px,3vw,34px);
+    font-family:var(--mono);
+    font-size:.47rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .head-meta .status{
+    display:inline-flex;align-items:center;gap:8px;
+    color:rgba(200,215,255,.72);
+  }
+  .head-meta .status::before{
+    content:"";width:4px;height:4px;border-radius:50%;
+    background:#8effd4;
+    box-shadow:0 0 8px rgba(120,255,205,.9);
+  }
+
+  .stage{
+    flex:1 1 auto;
+    width:100%;
+    max-width:1460px;
+    margin:0 auto;
+    padding:clamp(20px,3vw,38px) clamp(18px,4vw,54px);
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+    align-items:center;
+    gap:clamp(18px,3.4vw,52px);
+  }
+
+  /* ---------------- editorial lead ---------------- */
+  .lead{max-width:360px;position:relative;z-index:1;}
+  .kicker{
+    display:flex;align-items:center;gap:12px;
+    font-family:var(--mono);
+    font-size:.48rem;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 18px;
+  }
+  .kicker::before{content:"";width:26px;height:1px;background:rgba(160,190,255,.6);}
+  .lead h1{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:clamp(3.2rem,6.4vw,5.6rem);
+    line-height:.82;
+    letter-spacing:.08em;
+    margin:0;
+    color:#f5f8ff;
+    text-shadow:0 0 36px rgba(120,160,255,.25);
+  }
+  .tagline{
+    font-family:var(--serif);
+    font-size:clamp(1.25rem,2.1vw,1.72rem);
+    line-height:1.12;
+    letter-spacing:-.01em;
+    margin:16px 0 24px;
+    color:rgba(232,239,255,.82);
+    max-width:15ch;
+  }
+  .tagline em{font-style:italic;color:#bcd0ff;}
+  .lead .desc{
+    font-family:var(--serif);
+    font-size:.92rem;
+    line-height:1.64;
+    color:var(--muted);
+    margin:0 0 24px;
+    max-width:33ch;
+  }
+  .tech-list{
+    margin:0;
+    padding:14px 0 0;
+    border-top:1px solid var(--line);
+    display:grid;
+    gap:7px;
+    font-family:var(--mono);
+    font-size:.46rem;
+    letter-spacing:.19em;
+    text-transform:uppercase;
+    color:rgba(200,215,255,.46);
+  }
+  .tech-list div{display:flex;justify-content:space-between;gap:16px;}
+  .tech-list div span:last-child{color:rgba(222,233,255,.7);}
+
+  /* ---------------- card ---------------- */
+  .card-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    z-index:3;
+  }
+  .scene{
+    width:var(--cw);
+    aspect-ratio:300 / 430;
+    position:relative;
+    perspective:1150px;
+    touch-action:pan-y;
+    outline:none;
+    --foil-a:#ff4fd8;
+    --foil-b:#ffd76a;
+    --foil-c:#5fffd0;
+    --foil-d:#5c8dff;
+    --foil-e:#b06bff;
+  }
+  .scene[data-rarity="gold"]{
+    --foil-a:#ffe6a3;
+    --foil-b:#c9963f;
+    --foil-c:#fff6d8;
+    --foil-d:#8c6227;
+    --foil-e:#e9bc6d;
+  }
+  .scene[data-rarity="ice"]{
+    --foil-a:#d6f7ff;
+    --foil-b:#74cfff;
+    --foil-c:#ffffff;
+    --foil-d:#5f8dff;
+    --foil-e:#b9e6ff;
+  }
+  .scene[data-rarity="gold"] .foil{opacity:.4;filter:saturate(1.05) brightness(1.03);}
+  .scene[data-rarity="ice"] .foil{opacity:.44;filter:saturate(.85) brightness(1.08);}
+  .card-shadow{
+    position:absolute;
+    left:50%;bottom:-3em;
+    width:72%;height:2.4em;
+    transform:translateX(-50%);
+    background:radial-gradient(ellipse at 50% 50%,rgba(110,150,255,.34),rgba(80,110,220,.12) 55%,transparent 72%);
+    filter:blur(14px);
+    pointer-events:none;
+    z-index:-1;
+    font-size:calc(var(--cw) * .034);
+  }
+  .card-float{
+    width:100%;height:100%;
+    animation:cardFloat 8s ease-in-out infinite;
+    transform-style:preserve-3d;
+  }
+  @keyframes cardFloat{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-9px);}
+  }
+  .tilt{
+    width:100%;height:100%;
+    transform-style:preserve-3d;
+    transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+    transition:transform .7s cubic-bezier(.2,.7,.2,1);
+    will-change:transform;
+  }
+  .scene.is-active .tilt{transition-duration:.09s;}
+  .card{
+    --gx:62%;
+    --gy:26%;
+    position:relative;
+    width:100%;height:100%;
+    font-size:calc(var(--cw) * .037);
+    transform-style:preserve-3d;
+    transform:rotateY(0deg);
+    transition:transform .92s cubic-bezier(.2,.72,.18,1);
+    cursor:pointer;
+    outline:none;
+    -webkit-user-select:none;user-select:none;
+    border-radius:1.4em;
+  }
+  .card.is-flipped{transform:rotateY(180deg);}
+  .card:focus-visible .face{box-shadow:0 0 0 2px #9ec2ff,0 30px 70px rgba(0,0,0,.8);}
+  .face{
+    position:absolute;inset:0;
+    border-radius:1.4em;
+    overflow:hidden;
+    -webkit-backface-visibility:hidden;
+    backface-visibility:hidden;
+    box-shadow:
+      0 0 0 1px rgba(210,228,255,.42),
+      0 0 34px rgba(120,160,255,.16),
+      0 30px 64px rgba(0,0,0,.86),
+      0 8px 18px rgba(0,0,0,.55);
+    background:#06080f;
+  }
+  .front{
+    background:
+      radial-gradient(ellipse at 50% 24%,#1a2038 0%,#0b0f1e 52%,#060812 100%);
+  }
+  .back{
+    transform:rotateY(180deg);
+    background:
+      linear-gradient(180deg,#0d1120 0%,#080b14 100%);
+  }
+  .back::before{
+    content:"";
+    position:absolute;inset:0;
+    background:
+      linear-gradient(rgba(130,160,255,.06) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(130,160,255,.05) 1px,transparent 1px);
+    background-size:2.4em 2.4em;
+    opacity:.7;
+  }
+
+  /* foil + glare */
+  .foil{
+    position:absolute;inset:0;
+    background:
+      conic-gradient(from 205deg at 38% 28%,
+        var(--foil-a,#ff4fd8) 0deg,
+        var(--foil-b,#ffd76a) 58deg,
+        var(--foil-c,#5fffd0) 118deg,
+        var(--foil-d,#5c8dff) 184deg,
+        var(--foil-e,#b06bff) 254deg,
+        var(--foil-a,#ff4fd8) 330deg),
+      linear-gradient(118deg,
+        var(--foil-a,#ff4fd8),
+        var(--foil-b,#ffd76a) 24%,
+        var(--foil-c,#5fffd0) 52%,
+        var(--foil-d,#5c8dff) 74%,
+        var(--foil-e,#b06bff));
+    background-size:170% 170%,240% 240%;
+    background-position:18% 30%,0% 50%;
+    animation:foilShift 15s ease-in-out infinite alternate;
+    opacity:.3;
+    mix-blend-mode:screen;
+    filter:saturate(1.35) contrast(1.05);
+    transition:opacity .5s ease,filter .5s ease;
+  }
+  @keyframes foilShift{
+    0%{background-position:6% 22%,0% 40%;filter:saturate(1.3) hue-rotate(0deg);}
+    50%{opacity:.36;}
+    100%{background-position:94% 76%,100% 60%;filter:saturate(1.45) hue-rotate(28deg);}
+  }
+  .foil-lines{
+    position:absolute;inset:0;
+    background:repeating-linear-gradient(105deg,rgba(255,255,255,.18) 0 1px,transparent 1px 5px);
+    opacity:.32;
+    mix-blend-mode:overlay;
+    pointer-events:none;
+  }
+  .front-tint{
+    position:absolute;inset:0;
+    background:
+      linear-gradient(180deg,rgba(4,6,13,.62) 0%,rgba(4,6,13,.18) 13%,rgba(4,6,13,0) 25%),
+      linear-gradient(180deg,rgba(4,6,13,0) 38%,rgba(4,6,13,.42) 62%,rgba(4,6,13,.9) 100%),
+      radial-gradient(ellipse at 50% 20%,transparent 0%,rgba(5,7,15,.22) 44%,rgba(5,7,15,.88) 100%);
+    box-shadow:inset 0 0 46px rgba(2,4,10,.6);
+    pointer-events:none;
+  }
+  .glare{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(circle at var(--gx,62%) var(--gy,26%),rgba(255,255,255,.55) 0%,rgba(255,255,255,.16) 13%,rgba(255,255,255,0) 38%),
+      radial-gradient(circle at var(--gx,62%) var(--gy,26%),rgba(190,230,255,.20) 0%,transparent 55%);
+    mix-blend-mode:screen;
+    pointer-events:none;
+    z-index:5;
+    transition:background .18s ease,opacity .4s ease;
+  }
+  .card.is-flipped .glare{opacity:0;}
+  .sheen{
+    position:absolute;inset:0;
+    background:linear-gradient(122deg,transparent 24%,rgba(255,255,255,.14) 42%,transparent 54%,transparent 70%,rgba(255,255,255,.07) 82%,transparent 94%);
+    mix-blend-mode:screen;
+    pointer-events:none;
+    z-index:4;
+  }
+  .frame{
+    position:absolute;
+    inset:1.1em;
+    border:1px solid rgba(220,236,255,.36);
+    border-radius:.65em;
+    pointer-events:none;
+    z-index:6;
+  }
+  .frame::before,.frame::after{
+    content:"";
+    position:absolute;
+    width:1.6em;height:1.6em;
+    border-color:rgba(225,238,255,.6);
+    border-style:solid;
+  }
+  .frame::before{left:-1px;top:-1px;border-width:1px 0 0 1px;border-top-left-radius:.5em;}
+  .frame::after{right:-1px;bottom:-1px;border-width:0 1px 1px 0;border-bottom-right-radius:.5em;}
+
+  .front-inner{
+    position:relative;
+    z-index:3;
+    height:100%;
+    padding:1.5em 1.45em 1.35em;
+    display:flex;
+    flex-direction:column;
+    color:#f4f7ff;
+  }
+  .card-top{
+    display:flex;align-items:center;justify-content:space-between;gap:1em;
+    font-family:var(--mono);
+    font-size:.58em;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:rgba(238,244,255,.88);
+  }
+  .card-top .mark{font-weight:700;letter-spacing:.34em;display:inline-flex;align-items:baseline;gap:.3em;}
+  .card-top sup{font-size:.6em;letter-spacing:0;opacity:.7;}
+  .card-top .set{color:rgba(210,225,255,.5);letter-spacing:.18em;font-size:.86em;}
+
+  .orb-stage{
+    position:relative;
+    flex:1 1 auto;
+    display:grid;
+    place-items:center;
+    min-height:0;
+    padding:1em 0 .6em;
+    background:radial-gradient(circle at 50% 56%,rgba(4,6,13,.5) 0%,rgba(4,6,13,.22) 44%,transparent 66%);
+    border-radius:50% / 40%;
+  }
+  .orb-stage::before{
+    content:"";
+    position:absolute;
+    width:14.8em;height:14.8em;
+    border-radius:50%;
+    background:radial-gradient(circle at 50% 48%,rgba(120,165,255,.22),rgba(150,110,255,.09) 48%,transparent 70%);
+    filter:blur(2px);
+    pointer-events:none;
+  }
+  .orb{
+    position:relative;
+    width:auto;
+    height:min(16.2em,58%);
+    max-width:90%;
+    display:block;
+    filter:drop-shadow(0 0 1.8em rgba(130,170,255,.5));
+  }
+  .orbit-note{
+    position:absolute;
+    font-family:var(--mono);
+    font-size:.48em;
+    letter-spacing:.17em;
+    text-transform:uppercase;
+    color:rgba(220,233,255,.5);
+    white-space:nowrap;
+  }
+  .orbit-note.a{left:.1em;bottom:1.1em;}
+  .orbit-note.b{right:.1em;top:1.4em;}
+  .orbit-line{
+    position:absolute;left:0;right:0;top:50%;
+    border-top:1px solid rgba(190,215,255,.14);
+    z-index:-1;
+  }
+
+  .title-block{margin-top:.5em;}
+  .rarity-pill{
+    display:inline-flex;align-items:center;gap:.6em;
+    font-family:var(--mono);
+    font-size:.54em;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(235,243,255,.86);
+    border:1px solid rgba(215,232,255,.28);
+    border-radius:999px;
+    padding:.42em .8em;
+    background:rgba(255,255,255,.05);
+    white-space:nowrap;
+  }
+  .rarity-pill::before{
+    content:"";
+    width:.5em;height:.5em;border-radius:50%;
+    background:conic-gradient(from 0deg,var(--foil-a,#ff4fd8),var(--foil-b,#ffd76a),var(--foil-c,#5fffd0),var(--foil-d,#5c8dff),var(--foil-a,#ff4fd8));
+    box-shadow:0 0 6px rgba(255,255,255,.6);
+  }
+  .title-block h2{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    font-size:3em;
+    line-height:1;
+    letter-spacing:-.02em;
+    margin:.34em 0 .18em;
+    color:#fbfdff;
+    text-shadow:0 1px 14px rgba(0,0,0,.55),0 0 22px rgba(150,190,255,.3);
+  }
+  .class-line{
+    display:block;
+    font-family:var(--mono);
+    font-size:.52em;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(205,221,255,.56);
+  }
+
+  .stats{
+    margin-top:1.2em;
+    display:grid;
+    gap:.65em;
+  }
+  .stat{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:.25em .8em;
+    align-items:baseline;
+    font-family:var(--mono);
+    font-size:.54em;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(208,224,255,.62);
+  }
+  .stat b{font-weight:400;color:rgba(240,246,255,.9);font-size:.95em;}
+  .stat .bar{
+    grid-column:1 / -1;
+    height:.32em;
+    background:rgba(190,215,255,.14);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .stat .bar i{
+    display:block;
+    width:var(--v,80%);
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,rgba(255,255,255,.9),var(--foil-c,#5fffd0));
+    transform:scaleX(0);
+    transform-origin:left center;
+    transition:transform 1.3s cubic-bezier(.2,.8,.2,1);
+  }
+  .card.is-ready .stat:nth-child(1) .bar i{transform:scaleX(1);transition-delay:.15s;}
+  .card.is-ready .stat:nth-child(2) .bar i{transform:scaleX(1);transition-delay:.3s;}
+  .card.is-ready .stat:nth-child(3) .bar i{transform:scaleX(1);transition-delay:.45s;}
+
+  .card-bottom{
+    margin-top:auto;
+    padding-top:1em;
+    display:flex;align-items:center;justify-content:space-between;gap:.8em;
+    border-top:1px solid rgba(200,220,255,.16);
+    font-family:var(--mono);
+    font-size:.5em;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:rgba(205,222,255,.56);
+  }
+  .card-bottom .serial{color:rgba(238,245,255,.82);letter-spacing:.12em;}
+  .card-bottom .sig{font-size:1.3em;color:rgba(225,238,255,.72);}
+
+  /* card back */
+  .back-inner{
+    position:relative;
+    z-index:2;
+    height:100%;
+    padding:1.7em 1.6em 1.5em;
+    display:flex;
+    flex-direction:column;
+    color:#e9efff;
+  }
+  .back-orb{
+    position:absolute;
+    right:-3em;top:5.5em;
+    width:12em;height:12em;
+    opacity:.2;
+    filter:blur(.4px);
+    z-index:1;
+    pointer-events:none;
+  }
+  .back-top{
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:var(--mono);
+    font-size:.56em;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:rgba(220,232,255,.82);
+    padding-bottom:1.2em;
+    border-bottom:1px solid rgba(180,205,255,.14);
+  }
+  .back-top .mark{font-weight:700;letter-spacing:.32em;}
+  .back-top .spec{color:rgba(195,212,255,.45);}
+  .back-title{margin:1.5em 0 1.2em;}
+  .back-title span{
+    font-family:var(--mono);
+    font-size:.54em;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:rgba(190,212,255,.5);
+  }
+  .back-title h2{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    font-size:2.3em;
+    line-height:1;
+    margin:.35em 0 0;
+    color:#f6f9ff;
+  }
+  .spec-table{
+    display:grid;
+    gap:.55em;
+    font-family:var(--mono);
+    font-size:.56em;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:rgba(190,210,255,.48);
+  }
+  .spec-table div{
+    display:flex;justify-content:space-between;gap:1em;
+    padding-bottom:.45em;
+    border-bottom:1px solid rgba(170,195,255,.09);
+  }
+  .spec-table div span:last-child{color:rgba(235,243,255,.86);letter-spacing:.08em;text-align:right;}
+  .back-quote{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:1.02em;
+    line-height:1.4;
+    color:rgba(227,236,255,.86);
+    margin:1.4em 0 1em;
+    max-width:19em;
+  }
+  .refract{
+    margin-top:auto;
+    padding:.8em 0 .2em;
+    opacity:.8;
+  }
+  .refract svg{display:block;width:78%;height:auto;}
+  .barcode-wrap{margin-top:.3em;}
+  .barcode{
+    display:flex;
+    align-items:stretch;
+    gap:.18em;
+    height:2.5em;
+    padding-top:.6em;
+  }
+  .barcode i{
+    display:block;
+    width:var(--w,1px);
+    background:rgba(225,235,255,.82);
+    border-radius:0;
+  }
+  .barcode i.thin{width:.12em;background:rgba(225,235,255,.55);}
+  .barcode-num{
+    display:block;
+    font-family:var(--mono);
+    font-size:.48em;
+    letter-spacing:.34em;
+    color:rgba(200,217,255,.5);
+    margin-top:.5em;
+  }
+  .back-foot{
+    display:flex;justify-content:space-between;gap:1em;
+    margin-top:1em;
+    padding-top:.8em;
+    border-top:1px solid rgba(180,205,255,.12);
+    font-family:var(--mono);
+    font-size:.46em;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(195,214,255,.5);
+  }
+
+  /* ---------------- under card ---------------- */
+  .under-card{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    width:var(--cw);
+    margin-top:1.9rem;
+    padding-top:.8rem;
+    border-top:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:.44rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(200,216,255,.48);
+  }
+  .under-card #stateReadout{color:rgba(228,238,255,.82);}
+
+  /* ---------------- rail ---------------- */
+  .rail{
+    justify-self:end;
+    width:min(100%,250px);
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    position:relative;
+    z-index:4;
+  }
+  .rail-label{
+    display:block;
+    font-family:var(--mono);
+    font-size:.46rem;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+  .rarity{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:5px;
+  }
+  .rarity button{
+    appearance:none;
+    border:1px solid var(--line);
+    background:rgba(140,170,255,.03);
+    color:rgba(224,234,255,.72);
+    display:flex;align-items:center;gap:10px;
+    padding:9px 12px;
+    font-family:var(--mono);
+    font-size:.53rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:border-color .25s ease,background .25s ease,color .25s ease,box-shadow .25s ease;
+    text-align:left;
+    border-radius:2px;
+  }
+  .rarity button .sw{
+    width:11px;height:11px;border-radius:50%;
+    flex:0 0 auto;
+  }
+  .sw-holo{background:conic-gradient(from 40deg,#ff5bd0,#ffd166,#6cffcf,#5ca8ff,#b06bff,#ff5bd0);box-shadow:0 0 8px rgba(210,230,255,.5);}
+  .sw-gold{background:linear-gradient(135deg,#fff0c4,#d8a952 50%,#8f682e);box-shadow:0 0 8px rgba(230,190,110,.45);}
+  .sw-ice{background:linear-gradient(135deg,#ffffff,#a8e8ff 55%,#5a86ff);box-shadow:0 0 8px rgba(150,220,255,.5);}
+  .rarity button span:last-child{margin-left:auto;font-size:.8em;opacity:.4;}
+  .rarity button:hover{border-color:rgba(180,205,255,.4);color:#f2f7ff;}
+  .rarity button.is-active{
+    border-color:rgba(208,226,255,.75);
+    background:rgba(190,215,255,.09);
+    color:#fff;
+    box-shadow:0 0 0 1px rgba(190,215,255,.16),0 0 24px rgba(130,170,255,.14) inset;
+  }
+  .rarity button.is-active span:last-child{opacity:.9;}
+
+  .flip-btn{
+    appearance:none;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    border:1px solid rgba(205,225,255,.4);
+    background:rgba(155,190,255,.06);
+    color:#f3f7ff;
+    padding:13px 14px;
+    font-family:var(--mono);
+    font-size:.53rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .25s ease,border-color .25s ease,transform .15s ease;
+    border-radius:2px;
+  }
+  .flip-btn:hover{background:rgba(175,205,255,.13);border-color:rgba(225,238,255,.75);}
+  .flip-btn:active{transform:translateY(1px);}
+  .flip-btn svg{width:22px;height:12px;flex:0 0 auto;color:#a9c6ff;}
+  .rarity button:focus-visible,.flip-btn:focus-visible,.card:focus-visible{outline:none;}
+  .rarity button:focus-visible,.flip-btn:focus-visible{box-shadow:0 0 0 2px #9ec2ff;}
+
+  .rail-note{
+    margin:0;
+    font-family:var(--serif);
+    font-size:.85rem;
+    line-height:1.58;
+    color:var(--muted);
+    max-width:25ch;
+  }
+  .rail-meta{
+    display:grid;
+    gap:5px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:.42rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(190,208,255,.36);
+  }
+
+  /* ---------------- footer ---------------- */
+  .site-foot{
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding:16px clamp(18px,3.6vw,46px);
+    border-top:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:.42rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:rgba(190,208,255,.38);
+  }
+  .site-foot span:nth-child(2){color:rgba(205,220,255,.55);}
+
+  /* ---------------- responsive ---------------- */
+  @media (max-width:1080px){
+    .stage{
+      grid-template-columns:1fr;
+      gap:clamp(24px,4vw,38px);
+      padding-top:28px;
+      padding-bottom:36px;
+      justify-items:center;
+      text-align:center;
+    }
+    .lead{max-width:460px;}
+    .kicker{justify-content:center;}
+    .lead h1{font-size:clamp(3.4rem,10vw,4.6rem);letter-spacing:.14em;}
+    .tagline{margin-left:auto;margin-right:auto;max-width:20ch;}
+    .lead .desc{margin-left:auto;margin-right:auto;max-width:40ch;}
+    .tech-list{text-align:left;max-width:340px;margin:0 auto;}
+    .card-col{order:2;}
+    .lead{order:1;}
+    .rail{
+      order:3;
+      justify-self:center;
+      width:min(100%,460px);
+      display:grid;
+      grid-template-columns:1fr auto;
+      align-items:start;
+      gap:14px 22px;
+      text-align:left;
+    }
+    .rarity-block{grid-column:1;grid-row:1;}
+    .rarity{grid-template-columns:repeat(3,minmax(0,1fr));}
+    .rarity button{justify-content:center;padding:8px 6px;font-size:.48rem;gap:7px;letter-spacing:.12em;}
+    .rarity button span:last-child{display:none;}
+    .flip-btn{grid-column:2;grid-row:1;align-self:end;height:35px;padding:0 14px;}
+    .rail-note{grid-column:1 / -1;grid-row:2;max-width:46ch;text-align:center;margin:2px auto 0;}
+    .rail-meta{grid-column:1 / -1;grid-row:3;display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:center;border-top:0;padding-top:0;}
+  }
+  @media (max-width:560px){
+    .site-head{padding:15px 16px;}
+    .logo{font-size:.64rem;letter-spacing:.3em;}
+    .head-meta span:not(.status){display:none;}
+    .head-meta{font-size:.4rem;letter-spacing:.15em;}
+    .lead h1{font-size:clamp(2.9rem,15vw,3.8rem);letter-spacing:.1em;}
+    .kicker{font-size:.42rem;letter-spacing:.2em;}
+    .tagline{font-size:1.2rem;margin:12px auto 18px;}
+    .lead .desc{font-size:.84rem;max-width:34ch;}
+    .tech-list{display:none;}
+    .stage{padding:22px 16px 30px;gap:26px;}
+    .under-card{margin-top:1.4rem;font-size:.4rem;}
+    .rail{gap:12px 14px;}
+    .rarity{grid-template-columns:repeat(3,1fr);}
+    .rarity button{font-size:.44rem;letter-spacing:.08em;gap:6px;padding:8px 4px;}
+    .flip-btn{font-size:.47rem;letter-spacing:.14em;padding:0 10px;gap:8px;}
+    .flip-btn svg{width:17px;}
+    .rail-note{display:none;}
+    .rail-meta{font-size:.38rem;gap:8px 14px;}
+    .site-foot{flex-wrap:wrap;justify-content:center;font-size:.36rem;gap:6px 16px;text-align:center;padding:13px 16px;}
+  }
+  @media (max-height:760px) and (min-width:1081px){
+    .stage{padding-top:14px;padding-bottom:18px;}
+    .lead .desc{display:none;}
+    .under-card{margin-top:1.2rem;}
+    .rail-note{display:none;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .card-float,.foil,.stars i{animation:none;}
+    .tilt,.card,.stat .bar i,.glare{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="room" aria-hidden="true">
+  <div class="prism-glow"></div>
+  <div class="grid-wall"></div>
+  <div class="grid-floor"></div>
+  <div class="stars" id="stars"></div>
+  <div class="room-noise"></div>
+  <div class="vignette"></div>
+</div>
+
+<div class="page">
+
+  <header class="site-head">
+    <a class="logo" href="#top" aria-label="PRISM archive">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true">
+        <path d="M12 2.5 21 19H3z"/>
+        <path d="M12 2.5V19M7.5 10.8H16.5"/>
+      </svg>
+      PRISM
+    </a>
+    <div class="head-meta">
+      <span class="status">Archive open</span>
+      <span>Specimen 0007 / 1000</span>
+      <span>MMXXVI</span>
+    </div>
+  </header>
+
+  <main class="stage" id="top">
+
+    <section class="lead" aria-labelledby="prism-title">
+      <p class="kicker">Holographic archive · No. 0007</p>
+      <h1 id="prism-title">PRISM</h1>
+      <p class="tagline">the card that <em>shouldn't exist.</em></p>
+      <p class="desc">One thousand were pressed. Nine hundred and ninety-three were recalled. This is one of the seven that came back with a surface the light refuses to leave.</p>
+      <dl class="tech-list">
+        <div><span>Object</span><span>Chromatic refractor</span></div>
+        <div><span>Core</span><span>Chrome / obsidian</span></div>
+        <div><span>Foil</span><span>0.30 mm laminate</span></div>
+        <div><span>Edition</span><span>0007 / 1000</span></div>
+      </dl>
+    </section>
+
+    <div class="card-col">
+      <div class="scene" id="scene" data-rarity="holo">
+        <div class="card-float">
+          <div class="tilt" id="tilt">
+            <div class="card" id="card" role="button" tabindex="0" aria-pressed="false" aria-label="PRISM card, front. Activate to flip the card.">
+
+              <!-- FRONT -->
+              <div class="face front" id="frontFace">
+                <div class="foil"></div>
+                <div class="foil-lines"></div>
+                <div class="front-tint"></div>
+
+                <div class="front-inner">
+                  <div class="card-top">
+                    <span class="mark">PRISM<sup>®</sup></span>
+                    <span class="set">Series 001</span>
+                  </div>
+
+                  <div class="orb-stage">
+                    <span class="orbit-line" aria-hidden="true"></span>
+                    <svg class="orb" viewBox="0 0 200 200" role="img" aria-label="Chrome orb with refractive rings">
+                      <defs>
+                        <radialGradient id="orbBody" cx="38%" cy="30%" r="72%">
+                          <stop offset="0" stop-color="#ffffff"/>
+                          <stop offset=".12" stop-color="#e9f1ff"/>
+                          <stop offset=".3" stop-color="#a9bce6"/>
+                          <stop offset=".48" stop-color="#7689b8"/>
+                          <stop offset=".62" stop-color="#4a5590"/>
+                          <stop offset=".78" stop-color="#2a2050"/>
+                          <stop offset=".92" stop-color="#161027"/>
+                          <stop offset="1" stop-color="#0a0714"/>
+                        </radialGradient>
+                        <radialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
+                          <stop offset="0" stop-color="#8fb8ff" stop-opacity=".55"/>
+                          <stop offset=".6" stop-color="#5b7dff" stop-opacity=".14"/>
+                          <stop offset="1" stop-color="#5b7dff" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="ringMetal" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0" stop-color="#fff4c9"/>
+                          <stop offset=".25" stop-color="#ff86d6"/>
+                          <stop offset=".5" stop-color="#8bfff0"/>
+                          <stop offset=".75" stop-color="#7a9bff"/>
+                          <stop offset="1" stop-color="#e5c2ff"/>
+                        </linearGradient>
+                        <radialGradient id="orbSpec" cx="50%" cy="50%" r="50%">
+                          <stop offset="0" stop-color="#ffffff" stop-opacity=".95"/>
+                          <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+                        </radialGradient>
+                        <clipPath id="orbClip"><circle cx="100" cy="100" r="58"/></clipPath>
+                      </defs>
+                      <circle cx="100" cy="100" r="94" fill="url(#orbGlow)"/>
+                      <circle cx="100" cy="100" r="58" fill="url(#orbBody)"/>
+                      <g clip-path="url(#orbClip)">
+                        <ellipse cx="78" cy="64" rx="30" ry="17" fill="url(#orbSpec)" opacity=".7" transform="rotate(-22 78 64)"/>
+                        <ellipse cx="100" cy="140" rx="52" ry="18" fill="#ff7ad1" opacity=".28"/>
+                        <ellipse cx="122" cy="84" rx="22" ry="40" fill="#75e8ff" opacity=".18" transform="rotate(24 122 84)"/>
+                        <path d="M48 108q52 26 104-4v22q-50 24-104 4z" fill="#0a0616" opacity=".55"/>
+                      </g>
+                      <circle cx="100" cy="100" r="58" fill="none" stroke="rgba(240,248,255,.55)" stroke-width="1.1"/>
+                      <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(190,215,255,.22)" stroke-width=".8" stroke-dasharray="1.5 4"/>
+                      <ellipse cx="100" cy="100" rx="80" ry="26" fill="none" stroke="url(#ringMetal)" stroke-width="1.6" transform="rotate(-24 100 100)" opacity=".9"/>
+                      <ellipse cx="100" cy="100" rx="72" ry="20" fill="none" stroke="url(#ringMetal)" stroke-width=".9" transform="rotate(52 100 100)" opacity=".55"/>
+                      <circle cx="100" cy="38" r="2.2" fill="#ffffff">
+                        <animate attributeName="opacity" values="0.25;1;0.25" dur="4s" repeatCount="indefinite"/>
+                      </circle>
+                      <circle cx="164" cy="126" r="1.6" fill="#9fe8ff"/>
+                    </svg>
+                    <span class="orbit-note a">Ref. 1.78</span>
+                    <span class="orbit-note b">Chrome / 04</span>
+                  </div>
+
+                  <div class="title-block">
+                    <span class="rarity-pill" id="rarityPill">Holo · 001</span>
+                    <h2>Aurelia</h2>
+                    <span class="class-line">Refractor class · first light</span>
+                  </div>
+
+                  <div class="stats" aria-label="Card statistics">
+                    <div class="stat"><span>Lumen</span><b>92</b><div class="bar"><i style="--v:92%"></i></div></div>
+                    <div class="stat"><span>Chroma</span><b>88</b><div class="bar"><i style="--v:88%"></i></div></div>
+                    <div class="stat"><span>Refraction</span><b>76</b><div class="bar"><i style="--v:76%"></i></div></div>
+                  </div>
+
+                  <div class="card-bottom">
+                    <span class="serial">N° 0007 / 1000</span>
+                    <span class="sig" aria-hidden="true">◇</span>
+                    <span>Chromatic foil</span>
+                  </div>
+                </div>
+
+                <div class="sheen"></div>
+                <div class="glare"></div>
+                <div class="frame"></div>
+              </div>
+
+              <!-- BACK -->
+              <div class="face back" id="backFace" aria-hidden="true">
+                <svg class="back-orb" viewBox="0 0 200 200" aria-hidden="true">
+                  <defs>
+                    <radialGradient id="backOrbGrad" cx="36%" cy="30%" r="70%">
+                      <stop offset="0" stop-color="#ffffff"/>
+                      <stop offset=".4" stop-color="#8ea4d6"/>
+                      <stop offset=".75" stop-color="#26305c"/>
+                      <stop offset="1" stop-color="#0a0e1c"/>
+                    </radialGradient>
+                  </defs>
+                  <circle cx="100" cy="100" r="58" fill="url(#backOrbGrad)"/>
+                  <ellipse cx="100" cy="100" rx="80" ry="24" fill="none" stroke="#bcd0ff" stroke-width="1" transform="rotate(-24 100 100)"/>
+                </svg>
+                <div class="back-inner">
+                  <div class="back-top">
+                    <span class="mark">PRISM<sup>®</sup></span>
+                    <span class="spec">Specimen 001</span>
+                  </div>
+
+                  <div class="back-title">
+                    <span>Field notes</span>
+                    <h2>Aurelia</h2>
+                  </div>
+
+                  <div class="spec-table">
+                    <div><span>Class</span><span>Refractor</span></div>
+                    <div><span>Finish</span><span>Chromatic foil</span></div>
+                    <div><span>Core</span><span>Chrome / obsidian</span></div>
+                    <div><span>Weight</span><span>18 g</span></div>
+                    <div><span>Origin</span><span>Atelier No. 9</span></div>
+                  </div>
+
+                  <p class="back-quote">“It refracts what you bring to it.”</p>
+
+                  <div class="refract" aria-hidden="true">
+                    <svg viewBox="0 0 180 52">
+                      <path d="M4 26h34" stroke="rgba(220,235,255,.5)" stroke-width=".8"/>
+                      <path d="M40 43 62 8l22 35z" fill="none" stroke="rgba(225,238,255,.55)" stroke-width=".9"/>
+                      <path d="M62 8v35" stroke="rgba(225,238,255,.16)" stroke-width=".6"/>
+                      <path d="M38 29l22 6" stroke="rgba(235,245,255,.7)" stroke-width=".9"/>
+                      <path d="M84 26 126 15M84 28l46 2M84 30l40 13" stroke="var(--foil-c,#5fffd0)" stroke-width=".8" opacity=".9"/>
+                      <path d="M84 26 126 15M84 28l46 2M84 30l40 13" stroke="var(--foil-a,#ff4fd8)" stroke-width="2.4" opacity=".18"/>
+                      <circle cx="84" cy="28" r="1.4" fill="#fff"/>
+                      <text x="4" y="48" fill="rgba(205,222,255,.42)" font-family="monospace" font-size="4.6" letter-spacing="1">INCIDENT 42°</text>
+                      <text x="130" y="12" fill="rgba(205,222,255,.42)" font-family="monospace" font-size="4.6" letter-spacing="1">SPECTRUM</text>
+                      <text x="130" y="48" fill="rgba(205,222,255,.42)" font-family="monospace" font-size="4.6" letter-spacing="1">REFRACT 1.78</text>
+                    </svg>
+                  </div>
+
+                  <div class="barcode-wrap">
+                    <div class="barcode" aria-label="Barcode: 700231000074">
+                      <i style="--w:.22em"></i><i class="thin"></i><i style="--w:.5em"></i><i class="thin"></i><i style="--w:.28em"></i><i class="thin"></i><i style="--w:.62em"></i><i class="thin"></i><i style="--w:.2em"></i><i style="--w:.42em"></i><i class="thin"></i><i style="--w:.3em"></i><i style="--w:.7em"></i><i class="thin"></i><i style="--w:.22em"></i><i style="--w:.46em"></i><i class="thin"></i><i style="--w:.34em"></i><i style="--w:.58em"></i><i class="thin"></i><i style="--w:.2em"></i><i style="--w:.4em"></i><i class="thin"></i><i style="--w:.26em"></i><i style="--w:.66em"></i><i class="thin"></i><i style="--w:.3em"></i><i style="--w:.44em"></i><i class="thin"></i><i style="--w:.2em"></i><i style="--w:.54em"></i>
+                    </div>
+                    <span class="barcode-num">7 00231 00007 4</span>
+                  </div>
+
+                  <div class="back-foot">
+                    <span>N° 0007 / 1000</span>
+                    <span>PRISM · MMXXVI</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <div class="card-shadow" aria-hidden="true"></div>
+      </div>
+
+      <div class="under-card">
+        <span id="stateReadout">Front / Holo</span>
+        <span>Tilt to refract</span>
+      </div>
+    </div>
+
+    <aside class="rail" aria-label="Card controls">
+      <div class="rarity-block">
+        <span class="rail-label" id="rarityLabel">Foil rarity</span>
+        <div class="rarity" role="group" aria-labelledby="rarityLabel">
+          <button type="button" data-rarity="holo" class="is-active" aria-pressed="true">
+            <span class="sw sw-holo" aria-hidden="true"></span>Holo<span>01</span>
+          </button>
+          <button type="button" data-rarity="gold" aria-pressed="false">
+            <span class="sw sw-gold" aria-hidden="true"></span>Gold<span>02</span>
+          </button>
+          <button type="button" data-rarity="ice" aria-pressed="false">
+            <span class="sw sw-ice" aria-hidden="true"></span>Ice<span>03</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="flip-btn" id="flipBtn" type="button" aria-controls="card">
+        <span id="flipLabel">Flip card</span>
+        <svg viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true">
+          <path d="M1 6h18M15 2l4 4-4 4"/><path d="M21 9V3" opacity=".5"/>
+        </svg>
+      </button>
+
+      <p class="rail-note">The foil is not printed. It is a surface that answers to light — and to you.</p>
+
+      <div class="rail-meta">
+        <span>Ref. 001 / 0.30 mm</span>
+        <span>Chrome core · 18 g</span>
+        <span>Atelier No. 9</span>
+      </div>
+    </aside>
+
+  </main>
+
+  <footer class="site-foot">
+    <span>PRISM® — refractive objects</span>
+    <span>Specimen 0007 · MMXXVI</span>
+    <span>1 of 1000</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var scene = document.getElementById("scene");
+  var card = document.getElementById("card");
+  var flipBtn = document.getElementById("flipBtn");
+  var flipLabel = document.getElementById("flipLabel");
+  var stateReadout = document.getElementById("stateReadout");
+  var rarityPill = document.getElementById("rarityPill");
+  var rarityButtons = Array.prototype.slice.call(document.querySelectorAll(".rarity button"));
+  var starBox = document.getElementById("stars");
+  var frontFace = document.getElementById("frontFace");
+  var backFace = document.getElementById("backFace");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var flipped = false;
+  var rarity = "holo";
+
+  var RARITY_NAME = { holo: "Holo", gold: "Gold", ice: "Ice" };
+
+  /* ---------- deterministic stars ---------- */
+  (function(){
+    var seed = 742091;
+    function rnd(){
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return seed / 2147483648;
+    }
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < 120; i++){
+      var s = document.createElement("i");
+      var big = i % 17 === 0;
+      var size = big ? (2 + rnd() * 1.6) : (0.6 + rnd() * 1.4);
+      s.style.left = (rnd() * 100).toFixed(2) + "%";
+      s.style.top = (rnd() * 100).toFixed(2) + "%";
+      s.style.width = size.toFixed(2) + "px";
+      s.style.height = size.toFixed(2) + "px";
+      s.style.setProperty("--o", (big ? 0.85 : 0.2 + rnd() * 0.5).toFixed(2));
+      s.style.setProperty("--t", (4 + rnd() * 7).toFixed(1) + "s");
+      s.style.setProperty("--d", (-rnd() * 8).toFixed(1) + "s");
+      if (big) s.className = "big";
+      frag.appendChild(s);
+    }
+    starBox.appendChild(frag);
+  })();
+
+  /* ---------- tilt + glare ---------- */
+  var maxTilt = 15;
+
+  function updateTilt(clientX, clientY){
+    var r = scene.getBoundingClientRect();
+    var px = (clientX - r.left) / r.width;
+    var py = (clientY - r.top) / r.height;
+    px = Math.max(-0.15, Math.min(1.15, px));
+    py = Math.max(-0.15, Math.min(1.15, py));
+    var ry = (px - 0.5) * 2 * maxTilt;
+    var rx = (0.5 - py) * 2 * maxTilt;
+    scene.style.setProperty("--rx", rx.toFixed(2) + "deg");
+    scene.style.setProperty("--ry", ry.toFixed(2) + "deg");
+    card.style.setProperty("--gx", (px * 100).toFixed(1) + "%");
+    card.style.setProperty("--gy", (py * 100).toFixed(1) + "%");
+  }
+
+  function resetTilt(){
+    scene.classList.remove("is-active");
+    scene.style.setProperty("--rx", "0deg");
+    scene.style.setProperty("--ry", "0deg");
+    card.style.setProperty("--gx", "62%");
+    card.style.setProperty("--gy", "26%");
+  }
+
+  scene.addEventListener("pointermove", function(e){
+    if (e.pointerType === "touch" && e.buttons === 0 && e.pressure === 0) return;
+    scene.classList.add("is-active");
+    updateTilt(e.clientX, e.clientY);
+  });
+
+  scene.addEventListener("pointerleave", function(e){
+    if (e.pointerType === "touch") return;
+    resetTilt();
+  });
+
+  scene.addEventListener("pointerup", function(e){
+    if (e.pointerType === "touch"){
+      window.setTimeout(resetTilt, 550);
+    }
+  });
+
+  scene.addEventListener("pointercancel", resetTilt);
+
+  /* ---------- flip ---------- */
+  function setFlipped(next){
+    flipped = next;
+    card.classList.toggle("is-flipped", flipped);
+    card.setAttribute("aria-pressed", flipped ? "true" : "false");
+    card.setAttribute("aria-label", flipped
+      ? "PRISM card, back with specifications. Activate to show the front."
+      : "PRISM card, front. Activate to flip the card.");
+    frontFace.setAttribute("aria-hidden", flipped ? "true" : "false");
+    backFace.setAttribute("aria-hidden", flipped ? "false" : "true");
+    flipLabel.textContent = flipped ? "Show front" : "Flip card";
+    updateReadout();
+  }
+
+  function updateReadout(){
+    stateReadout.textContent = (flipped ? "Back" : "Front") + " / " + RARITY_NAME[rarity];
+  }
+
+  var downX = 0, downY = 0, downTime = 0;
+
+  card.addEventListener("pointerdown", function(e){
+    downX = e.clientX;
+    downY = e.clientY;
+    downTime = Date.now();
+  });
+
+  card.addEventListener("click", function(e){
+    var moved = Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY);
+    if (moved > 10 && Date.now() - downTime < 800) return;
+    setFlipped(!flipped);
+  });
+
+  card.addEventListener("keydown", function(e){
+    if (e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      setFlipped(!flipped);
+    }
+  });
+
+  flipBtn.addEventListener("click", function(){
+    setFlipped(!flipped);
+    flipBtn.blur();
+  });
+
+  /* ---------- rarity ---------- */
+  function setRarity(next){
+    rarity = next;
+    scene.setAttribute("data-rarity", rarity);
+    rarityPill.textContent = RARITY_NAME[rarity] + " · 001";
+    rarityButtons.forEach(function(b){
+      var active = b.getAttribute("data-rarity") === rarity;
+      b.classList.toggle("is-active", active);
+      b.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    updateReadout();
+  }
+
+  rarityButtons.forEach(function(b){
+    b.addEventListener("click", function(){
+      setRarity(b.getAttribute("data-rarity"));
+    });
+  });
+
+  /* ---------- boot ---------- */
+  window.requestAnimationFrame(function(){
+    window.requestAnimationFrame(function(){
+      card.classList.add("is-ready");
+    });
+  });
+
+  if (reduceMotion){
+    // keep the static composition; motion is decorative only
+    document.querySelector(".card-float").style.animation = "none";
+  }
+})();
+</script>
+</body>
+</html>

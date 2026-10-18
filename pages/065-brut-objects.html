@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BRUT® Chair 01 — SIT HARD.</title>
+<meta name="description" content="BRUT® Chair 01. Cast concrete seating, made to order. An object built to be sat on, not styled around.">
+<style>
+  :root{
+    --paper:#c9c6bd;
+    --paper-hi:#d7d4cb;
+    --paper-lo:#b7b4ab;
+    --ink:#111110;
+    --ink-soft:#48463f;
+    --orange:#ff4a00;
+    --line:2px solid var(--ink);
+    --pad:clamp(18px, 3.4vw, 48px);
+    --mono:"SFMono-Regular", ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+    --sans:"Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    background-image:
+      radial-gradient(1200px 600px at 75% 8%, rgba(255,255,255,.22), transparent 65%),
+      linear-gradient(180deg, rgba(255,255,255,.12), transparent 30%);
+  }
+  body.no-scroll{overflow:hidden}
+  ::selection{background:var(--orange); color:#fff}
+  a{color:inherit}
+  button{font:inherit; color:inherit}
+  .skip{position:absolute; left:-9999px; top:0; background:var(--ink); color:var(--paper); padding:10px 14px; z-index:100}
+  .skip:focus{left:0}
+  .mono{font-family:var(--mono); text-transform:uppercase; letter-spacing:.08em; font-size:10px}
+
+  /* ── header ───────────────────────────────────────────── */
+  .site-head{border-bottom:var(--line); border-top:10px solid var(--ink); position:relative; z-index:20; background:var(--paper)}
+  .head-inner{display:flex; align-items:stretch; justify-content:space-between; gap:18px; padding:0 var(--pad); min-height:66px}
+  .brand{display:flex; align-items:center; font-weight:800; font-size:30px; letter-spacing:-.06em; line-height:1}
+  .brand sup{font-size:10px; font-weight:600; letter-spacing:0; transform:translateY(-9px); margin-left:1px}
+  .brand:after{content:""; display:inline-block; width:9px; height:9px; background:var(--orange); margin-left:9px; transform:translateY(1px)}
+  .primary-nav{display:flex; align-items:center; gap:clamp(14px,2.6vw,34px); font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase}
+  .primary-nav a{text-decoration:none; padding:8px 0; position:relative}
+  .primary-nav a::after{content:""; position:absolute; left:0; right:0; bottom:2px; height:1px; background:var(--ink); transform:scaleX(0); transform-origin:left; transition:transform .22s ease}
+  .primary-nav a:hover::after, .primary-nav a:focus-visible::after{transform:scaleX(1)}
+  .head-right{display:flex; align-items:center; gap:clamp(12px,2vw,28px)}
+  .edition{font-family:var(--mono); font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-soft); white-space:nowrap}
+  .bag-btn{border:1.5px solid var(--ink); background:transparent; padding:9px 12px; font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background .18s, color .18s}
+  .bag-btn:hover,.bag-btn:focus-visible{background:var(--ink); color:var(--paper)}
+  .bag-btn .count{display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 4px; background:var(--orange); color:#fff; font-size:10px; letter-spacing:0}
+  .bag-btn:hover .count{color:#fff}
+
+  /* ── hero ─────────────────────────────────────────────── */
+  .hero{display:grid; grid-template-columns:minmax(0,0.92fr) minmax(0,1.08fr); gap:clamp(28px,4.5vw,72px); padding:clamp(26px,4vw,56px) var(--pad) clamp(36px,5vw,64px); max-width:1680px; margin:0 auto}
+  .hero-copy{display:flex; flex-direction:column; min-width:0}
+  .eyebrow{display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; border-bottom:1px solid rgba(17,17,16,.35); padding-bottom:9px; margin-bottom:clamp(20px,3.5vw,40px)}
+  h1{
+    margin:0; font-size:clamp(76px, 11.4vw, 178px); line-height:.79; letter-spacing:-.065em;
+    font-weight:800; text-transform:uppercase; position:relative;
+  }
+  h1 .dot{color:var(--orange); letter-spacing:0; margin-left:-.02em}
+  h1 .small-jag{position:absolute; right:0; top:6px; width:clamp(28px,4vw,54px); height:8px; background:var(--orange)}
+  h1 .line{display:block}
+  .lede{max-width:43ch; font-size:clamp(14px,1.15vw,16px); line-height:1.55; margin:clamp(22px,3vw,34px) 0 0; color:#26251f}
+  .lede strong{font-weight:600}
+  .specs{margin:clamp(26px,3.4vw,42px) 0 0; border-top:1.5px solid var(--ink)}
+  .spec-row{display:grid; grid-template-columns:1fr 1.5fr; gap:14px; padding:9px 0; border-bottom:1px solid rgba(17,17,16,.35); font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; line-height:1.45}
+  .spec-row dt{margin:0; color:var(--ink-soft)}
+  .spec-row dd{margin:0; text-align:right}
+  .buy{margin-top:auto; padding-top:clamp(26px,3.4vw,40px)}
+  .price-line{display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin-bottom:16px}
+  .price{font-size:clamp(38px,4vw,56px); font-weight:700; letter-spacing:-.05em; line-height:1}
+  .price sup{font-size:.42em; vertical-align:.55em; letter-spacing:0; font-weight:600}
+  .tax{font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase; text-align:right; max-width:14ch; line-height:1.5}
+  .add-btn{
+    width:100%; border:2px solid var(--ink); background:var(--ink); color:var(--paper);
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:19px 20px; cursor:pointer; font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    transition:background .2s, color .2s, transform .12s; position:relative;
+  }
+  .add-btn .plus{font-size:20px; line-height:1; transition:transform .3s}
+  .add-btn:hover{background:var(--orange); border-color:var(--orange); color:#fff}
+  .add-btn:hover .plus{transform:rotate(90deg)}
+  .add-btn:active{transform:translateY(1px)}
+  .add-btn.is-added{background:var(--orange); border-color:var(--orange); color:#fff}
+  .ship{margin:11px 0 0; font-family:var(--mono); font-size:9px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-soft); display:flex; justify-content:space-between; gap:12px}
+
+  /* ── stage ────────────────────────────────────────────── */
+  .stage-col{min-width:0; display:flex; flex-direction:column; gap:0}
+  .stage{
+    margin:0; border:2px solid var(--ink); background:var(--paper-hi);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+    min-height:clamp(400px, 52vw, 690px);
+  }
+  .stage::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(var(--ink),var(--ink)) left 14px top 14px / 16px 1px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) left 14px top 14px / 1px 16px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) right 14px top 14px / 16px 1px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) right 14px top 14px / 1px 16px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) left 14px bottom 14px / 16px 1px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) left 14px bottom 14px / 1px 16px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) right 14px bottom 14px / 16px 1px no-repeat,
+      linear-gradient(var(--ink),var(--ink)) right 14px bottom 14px / 1px 16px no-repeat;
+    opacity:.55;
+  }
+  .stage-meta{display:flex; justify-content:space-between; gap:12px; padding:15px 18px 0; font-family:var(--mono); font-size:9px; letter-spacing:.09em; text-transform:uppercase; position:relative; z-index:2}
+  .stage-meta span:last-child{color:var(--ink-soft); text-align:right}
+  .chair-wrap{flex:1; display:flex; align-items:center; justify-content:center; padding:8px 6px 0; min-height:0; min-width:0; width:100%}
+  .chair-svg{width:100%; height:auto; max-height:590px; display:block; overflow:visible}
+  .stage-foot{display:flex; justify-content:space-between; align-items:center; gap:12px; border-top:1.5px solid var(--ink); padding:10px 18px; font-family:var(--mono); font-size:9px; letter-spacing:.09em; text-transform:uppercase; position:relative; z-index:2}
+  .stage-foot b{font-weight:500; color:var(--orange)}
+  .stage[data-variant="black"]{background:#a9a69d}
+  .stage[data-variant="rust"]{background:#c2b9aa}
+  .stage[data-variant="black"] .stage-foot b{color:#000}
+  .stage[data-variant="rust"] .stage-foot b{color:#8c2f0d}
+
+  .chair-svg .plane-light{fill:var(--c-light,#d9d5ca)}
+  .chair-svg .plane-mid{fill:var(--c-mid,#b4b0a5)}
+  .chair-svg .plane-dark{fill:var(--c-dark,#928e83)}
+  .chair-svg .edge{stroke:var(--c-edge,#111110); stroke-width:3; stroke-linejoin:miter}
+  .chair-svg .hair{stroke:var(--c-edge,#111110); stroke-width:1.1; opacity:.4; fill:none}
+  .chair-svg .dim{stroke:#111110; stroke-width:1.1; fill:none}
+  .chair-svg .dim-text{fill:#111110; font-family:var(--mono); font-size:11px; letter-spacing:.06em}
+  .chair-svg .tag{fill:var(--orange)}
+  .chair-svg .tag-text{fill:#fff; font-family:var(--mono); font-size:9px; letter-spacing:.06em}
+  .stage[data-variant="concrete"]{--c-light:#e0dcd1; --c-mid:#bbb7ac; --c-dark:#98948a; --c-edge:#111110}
+  .stage[data-variant="black"]{--c-light:#42423d; --c-mid:#2d2d29; --c-dark:#1b1b19; --c-edge:#000}
+  .stage[data-variant="rust"]{--c-light:#ce7148; --c-mid:#ad4d27; --c-dark:#853719; --c-edge:#1c0e08}
+
+  .variants{display:grid; grid-template-columns:auto 1fr; align-items:stretch; border:2px solid var(--ink); border-top:none; background:var(--paper)}
+  .variant-label{display:flex; align-items:center; padding:0 14px; border-right:1.5px solid var(--ink); font-family:var(--mono); font-size:9px; letter-spacing:.09em; text-transform:uppercase; white-space:nowrap}
+  .swatches{display:grid; grid-template-columns:repeat(3,1fr)}
+  .swatch{appearance:none; background:transparent; border:0; border-right:1px solid rgba(17,17,16,.35); padding:13px 12px 14px; display:flex; align-items:center; gap:9px; cursor:pointer; text-align:left; transition:background .18s}
+  .swatch:last-child{border-right:0}
+  .swatch:hover{background:rgba(255,255,255,.28)}
+  .swatch .chip{width:16px; height:16px; border:1.5px solid var(--ink); flex:none}
+  .swatch .txt{font-family:var(--mono); font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; line-height:1.35}
+  .swatch[aria-pressed="true"]{background:var(--ink); color:var(--paper)}
+  .swatch[aria-pressed="true"] .chip{outline:1px solid var(--paper); outline-offset:2px}
+  .swatch[data-v="concrete"] .chip{background:#bdb9ae}
+  .swatch[data-v="black"] .chip{background:#232320}
+  .swatch[data-v="rust"] .chip{background:#b5532c}
+
+  /* ── black band ───────────────────────────────────────── */
+  .band{background:var(--ink); color:var(--paper); border-top:2px solid var(--ink); border-bottom:2px solid var(--ink); overflow:hidden; padding:13px 0; margin-top:clamp(16px,3vw,34px)}
+  .band-track{display:flex; gap:0; width:max-content; animation:slide 34s linear infinite}
+  .band span{font-size:clamp(20px,2.6vw,34px); font-weight:700; letter-spacing:-.03em; white-space:nowrap; padding-right:26px; text-transform:uppercase}
+  .band span em{font-style:normal; color:var(--orange)}
+  @keyframes slide{to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion: reduce){.band-track{animation:none}}
+
+  .details{display:grid; grid-template-columns:repeat(3,1fr); border-bottom:2px solid var(--ink); max-width:1680px; margin:0 auto}
+  .detail{padding:clamp(22px,3vw,34px) var(--pad); border-right:1px solid rgba(17,17,16,.25)}
+  .detail:last-child{border-right:0}
+  .detail .num{font-family:var(--mono); font-size:9px; letter-spacing:.09em; color:var(--orange); display:block; margin-bottom:18px}
+  .detail h3{margin:0 0 8px; font-size:clamp(17px,1.6vw,22px); letter-spacing:-.02em; font-weight:600}
+  .detail p{margin:0; font-size:12.5px; line-height:1.6; color:var(--ink-soft); max-width:34ch}
+
+  /* ── footer ───────────────────────────────────────────── */
+  footer{background:var(--ink); color:var(--paper); padding:clamp(26px,4vw,44px) var(--pad) 22px}
+  .foot-top{display:flex; flex-wrap:wrap; justify-content:space-between; gap:24px; border-bottom:1px solid rgba(201,198,189,.28); padding-bottom:clamp(22px,3vw,36px)}
+  .foot-brand{font-size:clamp(38px,5vw,64px); font-weight:800; letter-spacing:-.06em; line-height:.9}
+  .foot-brand sup{font-size:.22em; vertical-align:super}
+  .foot-cols{display:flex; gap:clamp(28px,5vw,80px); flex-wrap:wrap}
+  .foot-col h4{font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; margin:0 0 12px; color:#9b978c; font-weight:400}
+  .foot-col a, .foot-col p{display:block; margin:0 0 7px; font-size:12px; text-decoration:none; color:var(--paper); opacity:.85}
+  .foot-col a:hover{color:var(--orange); opacity:1}
+  .foot-bottom{display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:16px; font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:#918d82}
+
+  /* ── bag drawer ───────────────────────────────────────── */
+  .scrim{position:fixed; inset:0; background:rgba(17,17,16,.5); opacity:0; pointer-events:none; transition:opacity .25s; z-index:50}
+  .scrim.on{opacity:1; pointer-events:auto}
+  .bag-drawer{position:fixed; top:0; right:0; bottom:0; width:min(420px,92vw); background:var(--paper); border-left:2px solid var(--ink); z-index:60; transform:translateX(101%); transition:transform .32s cubic-bezier(.7,0,.2,1); display:flex; flex-direction:column}
+  .bag-drawer.on{transform:none}
+  .bag-head{display:flex; justify-content:space-between; align-items:center; gap:14px; padding:20px; border-bottom:2px solid var(--ink)}
+  .bag-head h2{margin:0; font-size:18px; letter-spacing:-.02em; text-transform:uppercase; font-weight:700}
+  .bag-close{border:0; background:none; font-size:24px; line-height:1; cursor:pointer; padding:0 4px}
+  .bag-close:hover{color:var(--orange)}
+  .bag-body{padding:20px; flex:1; overflow:auto}
+  .bag-empty{font-size:13px; line-height:1.6; color:var(--ink-soft); border:1px dashed rgba(17,17,16,.4); padding:22px; max-width:30ch}
+  .bag-item{display:grid; grid-template-columns:64px 1fr; gap:14px; border-bottom:1px solid rgba(17,17,16,.3); padding-bottom:16px}
+  .bag-thumb{height:78px; border:1.5px solid var(--ink); background:var(--paper-lo); position:relative; overflow:hidden}
+  .bag-thumb svg{position:absolute; inset:0; width:100%; height:100%}
+  .bag-item h3{margin:0 0 3px; font-size:14px; letter-spacing:-.01em}
+  .bag-item .finish{font-family:var(--mono); font-size:9px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 12px}
+  .qty{display:inline-flex; align-items:center; border:1px solid var(--ink)}
+  .qty button{width:26px; height:26px; border:0; background:transparent; cursor:pointer; font-size:14px; line-height:1}
+  .qty button:hover{background:var(--ink); color:var(--paper)}
+  .qty span{min-width:30px; text-align:center; font-family:var(--mono); font-size:11px}
+  .bag-line-price{font-family:var(--mono); font-size:10px; white-space:nowrap; padding-top:2px}
+  .remove{margin-top:10px; border:0; background:none; padding:0; font-family:var(--mono); font-size:8.5px; letter-spacing:.08em; text-transform:uppercase; text-decoration:underline; cursor:pointer; color:var(--ink-soft)}
+  .remove:hover{color:var(--orange)}
+  .bag-foot{border-top:2px solid var(--ink); padding:18px 20px 20px}
+  .subtotal{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:15px}
+  .subtotal b{font-size:16px; letter-spacing:-.02em}
+  .continue{width:100%; border:1.5px solid var(--ink); background:var(--ink); color:var(--paper); padding:14px; font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer}
+  .continue:hover{background:var(--orange); border-color:var(--orange)}
+  .bag-note{margin:11px 0 0; font-family:var(--mono); font-size:8px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); line-height:1.5}
+
+  .toast{position:fixed; left:50%; bottom:26px; transform:translate(-50%, 18px); background:var(--ink); color:var(--paper); border-left:6px solid var(--orange); padding:12px 18px; font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; z-index:80; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s}
+  .toast.on{opacity:1; transform:translate(-50%,0)}
+
+  .grain{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; opacity:.16; mix-blend-mode:multiply; z-index:90}
+
+  @media (max-width: 980px){
+    .hero{grid-template-columns:1fr; gap:30px}
+    .hero-copy{order:2}
+    .stage-col{order:1}
+    .stage{min-height:0}
+    .buy{margin-top:30px}
+    .details{grid-template-columns:1fr}
+    .detail{border-right:0; border-bottom:1px solid rgba(17,17,16,.25)}
+    .detail:last-child{border-bottom:0}
+    .primary-nav{display:none}
+  }
+  @media (max-width: 620px){
+    .head-inner{min-height:56px; gap:10px}
+    .brand{font-size:24px}
+    .edition{display:none}
+    h1{font-size:clamp(68px,21vw,110px)}
+    .hero{padding-top:20px}
+    .variants{grid-template-columns:1fr; max-width:100%}
+    .variant-label{border-right:0; border-bottom:1px solid rgba(17,17,16,.35); padding:9px 12px}
+    .swatch{padding:10px 8px; flex-direction:column; align-items:flex-start; gap:5px; min-width:0}
+    .swatch .txt{font-size:7.5px; white-space:normal}
+    .swatch .chip{width:13px; height:13px}
+    .stage-foot{font-size:8px; padding:9px 12px}
+    .stage-meta{font-size:8px}
+    .foot-cols{gap:24px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition-duration:.01ms !important; animation-duration:.01ms !important; animation-iteration-count:1 !important}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to the object</a>
+
+<header class="site-head">
+  <div class="head-inner">
+    <div class="brand" aria-label="BRUT, registered">BRUT<sup>®</sup></div>
+    <nav class="primary-nav" aria-label="Primary">
+      <a href="#main">Object 01</a>
+      <a href="#material">Material</a>
+      <a href="#edition">Edition</a>
+      <a href="#care">Care</a>
+    </nav>
+    <div class="head-right">
+      <span class="edition">Ed. 01 / 120 · 2026</span>
+      <button class="bag-btn" id="bagBtn" aria-haspopup="dialog" aria-controls="bagDrawer">
+        Bag <span class="count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="pageTitle">
+    <div class="hero-copy">
+      <div class="eyebrow"><span>Object 001 — Seating</span><span>Antwerp / 2026</span></div>
+      <h1 id="pageTitle"><span class="small-jag" aria-hidden="true"></span><span class="line">Sit</span><span class="line">Hard<span class="dot">.</span></span></h1>
+
+      <p class="lede">A chair reduced to its argument: four planes, one seat, no apology. <strong>Chair 01</strong> is cast in glass-fibre reinforced concrete, ground by hand, and left with the marks of its own making. It weighs more than your opinions. Sit down anyway.</p>
+
+      <dl class="specs" id="material">
+        <div class="spec-row"><dt>Material</dt><dd>GRC concrete, pigment</dd></div>
+        <div class="spec-row"><dt>Finish</dt><dd>Hand-ground / sealed</dd></div>
+        <div class="spec-row"><dt>Dimensions</dt><dd>W 520 × D 550 × H 740 mm</dd></div>
+        <div class="spec-row"><dt>Weight</dt><dd>34 kg</dd></div>
+        <div class="spec-row"><dt>Production</dt><dd>Made to order, 12 weeks</dd></div>
+        <div class="spec-row"><dt>Edition</dt><dd>120 + 4 AP per finish</dd></div>
+      </dl>
+
+      <div class="buy">
+        <div class="price-line">
+          <div class="price" aria-label="One thousand four hundred eighty US dollars"><sup>$</sup>1,480</div>
+          <div class="tax">Ex. tax<br>Ex. shipping</div>
+        </div>
+        <button class="add-btn" id="addBtn">
+          <span id="addLabel">Add to bag</span>
+          <span class="plus" aria-hidden="true">+</span>
+        </button>
+        <p class="ship"><span>Ships from Rotterdam</span><span id="finishNote">Finish: Concrete</span></p>
+      </div>
+    </div>
+
+    <div class="stage-col">
+      <figure class="stage" id="stage" data-variant="concrete">
+        <div class="stage-meta"><span>Fig. 01 — Axonometric</span><span>Chair 01 / scale 1:8</span></div>
+        <div class="chair-wrap">
+          <svg class="chair-svg" viewBox="0 0 760 700" role="img" aria-labelledby="chairTitle chairDesc">
+            <title id="chairTitle">BRUT Chair 01 in concrete</title>
+            <desc id="chairDesc">An axonometric drawing of a heavy slab chair: a tall rectangular back, thick seat, two block legs, with dimension callouts and a raw floor shadow.</desc>
+            <defs>
+              <clipPath id="backClip"><polygon points="300,150 610,150 610,385 300,385"/></clipPath>
+              <pattern id="aggregate" width="26" height="22" patternUnits="userSpaceOnUse">
+                <circle cx="4" cy="6" r="1" fill="#111" opacity=".5"/>
+                <circle cx="17" cy="14" r="1.4" fill="#111" opacity=".28"/>
+                <circle cx="10" cy="19" r=".8" fill="#fff" opacity=".5"/>
+                <circle cx="23" cy="3" r=".9" fill="#fff" opacity=".35"/>
+              </pattern>
+            </defs>
+
+            <!-- raw floor shadow -->
+            <g aria-hidden="true">
+              <polygon points="132,585 300,568 552,571 660,594 628,616 410,628 196,616" fill="#111110" opacity=".13"/>
+              <ellipse cx="380" cy="606" rx="238" ry="17" fill="#111110" opacity=".13"/>
+              <rect x="196" y="594" width="58" height="9" fill="#111110" opacity=".3"/>
+              <rect x="488" y="594" width="58" height="9" fill="#111110" opacity=".3"/>
+            </g>
+
+            <!-- backrest -->
+            <g>
+              <polygon class="plane-dark edge" points="610,150 658,112 658,347 610,385"/>
+              <polygon class="plane-light edge" points="300,150 610,150 658,112 348,112"/>
+              <polygon class="plane-mid edge" points="300,150 610,150 610,385 300,385"/>
+              <g clip-path="url(#backClip)" aria-hidden="true">
+                <rect x="300" y="150" width="310" height="235" fill="url(#aggregate)" opacity=".55"/>
+                <line class="hair" x1="300" y1="320" x2="610" y2="320"/>
+                <line class="hair" x1="300" y1="347" x2="610" y2="347"/>
+                <path d="M300 170 L430 150" class="hair"/>
+              </g>
+              <!-- bolts -->
+              <g fill="#111110">
+                <circle cx="325" cy="172" r="4.5"/><circle cx="585" cy="172" r="4.5"/>
+                <circle cx="325" cy="360" r="4.5"/><circle cx="585" cy="360" r="4.5"/>
+              </g>
+              <g fill="#fff" opacity=".5">
+                <circle cx="323.5" cy="170.5" r="1.2"/><circle cx="583.5" cy="170.5" r="1.2"/>
+              </g>
+              <!-- maker tag -->
+              <rect class="tag" x="466" y="316" width="108" height="27"/>
+              <text class="tag-text" x="478" y="333">BRUT® 01</text>
+            </g>
+
+            <!-- seat -->
+            <g>
+              <polygon class="plane-dark edge" points="560,430 624,380 624,436 560,486"/>
+              <polygon class="plane-mid edge" points="180,430 560,430 560,486 180,486"/>
+              <polygon class="plane-light edge" points="180,430 560,430 624,380 244,380"/>
+              <line class="hair" x1="192" y1="462" x2="552" y2="462"/>
+              <line class="hair" x1="198" y1="474" x2="548" y2="474"/>
+              <text x="198" y="411" fill="#111" opacity=".42" font-family="SFMono-Regular, monospace" font-size="9" letter-spacing="1">SEAT PLANE / 40 MM</text>
+            </g>
+
+            <!-- rear leg -->
+            <g>
+              <polygon class="plane-dark edge" points="552,462 612,416 612,540 552,586"/>
+              <polygon class="plane-mid edge" points="552,486 612,440 612,540 552,586" opacity=".85"/>
+            </g>
+
+            <!-- front legs -->
+            <g>
+              <polygon class="plane-dark edge" points="252,486 282,462 282,576 252,600"/>
+              <polygon class="plane-mid edge" points="196,486 252,486 252,600 196,600"/>
+              <polygon class="plane-light edge" points="196,486 252,486 282,462 226,462"/>
+              <line class="hair" x1="200" y1="520" x2="248" y2="520"/>
+              <line class="hair" x1="200" y1="546" x2="248" y2="546"/>
+            </g>
+            <g>
+              <polygon class="plane-dark edge" points="544,486 574,462 574,576 544,600"/>
+              <polygon class="plane-mid edge" points="488,486 544,486 544,600 488,600"/>
+              <polygon class="plane-light edge" points="488,486 544,486 574,462 518,462"/>
+              <line class="hair" x1="492" y1="520" x2="540" y2="520"/>
+              <line class="hair" x1="492" y1="546" x2="540" y2="546"/>
+            </g>
+
+            <!-- dimensions -->
+            <g aria-hidden="true">
+              <line class="dim" x1="690" y1="112" x2="690" y2="600"/>
+              <line class="dim" x1="682" y1="112" x2="698" y2="112"/>
+              <line class="dim" x1="682" y1="600" x2="698" y2="600"/>
+              <text class="dim-text" x="700" y="360" transform="rotate(90 700 360)">740 MM</text>
+
+              <line class="dim" x1="180" y1="656" x2="560" y2="656"/>
+              <line class="dim" x1="180" y1="648" x2="180" y2="664"/>
+              <line class="dim" x1="560" y1="648" x2="560" y2="664"/>
+              <text class="dim-text" x="346" y="678">520 MM</text>
+
+              <line class="dim" x1="570" y1="408" x2="648" y2="352"/>
+              <line class="dim" x1="570" y1="408" x2="577" y2="414"/>
+              <line class="dim" x1="648" y1="352" x2="641" y2="346"/>
+              <text class="dim-text" x="598" y="401" transform="rotate(-36 598 401)">550 MM</text>
+            </g>
+          </svg>
+        </div>
+        <div class="stage-foot"><span>Cast 04 / 120</span><span id="stageFinish"><b>●</b> Concrete</span></div>
+      </figure>
+
+      <div class="variants" role="group" aria-label="Choose finish">
+        <div class="variant-label">Finish</div>
+        <div class="swatches">
+          <button class="swatch" data-v="concrete" aria-pressed="true"><span class="chip" aria-hidden="true"></span><span class="txt">Concrete<br>01-A</span></button>
+          <button class="swatch" data-v="black" aria-pressed="false"><span class="chip" aria-hidden="true"></span><span class="txt">Black<br>01-B</span></button>
+          <button class="swatch" data-v="rust" aria-pressed="false"><span class="chip" aria-hidden="true"></span><span class="txt">Rust<br>01-C</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="band" aria-hidden="true">
+    <div class="band-track">
+      <span>Sit hard <em>■</em> Stay heavy <em>■</em> No soft edges <em>■</em> Cast, not carved <em>■</em> 34 kilograms of opinion <em>■</em></span>
+      <span>Sit hard <em>■</em> Stay heavy <em>■</em> No soft edges <em>■</em> Cast, not carved <em>■</em> 34 kilograms of opinion <em>■</em></span>
+    </div>
+  </div>
+
+  <section class="details" id="care" aria-label="Object notes">
+    <div class="detail"><span class="num">01 / Material</span><h3>Concrete, and only concrete.</h3><p>Glass-fibre reinforced, pigmented through the mass. Each pour takes the mould's seams and the weather's mood. No two faces are the same grey.</p></div>
+    <div class="detail" id="edition"><span class="num">02 / Edition</span><h3>One hundred and twenty.</h3><p>Four artist proofs per finish. Numbered on a steel plate beneath the seat. When the edition closes, the mould is broken on camera.</p></div>
+    <div class="detail"><span class="num">03 / Care</span><h3>Wipe. Do not polish.</h3><p>Dust with a dry cloth. A damp cloth for marks. Linseed oil once a year if you want it darker. Do not drag: lift, or ask a friend.</p></div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-top">
+    <div class="foot-brand">BRUT<sup>®</sup></div>
+    <div class="foot-cols">
+      <div class="foot-col"><h4>Object</h4><a href="#main">Chair 01</a><a href="#material">Materials</a><a href="#edition">Edition</a><a href="#care">Care</a></div>
+      <div class="foot-col"><h4>Studio</h4><a href="#main">About</a><a href="#main">Commissions</a><a href="#main">Press</a><a href="#main">Contact</a></div>
+      <div class="foot-col"><h4>Workshop</h4><p>Scheldekaaien 14<br>2000 Antwerp, BE</p><p>Mon–Thu, 09–17</p></div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2026 BRUT Studio BV — All weight reserved</span>
+    <span>Object 001 / Edition 01–120</span>
+    <span>Built heavy. Shipped slow.</span>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="bag-drawer" id="bagDrawer" role="dialog" aria-modal="true" aria-labelledby="bagTitle" aria-hidden="true">
+  <div class="bag-head">
+    <h2 id="bagTitle">Your bag <span id="drawerCount" class="mono">(0)</span></h2>
+    <button class="bag-close" id="bagClose" aria-label="Close bag">×</button>
+  </div>
+  <div class="bag-body" id="bagBody"></div>
+  <div class="bag-foot">
+    <div class="subtotal"><span>Subtotal</span><b id="subtotal">$0</b></div>
+    <button class="continue" id="continueBtn">Continue with the object</button>
+    <p class="bag-note">Tax and freight calculated on invoice. Made to order — 12 weeks.</p>
+  </div>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite">Added to bag</div>
+
+<svg class="grain" aria-hidden="true" focusable="false">
+  <filter id="paperNoise">
+    <feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#paperNoise)"/>
+</svg>
+
+<script>
+(function(){
+  "use strict";
+  var FINISHES = {
+    concrete: {name:"Concrete", hex:"#bdb9ae", price:1480},
+    black:    {name:"Black",    hex:"#232320", price:1480},
+    rust:     {name:"Rust",     hex:"#b5532c", price:1480}
+  };
+  var state = { variant:"concrete", qty:0 };
+
+  var stage = document.getElementById("stage");
+  var swatches = Array.prototype.slice.call(document.querySelectorAll(".swatch"));
+  var stageFinish = document.getElementById("stageFinish");
+  var finishNote = document.getElementById("finishNote");
+  var addBtn = document.getElementById("addBtn");
+  var addLabel = document.getElementById("addLabel");
+  var cartCount = document.getElementById("cartCount");
+  var drawerCount = document.getElementById("drawerCount");
+  var bagBtn = document.getElementById("bagBtn");
+  var bagDrawer = document.getElementById("bagDrawer");
+  var bagBody = document.getElementById("bagBody");
+  var bagClose = document.getElementById("bagClose");
+  var scrim = document.getElementById("scrim");
+  var subtotal = document.getElementById("subtotal");
+  var toast = document.getElementById("toast");
+  var continueBtn = document.getElementById("continueBtn");
+  var chairTitle = document.getElementById("chairTitle");
+  var addedTimer = null, toastTimer = null;
+
+  function money(n){ return "$" + n.toLocaleString("en-US"); }
+
+  function render(){
+    var f = FINISHES[state.variant];
+    stage.setAttribute("data-variant", state.variant);
+    stageFinish.innerHTML = "<b>●</b> " + f.name;
+    finishNote.textContent = "Finish: " + f.name;
+    stageFinish.style.color = state.variant === "black" ? "#111" : "";
+    chairTitle.textContent = "BRUT Chair 01 in " + f.name.toLowerCase();
+
+    swatches.forEach(function(btn){
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-v") === state.variant ? "true" : "false");
+    });
+
+    cartCount.textContent = state.qty;
+    drawerCount.textContent = "(" + state.qty + ")";
+    subtotal.textContent = money(state.qty * f.price);
+
+    if(state.qty === 0){
+      bagBody.innerHTML = '<p class="bag-empty">Your bag is empty. One chair is waiting, quietly, in the dark.</p>';
+    } else {
+      bagBody.innerHTML =
+        '<div class="bag-item">' +
+          '<div class="bag-thumb">' +
+            '<svg viewBox="0 0 64 78" aria-hidden="true">' +
+              '<rect x="8" y="10" width="34" height="46" fill="' + f.hex + '" stroke="#111" stroke-width="1.5"/>' +
+              '<rect x="4" y="52" width="52" height="13" fill="' + f.hex + '" stroke="#111" stroke-width="1.5"/>' +
+              '<rect x="6" y="65" width="8" height="10" fill="' + f.hex + '" stroke="#111" stroke-width="1"/>' +
+              '<rect x="44" y="65" width="8" height="10" fill="' + f.hex + '" stroke="#111" stroke-width="1"/>' +
+            '</svg>' +
+          '</div>' +
+          '<div>' +
+            '<h3>BRUT® Chair 01</h3>' +
+            '<p class="finish">Finish: ' + f.name + ' · Ed. 01/120</p>' +
+            '<div class="qty" role="group" aria-label="Quantity">' +
+              '<button type="button" data-act="dec" aria-label="Decrease quantity">−</button>' +
+              '<span>' + state.qty + '</span>' +
+              '<button type="button" data-act="inc" aria-label="Increase quantity">+</button>' +
+            '</div>' +
+            '<button class="remove" type="button" data-act="remove">Remove</button>' +
+          '</div>' +
+          '<div class="bag-line-price">' + money(state.qty * f.price) + '</div>' +
+        '</div>';
+    }
+  }
+
+  function openBag(){
+    bagDrawer.classList.add("on");
+    scrim.classList.add("on");
+    bagDrawer.setAttribute("aria-hidden","false");
+    document.body.classList.add("no-scroll");
+    bagClose.focus();
+  }
+  function closeBag(){
+    bagDrawer.classList.remove("on");
+    scrim.classList.remove("on");
+    bagDrawer.setAttribute("aria-hidden","true");
+    document.body.classList.remove("no-scroll");
+    bagBtn.focus();
+  }
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("on"); }, 2400);
+  }
+
+  swatches.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      state.variant = btn.getAttribute("data-v");
+      render();
+    });
+  });
+
+  addBtn.addEventListener("click", function(){
+    state.qty += 1;
+    render();
+    addBtn.classList.add("is-added");
+    addLabel.textContent = "Added — " + state.qty + " in bag";
+    clearTimeout(addedTimer);
+    addedTimer = setTimeout(function(){
+      addBtn.classList.remove("is-added");
+      addLabel.textContent = "Add to bag";
+    }, 1900);
+    showToast("Chair 01 · " + FINISHES[state.variant].name + " — added to bag");
+    cartCount.animate(
+      [{transform:"scale(1)"},{transform:"scale(1.35)"},{transform:"scale(1)"}],
+      {duration:320, easing:"ease-out"}
+    );
+  });
+
+  bagBody.addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-act]");
+    if(!btn) return;
+    var act = btn.getAttribute("data-act");
+    if(act === "inc") state.qty += 1;
+    if(act === "dec") state.qty = Math.max(0, state.qty - 1);
+    if(act === "remove") state.qty = 0;
+    render();
+  });
+
+  bagBtn.addEventListener("click", openBag);
+  bagClose.addEventListener("click", closeBag);
+  scrim.addEventListener("click", closeBag);
+  continueBtn.addEventListener("click", function(){
+    if(state.qty === 0){ showToast("Nothing in the bag yet"); return; }
+    closeBag();
+    showToast("Order noted — an invoice will follow by post");
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && bagDrawer.classList.contains("on")) closeBag();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

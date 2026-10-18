@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Mint of Small Things — Specimen Note</title>
+<style>
+  :root{
+    --serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --cream:#ede0c4;
+    --gold:#c9a56d;
+    --stamp:#9c3a2c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    color:#e8dcc4;
+    font-family:var(--serif);
+    background-color:#1a100a;
+    background-image:
+      radial-gradient(80% 55% at 50% -6%, rgba(255,214,160,.15), transparent 62%),
+      radial-gradient(140% 100% at 50% 110%, rgba(0,0,0,.75), transparent 62%),
+      repeating-linear-gradient(180deg, transparent 0 279px, rgba(0,0,0,.32) 279px 282px),
+      repeating-linear-gradient(91deg, rgba(255,255,255,.022) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(89deg, rgba(0,0,0,.16) 0 2px, transparent 2px 16px),
+      linear-gradient(180deg,#2e1c11,#1c110a 56%,#140b06);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(55% 45% at 18% 12%, rgba(255,200,140,.06), transparent 70%),
+      radial-gradient(45% 35% at 82% 8%, rgba(255,200,140,.045), transparent 70%),
+      radial-gradient(100% 80% at 50% 50%, transparent 45%, rgba(0,0,0,.4) 100%);
+  }
+  .shell{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:clamp(16px,2.8vw,34px) clamp(16px,4vw,46px) 0;}
+
+  .masthead{padding-bottom:clamp(18px,3vw,32px)}
+  .topline{
+    display:flex;justify-content:space-between;align-items:baseline;gap:18px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;
+    color:rgba(237,224,196,.52);padding-bottom:13px;border-bottom:1px solid rgba(201,165,109,.28);
+  }
+  .topline b{font-weight:400;color:var(--gold);letter-spacing:.22em}
+  .title-row{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:26px;
+    padding-top:clamp(22px,4vw,38px);
+  }
+  h1{
+    font-weight:400;margin:0;letter-spacing:.01em;
+    font-size:clamp(30px,5.2vw,60px);line-height:1.02;color:var(--cream);
+  }
+  h1 em{font-style:italic;color:var(--gold)}
+  .title-row .sub{
+    flex:0 1 330px;margin:0 0 4px;text-align:right;
+    font-size:11px;line-height:1.7;letter-spacing:.03em;color:rgba(237,224,196,.55);
+  }
+  .title-row .sub b{display:block;color:rgba(237,224,196,.78);font-weight:400;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px}
+
+  .stage{
+    position:relative;margin:clamp(24px,4vw,44px) auto clamp(18px,3vw,30px);
+    max-width:1000px;
+  }
+  .stage::before{
+    content:"";position:absolute;inset:6% 4% -6% 4%;border-radius:2px;
+    background:radial-gradient(60% 60% at 50% 55%, rgba(0,0,0,.55), transparent 70%);
+    filter:blur(26px);z-index:0;
+  }
+  .note{
+    position:relative;z-index:1;width:100%;aspect-ratio:760/460;
+    transform:rotate(-.35deg);
+    background:#e9dfc4;
+    border-radius:2px;
+    box-shadow:
+      0 1px 0 rgba(255,246,222,.7) inset,
+      0 -3px 0 rgba(120,95,63,.45),
+      0 2px 0 #cdbf9f,
+      0 3px 0 #b8a889,
+      0 4px 0 #a2906f,
+      0 8px 18px rgba(0,0,0,.55),
+      0 26px 60px -12px rgba(0,0,0,.8),
+      0 50px 100px -30px rgba(0,0,0,.9);
+    transition:box-shadow .7s ease, filter .7s ease, transform .5s ease;
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .note[data-palette="sage"]{
+    --paper-hi:#f0e9d2;--paper-mid:#e7dec2;--paper-lo:#d9cfaf;
+    --ink:#2e4636;--ink-mid:#5e7762;--ink-soft:#8a9a80;
+    --accent:#9a5f36;--accent-soft:#c18a55;
+    --thread:#c3d3a5;--glow:#d9ffb2;
+    background:#e7dec2;
+  }
+  .note[data-palette="indigo"]{
+    --paper-hi:#eee9d8;--paper-mid:#e5e0cc;--paper-lo:#d5d0b9;
+    --ink:#1f2f5c;--ink-mid:#51618c;--ink-soft:#8390b3;
+    --accent:#984a38;--accent-soft:#c07b62;
+    --thread:#aeb9da;--glow:#cfe0ff;
+    background:#e5e0cc;
+  }
+  .note[data-palette="rose"]{
+    --paper-hi:#f3e7d8;--paper-mid:#ecdfd0;--paper-lo:#ddcdbc;
+    --ink:#6a2438;--ink-mid:#a06876;--ink-soft:#c19aa1;
+    --accent:#8d5a3c;--accent-soft:#b8865f;
+    --thread:#e3aab4;--glow:#ffd5da;
+    background:#ecdfd0;
+  }
+  .note svg{display:block;width:100%;height:100%}
+  .grain{
+    position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+    background-image:
+      radial-gradient(rgba(74,54,30,.22) .45px, transparent .55px),
+      radial-gradient(rgba(255,255,255,.25) .4px, transparent .5px);
+    background-size:3px 3px, 5px 5px;
+    background-position:0 0, 1px 2px;
+  }
+  .sheen{
+    position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:linear-gradient(104deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,0) 26%, rgba(0,0,0,.05) 55%, rgba(255,255,255,.09) 74%, rgba(0,0,0,.08) 100%);
+    mix-blend-mode:soft-light;
+  }
+  .note.lit{
+    transform:rotate(-.35deg) translateY(-2px);
+    box-shadow:
+      0 0 0 1px rgba(255,244,210,.18),
+      0 0 60px rgba(255,232,170,.35),
+      0 0 130px rgba(255,220,150,.22),
+      0 36px 70px -18px rgba(0,0,0,.85);
+  }
+
+  .caption{
+    display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    max-width:1000px;margin:0 auto;padding-top:14px;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.17em;text-transform:uppercase;
+    color:rgba(237,224,196,.4);
+  }
+  .caption .right{color:rgba(201,165,109,.7)}
+
+  .console{
+    display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(14px,2.2vw,24px);
+    max-width:1000px;margin:clamp(18px,3vw,30px) auto 0;align-items:stretch;
+  }
+  .panel{
+    position:relative;
+    background:
+      radial-gradient(circle at 12px 12px, rgba(201,165,109,.55) 0 1.6px, transparent 2px),
+      radial-gradient(circle at calc(100% - 12px) 12px, rgba(201,165,109,.55) 0 1.6px, transparent 2px),
+      radial-gradient(circle at 12px calc(100% - 12px), rgba(201,165,109,.55) 0 1.6px, transparent 2px),
+      radial-gradient(circle at calc(100% - 12px) calc(100% - 12px), rgba(201,165,109,.55) 0 1.6px, transparent 2px),
+      linear-gradient(155deg,#2a1a11,#1a0f09 70%);
+    border:1px solid rgba(201,165,109,.34);
+    border-radius:3px;
+    padding:clamp(16px,2.2vw,22px);
+    box-shadow:0 14px 34px -18px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,231,190,.08);
+  }
+  .panel-head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid rgba(201,165,109,.22);
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:rgba(237,224,196,.45);
+  }
+  .panel-head b{font-weight:400;color:rgba(237,224,196,.8)}
+  .ctl-label{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:rgba(237,224,196,.42);margin:0 0 8px}
+  .palette-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px}
+  .palette-btn{
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    appearance:none;border:1px solid rgba(237,224,196,.16);background:transparent;color:rgba(237,224,196,.62);
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+    padding:9px 4px;cursor:pointer;transition:all .25s ease;
+  }
+  .palette-btn:hover{border-color:rgba(237,224,196,.4);color:#efe4cc}
+  .palette-btn[aria-pressed="true"]{border-color:rgba(201,165,109,.75);color:#f3e8d0;background:rgba(201,165,109,.08)}
+  .pdot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+  .pdot.sage{background:#2e4636}
+  .pdot.indigo{background:#1f2f5c}
+  .pdot.rose{background:#6a2438}
+  .action-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .btn{
+    appearance:none;cursor:pointer;
+    border:1px solid rgba(201,165,109,.46);
+    background:linear-gradient(180deg,rgba(201,165,109,.14),rgba(201,165,109,.04));
+    color:#f1e5c9;font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+    padding:12px 8px;transition:all .25s ease;
+  }
+  .btn:hover{background:linear-gradient(180deg,rgba(201,165,109,.24),rgba(201,165,109,.08));border-color:rgba(201,165,109,.8)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:linear-gradient(180deg,#c9a56d,#a8814a);color:#24150c;border-color:#d9b77f;font-weight:600}
+  .btn.primary:hover{background:linear-gradient(180deg,#d9b77f,#b58f57)}
+  .btn .sub{display:block;font-size:7px;letter-spacing:.1em;opacity:.6;margin-top:4px;font-weight:400}
+  .btn[aria-pressed="true"]{background:linear-gradient(180deg,#efdba9,#d2b276);color:#24150c;border-color:#f0dfb2}
+
+  .panel-note{
+    margin:14px 0 0;font-size:11px;line-height:1.65;color:rgba(237,224,196,.5);
+    border-top:1px solid rgba(201,165,109,.14);padding-top:11px;
+  }
+  .panel-note em{color:rgba(237,224,196,.75)}
+
+  .facts-card{
+    background-color:#f0e7d1;color:#2f2a20;border-radius:3px;padding:clamp(16px,2.2vw,22px);
+    background-image:
+      linear-gradient(rgba(47,42,32,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,42,32,.04) 1px, transparent 1px);
+    background-size:100% 26px, 26px 100%;
+    box-shadow:0 16px 34px -18px rgba(0,0,0,.85), inset 0 0 0 1px rgba(120,95,63,.22);
+    position:relative;
+  }
+  .facts-card::before{
+    content:"";position:absolute;inset:6px;border:1px solid rgba(90,70,45,.2);pointer-events:none;border-radius:1px;
+  }
+  .facts-head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    font-family:var(--mono);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#7d6a4d;
+    padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid rgba(90,70,45,.28);
+  }
+  .facts-head b{font-weight:400;color:#3c3325}
+  dl.facts{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  dl.facts > div{padding:9px 0;border-bottom:1px solid rgba(90,70,45,.14)}
+  dt{font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:#8b7757;margin-bottom:3px}
+  dd{margin:0;font-size:12.5px;line-height:1.25;color:#322b1f}
+  dd.mono{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding-top:2px}
+  .facts-foot{
+    margin-top:12px;font-size:10px;line-height:1.6;color:#7d6a4d;font-style:italic;
+    padding-top:10px;border-top:1px solid rgba(90,70,45,.18);
+  }
+
+  footer.page-foot{
+    max-width:1000px;margin:clamp(34px,5vw,58px) auto 0;padding:20px 0 34px;
+    border-top:1px solid rgba(201,165,109,.2);
+    display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:8px;letter-spacing:.17em;text-transform:uppercase;color:rgba(237,224,196,.36);
+  }
+  footer.page-foot .mid{color:rgba(201,165,109,.65)}
+  footer.page-foot .disc{flex-basis:100%;font-family:var(--serif);font-style:italic;text-transform:none;letter-spacing:.02em;font-size:11px;color:rgba(237,224,196,.32)}
+
+  /* ---- SVG type ---- */
+  .note text{user-select:none}
+  .micro{font-family:var(--mono);fill:var(--ink);fill-opacity:.68;font-size:4.8px;letter-spacing:.14em}
+  .note-title{font-family:var(--serif);fill:var(--ink);font-size:8.5px;letter-spacing:.46em;text-anchor:middle;fill-opacity:.8}
+  .series-label{font-family:var(--mono);fill:var(--ink);fill-opacity:.62;font-size:6.4px;letter-spacing:.2em}
+  .serial-label{font-family:var(--mono);fill:var(--ink);fill-opacity:.68;font-size:6.2px;letter-spacing:.22em;text-anchor:end}
+  .serial-num{font-family:var(--mono);fill:var(--ink);font-size:13px;letter-spacing:.1em;text-anchor:end}
+  .denom-word{font-family:var(--mono);fill:var(--ink);font-size:11px;letter-spacing:.3em}
+  .denom-num{font-family:var(--serif);fill:var(--ink);font-size:92px;letter-spacing:-.02em}
+  .denom-unit{font-family:var(--mono);fill:var(--ink);font-size:8px;letter-spacing:.26em;fill-opacity:.85}
+  .sig-script{font-family:"Snell Roundhand","Brush Script MT","Segoe Script",cursive;fill:var(--ink);font-size:18px;font-style:italic}
+  .sig-label{font-family:var(--mono);fill:var(--ink);fill-opacity:.62;font-size:5.6px;letter-spacing:.17em}
+  .stamp-line{fill:none;stroke:var(--stamp);stroke-width:1.3;opacity:.8}
+  .stamp-line.thin{stroke-width:.55;stroke-dasharray:2 3;opacity:.7}
+  .stamp-word{font-family:var(--mono);fill:var(--stamp);font-size:9.5px;letter-spacing:.16em;text-anchor:middle;opacity:.85}
+  .stamp-small{font-family:var(--mono);fill:var(--stamp);font-size:4.8px;letter-spacing:.14em;text-anchor:middle;opacity:.85}
+  .hidden-text{font-family:var(--mono);fill:var(--glow);text-anchor:middle;letter-spacing:.34em;font-size:7px}
+  .p-stop-hi{stop-color:var(--paper-hi)}
+  .p-stop-mid{stop-color:var(--paper-mid)}
+  .p-stop-lo{stop-color:var(--paper-lo)}
+  .th-1{stop-color:var(--thread);stop-opacity:.35}
+  .th-2{stop-color:var(--thread);stop-opacity:.85}
+  .th-3{stop-color:#ffffff;stop-opacity:.9}
+  .thg-1{stop-color:var(--glow);stop-opacity:.35}
+  .thg-2{stop-color:#ffffff;stop-opacity:.95}
+
+  .ink-line{stroke:var(--ink);fill:none}
+  .ink-fill{fill:var(--ink)}
+  .mid-line{stroke:var(--ink-mid);fill:none}
+  .accent-line{stroke:var(--accent);fill:none;fill-opacity:.75}
+  .paper-fill{fill:var(--paper-hi)}
+  .wm-oval{fill:rgba(255,255,255,.16);stroke:var(--ink);stroke-opacity:.14;stroke-width:.7}
+  .wm-art{color:var(--ink);opacity:.14}
+  .wm-mono{font-family:var(--mono);fill:var(--ink);fill-opacity:.18;font-size:7px;letter-spacing:.32em;text-anchor:middle}
+
+  .g-line{fill:none;stroke:var(--ink-mid);stroke-width:.55;stroke-opacity:.5}
+  .g-line.accent{stroke:var(--accent);stroke-opacity:.52}
+  .g-line.soft{stroke:var(--ink-soft);stroke-opacity:.38;stroke-width:.45}
+  .g-line.faint{stroke:var(--ink-mid);stroke-opacity:.1;stroke-width:.5}
+  .g-line.glow-line{stroke:var(--glow);stroke-opacity:.55;stroke-width:.6}
+  .hatch-line{fill:none;stroke:var(--ink);stroke-width:.42;stroke-opacity:.6}
+  .hair-line{fill:none;stroke:var(--paper-hi);stroke-width:.55;stroke-opacity:.42}
+  .hair-fill{fill:var(--ink);opacity:.93;stroke:var(--ink);stroke-width:.5}
+  .b-ink{stroke:var(--ink)}
+  .b-accent{stroke:var(--accent)}
+  .b-stamp{stroke:var(--stamp)}
+  .b-ink-fill{fill:var(--ink)}
+  .face-outline{fill:none;stroke:var(--ink);stroke-width:.9;stroke-linejoin:round}
+  .halo-line{fill:none;stroke:var(--ink);stroke-width:.45;stroke-opacity:.2}
+  .feat{fill:none;stroke:var(--ink);stroke-width:.85;stroke-linecap:round}
+  .feat-fill{fill:var(--ink)}
+
+  .veil{fill:#0a0a08;opacity:0;transition:opacity .75s ease}
+  .note.lit .veil{opacity:.76}
+  .reveal{opacity:0;transition:opacity .9s ease;pointer-events:none}
+  .note.lit .reveal{opacity:1}
+  .wm-glow{fill:var(--glow);opacity:.16}
+  .wm-emblem-glow{color:var(--glow);filter:url(#glowSoft)}
+  .thread-reveal-glow{filter:url(#glowSoft)}
+
+  .hint-float{
+    position:absolute;z-index:3;left:50%;bottom:10px;transform:translateX(-50%);
+    font-family:var(--mono);font-size:7px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink);opacity:.45;background:rgba(255,250,235,.5);
+    padding:4px 9px;border-radius:20px;pointer-events:none;transition:opacity .4s;
+    border:1px solid rgba(80,60,40,.16);
+  }
+  .note.lit .hint-float{opacity:0}
+  @media (max-width:640px){.hint-float{display:none}}
+
+  @media (max-width:880px){
+    .console{grid-template-columns:1fr}
+    .title-row{flex-direction:column;align-items:flex-start;gap:14px}
+    .title-row .sub{text-align:left;max-width:48ch;flex:auto}
+    dl.facts{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:560px){
+    .shell{padding:14px 13px 0}
+    .topline{font-size:7.5px;letter-spacing:.15em;flex-wrap:wrap;gap:6px}
+    h1{font-size:clamp(30px,9.6vw,40px)}
+    .note{transform:rotate(-.2deg)}
+    .caption{font-size:7px;letter-spacing:.1em;gap:6px}
+    .palette-row{gap:4px}
+    .palette-btn{font-size:7.5px;letter-spacing:.08em;padding:9px 2px;gap:5px}
+    .action-row{gap:5px}
+    .btn{font-size:8px;letter-spacing:.1em;padding:11px 5px}
+    dl.facts{grid-template-columns:1fr}
+    .facts-card .facts-foot{font-size:9.5px}
+    footer.page-foot{font-size:7px;letter-spacing:.1em}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.001ms !important;animation-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="masthead">
+    <div class="topline">
+      <span><b>The Mint of Small Things</b> &nbsp;·&nbsp; Treasury of Imaginary Currency</span>
+      <span>Specimen sheet 078 / 2026</span>
+    </div>
+    <div class="title-row">
+      <h1>The Mint of <em>Small Things</em></h1>
+      <p class="sub"><b>Engraved on the premises</b>A circulating collection of tender for the modest, the overlooked and the nearly forgotten. Every note is a specimen; none may be spent.</p>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="note" id="note" data-palette="sage">
+      <svg id="banknote" viewBox="0 0 760 460" role="img" aria-label="A fictional engraved banknote specimen with portrait, rosettes, serial number and security thread">
+        <defs>
+          <linearGradient id="paperGrad" x1="0" y1="0" x2="0.7" y2="1">
+            <stop offset="0" class="p-stop-hi"/>
+            <stop offset=".5" class="p-stop-mid"/>
+            <stop offset="1" class="p-stop-lo"/>
+          </linearGradient>
+          <linearGradient id="threadGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" class="th-1"/>
+            <stop offset=".35" class="th-2"/>
+            <stop offset=".55" class="th-3"/>
+            <stop offset=".75" class="th-2"/>
+            <stop offset="1" class="th-1"/>
+          </linearGradient>
+          <linearGradient id="threadGlowGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset=".45" class="thg-1"/>
+            <stop offset=".55" class="thg-2"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="wmGlowGrad">
+            <stop offset="0" stop-color="#fff8dc" stop-opacity=".5"/>
+            <stop offset=".65" stop-color="#fff2c8" stop-opacity=".18"/>
+            <stop offset="1" stop-color="#fff2c8" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="shadeGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#111111"/>
+            <stop offset=".45" stop-color="#777777"/>
+            <stop offset="1" stop-color="#ffffff"/>
+          </linearGradient>
+          <linearGradient id="portraitWash" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff" stop-opacity=".22"/>
+            <stop offset="1" stop-color="#7a6a4a" stop-opacity=".08"/>
+          </linearGradient>
+          <filter id="glowSoft" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glowWide" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="9" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <clipPath id="innerClip"><rect x="22" y="22" width="716" height="416"/></clipPath>
+          <clipPath id="portraitClip"><ellipse cx="372" cy="205" rx="104" ry="138"/></clipPath>
+
+          <path id="faceShape" d="M372 90 C340 92 318 108 309 128 C306 138 303 146 302 152 C299 158 298 164 295 170 C291 174 288 180 288 184 C288 188 292 190 296 191 C300 193 301 196 300 199 C304 201 305 204 303 206 C306 209 307 212 305 215 C309 219 310 224 309 229 C315 241 323 249 330 255 C334 263 336 274 336 285 C336 297 336 309 336 320 L398 320 C397 305 396 291 398 279 C400 269 403 262 408 257 C424 247 438 233 444 215 C451 195 451 169 447 149 C441 118 414 92 380 90 Z"/>
+          <path id="hairShape" d="M372 91 C341 93 317 111 308 137 C317 131 326 128 336 128 C331 139 329 150 331 160 C343 147 359 141 378 142 C400 143 418 152 428 165 C435 177 434 193 428 207 C440 198 447 182 448 162 C449 127 416 92 372 91 Z"/>
+          <clipPath id="faceClip"><use href="#faceShape"/></clipPath>
+          <clipPath id="hairClip"><use href="#hairShape"/></clipPath>
+          <mask id="shadeMask">
+            <rect x="270" y="80" width="220" height="265" fill="url(#shadeGrad)"/>
+          </mask>
+
+          <g id="emblemArt">
+            <path d="M0 27 C1 12 -1 -2 0 -24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <path d="M0 8 C-12 4 -16 -6 -9 -13 C-4 -8 -2 -1 0 8 Z" fill="none" stroke="currentColor" stroke-width=".85"/>
+            <path d="M0 8 C12 4 16 -6 9 -13 C4 -8 2 -1 0 8 Z" fill="none" stroke="currentColor" stroke-width=".85"/>
+            <path d="M0 -5 C-10 -9 -13 -18 -6 -23 C-1 -18 0 -11 0 -5 Z" fill="none" stroke="currentColor" stroke-width=".8"/>
+            <path d="M0 -5 C10 -9 13 -18 6 -23 C1 -18 0 -11 0 -5 Z" fill="none" stroke="currentColor" stroke-width=".8"/>
+            <circle cx="0" cy="-28" r="1.5" fill="currentColor"/>
+          </g>
+
+          <g id="cornerOrn">
+            <path d="M4 24 C4 13 13 4 24 4" fill="none" stroke="currentColor" stroke-width=".85"/>
+            <path d="M4 32 C10 19 19 10 32 4" fill="none" stroke="currentColor" stroke-width=".5" opacity=".55"/>
+            <circle cx="8" cy="8" r="1.3" fill="currentColor"/>
+            <circle cx="14" cy="5.5" r=".7" fill="currentColor" opacity=".7"/>
+            <circle cx="5.5" cy="14" r=".7" fill="currentColor" opacity=".7"/>
+          </g>
+        </defs>
+
+        <rect width="760" height="460" fill="url(#paperGrad)"/>
+
+        <g id="printLayer">
+          <g clip-path="url(#innerClip)">
+            <g id="rosetteField"></g>
+            <g id="rosetteMain"></g>
+            <g id="rosetteCorners"></g>
+          </g>
+
+          <!-- watermark -->
+          <g id="watermark">
+            <ellipse class="wm-oval" cx="130" cy="160" rx="64" ry="84"/>
+            <use href="#emblemArt" transform="translate(130 152) scale(1.45)" class="wm-art"/>
+            <text class="wm-mono" x="130" y="226">MST</text>
+          </g>
+
+          <!-- security thread (normal state) -->
+          <g id="threadBase">
+            <rect x="572" y="26" width="15" height="408" fill="url(#threadGrad)" opacity=".72"/>
+            <line x1="573" y1="26" x2="573" y2="434" class="ink-line" stroke-opacity=".3" stroke-width=".5"/>
+            <line x1="586" y1="26" x2="586" y2="434" class="ink-line" stroke-opacity=".3" stroke-width=".5"/>
+            <text class="micro" x="581" y="424" transform="rotate(-90 581 424)" font-size="4.2" letter-spacing=".2em" fill-opacity=".5">MST · SECURE THREAD · MST · SECURE THREAD</text>
+          </g>
+
+          <!-- borders -->
+          <rect class="b-ink" x="14" y="14" width="732" height="432" fill="none" stroke-width="2.1"/>
+          <rect class="b-ink" x="20" y="20" width="720" height="420" fill="none" stroke-width=".5" stroke-opacity=".55"/>
+          <rect class="b-accent" x="24" y="24" width="712" height="412" fill="none" stroke-width=".5" stroke-opacity=".4"/>
+
+          <g style="color:var(--ink)">
+            <use href="#cornerOrn" transform="translate(22 22)"/>
+            <use href="#cornerOrn" transform="translate(738 22) rotate(90)"/>
+            <use href="#cornerOrn" transform="translate(738 438) rotate(180)"/>
+            <use href="#cornerOrn" transform="translate(22 438) rotate(270)"/>
+          </g>
+
+          <!-- microtext bands -->
+          <text id="microTop" class="micro" x="380" y="37" text-anchor="middle" textLength="690" lengthAdjust="spacingAndGlyphs">THE MINT OF SMALL THINGS · FICTIONAL SPECIMEN · NOT LEGAL TENDER ·</text>
+          <text id="microBottom" class="micro" x="380" y="438" text-anchor="middle" textLength="690" lengthAdjust="spacingAndGlyphs">THE MINT OF SMALL THINGS · FICTIONAL SPECIMEN · NOT LEGAL TENDER ·</text>
+          <line x1="40" y1="44" x2="720" y2="44" class="ink-line" stroke-opacity=".22" stroke-width=".5"/>
+          <line x1="40" y1="429" x2="720" y2="429" class="ink-line" stroke-opacity=".22" stroke-width=".5"/>
+
+          <text class="note-title" x="380" y="61">THE MINT OF SMALL THINGS</text>
+          <text class="series-label" x="42" y="79">SERIES 2026</text>
+
+          <!-- serial -->
+          <text class="serial-label" x="726" y="72">SERIAL No.</text>
+          <text class="serial-num" id="serialNum" x="726" y="88">KQ 482 901</text>
+
+          <!-- oval portrait -->
+          <g id="portrait">
+            <ellipse cx="372" cy="205" rx="104" ry="138" fill="url(#portraitWash)"/>
+            <g clip-path="url(#portraitClip)">
+              <g id="halo"></g>
+              <g id="faceHatch" clip-path="url(#faceClip)" mask="url(#shadeMask)"></g>
+              <use href="#faceShape" class="face-outline"/>
+              <use href="#hairShape" class="hair-fill"/>
+              <g id="hairLines" clip-path="url(#hairClip)"></g>
+              <path d="M330 143 C338 147 348 147 355 143" class="feat"/>
+              <path d="M325 157 C332 152 344 152 351 157 C344 163 332 163 325 157 Z" class="feat" stroke-width=".8"/>
+              <circle cx="338" cy="157.5" r="2.2" class="feat-fill"/>
+              <path d="M356 157 C362 155 368 156 372 159" class="feat" stroke-opacity=".65" stroke-width=".6"/>
+              <path d="M312 196 C318 197 321 197 324 196" class="feat" stroke-width=".65"/>
+              <path d="M306 206 C311 208 315 208 318 207" class="feat" stroke-width=".6"/>
+              <path d="M312 219 C317 222 322 222 326 220" class="feat" stroke-width=".55" stroke-opacity=".8"/>
+              <path d="M407 176 C416 170 425 174 425 184 C425 194 417 199 410 195 C414 191 415 185 411 182" class="feat" stroke-width=".7"/>
+              <path d="M330 243 C340 251 354 255 366 255" class="feat" stroke-opacity=".55" stroke-width=".6"/>
+              <path d="M334 265 C344 272 356 275 368 275" class="feat" stroke-opacity=".45" stroke-width=".55"/>
+              <path d="M338 289 C346 295 356 298 366 298" class="feat" stroke-opacity=".35" stroke-width=".5"/>
+              <path d="M390 150 C400 158 406 172 407 188" class="feat" stroke-opacity=".35" stroke-width=".55"/>
+              <path d="M300 330 C316 309 336 300 354 301 C368 311 384 316 398 315 C410 306 420 296 430 290 C446 300 458 316 466 334 L466 350 L300 350 Z" class="b-ink-fill" opacity=".1"/>
+              <path d="M336 320 C348 313 360 311 372 312 C384 313 396 317 406 322" class="feat" stroke-opacity=".5" stroke-width=".6"/>
+              <path d="M372 312 L372 342" class="feat" stroke-opacity=".35" stroke-width=".5"/>
+              <path d="M312 342 C330 328 350 322 372 323 C394 322 414 327 434 340" class="feat" stroke-opacity=".4" stroke-width=".6"/>
+            </g>
+            <ellipse cx="372" cy="205" rx="104" ry="138" fill="none" class="b-ink" stroke-width="1.5"/>
+            <ellipse cx="372" cy="205" rx="99" ry="133" fill="none" class="b-ink" stroke-width=".5" stroke-opacity=".6"/>
+            <path d="M268 205 C268 193 270 184 274 176" class="accent-line" stroke-width=".9"/>
+            <path d="M476 205 C476 217 474 226 470 234" class="accent-line" stroke-width=".9"/>
+            <circle cx="372" cy="61" r="1.6" class="ink-fill"/>
+            <circle cx="372" cy="349" r="1.6" class="ink-fill"/>
+          </g>
+
+          <!-- denomination -->
+          <g id="denomination">
+            <text id="denomWord" class="denom-word" x="46" y="276">FIVE</text>
+            <text id="denomNum" class="denom-num" x="42" y="358">5</text>
+            <text id="denomUnit" class="denom-unit" x="48" y="380">GRAINS</text>
+            <path d="M46 290 C66 286 78 287 92 290" class="accent-line" stroke-width=".7"/>
+          </g>
+
+          <!-- signatures -->
+          <g id="signatures">
+            <text class="sig-script" x="50" y="404">A. Wren</text>
+            <line x1="44" y1="411" x2="170" y2="411" class="ink-line" stroke-width=".55" stroke-opacity=".55"/>
+            <text class="sig-label" x="46" y="421">TREASURER</text>
+            <text class="sig-script" x="724" y="404" text-anchor="end">M. Quill</text>
+            <line x1="592" y1="411" x2="724" y2="411" class="ink-line" stroke-width=".55" stroke-opacity=".55"/>
+            <text class="sig-label" x="722" y="421" text-anchor="end">CHIEF ENGRAVER</text>
+          </g>
+
+          <!-- right crest -->
+          <g id="rosetteCrest"></g>
+
+          <!-- specimen stamp -->
+          <g transform="rotate(-12 648 330)">
+            <circle cx="648" cy="330" r="47" class="stamp-line"/>
+            <circle cx="648" cy="330" r="40" class="stamp-line thin"/>
+            <text class="stamp-word" x="648" y="324">SPECIMEN</text>
+            <line x1="615" y1="329" x2="681" y2="329" class="b-stamp" stroke-width=".6" opacity=".65"/>
+            <text class="stamp-small" x="648" y="339">NO LEGAL TENDER</text>
+            <text class="stamp-small" x="648" y="349">· 078 ·</text>
+          </g>
+
+          <!-- hidden / backlit layer -->
+          <rect class="veil" x="0" y="0" width="760" height="460"/>
+
+          <g class="reveal" id="revealLayer">
+            <g filter="url(#glowWide)">
+              <ellipse class="wm-glow" cx="130" cy="158" rx="78" ry="98"/>
+              <use href="#emblemArt" transform="translate(130 152) scale(1.7)" class="wm-art wm-emblem-glow" style="color:var(--glow);opacity:.95"/>
+            </g>
+            <text class="wm-mono" x="130" y="232" style="fill:var(--glow);fill-opacity:.75;filter:url(#glowSoft)">MST</text>
+            <text class="hidden-text" x="130" y="258" style="font-size:4.4px;fill-opacity:.8">WATERMARK</text>
+
+            <g id="hiddenPattern" opacity=".8"></g>
+            <text class="hidden-text" transform="rotate(-8 380 250)" x="380" y="250" style="font-size:6.5px;letter-spacing:.42em">GENUINE · THE MINT OF SMALL THINGS · PLATE 078</text>
+
+            <g class="thread-reveal-glow">
+              <rect x="570" y="26" width="19" height="408" fill="url(#threadGlowGrad)"/>
+              <line x1="574" y1="26" x2="574" y2="434" stroke="#fffbe8" stroke-width=".9" opacity=".85"/>
+              <line x1="585" y1="26" x2="585" y2="434" stroke="#fffbe8" stroke-width=".9" opacity=".85"/>
+              <line x1="579.5" y1="26" x2="579.5" y2="434" stroke="#ffffff" stroke-width=".55" opacity=".7"/>
+            </g>
+            <text id="hiddenSerial" class="hidden-text" x="380" y="392" style="font-size:4.6px;letter-spacing:.3em;fill-opacity:.9">KQ 482 901 · GENUINE</text>
+            <text class="hidden-text" x="650" y="90" style="font-size:4.2px;letter-spacing:.2em;fill-opacity:.65">UV / 078</text>
+          </g>
+        </g>
+      </svg>
+      <div class="sheen" aria-hidden="true"></div>
+      <div class="grain" aria-hidden="true"></div>
+      <div class="hint-float">Try holding the note to the light</div>
+    </div>
+    <div class="caption">
+      <span>Specimen · engraved in vector · 760 × 460 units</span>
+      <span class="right">Observe the thread, the watermark, the hidden plate</span>
+    </div>
+  </div>
+
+  <section class="console">
+    <div class="panel">
+      <div class="panel-head"><span>Plate controls</span><b id="plateSeal">SEAL 078</b></div>
+      <p class="ctl-label">Ink &amp; paper</p>
+      <div class="palette-row" role="group" aria-label="Note palette">
+        <button class="palette-btn" data-palette="sage" aria-pressed="true"><span class="pdot sage"></span>Sage</button>
+        <button class="palette-btn" data-palette="indigo" aria-pressed="false"><span class="pdot indigo"></span>Indigo</button>
+        <button class="palette-btn" data-palette="rose" aria-pressed="false"><span class="pdot rose"></span>Rose</button>
+      </div>
+      <div class="action-row">
+        <button class="btn primary" id="newNote" type="button">New note<span class="sub">denomination · serial · seed</span></button>
+        <button class="btn" id="lightBtn" type="button" aria-pressed="false">Hold to the light<span class="sub">reveal the hidden plate</span></button>
+      </div>
+      <p class="panel-note">Generation is deterministic: each press advances the mint's ledger by one plate. <em>Nothing here is legal tender.</em></p>
+    </div>
+
+    <div class="facts-card">
+      <div class="facts-head"><span>Register of the note</span><b>No. 078</b></div>
+      <dl class="facts">
+        <div><dt>Denomination</dt><dd id="fDenom">Five grains</dd></div>
+        <div><dt>Serial</dt><dd class="mono" id="fSerial">KQ 482 901</dd></div>
+        <div><dt>Palette</dt><dd id="fPalette">Sage</dd></div>
+        <div><dt>Rosette seed</dt><dd class="mono" id="fSeed">0x4A17C2</dd></div>
+        <div><dt>Portrait</dt><dd id="fPortrait">Line engraving, plate A</dd></div>
+        <div><dt>Paper</dt><dd>Rag &amp; linen, 90 gsm</dd></div>
+        <div><dt>Security</dt><dd>Windowed thread</dd></div>
+        <div><dt>Issued</dt><dd id="fIssued">18 October 2026</dd></div>
+      </dl>
+      <p class="facts-foot">Held to the light, the note gives up its watermark, its thread and the pattern printed only for the faithful.</p>
+    </div>
+  </section>
+
+  <footer class="page-foot">
+    <span>The Mint of Small Things · Plate 078</span>
+    <span class="mid">A fictional treasury · all values imaginary</span>
+    <span>Specimen sheet · 2026</span>
+    <span class="disc">Printed on rag paper, engraved in vectors, and backed by nothing at all.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var note = document.getElementById("note");
+  var state = {
+    seed: 0x0784A17,
+    palette: "sage",
+    denomIndex: 2,
+    serial: "KQ 482 901",
+    lit: false
+  };
+
+  var DENOMS = [
+    {num:"1", word:"ONE"},
+    {num:"2", word:"TWO"},
+    {num:"5", word:"FIVE"},
+    {num:"10", word:"TEN"},
+    {num:"20", word:"TWENTY"},
+    {num:"50", word:"FIFTY"},
+    {num:"100", word:"HUNDRED"}
+  ];
+  var PALETTE_LABEL = {sage:"Sage", indigo:"Indigo", rose:"Rose"};
+  var LETTERS = "ACDEFGHJKLMNPQRTUVWXY";
+
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function randomSerial(rng){
+    var l1 = LETTERS[Math.floor(rng()*LETTERS.length)];
+    var l2 = LETTERS[Math.floor(rng()*LETTERS.length)];
+    var n1 = String(Math.floor(rng()*900) + 100);
+    var n2 = String(Math.floor(rng()*9000) + 1000);
+    return l1 + l2 + " " + n1 + " " + n2;
+  }
+
+  // ---- guilloche -------------------------------------------------------
+  function spiro(cx, cy, R, r, d, turns, cls, steps){
+    steps = steps || 760;
+    var pts = [];
+    for(var i=0; i<=steps; i++){
+      var t = (i/steps) * Math.PI * 2 * turns;
+      var x = cx + (R-r)*Math.cos(t) + d*Math.cos(((R-r)/r)*t);
+      var y = cy + (R-r)*Math.sin(t) - d*Math.sin(((R-r)/r)*t);
+      pts.push((i ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1));
+    }
+    return '<path class="' + cls + '" d="' + pts.join("") + 'Z"/>';
+  }
+
+  function buildRosettes(rng, seed){
+    var field = document.getElementById("rosetteField");
+    var main = document.getElementById("rosetteMain");
+    var corners = document.getElementById("rosetteCorners");
+    var crest = document.getElementById("rosetteCrest");
+    var a = "", b = "", c = "", d = "";
+
+    for(var i=0; i<3; i++){
+      a += spiro(380, 232, 246 + i*22, 68 + i*7, 216 - i*24, 13 + i*3, "g-line faint", 900);
+    }
+    field.innerHTML = a;
+
+    var baseR = 86 + (seed % 9);
+    for(var j=0; j<7; j++){
+      var cls = (j % 3 === 1) ? "g-line accent" : (j % 3 === 2 ? "g-line soft" : "g-line");
+      b += spiro(372, 205, baseR + j*5.2, 23 + j*2.5, 74 + j*4.4, 9 + j, cls, 820);
+    }
+    b += spiro(372, 205, 112, 37, 94, 7, "g-line soft", 700);
+    main.innerHTML = b;
+
+    var cs = [[54,54],[706,54],[54,406],[706,406]];
+    for(var k=0; k<cs.length; k++){
+      for(var m=0; m<3; m++){
+        c += spiro(cs[k][0], cs[k][1], 20 + m*2.6, 6.5 + m*1.2, 17 + m*1.5, 6 + m, m === 1 ? "g-line accent" : "g-line soft", 420);
+      }
+    }
+    corners.innerHTML = c;
+
+    for(var n=0; n<4; n++){
+      d += spiro(648, 206, 25 + n*3, 8.2 + n*1.4, 21 + n*2, 6 + n, n === 2 ? "g-line accent" : "g-line", 460);
+    }
+    d += '<circle cx="648" cy="206" r="38" class="g-line soft"/>';
+    crest.innerHTML = d;
+  }
+
+  // ---- portrait engraving ---------------------------------------------
+  function buildHatch(rng){
+    var g = document.getElementById("faceHatch");
+    var out = "";
+    var step = 2.45 + rng()*0.9;
+    var phase = rng()*40;
+    for(var y = 88; y < 330; y += step){
+      var bend = 9 + 9*Math.sin((y + phase)/34) + rng()*4;
+      out += '<path class="hatch-line" d="M276 ' + y.toFixed(1) +
+             ' Q 372 ' + (y + bend).toFixed(1) + ' 466 ' + (y - 2).toFixed(1) + '"/>';
+    }
+    g.innerHTML = out;
+
+    var hl = document.getElementById("hairLines");
+    var hout = "";
+    for(var i=0; i<26; i++){
+      var yy = 94 + i*4.4;
+      var wob = 5 + (i % 4);
+      hout += '<path class="hair-line" d="M306 ' + (yy + 6).toFixed(1) +
+              ' C 324 ' + (yy - wob).toFixed(1) + ', 396 ' + (yy + wob).toFixed(1) +
+              ', 452 ' + (yy - 6).toFixed(1) + '"/>';
+    }
+    hl.innerHTML = hout;
+  }
+
+  function buildHalo(rng, seed){
+    var g = document.getElementById("halo");
+    var out = "";
+    var kind = seed % 3;
+    var cX = 372, cY = 196;
+    if(kind === 0){
+      for(var i=0; i<72; i++){
+        var ang = (i/72) * Math.PI * 2;
+        var r1 = 118 + (i%2)*7;
+        var r2 = 152;
+        out += '<line class="halo-line" x1="' + (cX + Math.cos(ang)*r1).toFixed(1) +
+               '" y1="' + (cY + Math.sin(ang)*r1).toFixed(1) +
+               '" x2="' + (cX + Math.cos(ang)*r2).toFixed(1) +
+               '" y2="' + (cY + Math.sin(ang)*r2).toFixed(1) + '"/>';
+      }
+    } else if(kind === 1){
+      for(var r=34; r<154; r+=6.5){
+        out += '<ellipse class="halo-line" cx="' + cX + '" cy="' + cY + '" rx="' + r + '" ry="' + (r*1.18).toFixed(1) + '"/>';
+      }
+    } else {
+      for(var ring=0; ring<9; ring++){
+        var rr = 44 + ring*12;
+        var count = 26 + ring*4;
+        for(var k=0; k<count; k++){
+          var aa = (k/count) * Math.PI * 2 + ring*0.12;
+          out += '<circle class="halo-line" cx="' + (cX + Math.cos(aa)*rr).toFixed(1) +
+                 '" cy="' + (cY + Math.sin(aa)*rr*1.1).toFixed(1) + '" r="' + (0.7 + (ring%3)*0.25) + '"/>';
+        }
+      }
+    }
+    g.innerHTML = out;
+  }
+
+  function buildHidden(seed){
+    var g = document.getElementById("hiddenPattern");
+    var out = "";
+    for(var i=0; i<4; i++){
+      out += spiro(380, 240, 300 + i*14, 97 + i*5, 260 - i*12, 11 + i, "g-line glow-line", 1000);
+    }
+    g.innerHTML = out;
+  }
+
+  // ---- type / text -----------------------------------------------------
+  var MICRO = "THE MINT OF SMALL THINGS · FICTIONAL SPECIMEN · NOT LEGAL TENDER · ";
+  function buildMicro(serial){
+    var text = MICRO + MICRO + MICRO;
+    document.getElementById("microTop").textContent = text;
+    document.getElementById("microBottom").textContent = text;
+    document.getElementById("hiddenSerial").textContent = serial + " · GENUINE PLATE 078";
+  }
+
+  function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function updateFacts(seed){
+    document.getElementById("fDenom").textContent = capitalize(DENOMS[state.denomIndex].word.toLowerCase()) + " grains";
+    document.getElementById("fSerial").textContent = state.serial;
+    document.getElementById("fPalette").textContent = PALETTE_LABEL[state.palette];
+    document.getElementById("fSeed").textContent = "0x" + (seed >>> 0).toString(16).toUpperCase().padStart(6, "0");
+    var kinds = ["Line engraving, plate A", "Line engraving, plate B", "Line engraving, plate C"];
+    document.getElementById("fPortrait").textContent = kinds[seed % 3];
+    var day = 12 + (seed % 17);
+    document.getElementById("fIssued").textContent = day + " October 2026";
+  }
+
+  function setDenomination(idx){
+    state.denomIndex = idx;
+    var d = DENOMS[idx];
+    document.getElementById("denomWord").textContent = d.word;
+    document.getElementById("denomNum").textContent = d.num;
+    document.getElementById("denomUnit").textContent = "GRAINS";
+    var el = document.getElementById("denomNum");
+    el.style.fontSize = (d.num.length > 2 ? 60 : (d.num.length > 1 ? 76 : 92)) + "px";
+  }
+
+  function generate(seed, forceNewDenom){
+    state.seed = seed >>> 0;
+    var rng = mulberry32(state.seed);
+
+    state.serial = randomSerial(rng);
+
+    var idx = Math.floor(rng() * DENOMS.length);
+    if(forceNewDenom && idx === state.denomIndex){
+      idx = (idx + 1 + Math.floor(rng() * (DENOMS.length-1))) % DENOMS.length;
+    }
+    setDenomination(idx);
+
+    document.getElementById("serialNum").textContent = state.serial;
+    buildMicro(state.serial);
+    buildRosettes(rng, state.seed);
+    buildHatch(rng);
+    buildHalo(rng, state.seed);
+    buildHidden(state.seed);
+    updateFacts(state.seed);
+  }
+
+  // ---- controls --------------------------------------------------------
+  function setLit(on){
+    state.lit = on;
+    note.classList.toggle("lit", on);
+    var btn = document.getElementById("lightBtn");
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.firstChild.nodeValue = on ? "Lower the note" : "Hold to the light";
+  }
+
+  document.getElementById("lightBtn").addEventListener("click", function(){
+    setLit(!state.lit);
+  });
+
+  document.getElementById("newNote").addEventListener("click", function(){
+    if(state.lit) setLit(false);
+    var next = (Math.imul(state.seed, 1664525) + 1013904223) >>> 0;
+    generate(next, true);
+    var seal = document.getElementById("plateSeal");
+    seal.textContent = "SEAL " + (next % 900 + 100);
+    if(seal.animate){
+      seal.animate([{opacity:0.2}, {opacity:1}], {duration:500, easing:"ease-out"});
+    }
+  });
+
+  var paletteBtns = document.querySelectorAll(".palette-btn");
+  Array.prototype.forEach.call(paletteBtns, function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-palette");
+      if(key === state.palette) return;
+      state.palette = key;
+      note.setAttribute("data-palette", key);
+      Array.prototype.forEach.call(paletteBtns, function(b){
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
+      updateFacts(state.seed);
+    });
+  });
+
+  generate(0x0784A17, false);
+  setLit(false);
+})();
+</script>
+</body>
+</html>

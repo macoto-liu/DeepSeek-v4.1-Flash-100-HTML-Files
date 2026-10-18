@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Obsidian — Object 01 · Obsidian Atelier</title>
+<meta name="description" content="Obsidian, Object 01 from the Obsidian Atelier. A hand-polished volcanic glass monolith. Edition of 24.">
+<style>
+  :root{
+    --black:#14120f;
+    --black-2:#100e0b;
+    --black-3:#1b1813;
+    --bone:#efe9dd;
+    --bone-dim:rgba(239,233,221,.62);
+    --gold:#c8a25a;
+    --gold-dim:rgba(200,162,90,.35);
+    --line:rgba(239,233,221,.15);
+    --serif:"Didot","Bodoni 72","Bodoni 72 Oldstyle","Bodoni MT","Playfair Display",Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;
+    --gutter:clamp(1.25rem,5vw,5.5rem);
+    --maxw:1540px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--black);
+    color:var(--bone);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:90;
+    opacity:.25;
+    background-image:
+      repeating-linear-gradient(0deg,rgba(255,255,255,.013) 0 1px,transparent 1px 3px),
+      radial-gradient(120% 100% at 18% 0%,rgba(200,162,90,.06),transparent 55%),
+      radial-gradient(100% 100% at 100% 100%,rgba(0,0,0,.35),transparent 60%);
+    mix-blend-mode:screen;
+  }
+  ::selection{background:var(--gold);color:var(--black)}
+  a{color:inherit}
+  button{font:inherit;color:inherit}
+
+  .shell{width:100%;max-width:var(--maxw);margin:0 auto;padding-left:var(--gutter);padding-right:var(--gutter)}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:absolute;
+    z-index:40;
+    top:0;left:0;right:0;
+  }
+  .topbar-inner{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:1rem;
+    padding-top:1.35rem;
+    padding-bottom:1.15rem;
+    border-bottom:1px solid var(--line);
+    font-size:.6rem;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:.72rem;
+    text-decoration:none;
+    font-size:.62rem;
+    letter-spacing:.28em;
+  }
+  .brand .mark{
+    width:14px;height:14px;
+    background:var(--gold);
+    clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+    flex:none;
+  }
+  .topnav{display:flex;gap:clamp(1rem,2.6vw,2.6rem);align-items:center}
+  .topnav a{
+    text-decoration:none;
+    color:var(--bone-dim);
+    transition:color .4s ease;
+    white-space:nowrap;
+  }
+  .topnav a:hover,.topnav a:focus-visible{color:var(--gold)}
+  .topnav .ed{
+    color:var(--bone);
+    border-left:1px solid var(--line);
+    padding-left:clamp(1rem,2.6vw,2.6rem);
+  }
+  @media (max-width:760px){
+    .topnav a:not(.ed){display:none}
+    .topbar-inner{font-size:.55rem}
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding-top:clamp(6rem,11vh,9rem);
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    left:50%;top:38%;
+    width:min(70vw,780px);
+    aspect-ratio:1;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle,rgba(200,162,90,.075),transparent 66%);
+    pointer-events:none;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
+    gap:clamp(1.5rem,4vw,4rem);
+    align-items:center;
+    flex:1;
+    padding-bottom:clamp(1.5rem,4vh,3rem);
+  }
+  .hero-copy{
+    position:relative;
+    z-index:3;
+    padding-top:clamp(1rem,4vh,3rem);
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:.9rem;
+    margin:0 0 clamp(1.6rem,4vh,2.8rem);
+    font-size:.58rem;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--gold);
+  }
+  .eyebrow::before{content:"";width:2.5rem;height:1px;background:var(--gold)}
+  h1{
+    margin:0;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(4.2rem,10.4vw,10.6rem);
+    line-height:.8;
+    letter-spacing:-.055em;
+  }
+  h1 .l2{display:block;padding-left:clamp(.2rem,4vw,4.5rem)}
+  h1 em{
+    font-style:italic;
+    color:var(--gold);
+    font-size:.96em;
+  }
+  .hero-sub{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:1.5rem 2.6rem;
+    margin-top:clamp(1.8rem,4.5vh,3rem);
+    max-width:42rem;
+  }
+  .hero-sub p{
+    margin:0;
+    max-width:29rem;
+    font-size:clamp(.8rem,.98vw,.95rem);
+    line-height:1.75;
+    color:var(--bone-dim);
+    font-weight:300;
+    letter-spacing:.015em;
+  }
+  .hero-sub .edition{
+    border-left:1px solid var(--gold-dim);
+    padding-left:1.15rem;
+    font-size:.55rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    line-height:2.1;
+    color:var(--bone);
+    white-space:nowrap;
+  }
+  .hero-sub .edition b{font-weight:400;color:var(--gold)}
+
+  /* ---------- object stage ---------- */
+  .object-wrap{
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-width:0;
+  }
+  .object-wrap::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:clamp(2.2rem,5vh,3.8rem);
+    width:68%;
+    height:74px;
+    transform:translateX(-50%);
+    background:radial-gradient(ellipse,rgba(200,162,90,.15) 0%,rgba(200,162,90,.05) 38%,transparent 72%);
+    filter:blur(16px);
+    pointer-events:none;
+    z-index:0;
+  }
+  .object-label{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    border-bottom:1px solid var(--line);
+    padding-bottom:.55rem;
+    margin-bottom:.5rem;
+    font-size:.54rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+  }
+  .object-label span:last-child{color:var(--gold)}
+  .stage{
+    z-index:1;
+    --w:clamp(188px,22vw,310px);
+    --h:clamp(262px,28vw,390px);
+    --d:clamp(42px,4.4vw,62px);
+    width:100%;
+    height:clamp(430px,59vh,600px);
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    perspective:1150px;
+    background:radial-gradient(circle at 50% 44%,rgba(200,162,90,.11),rgba(200,162,90,.025) 43%,transparent 64%);
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+    outline:none;
+  }
+  .stage:active{cursor:grabbing}
+  .stage:focus-visible .focus-ring{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .stage::before{
+    content:"";
+    position:absolute;
+    width:clamp(280px,32vw,440px);
+    aspect-ratio:1;
+    border-radius:50%;
+    border:1px solid rgba(200,162,90,.09);
+    pointer-events:none;
+  }
+  .stage::after{
+    content:"";
+    position:absolute;
+    width:clamp(230px,27vw,370px);
+    aspect-ratio:1;
+    border-radius:50%;
+    border:1px dashed rgba(239,233,221,.08);
+    pointer-events:none;
+  }
+  .focus-ring{
+    position:absolute;
+    left:50%;top:50%;
+    width:clamp(300px,36vw,480px);
+    height:clamp(390px,46vw,600px);
+    border:1px solid rgba(200,162,90,.55);
+    transform:translate(-50%,-50%) scale(.97);
+    opacity:0;
+    transition:opacity .35s ease,transform .35s ease;
+    pointer-events:none;
+  }
+  .scene{
+    position:relative;
+    width:var(--w);
+    height:var(--h);
+    transform-style:preserve-3d;
+    animation:float 9s ease-in-out infinite;
+  }
+  @keyframes float{
+    0%,100%{transform:translateY(-7px)}
+    50%{transform:translateY(7px)}
+  }
+  .slab{
+    position:absolute;
+    inset:0;
+    transform-style:preserve-3d;
+    transform:rotateX(var(--rx,-9deg)) rotateY(var(--ry,-24deg));
+    will-change:transform;
+  }
+  .face{
+    position:absolute;
+    overflow:hidden;
+    backface-visibility:hidden;
+  }
+  .front,.back{
+    left:0;top:0;
+    width:100%;height:100%;
+    border-radius:2px;
+  }
+  .front{
+    transform:translateZ(calc(var(--d) / 2));
+    background:
+      linear-gradient(103deg,#2c261e 0%,#0b0a08 17%,#1a1711 39%,#050505 58%,#211c15 76%,#0a0908 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(200,162,90,.92),
+      inset 0 0 0 3px rgba(200,162,90,.08),
+      inset 0 1px 0 rgba(239,233,221,.2),
+      inset 12px 0 26px rgba(255,255,255,.045),
+      inset -16px -12px 40px rgba(0,0,0,.8),
+      0 0 26px rgba(200,162,90,.08);
+  }
+  .front::before{
+    content:"";
+    position:absolute;
+    inset:-20%;
+    background:
+      linear-gradient(118deg,transparent 31%,rgba(255,255,255,.10) 42%,rgba(255,255,255,.02) 47%,transparent 56%),
+      linear-gradient(62deg,transparent 60%,rgba(200,162,90,.10) 68%,transparent 76%);
+    transform:translateX(-6%);
+  }
+  .front::after{
+    content:"";
+    position:absolute;
+    left:14%;right:14%;top:13%;
+    height:1px;
+    background:linear-gradient(90deg,transparent,rgba(239,233,221,.18),transparent);
+    box-shadow:0 230px 0 rgba(239,233,221,.06);
+  }
+  .engrave{
+    position:absolute;
+    left:12%;bottom:9%;
+    font-size:.47rem;
+    letter-spacing:.32em;
+    line-height:2.1;
+    text-transform:uppercase;
+    color:rgba(200,162,90,.78);
+  }
+  .engrave em{
+    display:block;
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:1.45rem;
+    letter-spacing:.02em;
+    color:rgba(239,233,221,.72);
+  }
+  .sheen{
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:34%;
+    background:linear-gradient(90deg,rgba(255,255,255,.05),transparent);
+    mix-blend-mode:screen;
+  }
+  .back{
+    transform:rotateY(180deg) translateZ(calc(var(--d) / 2));
+    background:linear-gradient(112deg,#090808,#181510 48%,#050505 100%);
+    box-shadow:inset 0 0 0 1px rgba(200,162,90,.32),inset 0 0 50px rgba(0,0,0,.9);
+  }
+  .back::before{
+    content:"";
+    position:absolute;
+    inset:16%;
+    border:1px solid rgba(200,162,90,.13);
+  }
+  .side{
+    width:var(--d);
+    height:100%;
+    left:50%;
+    top:0;
+    margin-left:calc(var(--d) / -2);
+    background:linear-gradient(90deg,#080706,#4a3d28 36%,#c8a25a 48%,#1c1710 58%,#2a231a);
+    box-shadow:inset 0 0 0 .5px rgba(200,162,90,.9),0 0 12px rgba(200,162,90,.12);
+  }
+  .side::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg,rgba(200,162,90,.16),transparent 22%,transparent 78%,rgba(200,162,90,.1));
+  }
+  .side.right{transform:rotateY(90deg) translateZ(calc(var(--w) / 2))}
+  .side.left{transform:rotateY(-90deg) translateZ(calc(var(--w) / 2))}
+  .cap{
+    width:100%;
+    height:var(--d);
+    left:0;
+    top:50%;
+    margin-top:calc(var(--d) / -2);
+    background:linear-gradient(135deg,#5a4b32,#1a1610 42%,#0a0908 70%,#3a3021);
+    box-shadow:inset 0 0 0 .5px rgba(200,162,90,.85);
+  }
+  .cap.top{
+    transform:rotateX(90deg) translateZ(calc(var(--h) / 2));
+    background:linear-gradient(120deg,#5b4c34,#211c14 38%,#0d0b08 66%,#3b3123);
+  }
+  .cap.bottom{transform:rotateX(-90deg) translateZ(calc(var(--h) / 2));background:#070605}
+  .cap.top::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.14) 42%,transparent 54%);
+  }
+
+  .reflect{
+    position:absolute;
+    left:50%;
+    bottom:clamp(2.4rem,5vh,4rem);
+    width:clamp(220px,26vw,340px);
+    height:60px;
+    transform:translateX(-50%) rotateX(72deg);
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.86) 0%,rgba(0,0,0,.5) 38%,transparent 70%);
+    filter:blur(13px);
+    z-index:-1;
+    pointer-events:none;
+  }
+
+  .stage-readout{
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr 1fr auto;
+    gap:1rem;
+    align-items:end;
+    border-top:1px solid var(--line);
+    padding-top:.65rem;
+    font-size:.54rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+  }
+  .readout-block b{
+    display:block;
+    font-family:var(--serif);
+    font-size:1.25rem;
+    font-weight:400;
+    letter-spacing:.02em;
+    color:var(--bone);
+    font-variant-numeric:tabular-nums;
+    margin-top:.22rem;
+  }
+  .readout-block b span{color:var(--gold)}
+  .drag-hint{
+    text-align:right;
+    line-height:1.8;
+    color:var(--bone-dim);
+  }
+  .drag-hint .dot{
+    display:inline-block;
+    width:5px;height:5px;
+    border-radius:50%;
+    background:var(--gold);
+    margin-right:.4rem;
+    vertical-align:middle;
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+  .hero-foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:1rem;
+    border-top:1px solid var(--line);
+    padding-top:.8rem;
+    padding-bottom:1.15rem;
+    font-size:.54rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+  }
+  .hero-foot .scrollline{display:flex;align-items:center;gap:.6rem}
+  .hero-foot .scrollline i{display:block;width:2.4rem;height:1px;background:var(--gold);position:relative;overflow:hidden}
+  .hero-foot .scrollline i::after{
+    content:"";
+    position:absolute;inset:0;
+    background:var(--bone);
+    animation:run 3s ease-in-out infinite;
+  }
+  @keyframes run{0%{transform:translateX(-100%)}55%{transform:translateX(0)}100%{transform:translateX(100%)}}
+
+  /* ---------- reveal ---------- */
+  .reveal{
+    opacity:0;
+    transform:translateY(34px);
+    transition:opacity 1.25s ease,transform 1.5s cubic-bezier(.16,.84,.2,1);
+    transition-delay:var(--delay,0ms);
+  }
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- narrative ---------- */
+  .narrative{
+    border-top:1px solid var(--line);
+    padding:clamp(4.5rem,11vh,9rem) 0;
+  }
+  .narr-grid{
+    display:grid;
+    grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+    gap:clamp(2rem,7vw,8rem);
+    align-items:start;
+  }
+  .narr-index{
+    display:flex;
+    align-items:baseline;
+    gap:1.2rem;
+    margin-bottom:2rem;
+    color:var(--gold);
+    font-size:.56rem;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+  }
+  .narr-index .big{
+    font-family:var(--serif);
+    font-size:clamp(4rem,8vw,7.5rem);
+    line-height:.8;
+    letter-spacing:-.04em;
+    color:var(--bone);
+    font-weight:400;
+  }
+  .narr-title{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(2.4rem,5vw,4.9rem);
+    line-height:.95;
+    letter-spacing:-.035em;
+    margin:0 0 1.4rem;
+  }
+  .narr-title em{color:var(--gold);font-style:italic}
+  .narr-copy p{
+    margin:0 0 1.25rem;
+    max-width:37ch;
+    color:var(--bone-dim);
+    font-size:clamp(.82rem,1.02vw,.98rem);
+    line-height:1.85;
+    font-weight:300;
+  }
+  .narr-copy p:last-child{margin-bottom:0}
+  .narr-copy p em{font-family:var(--serif);font-size:1.12em;color:var(--bone)}
+  .narr-meta{
+    margin-top:clamp(2rem,5vh,3.4rem);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.2rem;
+    border-top:1px solid var(--line);
+    padding-top:1rem;
+    font-size:.54rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+    line-height:2;
+  }
+  .narr-meta b{display:block;color:var(--bone);font-weight:400}
+
+  .pull{
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:clamp(2.4rem,6vh,4.2rem) 0;
+  }
+  .pull p{
+    margin:0 auto;
+    max-width:24ch;
+    text-align:center;
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    font-size:clamp(1.9rem,4.4vw,4.2rem);
+    line-height:1.18;
+    letter-spacing:-.025em;
+    color:var(--bone);
+  }
+  .pull p span{color:var(--gold)}
+  .pull .attrib{
+    display:block;
+    margin-top:1.2rem;
+    text-align:center;
+    font-family:var(--sans);
+    font-style:normal;
+    font-size:.52rem;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+  }
+
+  /* ---------- triptych ---------- */
+  .triptych{
+    padding:clamp(4.5rem,11vh,9rem) 0;
+    border-top:1px solid var(--line);
+  }
+  .section-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:1rem;
+    margin-bottom:clamp(2.2rem,6vh,4.5rem);
+    font-size:.56rem;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+  }
+  .section-head .k{color:var(--gold)}
+  .tri-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:0;
+    border-top:1px solid var(--gold-dim);
+  }
+  .tri{
+    padding:clamp(1.6rem,3vw,2.8rem) clamp(1rem,2.5vw,2.4rem) clamp(2rem,5vh,3.4rem);
+    border-right:1px solid var(--line);
+    position:relative;
+    min-height:clamp(280px,38vh,380px);
+  }
+  .tri:first-child{padding-left:0}
+  .tri:last-child{border-right:0;padding-right:0}
+  .tri .n{
+    font-size:.54rem;
+    letter-spacing:.24em;
+    color:var(--gold);
+    text-transform:uppercase;
+  }
+  .tri h3{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(1.7rem,2.8vw,2.7rem);
+    letter-spacing:-.02em;
+    margin:clamp(1.6rem,4vh,2.8rem) 0 .65rem;
+  }
+  .tri .value{
+    font-family:var(--serif);
+    font-size:clamp(2.6rem,5.2vw,5.1rem);
+    line-height:1;
+    letter-spacing:-.04em;
+    color:var(--gold);
+    margin-bottom:1.4rem;
+    font-variant-numeric:tabular-nums;
+  }
+  .tri .value sup{font-size:.34em;letter-spacing:0;vertical-align:super}
+  .tri p{
+    margin:0;
+    max-width:28ch;
+    color:var(--bone-dim);
+    font-size:.8rem;
+    line-height:1.8;
+    font-weight:300;
+  }
+  .tri .glyph{
+    position:absolute;
+    right:clamp(.6rem,2vw,2rem);
+    top:clamp(1.4rem,3vw,2.4rem);
+    width:38px;height:38px;
+    opacity:.55;
+  }
+  .tri .glyph svg{display:block;width:100%;height:100%}
+
+  /* ---------- specification band ---------- */
+  .specs{
+    background:var(--black-2);
+    border-top:1px solid var(--gold-dim);
+    border-bottom:1px solid var(--gold-dim);
+    padding:clamp(3rem,7vh,5rem) 0;
+  }
+  .spec-head{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    align-items:baseline;
+    margin-bottom:2.2rem;
+    font-size:.56rem;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--gold);
+  }
+  .spec-grid{
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:0;
+  }
+  .spec{
+    padding:1rem clamp(.7rem,1.6vw,1.6rem);
+    border-left:1px solid var(--line);
+    min-height:8.4rem;
+  }
+  .spec:first-child{border-left:0;padding-left:0}
+  .spec .lab{
+    display:block;
+    font-size:.5rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+    margin-bottom:1.1rem;
+  }
+  .spec .val{
+    display:block;
+    font-family:var(--serif);
+    font-size:clamp(1rem,1.4vw,1.35rem);
+    line-height:1.35;
+    letter-spacing:.005em;
+    color:var(--bone);
+  }
+  .spec .val small{
+    display:block;
+    margin-top:.3rem;
+    font-family:var(--sans);
+    font-size:.5rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--gold);
+  }
+
+  /* ---------- acquire ---------- */
+  .acquire{
+    padding:clamp(5rem,13vh,11rem) 0;
+    position:relative;
+    overflow:hidden;
+  }
+  .acquire::before{
+    content:"";
+    position:absolute;
+    right:-10%;
+    top:50%;
+    width:min(52vw,620px);
+    aspect-ratio:1;
+    transform:translateY(-50%);
+    border-radius:50%;
+    border:1px solid rgba(200,162,90,.12);
+    pointer-events:none;
+  }
+  .acq-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+    gap:clamp(2rem,7vw,7rem);
+    align-items:end;
+    position:relative;
+    z-index:2;
+  }
+  .acq-title{
+    margin:0;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(3.2rem,7.6vw,7.4rem);
+    line-height:.9;
+    letter-spacing:-.045em;
+  }
+  .acq-title em{color:var(--gold);font-style:italic}
+  .acq-body p{
+    margin:0 0 1.3rem;
+    color:var(--bone-dim);
+    font-size:clamp(.82rem,1vw,.94rem);
+    line-height:1.85;
+    font-weight:300;
+    max-width:38ch;
+  }
+  .acq-actions{
+    margin-top:clamp(2rem,5vh,3rem);
+    border-top:1px solid var(--line);
+    padding-top:1.4rem;
+  }
+  .acquire-btn{
+    appearance:none;
+    background:transparent;
+    border:1px solid var(--gold);
+    color:var(--bone);
+    padding:1.05rem 1.6rem;
+    min-height:48px;
+    display:inline-flex;
+    align-items:center;
+    gap:1.4rem;
+    justify-content:space-between;
+    min-width:min(100%,320px);
+    cursor:pointer;
+    font-size:.56rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    transition:background .45s ease,color .45s ease,border-color .45s ease;
+  }
+  .acquire-btn:hover,.acquire-btn:focus-visible{background:var(--gold);color:var(--black)}
+  .acquire-btn .p{font-family:var(--serif);font-size:1.1rem;letter-spacing:.02em;text-transform:none;color:var(--gold);transition:color .45s ease}
+  .acquire-btn:hover .p,.acquire-btn:focus-visible .p{color:var(--black)}
+  .acquire-btn[aria-pressed="true"]{border-color:var(--gold-dim);background:rgba(200,162,90,.08)}
+  .acquire-btn[aria-pressed="true"] .p{color:var(--bone-dim)}
+  .acquire-note{
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    transition:max-height .65s cubic-bezier(.16,.84,.2,1),opacity .5s ease,margin .5s ease;
+    margin-top:0;
+  }
+  .acquire-note.open{max-height:220px;opacity:1;margin-top:1.5rem}
+  .acquire-note .note-inner{
+    border-left:1px solid var(--gold);
+    padding:.2rem 0 .2rem 1.2rem;
+    font-size:.55rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    line-height:2;
+    color:var(--bone-dim);
+  }
+  .acquire-note .note-inner strong{color:var(--gold);font-weight:400}
+  .acquire-note .note-inner .withdraw{
+    appearance:none;background:none;border:0;padding:0;
+    margin-top:.6rem;display:inline-block;
+    border-bottom:1px solid var(--bone-dim);
+    font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--bone);cursor:pointer;
+  }
+  .acquire-note .note-inner .withdraw:hover,.acquire-note .note-inner .withdraw:focus-visible{color:var(--gold);border-color:var(--gold)}
+  .acq-meta{
+    margin-top:2rem;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1rem;
+    font-size:.52rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--bone-dim);
+    line-height:2;
+  }
+  .acq-meta b{display:block;color:var(--bone);font-weight:400}
+
+  /* ---------- footer ---------- */
+  .footer{
+    border-top:1px solid var(--gold-dim);
+    padding:clamp(2rem,5vh,3.4rem) 0 2rem;
+  }
+  .foot-grid{
+    display:grid;
+    grid-template-columns:1.4fr .6fr .6fr;
+    gap:2rem;
+    align-items:start;
+  }
+  .foot-mark{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:clamp(1.4rem,2.4vw,2.2rem);
+    letter-spacing:-.01em;
+  }
+  .foot-mark span{color:var(--gold)}
+  .foot-col{
+    font-size:.52rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    line-height:2.1;
+    color:var(--bone-dim);
+  }
+  .foot-col a{text-decoration:none;transition:color .35s ease}
+  .foot-col a:hover,.foot-col a:focus-visible{color:var(--gold)}
+  .foot-base{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    margin-top:clamp(2.5rem,7vh,4.5rem);
+    border-top:1px solid var(--line);
+    padding-top:.8rem;
+    font-size:.5rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(239,233,221,.4);
+  }
+
+  @media (max-width:1100px){
+    .tri .value{font-size:clamp(2.4rem,4.6vw,4rem)}
+    .spec-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .spec:nth-child(4){border-left:0;padding-left:0}
+    .spec:nth-child(n+4){border-top:1px solid var(--line);margin-top:1rem;padding-top:1.4rem}
+  }
+  @media (max-width:900px){
+    .hero{min-height:auto;padding-bottom:0}
+    .hero-grid{grid-template-columns:1fr;gap:1rem;padding-top:1rem}
+    .hero-copy{padding-top:1rem}
+    .object-wrap{margin-top:.5rem}
+    .stage{height:clamp(420px,58vh,540px)}
+    .narr-grid{grid-template-columns:1fr;gap:2rem}
+    .tri-grid{grid-template-columns:1fr;border-top:0}
+    .tri{border-right:0;border-top:1px solid var(--line);padding-left:0 !important;padding-right:0 !important;min-height:0;display:grid;grid-template-columns:1fr auto;align-items:start}
+    .tri .glyph{position:static;grid-column:2;grid-row:1 / span 2;margin-top:.3rem}
+    .tri h3{margin-top:1rem}
+    .tri .value{margin-bottom:.8rem}
+    .tri p{grid-column:1 / -1;max-width:46ch}
+    .acq-grid{grid-template-columns:1fr;gap:2.4rem;align-items:start}
+    .foot-grid{grid-template-columns:1fr 1fr}
+    .foot-mark{grid-column:1 / -1}
+    h1{font-size:clamp(4.4rem,14vw,7rem)}
+    .hero-sub .edition{white-space:normal}
+  }
+  @media (max-width:620px){
+    .stage{--w:clamp(168px,48vw,210px);--h:clamp(248px,70vw,310px);--d:clamp(34px,10vw,44px);height:410px}
+    .stage-readout{grid-template-columns:1fr 1fr;gap:.7rem}
+    .drag-hint{grid-column:1 / -1;text-align:left;border-top:1px solid var(--line);padding-top:.5rem;margin-top:.2rem}
+    .hero-foot{font-size:.48rem;flex-wrap:wrap}
+    .hero-foot .scrollline{order:3;flex-basis:100%}
+    .spec-grid{grid-template-columns:1fr 1fr}
+    .spec:nth-child(3){border-left:0;padding-left:0}
+    .spec:nth-child(odd){border-left:0;padding-left:0}
+    .spec:nth-child(n+3){border-top:1px solid var(--line);margin-top:1rem;padding-top:1.4rem}
+    .acq-meta{grid-template-columns:1fr}
+    .foot-grid{grid-template-columns:1fr}
+    .foot-base{flex-direction:column;gap:.4rem}
+    .hero-sub .edition{border-left:0;padding-left:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .scene{animation:none}
+    .reveal{opacity:1;transform:none;transition:none}
+    .drag-hint .dot,.hero-foot .scrollline i::after{animation:none}
+    .acquire-note{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="shell topbar-inner">
+    <a class="brand" href="#top"><span class="mark" aria-hidden="true"></span>Obsidian Atelier</a>
+    <nav class="topnav" aria-label="Primary">
+      <a href="#object">Object</a>
+      <a href="#triptych">Composition</a>
+      <a href="#specs">Specification</a>
+      <a class="ed" href="#acquire">Edition 01</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="top">
+    <div class="shell hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Object 01 / Desk Sculpture</p>
+        <h1>Nothing<br><span class="l2">to <em>prove.</em></span></h1>
+        <div class="hero-sub">
+          <p>A monolith cut from volcanic glass, polished by hand until the room disappears into it. It asks for a corner of the desk and gives back silence, weight, and a little weather of light.</p>
+          <div class="edition">
+            Edition of 24<br>
+            Signed &amp; numbered<br>
+            <b>€4,800</b> / incl. VAT
+          </div>
+        </div>
+      </div>
+
+      <div class="object-wrap">
+        <div class="object-label"><span>Object 01 — Obsidian</span><span>Drag to turn</span></div>
+
+        <div class="stage" id="stage" tabindex="0" role="application" aria-label="Obsidian sculpture. Drag with a pointer or use the arrow keys to rotate it. Press Home to reset.">
+          <div class="focus-ring" aria-hidden="true"></div>
+          <div class="reflect" aria-hidden="true"></div>
+          <div class="scene">
+            <div class="slab" id="slab">
+              <div class="face front">
+                <span class="sheen" aria-hidden="true"></span>
+                <span class="engrave">Obsidian<em>01</em>Atelier / BE</span>
+              </div>
+              <div class="face back"></div>
+              <div class="face side right"></div>
+              <div class="face side left"></div>
+              <div class="face cap top"></div>
+              <div class="face cap bottom"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-readout" aria-live="off">
+          <div class="readout-block">Yaw <b><span id="readYaw">−24</span>°</b></div>
+          <div class="readout-block">Pitch <b><span id="readPitch">−09</span>°</b></div>
+          <div class="drag-hint"><span class="dot" aria-hidden="true"></span>Drag / arrow keys<br>Home resets</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="shell hero-foot">
+      <span>Antwerp — Studio 04</span>
+      <span>Volcanic glass / 7.4 kg</span>
+      <span class="scrollline"><i aria-hidden="true"></i>Scroll for the object</span>
+    </div>
+  </section>
+
+  <section class="narrative" id="object">
+    <div class="shell narr-grid">
+      <div class="reveal">
+        <div class="narr-index"><span class="big">01</span><span>Object study</span></div>
+        <h2 class="narr-title">A study in<br><em>restraint.</em></h2>
+        <div class="narr-meta">
+          <div><b>Material</b>Volcanic glass</div>
+          <div><b>Finish</b>Hand-polished, 9 stages</div>
+          <div><b>Edition</b>24 + 2 artist proofs</div>
+          <div><b>Year</b>MMXXVI</div>
+        </div>
+      </div>
+      <div class="narr-copy reveal" style="--delay:120ms">
+        <p>There is a particular black that does not announce itself. It sits at the edge of the light, takes the shape of the room, and returns only a narrow gold seam where the hand has been.</p>
+        <p>Obsidian is cut from a single block, then faceted on four planes before nine stages of polishing. The result is not a mirror. It is something quieter: <em>a surface that keeps its thoughts to itself.</em></p>
+        <p>Each piece is finished in Antwerp and numbered beneath the base. No two seams fall in the same place. The weight is deliberate — heavy enough to stay where it is put, light enough to be moved when the light changes.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pull">
+    <div class="shell reveal">
+      <p>“The object does not fill the room. It gives the room <span>a centre.</span>”</p>
+      <span class="attrib">Obsidian Atelier / Notes on form, 2026</span>
+    </div>
+  </section>
+
+  <section class="triptych" id="triptych">
+    <div class="shell">
+      <div class="section-head reveal"><span class="k">Composition</span><span>Three measures of presence</span><span>Fig. 01—03</span></div>
+      <div class="tri-grid">
+        <article class="tri reveal">
+          <span class="n">01 / Weight</span>
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none" stroke="#c8a25a" stroke-width="1">
+              <path d="M20 5l13 15-13 15L7 20z"/><path d="M20 12l8 8-8 8-8-8z" opacity=".45"/>
+            </svg>
+          </div>
+          <h3>Weight</h3>
+          <div class="value">7.4<sup>kg</sup></div>
+          <p>A gravity you can feel before you see it. The base is loaded with the same glass, so the centre of mass sits low and still.</p>
+        </article>
+        <article class="tri reveal" style="--delay:120ms">
+          <span class="n">02 / Silence</span>
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none" stroke="#c8a25a" stroke-width="1">
+              <circle cx="20" cy="20" r="14"/><circle cx="20" cy="20" r="7" opacity=".5"/><path d="M2 20h6M32 20h6" opacity=".5"/>
+            </svg>
+          </div>
+          <h3>Silence</h3>
+          <div class="value">−32<sup>dB</sup></div>
+          <p>No resonance, no ring when the room shakes. A dense, closed grain that absorbs the small sounds of a desk.</p>
+        </article>
+        <article class="tri reveal" style="--delay:240ms">
+          <span class="n">03 / Light</span>
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none" stroke="#c8a25a" stroke-width="1">
+              <path d="M20 3v34M3 20h34M8 8l24 24M32 8L8 32" opacity=".55"/><circle cx="20" cy="20" r="4"/>
+            </svg>
+          </div>
+          <h3>Light</h3>
+          <div class="value">0.04<sup>%</sup></div>
+          <p>Reflectance at the face, near-total absorption at the edge. The gold seam is the only part that answers the room.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="specs" id="specs">
+    <div class="shell">
+      <div class="spec-head reveal"><span>Specification / Object 01</span><span>All dimensions nominal</span><span>Sheet 01 of 01</span></div>
+      <div class="spec-grid reveal">
+        <div class="spec"><span class="lab">Material</span><span class="val">Volcanic glass<small>Single block</small></span></div>
+        <div class="spec"><span class="lab">Dimensions</span><span class="val">240 × 160 × 52<small>Millimetres</small></span></div>
+        <div class="spec"><span class="lab">Weight</span><span class="val">7.4 kg<small>± 0.2 kg</small></span></div>
+        <div class="spec"><span class="lab">Finish</span><span class="val">Mirror polish<small>24k gold seam</small></span></div>
+        <div class="spec"><span class="lab">Edition</span><span class="val">24 + 2 AP<small>Signed beneath</small></span></div>
+        <div class="spec"><span class="lab">Origin</span><span class="val">Antwerp, BE<small>Atelier 04</small></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="acquire" id="acquire">
+    <div class="shell acq-grid">
+      <div class="reveal">
+        <p class="eyebrow">Acquisition / Object 01</p>
+        <h2 class="acq-title">A quiet<br><em>weight.</em></h2>
+      </div>
+      <div class="acq-body reveal" style="--delay:120ms">
+        <p>Each object is finished to order and released in sequence. Reserve Object 01 and the atelier will hold it for forty-eight hours while a private viewing is arranged.</p>
+        <div class="acq-actions">
+          <button class="acquire-btn" id="acquireBtn" type="button" aria-pressed="false" aria-expanded="false" aria-controls="acquireNote">
+            <span class="label" id="acquireLabel">Acquire Object 01</span>
+            <span class="p">€4,800</span>
+          </button>
+          <div class="acquire-note" id="acquireNote">
+            <div class="note-inner">
+              <span id="noteText">Reservation noted. Object 01 is held for forty-eight hours under reference <strong>OA-01-024</strong>. A private viewing folio will follow.</span>
+              <br>
+              <button class="withdraw" id="withdrawBtn" type="button">Withdraw reservation</button>
+            </div>
+          </div>
+        </div>
+        <div class="acq-meta">
+          <div><b>Delivery</b>6—8 weeks, crated</div>
+          <div><b>Enquiries</b>atelier@obsidian.example</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="shell">
+    <div class="foot-grid">
+      <div class="foot-mark">Obsidian <span>Atelier</span></div>
+      <div class="foot-col">
+        <a href="#object">The object</a><br>
+        <a href="#specs">Specification</a><br>
+        <a href="#acquire">Acquire</a>
+      </div>
+      <div class="foot-col">
+        Antwerp, Belgium<br>
+        MMXXVI<br>
+        Object 01 / 01
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>© 2026 Obsidian Atelier. A fictional catalogue study.</span>
+      <span>Nothing to prove.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var stage = document.getElementById("stage");
+  var slab = document.getElementById("slab");
+  var readYaw = document.getElementById("readYaw");
+  var readPitch = document.getElementById("readPitch");
+
+  /* ---------- rotation state ---------- */
+  var targetYaw = -24;
+  var targetPitch = -9;
+  var yaw = targetYaw;
+  var pitch = targetPitch;
+  var dragging = false;
+  var lastX = 0;
+  var lastY = 0;
+  var startYaw = 0;
+  var startPitch = 0;
+  var raf = 0;
+  var needsFrame = false;
+
+  function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+  function wrapAngle(a) {
+    var x = ((a + 180) % 360 + 360) % 360 - 180;
+    return x;
+  }
+
+  function formatAngle(a) {
+    var n = Math.round(wrapAngle(a));
+    var sign = n < 0 ? "−" : "";
+    var abs = Math.abs(n);
+    return sign + (abs < 10 ? "0" + abs : String(abs));
+  }
+
+  function paintReadout() {
+    readYaw.textContent = formatAngle(yaw);
+    readPitch.textContent = formatAngle(pitch);
+  }
+
+  function applyTransform() {
+    slab.style.setProperty("--rx", pitch.toFixed(2) + "deg");
+    slab.style.setProperty("--ry", yaw.toFixed(2) + "deg");
+    paintReadout();
+  }
+
+  function animate() {
+    raf = 0;
+    var dx = targetYaw - yaw;
+    var dy = targetPitch - pitch;
+    if (Math.abs(dx) < 0.06 && Math.abs(dy) < 0.06) {
+      yaw = targetYaw;
+      pitch = targetPitch;
+      applyTransform();
+      needsFrame = false;
+      return;
+    }
+    yaw += dx * 0.2;
+    pitch += dy * 0.2;
+    applyTransform();
+    raf = window.requestAnimationFrame(animate);
+  }
+
+  function requestPaint() {
+    if (reduceMotion) {
+      yaw = targetYaw;
+      pitch = targetPitch;
+      applyTransform();
+      return;
+    }
+    if (!raf) raf = window.requestAnimationFrame(animate);
+  }
+
+  applyTransform();
+
+  /* ---------- pointer drag ---------- */
+  stage.addEventListener("pointerdown", function (e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    startYaw = targetYaw;
+    startPitch = targetPitch;
+    if (stage.setPointerCapture) {
+      try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    stage.focus({ preventScroll: true });
+    e.preventDefault();
+  });
+
+  stage.addEventListener("pointermove", function (e) {
+    if (!dragging) return;
+    var dx = e.clientX - lastX;
+    var dy = e.clientY - lastY;
+    targetYaw = wrapAngle(startYaw + dx * 0.55);
+    targetPitch = clamp(startPitch - dy * 0.38, -62, 62);
+    lastX = e.clientX;
+    lastY = e.clientY;
+    requestPaint();
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    if (e && e.pointerId !== undefined && stage.releasePointerCapture) {
+      try { stage.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+  }
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", endDrag);
+  stage.addEventListener("lostpointercapture", function () { dragging = false; });
+
+  /* ---------- keyboard ---------- */
+  stage.addEventListener("keydown", function (e) {
+    var key = e.key;
+    var step = e.shiftKey ? 15 : 6;
+    var handled = true;
+    if (key === "ArrowLeft") targetYaw = wrapAngle(targetYaw - step);
+    else if (key === "ArrowRight") targetYaw = wrapAngle(targetYaw + step);
+    else if (key === "ArrowUp") targetPitch = clamp(targetPitch - step * 0.66, -62, 62);
+    else if (key === "ArrowDown") targetPitch = clamp(targetPitch + step * 0.66, -62, 62);
+    else if (key === "Home") { targetYaw = -24; targetPitch = -9; }
+    else handled = false;
+    if (handled) {
+      e.preventDefault();
+      requestPaint();
+    }
+  });
+
+  /* ---------- acquisition ---------- */
+  var acquireBtn = document.getElementById("acquireBtn");
+  var acquireNote = document.getElementById("acquireNote");
+  var acquireLabel = document.getElementById("acquireLabel");
+  var withdrawBtn = document.getElementById("withdrawBtn");
+  var reserved = false;
+
+  function setReserved(next) {
+    reserved = next;
+    acquireBtn.setAttribute("aria-pressed", next ? "true" : "false");
+    acquireBtn.setAttribute("aria-expanded", next ? "true" : "false");
+    if (next) {
+      acquireLabel.textContent = "Reservation held";
+      acquireNote.classList.add("open");
+    } else {
+      acquireLabel.textContent = "Acquire Object 01";
+      acquireNote.classList.remove("open");
+    }
+  }
+
+  acquireBtn.addEventListener("click", function () {
+    setReserved(!reserved);
+  });
+
+  withdrawBtn.addEventListener("click", function () {
+    setReserved(false);
+    acquireBtn.focus({ preventScroll: false });
+  });
+
+  /* ---------- scroll reveals ---------- */
+  var reveals = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+  if ("IntersectionObserver" in window && !reduceMotion) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+    reveals.forEach(function (el) { io.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add("in"); });
+  }
+})();
+</script>
+</body>
+</html>

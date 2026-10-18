@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AXIS — Variable Type Playground</title>
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --panel:#0d0d0e;
+    --cream:#eee5d3;
+    --dim:#9a9284;
+    --dim2:rgba(238,229,211,.42);
+    --red:#ff3a1f;
+    --line:rgba(238,229,211,.11);
+    --line-strong:rgba(238,229,211,.24);
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background-color:var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(238,229,211,.020) 0 1px, transparent 1px 80px),
+      repeating-linear-gradient(90deg, rgba(238,229,211,.020) 0 1px, transparent 1px 80px);
+    color:var(--cream);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  ::selection{background:var(--red);color:#0a0a0a}
+  .frame{min-height:100vh;display:flex;flex-direction:column}
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    height:58px;padding:0 clamp(14px,2vw,26px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand-mark{width:11px;height:11px;background:var(--red);display:block;transform:translateY(-1px)}
+  .brand-word{font-family:var(--sans);font-weight:800;font-size:15px;letter-spacing:.26em}
+  .mast-meta{display:flex;align-items:center;gap:12px;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+  .mast-meta .sep{color:var(--red)}
+  .mast-right{display:flex;gap:20px;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .mast-right span:last-child{color:var(--cream)}
+
+  /* ---------- workspace ---------- */
+  .work{
+    flex:1 1 auto;display:grid;grid-template-columns:292px minmax(0,1fr);
+    min-height:560px;
+  }
+
+  /* ---------- control rail ---------- */
+  .rail{
+    border-right:1px solid var(--line);
+    padding:16px 18px 14px;
+    display:flex;flex-direction:column;
+    background:rgba(9,9,10,.55);
+    min-width:0;
+  }
+  .rail-head{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:8px;letter-spacing:.2em;color:var(--dim);
+    padding-bottom:11px;border-bottom:1px solid var(--line);
+  }
+  .live{display:flex;align-items:center;gap:6px;color:var(--red)}
+  .live i{width:5px;height:5px;border-radius:50%;background:var(--red);display:block;animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .sliders{padding-top:3px}
+  .control{padding:9px 0 8px;border-bottom:1px solid rgba(238,229,211,.055)}
+  .control-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1px}
+  .control label{font-size:8.5px;letter-spacing:.16em;color:rgba(238,229,211,.7);cursor:pointer}
+  .control output{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--cream);
+    font-variant-numeric:tabular-nums;
+  }
+  .scale{
+    height:4px;margin-top:1px;
+    background-image:repeating-linear-gradient(90deg, rgba(238,229,211,.22) 0 1px, transparent 1px 12.5%);
+    background-repeat:no-repeat;background-size:100% 4px;
+    opacity:.55;
+  }
+  .control-foot{display:flex;justify-content:space-between;font-size:6.8px;letter-spacing:.12em;color:rgba(238,229,211,.28);margin-top:2px}
+
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:20px;margin:0;padding:0;background:transparent;
+    cursor:ew-resize;display:block;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:2px;
+    background:linear-gradient(90deg, var(--red) 0 var(--pct,50%), rgba(238,229,211,.17) var(--pct,50%) 100%);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:13px;height:13px;margin-top:-5.5px;
+    background:var(--red);border:2px solid #0a0a0a;border-radius:1px;
+    box-shadow:0 0 0 1px var(--red);
+  }
+  input[type=range]::-moz-range-track{height:2px;background:rgba(238,229,211,.17)}
+  input[type=range]::-moz-range-progress{height:2px;background:var(--red)}
+  input[type=range]::-moz-range-thumb{
+    width:11px;height:11px;background:var(--red);border:2px solid #0a0a0a;border-radius:1px;
+    box-shadow:0 0 0 1px var(--red);
+  }
+  input[type=range]:focus-visible{outline:none}
+  input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 1px var(--red),0 0 0 3px rgba(238,229,211,.35)}
+  input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 1px var(--red),0 0 0 3px rgba(238,229,211,.35)}
+
+  .presets{margin-top:14px}
+  .block-label{
+    display:flex;justify-content:space-between;font-size:8px;letter-spacing:.18em;
+    color:var(--dim);margin-bottom:7px;
+  }
+  .block-label span{color:rgba(238,229,211,.32)}
+  .preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  .preset{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+    color:rgba(238,229,211,.62);background:transparent;
+    border:1px solid rgba(238,229,211,.2);border-radius:0;
+    padding:7px 8px;cursor:pointer;text-align:left;
+    transition:color .18s,border-color .18s,background .18s;
+  }
+  .preset:hover{color:var(--cream);border-color:rgba(238,229,211,.55)}
+  .preset.is-active{color:var(--red);border-color:var(--red);background:rgba(255,58,31,.07)}
+  .preset:focus-visible{outline:1px solid var(--cream);outline-offset:2px}
+
+  .randomise{
+    margin-top:9px;height:39px;width:100%;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 12px;border:0;border-radius:0;cursor:pointer;
+    background:var(--red);color:#0b0b0b;
+    font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.16em;
+    transition:background .18s,transform .12s;
+  }
+  .randomise:hover{background:#ff5539}
+  .randomise:active{transform:translateY(1px)}
+  .randomise:focus-visible{outline:1px solid var(--cream);outline-offset:2px}
+  .randomise .rnd{font-size:13px;line-height:1}
+
+  .rail-foot{
+    margin-top:auto;padding-top:12px;
+    display:flex;justify-content:space-between;gap:10px;
+    border-top:1px solid var(--line);
+    font-size:7px;line-height:1.7;letter-spacing:.11em;color:rgba(238,229,211,.3);
+  }
+
+  /* ---------- stage ---------- */
+  .stage{
+    display:flex;flex-direction:column;min-width:0;
+    padding:14px clamp(14px,2vw,26px) 10px;
+  }
+  .stage-top{
+    display:flex;justify-content:space-between;gap:12px;
+    font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
+    padding-bottom:10px;
+  }
+  .stage-top span:last-child{color:rgba(238,229,211,.55)}
+  .proof{
+    position:relative;flex:1 1 auto;min-height:320px;overflow:hidden;
+    border:1px solid var(--line);
+    background:rgba(14,14,15,.42);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .proof::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:repeating-linear-gradient(90deg, transparent 0 calc(12.5% - 1px), rgba(238,229,211,.045) calc(12.5% - 1px) 12.5%);
+  }
+  .crop{position:absolute;width:24px;height:24px;pointer-events:none;opacity:.5}
+  .crop::before,.crop::after{content:"";position:absolute;background:var(--cream)}
+  .crop::before{height:1px;width:24px}
+  .crop::after{width:1px;height:24px}
+  .crop.tl{top:18px;left:18px}
+  .crop.tl::before{top:0;left:0}.crop.tl::after{top:0;left:0}
+  .crop.tr{top:18px;right:18px}
+  .crop.tr::before{top:0;right:0}.crop.tr::after{top:0;right:0}
+  .crop.bl{bottom:18px;left:18px}
+  .crop.bl::before{bottom:0;left:0}.crop.bl::after{bottom:0;left:0}
+  .crop.br{bottom:18px;right:18px}
+  .crop.br::before{bottom:0;right:0}.crop.br::after{bottom:0;right:0}
+
+  .proof-meta{
+    position:absolute;top:16px;font-size:7px;line-height:1.8;letter-spacing:.14em;
+    color:rgba(238,229,211,.32);text-transform:uppercase;z-index:3;
+  }
+  .proof-meta.left{left:52px}
+  .proof-meta.right{right:52px;text-align:right}
+
+  .metrics{position:absolute;inset:0;pointer-events:none;z-index:1}
+  .metric{position:absolute;left:0;right:0;height:1px;background:rgba(238,229,211,.14)}
+  .metric.xheight{top:40%;background:rgba(238,229,211,.09)}
+  .metric.cap{top:30%;background:rgba(238,229,211,.14)}
+  .metric.baseline{top:65%;background:rgba(255,58,31,.58)}
+  .metric span{
+    position:absolute;left:10px;top:-11px;
+    font-size:7px;letter-spacing:.16em;color:rgba(238,229,211,.46);
+    white-space:nowrap;
+  }
+  .metric.baseline span{color:rgba(255,58,31,.9)}
+
+  .word-wrap{
+    position:relative;z-index:2;width:100%;padding:0 2vw;
+    display:flex;align-items:center;justify-content:center;
+    pointer-events:none;
+  }
+  .word-line{
+    position:relative;display:flex;align-items:baseline;justify-content:center;
+    max-width:100%;
+  }
+  .word{
+    display:inline-block;vertical-align:baseline;
+    font-family:var(--sans);
+    font-weight:800;
+    font-size:200px;
+    line-height:.78;
+    letter-spacing:0;
+    color:var(--cream);
+    text-transform:uppercase;
+    white-space:nowrap;
+    transform-origin:50% 50%;
+    will-change:transform,font-size,letter-spacing,font-weight;
+    font-kerning:normal;
+  }
+  .probe{display:inline-block;width:0;height:0;overflow:hidden;flex:0 0 auto}
+  .word.morphing{
+    transition:font-size .55s cubic-bezier(.2,.7,.2,1),
+               font-weight .55s cubic-bezier(.2,.7,.2,1),
+               letter-spacing .55s cubic-bezier(.2,.7,.2,1),
+               transform .55s cubic-bezier(.2,.7,.2,1);
+  }
+  .proof-foot{
+    position:absolute;left:52px;right:52px;bottom:14px;z-index:3;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:rgba(238,229,211,.32);
+  }
+  .proof-foot .accent{color:var(--red);font-size:6px;margin:0 auto}
+  .stage-foot{
+    display:flex;flex-wrap:wrap;gap:6px 22px;
+    padding-top:10px;font-size:7.5px;letter-spacing:.13em;color:rgba(238,229,211,.36);
+    text-transform:uppercase;
+  }
+  .stage-foot b{color:var(--cream);font-weight:400}
+
+  /* ---------- bottom strip ---------- */
+  .strip{
+    flex:0 0 auto;
+    display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
+    border-top:1px solid var(--line);
+    background:rgba(7,7,8,.6);
+  }
+  .alphabet-block{
+    min-width:0;padding:14px clamp(14px,2vw,26px) 12px;
+    border-right:1px solid var(--line);
+  }
+  .strip-head{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
+    margin-bottom:9px;
+  }
+  .strip-hint{color:rgba(238,229,211,.28)}
+  .alphabet-scroll{
+    overflow-x:auto;overflow-y:hidden;cursor:grab;
+    scrollbar-width:thin;scrollbar-color:var(--red) transparent;
+    overscroll-behavior-x:contain;
+  }
+  .alphabet-scroll.dragging{cursor:grabbing}
+  .alphabet-scroll::-webkit-scrollbar{height:2px}
+  .alphabet-scroll::-webkit-scrollbar-thumb{background:var(--red)}
+  .alphabet-scroll::-webkit-scrollbar-track{background:rgba(238,229,211,.09)}
+  .alphabet{display:flex;align-items:baseline;width:max-content;padding:0 2px}
+  .glyph{
+    font-family:var(--sans);font-weight:500;
+    font-size:clamp(30px,3.3vw,50px);line-height:1.05;
+    color:rgba(238,229,211,.74);padding:0 .13em;
+    transition:color .16s,font-weight .16s;
+  }
+  .glyph:hover{color:var(--red);font-weight:800}
+  .divider{width:1px;height:24px;background:var(--line-strong);margin:0 15px;align-self:center;flex:0 0 auto}
+  .glyph.fig{font-size:clamp(21px,2.2vw,33px);color:rgba(238,229,211,.5)}
+  .glyph.mark{font-size:clamp(17px,1.8vw,26px);color:rgba(238,229,211,.42)}
+  .alpha-foot{margin-top:8px;font-size:7px;letter-spacing:.11em;color:rgba(238,229,211,.26);text-transform:uppercase}
+  .essay{
+    min-width:0;padding:14px clamp(14px,2vw,26px) 12px;
+    display:flex;flex-direction:column;
+  }
+  .essay .dot{width:5px;height:5px;background:var(--red);display:block;margin-right:7px}
+  .essay .strip-head{justify-content:flex-start;color:var(--cream)}
+  .essay .essay-num{margin-left:auto;color:rgba(238,229,211,.3)}
+  .essay p{
+    margin:0 0 7px;font-family:var(--sans);
+    font-size:12.5px;line-height:1.52;color:rgba(238,229,211,.66);
+    max-width:66ch;
+  }
+  .essay p strong{color:var(--cream);font-weight:600}
+  .essay p .red{color:var(--red)}
+  .essay .small{font-size:11px;color:rgba(238,229,211,.42)}
+
+  @media (max-width:1120px){
+    .work{grid-template-columns:252px minmax(0,1fr)}
+    .rail{padding-left:14px;padding-right:14px}
+    .control output{font-size:9.5px}
+  }
+  @media (max-width:860px){
+    .frame{min-height:0}
+    .work{grid-template-columns:1fr;min-height:0}
+    .stage{order:1;padding-bottom:12px}
+    .proof{min-height:300px}
+    .rail{order:2;border-right:none;border-top:1px solid var(--line);padding:14px 18px 16px}
+    .sliders{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding-top:2px}
+    .preset-grid{grid-template-columns:repeat(4,1fr)}
+    .rail-foot{display:none}
+    .strip{grid-template-columns:1fr}
+    .alphabet-block{border-right:none;border-bottom:1px solid var(--line)}
+    .mast-meta{display:none}
+    .randomise{margin-top:12px}
+  }
+  @media (max-width:600px){
+    .masthead{height:50px}
+    .mast-right span:first-child{display:none}
+    .sliders{grid-template-columns:1fr;gap:0}
+    .preset-grid{grid-template-columns:1fr 1fr}
+    .control output{font-size:10px}
+    .stage{padding-left:12px;padding-right:12px}
+    .stage-top{padding-bottom:8px;font-size:7px}
+    .proof-meta{display:none}
+    .proof-foot{left:44px;right:44px;bottom:12px;font-size:6.5px}
+    .crop.tl,.crop.tr{top:14px}
+    .crop.bl,.crop.br{bottom:14px}
+    .crop.tl,.crop.bl{left:14px}
+    .crop.tr,.crop.br{right:14px}
+    .stage-foot{gap:5px 14px;font-size:7px}
+    .metric span{display:none}
+    .strip-head{font-size:7px}
+    .essay p{font-size:12px}
+    .essay .small{font-size:11px}
+    .alphabet-block,.essay{padding-left:14px;padding-right:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="masthead">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-word">AXIS</span>
+    </div>
+    <div class="mast-meta">
+      <span>Variable type laboratory</span>
+      <span class="sep">/</span>
+      <span>Specimen 033</span>
+    </div>
+    <div class="mast-right">
+      <span>Oslo 59.91&deg; N</span>
+      <span>MMXXVI</span>
+    </div>
+  </header>
+
+  <main class="work">
+
+    <aside class="rail" aria-label="Type controls">
+      <div class="rail-head">
+        <span>CONTROL RAIL</span>
+        <span class="live"><i aria-hidden="true"></i>LIVE</span>
+      </div>
+
+      <div class="sliders">
+        <div class="control">
+          <div class="control-top">
+            <label for="weight">WEIGHT</label>
+            <output id="outWeight" for="weight">900</output>
+          </div>
+          <input type="range" id="weight" min="100" max="900" step="10" value="900">
+          <div class="scale" aria-hidden="true"></div>
+          <div class="control-foot"><span>THIN</span><span>BLACK</span></div>
+        </div>
+
+        <div class="control">
+          <div class="control-top">
+            <label for="width">WIDTH</label>
+            <output id="outWidth" for="width">126%</output>
+          </div>
+          <input type="range" id="width" min="80" max="150" step="1" value="126">
+          <div class="scale" aria-hidden="true"></div>
+          <div class="control-foot"><span>NARROW</span><span>WIDE</span></div>
+        </div>
+
+        <div class="control">
+          <div class="control-top">
+            <label for="tracking">TRACKING</label>
+            <output id="outTracking" for="tracking">-0.030em</output>
+          </div>
+          <input type="range" id="tracking" min="-60" max="260" step="5" value="-30">
+          <div class="scale" aria-hidden="true"></div>
+          <div class="control-foot"><span>TIGHT</span><span>OPEN</span></div>
+        </div>
+
+        <div class="control">
+          <div class="control-top">
+            <label for="slant">SLANT</label>
+            <output id="outSlant" for="slant">0.0&deg;</output>
+          </div>
+          <input type="range" id="slant" min="-12" max="14" step="0.5" value="0">
+          <div class="scale" aria-hidden="true"></div>
+          <div class="control-foot"><span>BACK</span><span>ITALIC</span></div>
+        </div>
+
+        <div class="control">
+          <div class="control-top">
+            <label for="optical">OPTICAL SIZE</label>
+            <output id="outOptical" for="optical">220px</output>
+          </div>
+          <input type="range" id="optical" min="8" max="24" step="0.5" value="20">
+          <div class="scale" aria-hidden="true"></div>
+          <div class="control-foot"><span>SMALL</span><span>LARGE</span></div>
+        </div>
+      </div>
+
+      <div class="presets">
+        <div class="block-label"><span>PRESETS</span><span>04</span></div>
+        <div class="preset-grid" role="group" aria-label="Type presets">
+          <button class="preset is-active" type="button" data-preset="poster">Poster</button>
+          <button class="preset" type="button" data-preset="whisper">Whisper</button>
+          <button class="preset" type="button" data-preset="machine">Machine</button>
+          <button class="preset" type="button" data-preset="bloom">Bloom</button>
+        </div>
+      </div>
+
+      <button class="randomise" id="randomise" type="button">
+        <span>RANDOMISE</span><span class="rnd" aria-hidden="true">&#8599;</span>
+      </button>
+
+      <div class="rail-foot">
+        <span>AXIS VARIABLE<br>GROTESQUE</span>
+        <span>BUILD 1.033<br>OTF / WOFF2</span>
+      </div>
+    </aside>
+
+    <section class="stage" aria-label="Type specimen stage">
+      <div class="stage-top">
+        <span>Variable grotesque &mdash; five axes</span>
+        <span>Proof / No. 033</span>
+      </div>
+
+      <div class="proof" id="proof">
+        <span class="crop tl" aria-hidden="true"></span>
+        <span class="crop tr" aria-hidden="true"></span>
+        <span class="crop bl" aria-hidden="true"></span>
+        <span class="crop br" aria-hidden="true"></span>
+
+        <div class="proof-meta left">MORPH / Latin caps<br>5 axes</div>
+        <div class="proof-meta right">Live render<br>CSS transforms</div>
+
+        <div class="metrics" aria-hidden="true">
+          <div class="metric cap" id="capLine"><span>CAP HEIGHT</span></div>
+          <div class="metric xheight" id="xLine"><span>X-HEIGHT</span></div>
+          <div class="metric baseline" id="baseLine"><span>BASELINE</span></div>
+        </div>
+
+        <div class="word-wrap">
+          <div class="word-line">
+            <div class="word" id="word">MORPH</div><span class="probe" id="probe" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="proof-foot">
+          <span>MORPH &mdash; 5 axis specimen</span>
+          <span class="accent" aria-hidden="true">&#9679;</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <div class="stage-foot" aria-live="off">
+        <span>WGHT <b id="miniWeight">900</b></span>
+        <span>WDTH <b id="miniWidth">126</b></span>
+        <span>TRK <b id="miniTrack">-0.030</b></span>
+        <span>SLNT <b id="miniSlant">0.0&deg;</b></span>
+        <span>OPTS <b id="miniOpt">220PX</b></span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="strip">
+    <div class="alphabet-block">
+      <div class="strip-head"><span>Alphabet / Latin ext.</span><span class="strip-hint">Drag &rarr;</span></div>
+      <div class="alphabet-scroll" id="alphabetScroll" tabindex="0" aria-label="Scrollable alphabet of the typeface">
+        <div class="alphabet">
+          <span class="glyph">A</span><span class="glyph">B</span><span class="glyph">C</span><span class="glyph">D</span><span class="glyph">E</span><span class="glyph">F</span><span class="glyph">G</span><span class="glyph">H</span><span class="glyph">I</span><span class="glyph">J</span><span class="glyph">K</span><span class="glyph">L</span><span class="glyph">M</span><span class="glyph">N</span><span class="glyph">O</span><span class="glyph">P</span><span class="glyph">Q</span><span class="glyph">R</span><span class="glyph">S</span><span class="glyph">T</span><span class="glyph">U</span><span class="glyph">V</span><span class="glyph">W</span><span class="glyph">X</span><span class="glyph">Y</span><span class="glyph">Z</span>
+          <span class="divider" aria-hidden="true"></span>
+          <span class="glyph fig">0</span><span class="glyph fig">1</span><span class="glyph fig">2</span><span class="glyph fig">3</span><span class="glyph fig">4</span><span class="glyph fig">5</span><span class="glyph fig">6</span><span class="glyph fig">7</span><span class="glyph fig">8</span><span class="glyph fig">9</span>
+          <span class="divider" aria-hidden="true"></span>
+          <span class="glyph mark">&amp;</span><span class="glyph mark">@</span><span class="glyph mark">#</span><span class="glyph mark">%</span><span class="glyph mark">&mdash;</span><span class="glyph mark">/</span><span class="glyph mark">?</span><span class="glyph mark">!</span><span class="glyph mark">.</span><span class="glyph mark">,</span><span class="glyph mark">:</span><span class="glyph mark">;</span>
+        </div>
+      </div>
+      <div class="alpha-foot">Aa Bb Cc &mdash; 26 letters / 10 figures / 12 marks</div>
+    </div>
+
+    <div class="essay">
+      <div class="strip-head"><span class="dot" aria-hidden="true"></span><span>On the variable</span><span class="essay-num">/ 01</span></div>
+      <p>A letter used to be a fixed object: cut in metal, then in film, then in pixels. The variable font loosens that certainty. One file now carries a whole family &mdash; a hairline and a black, a whisper and a shout &mdash; and the designer is invited to move between them.</p>
+      <p class="small">AXIS treats that motion as material. Push a slider and the letterform answers immediately: <strong>weight, width, slant and optical size</strong> are not presets but coordinates. What you are looking at is not a picture of type. It is <span class="red">type, being worked.</span></p>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var proof = document.getElementById('proof');
+  var word = document.getElementById('word');
+  var probe = document.getElementById('probe');
+  var capLine = document.getElementById('capLine');
+  var xLine = document.getElementById('xLine');
+  var baseLine = document.getElementById('baseLine');
+  var metricCtx = document.createElement('canvas').getContext('2d');
+  var fontStack = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+
+  var inputs = {
+    weight: document.getElementById('weight'),
+    width: document.getElementById('width'),
+    tracking: document.getElementById('tracking'),
+    slant: document.getElementById('slant'),
+    optical: document.getElementById('optical')
+  };
+
+  var outs = {
+    weight: document.getElementById('outWeight'),
+    width: document.getElementById('outWidth'),
+    tracking: document.getElementById('outTracking'),
+    slant: document.getElementById('outSlant'),
+    optical: document.getElementById('outOptical')
+  };
+
+  var mins = {
+    weight: document.getElementById('miniWeight'),
+    width: document.getElementById('miniWidth'),
+    tracking: document.getElementById('miniTrack'),
+    slant: document.getElementById('miniSlant'),
+    optical: document.getElementById('miniOpt')
+  };
+
+  var presets = {
+    poster:  { weight: 900, width: 126, tracking: -0.030, slant: 0,   optical: 20 },
+    whisper: { weight: 200, width: 92,  tracking: 0.180,  slant: 4,   optical: 12 },
+    machine: { weight: 520, width: 106, tracking: 0.060,  slant: 11,  optical: 16 },
+    bloom:   { weight: 300, width: 142, tracking: 0.130,  slant: -8,  optical: 18.5 }
+  };
+
+  var state = {
+    weight: presets.poster.weight,
+    width: presets.poster.width,
+    tracking: presets.poster.tracking,
+    slant: presets.poster.slant,
+    optical: presets.poster.optical
+  };
+
+  var morphTimer = null;
+  var activePreset = 'poster';
+
+  function fmtTracking(v) {
+    var s = v >= 0 ? '+' : '';
+    return s + v.toFixed(3) + 'em';
+  }
+
+  function setPct(input) {
+    var min = parseFloat(input.min);
+    var max = parseFloat(input.max);
+    var val = parseFloat(input.value);
+    var pct = ((val - min) / (max - min)) * 100;
+    input.style.setProperty('--pct', pct.toFixed(2) + '%');
+  }
+
+  function apply(animate) {
+    if (animate) {
+      word.classList.add('morphing');
+      if (morphTimer) { clearTimeout(morphTimer); }
+      morphTimer = setTimeout(function () {
+        word.classList.remove('morphing');
+      }, 640);
+    }
+
+    var fs = Math.max(24, (proof.clientWidth || 900) * state.optical / 100);
+    var scale = state.width / 100;
+
+    word.style.fontWeight = String(state.weight);
+    word.style.fontSize = fs.toFixed(2) + 'px';
+    word.style.letterSpacing = state.tracking.toFixed(3) + 'em';
+    word.style.marginRight = (-state.tracking).toFixed(3) + 'em';
+    word.style.transform = 'skewX(' + (-state.slant).toFixed(1) + 'deg) scaleX(' + scale.toFixed(3) + ')';
+
+    outs.weight.textContent = String(state.weight);
+    outs.width.textContent = state.width + '%';
+    outs.tracking.textContent = fmtTracking(state.tracking);
+    outs.slant.textContent = state.slant.toFixed(1) + '\u00B0';
+    outs.optical.textContent = Math.round(fs) + 'px';
+
+    mins.weight.textContent = String(state.weight);
+    mins.width.textContent = String(state.width);
+    mins.tracking.textContent = state.tracking.toFixed(3);
+    mins.slant.textContent = state.slant.toFixed(1) + '\u00B0';
+    mins.optical.textContent = Math.round(fs) + 'PX';
+
+    Object.keys(inputs).forEach(function (key) { setPct(inputs[key]); });
+
+    updateMetrics(fs);
+  }
+
+  function updateMetrics(fs) {
+    if (!probe || !capLine || !xLine || !baseLine) { return; }
+    var proofRect = proof.getBoundingClientRect();
+    var probeRect = probe.getBoundingClientRect();
+    var baseY = probeRect.top - proofRect.top;
+
+    var capAscent = fs * 0.714;
+    var xAscent = fs * 0.52;
+    if (metricCtx) {
+      try {
+        metricCtx.font = state.weight + ' ' + fs + 'px ' + fontStack;
+        var capMetrics = metricCtx.measureText('H');
+        var xMetrics = metricCtx.measureText('x');
+        if (capMetrics.actualBoundingBoxAscent) { capAscent = capMetrics.actualBoundingBoxAscent; }
+        if (xMetrics.actualBoundingBoxAscent) { xAscent = xMetrics.actualBoundingBoxAscent; }
+      } catch (err) {}
+    }
+
+    capLine.style.top = Math.max(4, baseY - capAscent).toFixed(1) + 'px';
+    xLine.style.top = Math.max(4, baseY - xAscent).toFixed(1) + 'px';
+    baseLine.style.top = Math.max(4, baseY).toFixed(1) + 'px';
+  }
+
+  function syncInputs() {
+    inputs.weight.value = String(state.weight);
+    inputs.width.value = String(state.width);
+    inputs.tracking.value = String(Math.round(state.tracking * 1000));
+    inputs.slant.value = String(state.slant);
+    inputs.optical.value = String(state.optical);
+  }
+
+  function markPreset(name) {
+    activePreset = name;
+    var buttons = document.querySelectorAll('.preset');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].classList.toggle('is-active', buttons[i].getAttribute('data-preset') === name);
+    }
+  }
+
+  function clearPreset() {
+    activePreset = null;
+    var buttons = document.querySelectorAll('.preset');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].classList.remove('is-active');
+    }
+  }
+
+  function readInputs() {
+    state.weight = parseInt(inputs.weight.value, 10);
+    state.width = parseInt(inputs.width.value, 10);
+    state.tracking = parseInt(inputs.tracking.value, 10) / 1000;
+    state.slant = parseFloat(inputs.slant.value);
+    state.optical = parseFloat(inputs.optical.value);
+  }
+
+  Object.keys(inputs).forEach(function (key) {
+    inputs[key].addEventListener('input', function () {
+      readInputs();
+      clearPreset();
+      apply(false);
+    });
+  });
+
+  var presetButtons = document.querySelectorAll('.preset');
+  for (var p = 0; p < presetButtons.length; p++) {
+    presetButtons[p].addEventListener('click', function () {
+      var name = this.getAttribute('data-preset');
+      var preset = presets[name];
+      if (!preset) { return; }
+      state.weight = preset.weight;
+      state.width = preset.width;
+      state.tracking = preset.tracking;
+      state.slant = preset.slant;
+      state.optical = preset.optical;
+      syncInputs();
+      markPreset(name);
+      apply(true);
+    });
+  }
+
+  function pick(min, max, step) {
+    var steps = Math.floor((max - min) / step);
+    return min + Math.round(Math.random() * steps) * step;
+  }
+
+  function randomise() {
+    state.weight = pick(150, 900, 10);
+    state.width = pick(84, 146, 1);
+    state.tracking = pick(-40, 220, 5) / 1000;
+    state.slant = pick(-10, 12, 0.5);
+    state.optical = pick(9, 23, 0.5);
+    syncInputs();
+    clearPreset();
+    apply(true);
+  }
+
+  document.getElementById('randomise').addEventListener('click', randomise);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'r' && e.key !== 'R') { return; }
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') { return; }
+    e.preventDefault();
+    randomise();
+  });
+
+  window.addEventListener('resize', function () {
+    apply(false);
+  });
+
+  /* drag-to-scroll the alphabet */
+  var scroller = document.getElementById('alphabetScroll');
+  var dragging = false;
+  var dragStartX = 0;
+  var dragStartScroll = 0;
+
+  scroller.addEventListener('pointerdown', function (e) {
+    if (e.pointerType !== 'mouse') { return; }
+    dragging = true;
+    dragStartX = e.clientX;
+    dragStartScroll = scroller.scrollLeft;
+    scroller.classList.add('dragging');
+    if (scroller.setPointerCapture) {
+      try { scroller.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+  });
+
+  scroller.addEventListener('pointermove', function (e) {
+    if (!dragging) { return; }
+    scroller.scrollLeft = dragStartScroll - (e.clientX - dragStartX);
+  });
+
+  function endDrag() {
+    if (!dragging) { return; }
+    dragging = false;
+    scroller.classList.remove('dragging');
+  }
+  scroller.addEventListener('pointerup', endDrag);
+  scroller.addEventListener('pointercancel', endDrag);
+  scroller.addEventListener('pointerleave', endDrag);
+
+  /* initial state */
+  syncInputs();
+  markPreset('poster');
+  apply(false);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House No. 7 — Ground Floor Plan</title>
+<style>
+  :root{
+    --blue:#082a46;
+    --blue-deep:#04182a;
+    --blue-light:#0d3859;
+    --ink:#d8edf4;
+    --ink-strong:#edfaff;
+    --ink-2:rgba(216,237,244,.62);
+    --ink-3:rgba(216,237,244,.4);
+    --line:rgba(216,237,244,.22);
+    --line-soft:rgba(216,237,244,.11);
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --serif:"Times New Roman",Times,Georgia,serif;
+    --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    color:var(--ink);
+    background-color:var(--blue-deep);
+    background-image:
+      radial-gradient(ellipse at 72% -10%, rgba(54,126,168,.35), transparent 55%),
+      radial-gradient(ellipse at 0% 100%, rgba(19,73,108,.4), transparent 55%),
+      linear-gradient(160deg,#07263f 0%,#061f34 55%,#04182a 100%);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(216,237,244,.25);color:#fff}
+
+  /* ---------- sheet ---------- */
+  .sheet{
+    max-width:1580px;margin:0 auto;
+    padding:clamp(16px,2.4vw,34px) clamp(14px,3vw,46px) 22px;
+  }
+
+  .masthead{
+    display:grid;grid-template-columns:minmax(0,1fr) auto;
+    gap:clamp(18px,3vw,40px);align-items:end;
+    padding-bottom:16px;border-bottom:1px solid var(--line);
+  }
+  .brandline{
+    display:flex;align-items:center;gap:12px;
+    font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-2);
+    margin-bottom:13px;
+  }
+  .brandline .mark{
+    width:20px;height:20px;border:1px solid var(--line);
+    display:grid;place-items:center;font-size:7px;color:var(--ink)
+  }
+  .brandline .rule{width:34px;height:1px;background:var(--line)}
+  h1{
+    margin:0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(40px,4.9vw,66px);line-height:.95;letter-spacing:-.01em;color:var(--ink-strong);
+  }
+  h1 em{font-style:italic}
+  .subline{
+    margin-top:11px;display:flex;flex-wrap:wrap;gap:7px 20px;
+    font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);
+  }
+  .subline span{display:flex;align-items:center;gap:7px}
+  .subline span::before{content:"";width:3px;height:3px;background:var(--ink-3);display:block}
+  .mast-data{
+    display:grid;grid-template-columns:repeat(2,auto);gap:14px 34px;
+    text-align:right;padding-bottom:3px;
+  }
+  .mast-data div span{
+    display:block;font-size:6.8px;letter-spacing:.19em;color:var(--ink-3);
+    text-transform:uppercase;margin-bottom:4px;
+  }
+  .mast-data div strong{
+    font-weight:400;font-size:10.5px;letter-spacing:.08em;color:var(--ink);
+    white-space:nowrap;
+  }
+
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;grid-template-columns:minmax(0,1fr) 344px;
+    gap:20px;margin-top:18px;align-items:start;
+  }
+
+  .drawing{
+    min-width:0;border:1px solid var(--line);
+    background:rgba(5,25,41,.42);
+    box-shadow:0 24px 60px -35px rgba(0,0,0,.8);
+  }
+  .plan-head{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    padding:10px 14px;border-bottom:1px solid var(--line);
+  }
+  .ph-left{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+  .ph-left strong{font-weight:400;color:var(--ink)}
+  .ph-left .slash{color:var(--ink-3)}
+
+  .toggle{
+    display:flex;align-items:center;gap:9px;
+    background:none;border:0;padding:3px 0;cursor:pointer;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);
+    white-space:nowrap;
+  }
+  .toggle:hover{color:var(--ink)}
+  .toggle:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+  .toggle-track{
+    width:31px;height:15px;border:1px solid rgba(216,237,244,.38);
+    position:relative;display:block;transition:background .2s,border-color .2s;
+  }
+  .toggle-knob{
+    position:absolute;top:2px;left:2px;width:9px;height:9px;
+    background:rgba(216,237,244,.45);
+    transition:transform .2s ease,background .2s ease;
+  }
+  .toggle[aria-pressed="true"] .toggle-track{border-color:rgba(216,237,244,.75);background:rgba(216,237,244,.09)}
+  .toggle[aria-pressed="true"] .toggle-knob{transform:translateX(16px);background:var(--ink-strong)}
+
+  .drawing-wrap{
+    padding:8px;
+    background-color:#082b46;
+    background-image:
+      linear-gradient(rgba(190,230,240,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(190,230,240,.045) 1px, transparent 1px),
+      linear-gradient(rgba(190,230,240,.09) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(190,230,240,.09) 1px, transparent 1px);
+    background-size:10px 10px,10px 10px,50px 50px,50px 50px;
+  }
+
+  .pan-note{display:none}
+  .plan-svg{display:block;width:100%;height:auto;overflow:visible}
+  .plan-svg text{font-family:var(--mono)}
+  .plan-svg .wall{fill:url(#hatch);stroke:#d6edf4;stroke-width:1.1}
+  .plan-svg .outer{fill:none;stroke:rgba(233,250,255,.85);stroke-width:1.4}
+  .plan-svg .glazing line{stroke:#e2f7fc;stroke-width:1.5}
+  .plan-svg .glazing .pane{fill:#cfe9ef;opacity:.075}
+  .plan-svg .glazing .mullion{stroke-width:1}
+  .plan-svg .furn{fill:none;stroke:rgba(216,237,244,.56);stroke-width:1.25;stroke-linecap:square}
+  .plan-svg .furn .faint{opacity:.52}
+  .plan-svg .furn .rug{stroke-dasharray:3 5;opacity:.3;stroke-width:1}
+  .plan-svg .furn .hatch{fill:url(#hatchFine);stroke-opacity:.8}
+  .plan-svg .door .leaf{stroke:#e8faff;stroke-width:1.8}
+  .plan-svg .door .swing{fill:none;stroke:rgba(216,237,244,.52);stroke-width:1;stroke-dasharray:3 4}
+  .plan-svg .door .jamb{stroke:rgba(216,237,244,.65);stroke-width:1}
+  .plan-svg .dim line{stroke:rgba(216,237,244,.66);stroke-width:.9}
+  .plan-svg .dim .ext{stroke:rgba(216,237,244,.33);stroke-width:.7}
+  .plan-svg .dim text{font-size:9.5px;fill:rgba(232,249,253,.82);letter-spacing:.1em}
+  .plan-svg .north circle{fill:none;stroke:rgba(216,237,244,.5);stroke-width:1}
+  .plan-svg .north line{stroke:rgba(216,237,244,.6);stroke-width:1}
+  .plan-svg .north .cross{opacity:.35}
+  .plan-svg .north text{font-size:9px;fill:var(--ink);letter-spacing:.1em}
+
+  .plan-svg .room-label .name{font-size:15px;letter-spacing:.2em;fill:#eefcff}
+  .plan-svg .room-label .area{font-size:8.8px;letter-spacing:.08em;fill:rgba(216,237,244,.6)}
+  .plan-svg .furn-note text{font-size:7.6px;letter-spacing:.09em;fill:rgba(216,237,244,.5)}
+  .plan-svg .furn-note line{stroke:rgba(216,237,244,.32);stroke-width:.7}
+
+  .plan-svg .annot{
+    transition:opacity .25s ease,visibility .25s ease;
+    opacity:1;visibility:visible;
+  }
+  .plan-svg.hide-annot .annot{opacity:0;visibility:hidden}
+
+  .zone .hit{fill:transparent;cursor:pointer;outline:none;transition:fill .2s ease}
+  .zone .hit:hover{fill:rgba(230,250,255,.07)}
+  .zone .hit:focus-visible{fill:rgba(230,250,255,.09);stroke:#f3fdff;stroke-width:2}
+  .zone .zone-outline{
+    fill:none;stroke:#f3fdff;stroke-width:1.3;stroke-dasharray:4 5;
+    opacity:0;transition:opacity .25s ease;pointer-events:none;
+  }
+  .zone.is-active .hit{fill:rgba(230,250,255,.045)}
+  .zone.is-active .zone-outline{opacity:.9}
+
+  .titleblock{
+    display:grid;grid-template-columns:1.6fr repeat(4,1fr);
+    border-top:1px solid var(--line);
+    background:rgba(3,18,30,.5);
+  }
+  .tb-cell{
+    min-width:0;padding:9px 12px;border-right:1px solid var(--line-soft);
+  }
+  .tb-cell:last-child{border-right:0}
+  .tb-cell span{
+    display:block;font-size:6.5px;letter-spacing:.18em;color:var(--ink-3);
+    text-transform:uppercase;margin-bottom:4px;
+  }
+  .tb-cell strong{
+    display:block;font-weight:400;font-size:9.5px;letter-spacing:.05em;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+
+  /* ---------- specification panel ---------- */
+  .spec{
+    min-width:0;border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(10,40,64,.72),rgba(4,22,37,.86));
+    display:flex;flex-direction:column;
+    box-shadow:0 24px 60px -40px rgba(0,0,0,.8);
+  }
+  .spec-head{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:11px 16px;border-bottom:1px solid var(--line);
+    font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);
+  }
+  .spec-head .num{color:var(--ink);font-variant-numeric:tabular-nums}
+  .spec-body{padding:20px 17px 14px}
+  .eyebrow{
+    font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);
+    margin-bottom:8px;
+  }
+  #roomName{
+    margin:0 0 17px;font-family:var(--sans);font-weight:300;
+    font-size:27px;line-height:1.08;letter-spacing:.005em;color:var(--ink-strong);
+  }
+  .figures{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    padding:12px 0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);
+  }
+  .figures > div > span{
+    display:block;font-size:6.8px;letter-spacing:.17em;text-transform:uppercase;
+    color:var(--ink-3);margin-bottom:4px;
+  }
+  .figures strong{
+    font-family:var(--sans);font-weight:300;font-size:27px;line-height:1;
+    color:var(--ink-strong);letter-spacing:-.01em;
+  }
+  .figures em{
+    font-style:normal;font-family:var(--mono);font-size:10px;
+    color:var(--ink-2);margin-left:3px;letter-spacing:.02em;
+  }
+  .note{
+    margin:14px 0 3px;font-family:var(--sans);font-size:12.5px;line-height:1.56;
+    color:rgba(216,237,244,.73);min-height:78px;
+  }
+  .room-list{display:flex;flex-direction:column;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .room-row{
+    display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:9px;align-items:center;
+    appearance:none;background:none;border:0;border-bottom:1px solid var(--line-soft);
+    padding:10px 15px;cursor:pointer;text-align:left;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--ink-2);
+    transition:background .2s,color .2s,box-shadow .2s;
+  }
+  .room-row:last-child{border-bottom:0}
+  .room-row:hover{background:rgba(216,237,244,.045);color:var(--ink)}
+  .room-row:focus-visible{outline:1px solid var(--ink);outline-offset:-2px}
+  .room-row .row-num{color:rgba(216,237,244,.4);font-variant-numeric:tabular-nums}
+  .room-row .row-name{letter-spacing:.15em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .room-row .row-area{font-size:7.6px;letter-spacing:.03em;color:rgba(216,237,244,.45);font-variant-numeric:tabular-nums}
+  .room-row.is-active{background:rgba(216,237,244,.075);color:var(--ink-strong);box-shadow:inset 2px 0 0 var(--ink)}
+  .room-row.is-active .row-num,.room-row.is-active .row-area{color:var(--ink-2)}
+
+  .legend{padding:15px 16px 13px;border-top:1px solid var(--line)}
+  .legend-title{font-size:7px;letter-spacing:.19em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+  .legend-item{
+    display:flex;align-items:center;gap:11px;padding:5px 0;
+    font-size:9px;letter-spacing:.03em;color:var(--ink-2);font-family:var(--sans);
+  }
+  .legend-item svg{flex:0 0 auto;display:block}
+  .legend-item svg line,.legend-item svg path,.legend-item svg rect{stroke:#d8edf4;stroke-width:1.1;fill:none}
+
+  .spec-foot{
+    margin-top:auto;padding:11px 16px;border-top:1px solid var(--line);
+    font-size:7px;line-height:1.7;letter-spacing:.05em;color:rgba(216,237,244,.36);
+  }
+
+  .sheet-foot{
+    display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    margin-top:14px;padding-top:10px;border-top:1px solid var(--line-soft);
+    font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(216,237,244,.38);
+  }
+
+  .spec-body.swap{animation:swapIn .38s cubic-bezier(.2,.7,.2,1)}
+  @keyframes swapIn{
+    from{opacity:.25;transform:translateY(5px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  @media (max-width:1180px){
+    .layout{grid-template-columns:minmax(0,1fr) 312px}
+    #roomName{font-size:24px}
+  }
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr}
+    .spec{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"head head" "body list" "body legend" "foot foot"}
+    .spec-head{grid-area:head}
+    .spec-body{grid-area:body;border-right:1px solid var(--line)}
+    .room-list{grid-area:list;border-top:0}
+    .legend{grid-area:legend;border-top:1px solid var(--line)}
+    .spec-foot{grid-area:foot}
+    .note{min-height:0}
+    .plan-svg{max-height:none}
+  }
+  @media (max-width:760px){
+    .sheet{padding:16px 14px 20px}
+    .masthead{grid-template-columns:1fr;gap:18px;align-items:start}
+    .mast-data{grid-template-columns:repeat(4,auto);text-align:left;gap:12px 22px}
+    .mast-data div strong{white-space:normal}
+    .drawing-wrap{overflow-x:auto;padding:7px}
+    .plan-svg{min-width:640px}
+    .pan-note{
+      display:block;padding:6px 12px;border-bottom:1px solid var(--line-soft);
+      font-size:6.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+    }
+    .titleblock{grid-template-columns:1fr 1fr}
+    .tb-cell:nth-child(2n){border-right:0}
+    .tb-cell{border-bottom:1px solid var(--line-soft)}
+    .spec{grid-template-columns:1fr;grid-template-areas:"head" "body" "list" "legend" "foot"}
+    .spec-body{border-right:0}
+    .room-list{border-top:1px solid var(--line)}
+    .plan-head{padding:9px 12px}
+    .ph-left{gap:9px}
+    .ph-left .slash{display:none}
+  }
+  @media (max-width:480px){
+    .mast-data{grid-template-columns:repeat(2,auto)}
+    h1{font-size:40px}
+    .subline{font-size:7px}
+    .ph-left span:last-of-type{display:none}
+    .toggle{font-size:7px;gap:7px}
+    .spec-body{padding:18px 15px 12px}
+    #roomName{font-size:25px}
+    .figures strong{font-size:25px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="masthead">
+    <div class="mast-title">
+      <div class="brandline">
+        <span class="mark" aria-hidden="true">N7</span>
+        <span>Atelier Nord</span>
+        <span class="rule" aria-hidden="true"></span>
+        <span>Architecture &amp; Interiors</span>
+      </div>
+      <h1>House <em>No. 7</em></h1>
+      <div class="subline">
+        <span>A courtyard residence on the Atlantic edge</span>
+        <span>Skagen, Denmark</span>
+        <span>Ground floor plan</span>
+      </div>
+    </div>
+    <div class="mast-data">
+      <div><span>Project no.</span><strong>07-22</strong></div>
+      <div><span>Scale</span><strong>1 : 100</strong></div>
+      <div><span>Revision date</span><strong>18.10.2026</strong></div>
+      <div><span>Sheet</span><strong>A-02 / 06</strong></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="drawing" aria-label="Ground floor plan of House No. 7">
+      <div class="plan-head">
+        <div class="ph-left">
+          <strong>Drawing 07 / A-02</strong>
+          <span class="slash">/</span>
+          <span>Ground floor &mdash; level 00</span>
+          <span class="slash">/</span>
+          <span>1:100</span>
+        </div>
+        <button class="toggle" id="annotToggle" type="button" aria-pressed="true">
+          <span class="toggle-track" aria-hidden="true"><span class="toggle-knob"></span></span>
+          <span>Show annotations</span>
+        </button>
+      </div>
+
+      <div class="pan-note" aria-hidden="true">Scroll the sheet to pan &rarr;</div>
+
+      <div class="drawing-wrap">
+        <svg id="plan" class="plan-svg" viewBox="0 0 960 720" role="img" aria-labelledby="planTitle planDesc">
+          <title id="planTitle">House No. 7 — ground floor plan</title>
+          <desc id="planDesc">Four-room ground floor: living room, kitchen and dining, bedroom and studio, with dimension lines, door swings, furniture outlines and a north arrow.</desc>
+
+          <defs>
+            <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="7" stroke="#d3ecf3" stroke-width="1.15" opacity="0.34"/>
+            </pattern>
+            <pattern id="hatchFine" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="4" stroke="#d3ecf3" stroke-width="0.9" opacity="0.4"/>
+            </pattern>
+            <marker id="dimArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+              <path d="M0,1 L10,5 L0,9" fill="none" stroke="#cfe9ef" stroke-width="1.2"/>
+            </marker>
+          </defs>
+
+          <!-- north arrow -->
+          <g class="north" aria-hidden="true">
+            <circle cx="62" cy="52" r="19"/>
+            <line x1="46" y1="52" x2="78" y2="52" class="cross"/>
+            <line x1="62" y1="66" x2="62" y2="38" marker-end="url(#dimArrow)"/>
+            <text x="62" y="25" text-anchor="middle">N</text>
+          </g>
+
+          <!-- walls -->
+          <g class="walls">
+            <!-- top -->
+            <rect class="wall" x="110" y="100" width="450" height="10"/>
+            <rect class="wall" x="790" y="100" width="60" height="10"/>
+            <!-- left -->
+            <rect class="wall" x="110" y="100" width="10" height="60"/>
+            <rect class="wall" x="110" y="310" width="10" height="70"/>
+            <rect class="wall" x="110" y="440" width="10" height="140"/>
+            <!-- right -->
+            <rect class="wall" x="840" y="100" width="10" height="260"/>
+            <rect class="wall" x="840" y="520" width="10" height="60"/>
+            <!-- bottom -->
+            <rect class="wall" x="110" y="570" width="490" height="10"/>
+            <rect class="wall" x="820" y="570" width="30" height="10"/>
+            <!-- internal vertical spine -->
+            <rect class="wall" x="480" y="110" width="8" height="40"/>
+            <rect class="wall" x="480" y="210" width="8" height="230"/>
+            <rect class="wall" x="480" y="500" width="8" height="70"/>
+            <!-- internal horizontal: left -->
+            <rect class="wall" x="120" y="330" width="40" height="8"/>
+            <rect class="wall" x="220" y="330" width="260" height="8"/>
+            <!-- internal horizontal: right -->
+            <rect class="wall" x="488" y="310" width="212" height="8"/>
+            <rect class="wall" x="760" y="310" width="80" height="8"/>
+          </g>
+
+          <!-- glazing -->
+          <g class="glazing">
+            <!-- bedroom north ribbon -->
+            <rect class="pane" x="560" y="100" width="230" height="10"/>
+            <line x1="560" y1="103" x2="790" y2="103"/>
+            <line x1="560" y1="107" x2="790" y2="107"/>
+            <line class="mullion" x1="636" y1="100" x2="636" y2="110"/>
+            <line class="mullion" x1="713" y1="100" x2="713" y2="110"/>
+            <!-- living west window -->
+            <rect class="pane" x="110" y="160" width="10" height="150"/>
+            <line x1="113" y1="160" x2="113" y2="310"/>
+            <line x1="117" y1="160" x2="117" y2="310"/>
+            <line class="mullion" x1="110" y1="197" x2="120" y2="197"/>
+            <line class="mullion" x1="110" y1="235" x2="120" y2="235"/>
+            <line class="mullion" x1="110" y1="272" x2="120" y2="272"/>
+            <!-- studio east window -->
+            <rect class="pane" x="840" y="360" width="10" height="160"/>
+            <line x1="843" y1="360" x2="843" y2="520"/>
+            <line x1="847" y1="360" x2="847" y2="520"/>
+            <line class="mullion" x1="840" y1="400" x2="850" y2="400"/>
+            <line class="mullion" x1="840" y1="440" x2="850" y2="440"/>
+            <line class="mullion" x1="840" y1="480" x2="850" y2="480"/>
+            <!-- studio garden window -->
+            <rect class="pane" x="600" y="570" width="220" height="10"/>
+            <line x1="600" y1="573" x2="820" y2="573"/>
+            <line x1="600" y1="577" x2="820" y2="577"/>
+            <line class="mullion" x1="655" y1="570" x2="655" y2="580"/>
+            <line class="mullion" x1="710" y1="570" x2="710" y2="580"/>
+            <line class="mullion" x1="765" y1="570" x2="765" y2="580"/>
+          </g>
+
+          <!-- doors -->
+          <g class="doors">
+            <g class="door">
+              <line class="leaf" x1="488" y1="150" x2="548" y2="150"/>
+              <path class="swing" d="M488,210 A60,60 0 0 0 548,150"/>
+            </g>
+            <g class="door">
+              <line class="leaf" x1="220" y1="338" x2="220" y2="278"/>
+              <path class="swing" d="M160,338 A60,60 0 0 1 220,278"/>
+            </g>
+            <g class="door">
+              <line class="leaf" x1="488" y1="500" x2="548" y2="500"/>
+              <path class="swing" d="M488,440 A60,60 0 0 1 548,500"/>
+            </g>
+            <g class="door">
+              <line class="leaf" x1="700" y1="318" x2="700" y2="258"/>
+              <path class="swing" d="M760,318 A60,60 0 0 0 700,258"/>
+            </g>
+            <g class="door">
+              <line class="leaf" x1="120" y1="440" x2="180" y2="440"/>
+              <path class="swing" d="M120,380 A60,60 0 0 1 180,440"/>
+            </g>
+          </g>
+
+          <!-- furniture -->
+          <g class="furn">
+            <!-- living room -->
+            <rect class="rug" x="162" y="170" width="250" height="130" rx="2"/>
+            <rect x="168" y="134" width="206" height="52" rx="7"/>
+            <line class="faint" x1="168" y1="148" x2="374" y2="148"/>
+            <line x1="236" y1="148" x2="236" y2="186"/>
+            <line x1="305" y1="148" x2="305" y2="186"/>
+            <rect x="222" y="228" width="112" height="50" rx="3"/>
+            <rect class="faint" x="232" y="238" width="92" height="30" rx="2"/>
+            <rect x="374" y="224" width="54" height="52" rx="6"/>
+            <line class="faint" x1="374" y1="236" x2="428" y2="236"/>
+            <circle cx="448" cy="198" r="14"/>
+            <circle cx="448" cy="198" r="3" class="faint"/>
+            <circle cx="446" cy="300" r="12"/>
+            <path class="faint" d="M446,289 L452,279 M446,289 L438,280 M446,300 L432,298 M446,300 L460,297 M446,291 L444,281"/>
+            <!-- kitchen and dining -->
+            <rect x="128" y="518" width="232" height="44" rx="1"/>
+            <line class="faint" x1="128" y1="534" x2="360" y2="534"/>
+            <circle cx="180" cy="541" r="12"/>
+            <line class="faint" x1="180" y1="529" x2="180" y2="523"/>
+            <circle cx="285" cy="532" r="5"/>
+            <circle cx="305" cy="532" r="5"/>
+            <circle cx="285" cy="551" r="5"/>
+            <circle cx="305" cy="551" r="5"/>
+            <rect x="200" y="388" width="145" height="56" rx="3"/>
+            <line class="faint" x1="200" y1="404" x2="345" y2="404"/>
+            <circle cx="322" cy="422" r="9"/>
+            <rect x="440" y="348" width="36" height="52" rx="2"/>
+            <line class="faint" x1="440" y1="370" x2="476" y2="370"/>
+            <circle cx="402" cy="480" r="38"/>
+            <circle class="faint" cx="402" cy="480" r="30"/>
+            <rect x="390" y="524" width="24" height="14" rx="4"/>
+            <rect x="374" y="463" width="14" height="24" rx="4"/>
+            <rect x="430" y="469" width="14" height="24" rx="4"/>
+            <rect x="390" y="422" width="24" height="14" rx="4"/>
+            <!-- bedroom -->
+            <rect class="rug" x="560" y="120" width="260" height="180" rx="2"/>
+            <rect x="620" y="132" width="150" height="130" rx="3"/>
+            <line class="faint" x1="620" y1="143" x2="770" y2="143"/>
+            <rect x="632" y="147" width="58" height="25" rx="5"/>
+            <rect x="700" y="147" width="58" height="25" rx="5"/>
+            <line class="faint" x1="620" y1="214" x2="770" y2="214"/>
+            <rect x="592" y="134" width="24" height="24" rx="2"/>
+            <rect x="774" y="134" width="24" height="24" rx="2"/>
+            <circle cx="604" cy="146" r="5"/>
+            <circle cx="786" cy="146" r="5"/>
+            <rect x="640" y="278" width="100" height="16" rx="2"/>
+            <rect class="hatch" x="490" y="270" width="70" height="28" rx="1"/>
+            <line x1="490" y1="284" x2="560" y2="284"/>
+            <!-- studio -->
+            <rect class="hatch" x="492" y="330" width="26" height="100" rx="1"/>
+            <line x1="492" y1="356" x2="518" y2="356"/>
+            <line x1="492" y1="382" x2="518" y2="382"/>
+            <line x1="492" y1="408" x2="518" y2="408"/>
+            <rect x="620" y="326" width="196" height="34" rx="1"/>
+            <line class="faint" x1="640" y1="343" x2="680" y2="343"/>
+            <circle cx="700" cy="388" r="17"/>
+            <path class="faint" d="M683,384 A17,17 0 0 1 717,384"/>
+            <circle cx="570" cy="470" r="40"/>
+            <circle class="faint" cx="570" cy="470" r="31"/>
+            <circle cx="518" cy="470" r="8"/>
+            <circle cx="570" cy="416" r="8"/>
+            <rect x="660" y="460" width="130" height="40" rx="1"/>
+            <line class="faint" x1="670" y1="500" x2="670" y2="470"/>
+            <line class="faint" x1="660" y1="470" x2="790" y2="470"/>
+          </g>
+
+          <!-- annotations -->
+          <g class="annot">
+            <!-- dimensions -->
+            <g class="dim">
+              <!-- top chain -->
+              <line class="ext" x1="110" y1="96" x2="110" y2="46"/>
+              <line class="ext" x1="850" y1="96" x2="850" y2="46"/>
+              <line class="ext" x1="480" y1="96" x2="480" y2="78"/>
+              <line x1="110" y1="54" x2="850" y2="54" marker-start="url(#dimArrow)" marker-end="url(#dimArrow)"/>
+              <text x="480" y="47" text-anchor="middle">15 400</text>
+              <line x1="110" y1="84" x2="480" y2="84" marker-start="url(#dimArrow)" marker-end="url(#dimArrow)"/>
+              <line x1="480" y1="84" x2="850" y2="84" marker-start="url(#dimArrow)" marker-end="url(#dimArrow)"/>
+              <text x="295" y="78" text-anchor="middle">7 500</text>
+              <text x="665" y="78" text-anchor="middle">7 900</text>
+
+              <!-- left chain -->
+              <line class="ext" x1="106" y1="110" x2="60" y2="110"/>
+              <line class="ext" x1="106" y1="330" x2="60" y2="330"/>
+              <line class="ext" x1="106" y1="570" x2="60" y2="570"/>
+              <line x1="66" y1="110" x2="66" y2="330" marker-start="url(#dimArrow)" marker-end="url(#dimArrow)"/>
+              <line x1="66" y1="330" x2="66" y2="570" marker-start="url(#dimArrow)" marker-end="url(#dimArrow)"/>
+              <text x="56" y="220" transform="rotate(-90 56 220)" text-anchor="middle">4 500</text>
+              <text x="56" y="450" transform="rotate(-90 56 450)" text-anchor="middle">4 900</text>
+
+              <!-- right overall -->
+              <line class="ext" x1="854" y1="100" x2="902" y2="100"/>
+              <line class="ext" x1="854" y1="580" x2="902" y2="580"/>
+              <line x1="896" y1="100" x2="896" y2="580" marker-start="url(#dimArrow)" marker-end="url(#dimArrow)"/>
+              <text x="916" y="340" transform="rotate(-90 916 340)" text-anchor="middle">10 200</text>
+            </g>
+
+            <!-- room labels -->
+            <g class="room-label">
+              <text class="name" x="300" y="300" text-anchor="middle">LIVING</text>
+              <text class="area" x="300" y="316" text-anchor="middle">39.6 m&#178;</text>
+            </g>
+            <g class="room-label">
+              <text class="name" x="258" y="470" text-anchor="middle">KITCHEN</text>
+              <text class="area" x="258" y="486" text-anchor="middle">25.2 m&#178;</text>
+            </g>
+            <g class="room-label">
+              <text class="name" x="508" y="206">BEDROOM</text>
+              <text class="area" x="508" y="221">22.4 m&#178;</text>
+            </g>
+            <g class="room-label">
+              <text class="name" x="510" y="540">STUDIO</text>
+              <text class="area" x="510" y="555">23.8 m&#178;</text>
+            </g>
+
+            <!-- furniture notes -->
+            <g class="furn-note">
+              <text x="172" y="208">LINEN SOFA</text>
+              <line x1="218" y1="211" x2="240" y2="189"/>
+              <text x="216" y="376">OAK ISLAND</text>
+              <line x1="255" y1="380" x2="255" y2="388"/>
+              <text x="620" y="124">1 600 BED</text>
+              <line x1="662" y1="127" x2="662" y2="132"/>
+              <text x="660" y="520">DRAFTING TABLE</text>
+              <line x1="712" y1="512" x2="712" y2="501"/>
+            </g>
+          </g>
+
+          <!-- interactive room hotspots -->
+          <g class="zones">
+            <g class="zone" data-room="living">
+              <title>Living Room — 39.6 m²</title>
+              <rect class="hit" x="120" y="110" width="360" height="220" tabindex="0" role="button" aria-label="Select Living Room, 39.6 square metres"/>
+              <rect class="zone-outline" x="124" y="114" width="352" height="212"/>
+            </g>
+            <g class="zone" data-room="kitchen">
+              <title>Kitchen and Dining — 25.2 m²</title>
+              <rect class="hit" x="120" y="338" width="360" height="232" tabindex="0" role="button" aria-label="Select Kitchen and Dining, 25.2 square metres"/>
+              <rect class="zone-outline" x="124" y="342" width="352" height="224"/>
+            </g>
+            <g class="zone" data-room="bedroom">
+              <title>Bedroom — 22.4 m²</title>
+              <rect class="hit" x="488" y="110" width="352" height="200" tabindex="0" role="button" aria-label="Select Bedroom, 22.4 square metres"/>
+              <rect class="zone-outline" x="492" y="114" width="344" height="192"/>
+            </g>
+            <g class="zone" data-room="studio">
+              <title>Studio — 23.8 m²</title>
+              <rect class="hit" x="488" y="318" width="352" height="252" tabindex="0" role="button" aria-label="Select Studio, 23.8 square metres"/>
+              <rect class="zone-outline" x="492" y="322" width="344" height="244"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <div class="titleblock">
+        <div class="tb-cell"><span>Project</span><strong>House No. 7 &mdash; Atlantic Courtyard</strong></div>
+        <div class="tb-cell"><span>Drawing</span><strong>Ground floor / A-02</strong></div>
+        <div class="tb-cell"><span>Scale</span><strong>1 : 100</strong></div>
+        <div class="tb-cell"><span>Revision</span><strong>18.10.2026 &mdash; B</strong></div>
+        <div class="tb-cell"><span>Drawn / checked</span><strong>M. S&oslash;rensen / L. Hart</strong></div>
+      </div>
+    </section>
+
+    <aside class="spec" aria-label="Room specification">
+      <div class="spec-head">
+        <span>Room specification</span>
+        <span class="num" id="roomIndex">01 / 04</span>
+      </div>
+
+      <div class="spec-body" id="specBody" aria-live="polite">
+        <div class="eyebrow">Selected space</div>
+        <h2 id="roomName">Living Room</h2>
+        <div class="figures">
+          <div><span>Area</span><strong><span id="roomArea">39.6</span><em>m&#178;</em></strong></div>
+          <div><span>Ceiling height</span><strong><span id="roomCeiling">2.90</span><em>m</em></strong></div>
+        </div>
+        <p class="note" id="roomNote">A double-aspect room held between two ribbons of glazing. A low oak bench runs the length of the north wall; the fireplace is cast in situ, unpolished.</p>
+      </div>
+
+      <div class="room-list" role="group" aria-label="Select a room">
+        <button class="room-row is-active" type="button" data-room="living" aria-pressed="true">
+          <span class="row-num">01</span><span class="row-name">Living Room</span><span class="row-area">39.6 m&#178;</span>
+        </button>
+        <button class="room-row" type="button" data-room="kitchen" aria-pressed="false">
+          <span class="row-num">02</span><span class="row-name">Kitchen &amp; Dining</span><span class="row-area">25.2 m&#178;</span>
+        </button>
+        <button class="room-row" type="button" data-room="bedroom" aria-pressed="false">
+          <span class="row-num">03</span><span class="row-name">Bedroom</span><span class="row-area">22.4 m&#178;</span>
+        </button>
+        <button class="room-row" type="button" data-room="studio" aria-pressed="false">
+          <span class="row-num">04</span><span class="row-name">Studio</span><span class="row-area">23.8 m&#178;</span>
+        </button>
+      </div>
+
+      <div class="legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-item">
+          <svg width="42" height="16" viewBox="0 0 42 16" aria-hidden="true">
+            <rect x="2" y="5" width="38" height="6"/>
+            <line x1="6" y1="11" x2="10" y2="5"/><line x1="14" y1="11" x2="18" y2="5"/><line x1="22" y1="11" x2="26" y2="5"/><line x1="30" y1="11" x2="34" y2="5"/>
+          </svg>
+          <span>Walls &mdash; 240 mm cavity</span>
+        </div>
+        <div class="legend-item">
+          <svg width="42" height="16" viewBox="0 0 42 16" aria-hidden="true">
+            <line x1="2" y1="5" x2="40" y2="5"/><line x1="2" y1="10" x2="40" y2="10"/><line x1="14" y1="3" x2="14" y2="13"/><line x1="28" y1="3" x2="28" y2="13"/>
+          </svg>
+          <span>Glazing &mdash; triple, oak frame</span>
+        </div>
+        <div class="legend-item">
+          <svg width="42" height="16" viewBox="0 0 42 16" aria-hidden="true">
+            <path d="M6 13 L6 4 L30 4"/><path d="M6 13 A24 24 0 0 1 30 4"/>
+          </svg>
+          <span>Joinery &mdash; solid oak, 40 mm</span>
+        </div>
+      </div>
+
+      <div class="spec-foot">
+        All dimensions in millimetres. Do not scale from this drawing.<br>
+        Rev. B &mdash; issued for construction, 18 October 2026.
+      </div>
+    </aside>
+  </main>
+
+  <footer class="sheet-foot">
+    <span>Atelier Nord &mdash; drawing set 07 / house no. 7</span>
+    <span>Ground floor &middot; sheet 02 of 06</span>
+    <span>Scale 1:100 &middot; A-02</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var rooms = {
+    living: {
+      n: '01',
+      name: 'Living Room',
+      area: '39.6',
+      ceiling: '2.90',
+      note: 'A double-aspect room held between two ribbons of glazing. A low oak bench runs the length of the north wall; the fireplace is cast in situ, unpolished.'
+    },
+    kitchen: {
+      n: '02',
+      name: 'Kitchen & Dining',
+      area: '25.2',
+      ceiling: '2.70',
+      note: 'Anchored by a solid oak island with a brushed steel top. The dining table sits beneath the garden window, sized for eight.'
+    },
+    bedroom: {
+      n: '03',
+      name: 'Bedroom',
+      area: '22.4',
+      ceiling: '2.70',
+      note: 'Tucked behind the entry wall for quiet. A full-height linen curtain draws across the eastern glazing; the wardrobe is built in, painted the same chalk white as the walls.'
+    },
+    studio: {
+      n: '04',
+      name: 'Studio',
+      area: '23.8',
+      ceiling: '2.90',
+      note: 'A north-lit workroom with a continuous drawing bench and a deep pinboard wall. The garden window is fixed, frameless, and set low to the floor.'
+    }
+  };
+
+  var svg = document.getElementById('plan');
+  var specBody = document.getElementById('specBody');
+  var roomIndex = document.getElementById('roomIndex');
+  var roomName = document.getElementById('roomName');
+  var roomArea = document.getElementById('roomArea');
+  var roomCeiling = document.getElementById('roomCeiling');
+  var roomNote = document.getElementById('roomNote');
+  var zones = document.querySelectorAll('.zone');
+  var rows = document.querySelectorAll('.room-row');
+
+  function selectRoom(key) {
+    if (!rooms[key]) { return; }
+    var data = rooms[key];
+
+    for (var i = 0; i < zones.length; i++) {
+      zones[i].classList.toggle('is-active', zones[i].getAttribute('data-room') === key);
+    }
+    for (var j = 0; j < rows.length; j++) {
+      var active = rows[j].getAttribute('data-room') === key;
+      rows[j].classList.toggle('is-active', active);
+      rows[j].setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+
+    roomIndex.textContent = data.n + ' / 04';
+    roomName.textContent = data.name;
+    roomArea.textContent = data.area;
+    roomCeiling.textContent = data.ceiling;
+    roomNote.textContent = data.note;
+
+    specBody.classList.remove('swap');
+    void specBody.offsetWidth;
+    specBody.classList.add('swap');
+  }
+
+  for (var z = 0; z < zones.length; z++) {
+    (function (zone) {
+      var hit = zone.querySelector('.hit');
+      if (!hit) { return; }
+      hit.addEventListener('click', function () {
+        selectRoom(zone.getAttribute('data-room'));
+      });
+      hit.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          selectRoom(zone.getAttribute('data-room'));
+        }
+      });
+    })(zones[z]);
+  }
+
+  for (var r = 0; r < rows.length; r++) {
+    (function (row) {
+      row.addEventListener('click', function () {
+        selectRoom(row.getAttribute('data-room'));
+      });
+    })(rows[r]);
+  }
+
+  var toggle = document.getElementById('annotToggle');
+  toggle.addEventListener('click', function () {
+    var currentlyOn = toggle.getAttribute('aria-pressed') === 'true';
+    if (currentlyOn) {
+      toggle.setAttribute('aria-pressed', 'false');
+      svg.classList.add('hide-annot');
+    } else {
+      toggle.setAttribute('aria-pressed', 'true');
+      svg.classList.remove('hide-annot');
+    }
+  });
+
+  selectRoom('living');
+})();
+</script>
+</body>
+</html>

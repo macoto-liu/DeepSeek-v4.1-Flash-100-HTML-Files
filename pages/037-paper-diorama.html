@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper Field — a small world, cut from paper</title>
+<style>
+  :root{
+    --paper: #efe4cf;
+    --paper-2: #e7d8bd;
+    --paper-3: #dccaa9;
+    --ink: #35352c;
+    --ink-soft: #6f6a58;
+    --rule: rgba(53,53,44,.18);
+    --accent: #b4674f;
+    --sky-a: #d8e7e2;
+    --sky-b: #f3e7cd;
+    --far: #bcc6b6;
+    --far-snow: #eef0e2;
+    --mid: #97aa90;
+    --hill: #7e9a7b;
+    --hill-deep: #6d8a6c;
+    --meadow: #cdb98b;
+    --meadow-deep: #b8a374;
+    --fir: #3f5b4a;
+    --fir-2: #34503f;
+    --wall: #ecdcba;
+    --roof: #b4674f;
+    --window: #6d6a56;
+    --cloud: #fbf7ea;
+    --smoke: #d9d3c4;
+    --shadow: rgba(52,42,25,.22);
+    --ease: cubic-bezier(.22,.61,.36,1);
+  }
+  body.night{
+    --paper: #192027;
+    --paper-2: #222b32;
+    --paper-3: #2c363d;
+    --ink: #e9ddc5;
+    --ink-soft: #a6a290;
+    --rule: rgba(233,221,197,.18);
+    --accent: #e2a464;
+    --sky-a: #0c1826;
+    --sky-b: #253b49;
+    --far: #334750;
+    --far-snow: #5a6e73;
+    --mid: #2b3f46;
+    --hill: #23383a;
+    --hill-deep: #1d3033;
+    --meadow: #2c3a32;
+    --meadow-deep: #23312b;
+    --fir: #182b28;
+    --fir-2: #132421;
+    --wall: #d8c39a;
+    --roof: #7e4438;
+    --window: #ffc46e;
+    --cloud: #354754;
+    --smoke: #8799a0;
+    --shadow: rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(ellipse at 18% 8%, rgba(255,255,255,.5), transparent 55%),
+      radial-gradient(ellipse at 86% 90%, rgba(120,94,54,.10), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(96,78,47,.032) 0 1px, transparent 1px 5px);
+    font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+    transition: background-color .9s var(--ease), color .9s var(--ease);
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(74,55,25,.12) 100%);
+    mix-blend-mode:multiply;
+    z-index:5;
+  }
+  body.night::before{
+    background: radial-gradient(ellipse at 50% 48%, transparent 35%, rgba(0,0,0,.5) 100%);
+  }
+
+  .page{
+    max-width:1480px;
+    margin:0 auto;
+    padding:clamp(26px,4.2vw,64px) clamp(22px,4.5vw,72px) clamp(28px,4vw,56px);
+    display:grid;
+    grid-template-columns: minmax(300px, .78fr) minmax(0, 1.55fr);
+    gap:clamp(30px,5vw,84px);
+    align-items:center;
+    min-height:100vh;
+  }
+
+  /* ---------- editorial column ---------- */
+  .intro{position:relative; max-width:440px; z-index:2}
+  .mark{
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:clamp(34px,6vh,64px);
+  }
+  .mark svg{display:block; width:46px; height:46px; color:var(--ink)}
+  .mark-line{height:1px; width:60px; background:var(--rule)}
+  .mark-txt{
+    font-size:10px; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--ink-soft); line-height:1.7;
+  }
+  .kicker{
+    margin:0 0 18px;
+    display:flex; align-items:center; gap:12px;
+    font-size:10.5px; font-weight:600; letter-spacing:.26em;
+    text-transform:uppercase; color:var(--accent);
+  }
+  .kicker::before{
+    content:""; width:26px; height:1px; background:currentColor; opacity:.8;
+  }
+  h1{
+    margin:0 0 26px;
+    font-family:"Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    font-weight:400;
+    font-size:clamp(42px, 4.15vw, 62px);
+    line-height:.96;
+    letter-spacing:-.025em;
+    text-wrap:balance;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--accent);
+    letter-spacing:-.01em;
+  }
+  .note{
+    margin:0 0 34px;
+    max-width:34ch;
+    font-size:14.5px;
+    line-height:1.72;
+    color:var(--ink-soft);
+    font-family:"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  }
+  .note b{color:var(--ink); font-weight:600}
+
+  .controls{display:flex; flex-wrap:wrap; gap:12px; max-width:420px}
+  .ctl{
+    flex:1 1 176px;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:13px;
+    padding:14px 16px;
+    background:var(--paper-2);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+    border-radius:2px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.5) inset,
+      2px 3px 0 rgba(53,42,22,.06),
+      0 8px 18px -10px rgba(45,33,15,.4);
+    transition: transform .25s var(--ease), background .4s, box-shadow .25s;
+    position:relative;
+  }
+  .ctl:hover{transform:translateY(-2px); box-shadow:0 10px 24px -12px rgba(45,33,15,.45)}
+  .ctl:active{transform:translateY(0)}
+  .ctl:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  .ctl .ico{
+    flex:0 0 auto; width:32px; height:32px; display:grid; place-items:center;
+    border:1px solid var(--rule); border-radius:50%;
+    color:var(--ink);
+  }
+  .ctl .ico svg{width:17px; height:17px; display:block; overflow:visible}
+  .ctl .label{
+    display:flex; flex-direction:column; gap:3px;
+    font-size:12.5px; font-weight:600; letter-spacing:.02em;
+  }
+  .ctl .label small{
+    font-size:9px; font-weight:500; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .ctl .arrow{margin-left:auto; font-size:14px; opacity:.45; transition:transform .3s}
+  .ctl:hover .arrow{transform:translateX(3px)}
+  .ctl[aria-pressed="true"]{background:var(--paper-3)}
+
+  .foot{
+    margin-top:clamp(30px,6vh,54px);
+    display:flex; align-items:center; gap:16px;
+    font-size:9.5px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .foot i{display:block; width:34px; height:1px; background:var(--rule)}
+
+  /* ---------- framed scene ---------- */
+  .frame-wrap{
+    position:relative;
+    width:100%;
+    z-index:2;
+    perspective:1200px;
+  }
+  .frame{
+    position:relative;
+    padding:clamp(8px,1.2vw,15px);
+    background:linear-gradient(145deg, #e9dcc4, #d9c8a7);
+    border:1px solid rgba(78,60,33,.3);
+    box-shadow:
+      0 2px 0 rgba(255,255,255,.45) inset,
+      0 0 0 7px rgba(245,236,218,.4),
+      0 1px 1px rgba(0,0,0,.12),
+      0 26px 50px -22px rgba(50,37,16,.5);
+    transition: box-shadow .9s var(--ease), background .9s var(--ease);
+  }
+  body.night .frame{
+    background:linear-gradient(145deg,#3a3329,#25221c);
+    border-color:rgba(0,0,0,.6);
+    box-shadow:
+      0 2px 0 rgba(255,255,255,.06) inset,
+      0 0 0 7px rgba(24,23,20,.35),
+      0 0 70px -10px rgba(255,172,80,.28),
+      0 30px 60px -24px #000;
+  }
+  .mat{
+    position:relative;
+    background:var(--paper);
+    padding:clamp(5px,.8vw,9px);
+    border:1px solid rgba(80,62,35,.2);
+    transition: background .9s var(--ease);
+  }
+  .scene-shell{
+    position:relative;
+    overflow:hidden;
+    background:#d8e7e2;
+    border:1px solid rgba(50,42,28,.25);
+  }
+  .scene-shell::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    box-shadow:inset 0 0 34px rgba(40,30,14,.18), inset 0 0 0 1px rgba(255,255,255,.2);
+  }
+  #scene{display:block; width:100%; height:auto; user-select:none}
+
+  .plate{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:12px 4px 1px;
+    font-size:9px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-soft);
+    transition:color .9s;
+  }
+  .plate .serif{
+    font-family:"Iowan Old Style", Palatino, Georgia, serif;
+    font-style:italic; text-transform:none; letter-spacing:.06em; font-size:11.5px;
+    color:var(--ink);
+  }
+  .plate .no{white-space:nowrap}
+
+  /* ---------- scene transitions ---------- */
+  .sky-day, .sky-night, .sun-day, .moon-night, .stars, .fireflies, .cloud-day, .cloud-night{
+    transition:opacity 1.15s var(--ease);
+  }
+  .sky-night, .moon-night, .stars, .fireflies, .cloud-night{opacity:0}
+  body.night .sky-day, body.night .sun-day, body.night .cloud-day{opacity:0}
+  body.night .sky-night, body.night .moon-night, body.night .cloud-night{opacity:1}
+  body.night .stars{opacity:1}
+  body.night .fireflies{opacity:1}
+
+  .sun-day{transform-origin:710px 120px}
+  @keyframes sunBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+  .sun-day{animation:sunBreathe 7s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+  body.night .star{animation:twinkle 4.5s ease-in-out infinite}
+
+  .layer-fill{transition:fill 1.15s var(--ease), stroke 1.15s var(--ease)}
+  .window{
+    fill:var(--window);
+    transition:fill 1.15s var(--ease), filter .9s;
+  }
+  body.night .window{filter:drop-shadow(0 0 5px rgba(255,183,91,.95)) drop-shadow(0 0 16px rgba(255,145,45,.55))}
+  .glow-halo{opacity:0; transition:opacity 1.2s}
+  body.night .glow-halo{opacity:.6}
+
+  .smoke path{
+    fill:none; stroke:var(--smoke); stroke-width:2.2; stroke-linecap:round;
+    opacity:.55;
+    transition:stroke 1s;
+  }
+  .smoke path:nth-child(2){opacity:.35}
+  .smoke path:nth-child(3){opacity:.22}
+  .smoke{animation:smokeDrift 7s ease-in-out infinite}
+  @keyframes smokeDrift{
+    0%{transform:translate(0,6px); opacity:.42}
+    35%{opacity:.8}
+    100%{transform:translate(6px,-16px); opacity:0}
+  }
+
+  .firefly{
+    opacity:0;
+    transition:opacity 1.4s;
+    animation:fireflyFloat 6s ease-in-out infinite;
+  }
+  body.night .firefly{opacity:1}
+  @keyframes fireflyFloat{
+    0%,100%{transform:translate(0,0)}
+    30%{transform:translate(6px,-9px)}
+    65%{transform:translate(-5px,-4px)}
+  }
+  .firefly circle{filter:drop-shadow(0 0 5px rgba(255,205,110,.95))}
+
+  .parallax-inner{will-change:transform}
+
+  #bird{opacity:0; transform-box:fill-box}
+  .wing{transform-origin:center}
+  #bird.flying .wing-l{animation:flapL .42s ease-in-out infinite}
+  #bird.flying .wing-r{animation:flapR .42s ease-in-out infinite}
+  @keyframes flapL{0%,100%{transform:rotate(0deg) scaleY(1)}50%{transform:rotate(-14deg) scaleY(.62)}}
+  @keyframes flapR{0%,100%{transform:rotate(0deg) scaleY(1)}50%{transform:rotate(14deg) scaleY(.62)}}
+
+  @media (max-width: 900px){
+    .page{
+      grid-template-columns:1fr;
+      gap:clamp(34px,7vw,52px);
+      align-items:start;
+      padding-top:clamp(30px,7vw,54px);
+    }
+    .intro{max-width:none}
+    h1{font-size:clamp(40px, 7.6vw, 62px); max-width:14ch}
+    .note{max-width:46ch}
+    .mark{margin-bottom:30px}
+    .frame-wrap{max-width:760px}
+    .foot{margin-top:32px}
+  }
+  @media (max-width: 520px){
+    h1{font-size:clamp(36px,10.5vw,48px)}
+    .page{padding-left:20px; padding-right:20px}
+    .controls{gap:9px}
+    .ctl{padding:12px 13px; flex-basis:100%}
+    .frame{padding:7px; box-shadow:0 2px 0 rgba(255,255,255,.4) inset,0 0 0 4px rgba(245,236,218,.4),0 18px 34px -18px rgba(50,37,16,.45)}
+    .plate{flex-direction:column; align-items:flex-start; gap:5px; padding-top:9px}
+    .plate .serif{font-size:10.5px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <aside class="intro">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1" opacity=".35"/>
+        <path d="M8 30c5-8 9-8 14 0 5-8 9-8 14 0" stroke="currentColor" stroke-width="1.4" fill="none"/>
+        <path d="M13 23l4-8 4 8M31 23l4-8 4 8" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        <circle cx="24" cy="13" r="2.4" fill="currentColor" opacity=".7"/>
+      </svg>
+      <span class="mark-line"></span>
+      <span class="mark-txt">Cut-paper studies<br>No. 037</span>
+    </div>
+
+    <p class="kicker">Paper Field</p>
+    <h1>A small world,<br>cut from <em>paper.</em></h1>
+    <p class="note">Seven layers of coloured stock, stacked and pinned inside a shallow box. The mountains are a single scallop of sage; the meadow was cut on a Tuesday, in one piece, without a drawing. <b>Move the light, or move your cursor.</b></p>
+
+    <div class="controls">
+      <button class="ctl" id="lightToggle" type="button" aria-pressed="false">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="4.4"/>
+            <path d="M12 2.2v2.4M12 19.4v2.4M2.2 12h2.4M19.4 12h2.4M5.1 5.1l1.7 1.7M17.2 17.2l1.7 1.7M18.9 5.1l-1.7 1.7M6.8 17.2l-1.7 1.7" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="label">Fold the light <small id="lightState">Day — lantern off</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </button>
+      <button class="ctl" id="birdButton" type="button">
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <path d="M3 16c4.5-2 5.5-6 8.5-9 1.5 3 2.5 5.5 4.5 7.5"/>
+            <path d="M16 14.5c1.5 0 3.5-1.5 5-3.5-1 3.5-3.5 5.5-6 6"/>
+            <path d="M11.5 7c.5-1.5 2-2.5 3.5-2.5"/>
+          </svg>
+        </span>
+        <span class="label">Send a bird <small id="birdState">release a paper swift</small></span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </button>
+    </div>
+
+    <div class="foot"><i></i><span>Hand-cut · 7 layers · 1 window</span></div>
+  </aside>
+
+  <main class="frame-wrap" id="frameWrap">
+    <div class="frame">
+      <div class="mat">
+        <div class="scene-shell">
+          <svg id="scene" viewBox="0 0 900 660" role="img" aria-label="A layered paper-cut landscape with mountains, firs, a cottage and a meadow.">
+            <defs>
+              <linearGradient id="skyDay" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#cfe4e1"/>
+                <stop offset=".55" stop-color="#dfe8da"/>
+                <stop offset="1" stop-color="#f4e7ca"/>
+              </linearGradient>
+              <linearGradient id="skyNight" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#08131f"/>
+                <stop offset=".55" stop-color="#142735"/>
+                <stop offset="1" stop-color="#334550"/>
+              </linearGradient>
+              <linearGradient id="sunGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#fdf5dd"/>
+                <stop offset="1" stop-color="#f3dba4"/>
+              </linearGradient>
+              <radialGradient id="halo" cx=".5" cy=".5" r=".5">
+                <stop offset="0" stop-color="#ffe9b6" stop-opacity=".9"/>
+                <stop offset=".55" stop-color="#ffd58a" stop-opacity=".35"/>
+                <stop offset="1" stop-color="#ffc46e" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="cutFar" x="-20%" y="-30%" width="140%" height="180%">
+                <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#22301f" flood-opacity=".20"/>
+              </filter>
+              <filter id="cutMid" x="-20%" y="-30%" width="140%" height="180%">
+                <feDropShadow dx="0" dy="7" stdDeviation="6" flood-color="#1d2a1b" flood-opacity=".24"/>
+              </filter>
+              <filter id="cutNear" x="-20%" y="-30%" width="140%" height="180%">
+                <feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#1b2416" flood-opacity=".28"/>
+              </filter>
+              <filter id="cutSmall" x="-60%" y="-60%" width="220%" height="220%">
+                <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#1b2416" flood-opacity=".28"/>
+              </filter>
+              <filter id="cutCloud" x="-30%" y="-40%" width="160%" height="200%">
+                <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#6d806f" flood-opacity=".18"/>
+              </filter>
+              <filter id="windowGlow" x="-200%" y="-200%" width="500%" height="500%">
+                <feGaussianBlur stdDeviation="5" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <clipPath id="sceneClip"><rect x="0" y="0" width="900" height="660"/></clipPath>
+
+              <g id="cloudShape">
+                <path d="M2 38c-4-8 1-18 11-19 2-11 12-17 22-13 5-10 19-11 26-2 11-3 22 3 24 13 10 1 16 8 15 16 0 3-2 5-5 5H7c-2 0-4-1-5-3Z"/>
+              </g>
+              <g id="firShape">
+                <path d="M0 34 L13 14 L5 15 L18 -4 L31 15 L23 14 L36 34 Z"/>
+                <path d="M12 32 L12 43 L24 43 L24 32 Z"/>
+              </g>
+            </defs>
+
+            <g clip-path="url(#sceneClip)">
+              <!-- sky -->
+              <rect class="sky-day" width="900" height="660" fill="url(#skyDay)"/>
+              <rect class="sky-night" width="900" height="660" fill="url(#skyNight)"/>
+
+              <!-- stars and fireflies (added by script deterministically) -->
+              <g class="stars" id="stars" aria-hidden="true"></g>
+
+              <!-- sun / moon -->
+              <g class="sun-day" aria-hidden="true">
+                <circle cx="710" cy="120" r="88" fill="url(#halo)" opacity=".75"/>
+                <circle cx="710" cy="120" r="40" fill="url(#sunGrad)"/>
+                <circle cx="710" cy="120" r="40" fill="none" stroke="#f7e4b0" stroke-width="7" opacity=".35"/>
+              </g>
+              <g class="moon-night" aria-hidden="true">
+                <circle cx="710" cy="116" r="72" fill="url(#halo)" opacity=".18"/>
+                <path d="M710 82a34 34 0 1 0 24 58 29 29 0 1 1-24-58Z" fill="#f2e4bf"/>
+                <circle cx="742" cy="102" r="2" fill="#d8cba8" opacity=".6"/>
+                <circle cx="731" cy="128" r="1.4" fill="#d8cba8" opacity=".5"/>
+              </g>
+
+              <!-- clouds -->
+              <g class="cloud-day" filter="url(#cutCloud)" aria-hidden="true">
+                <use href="#cloudShape" transform="translate(86 104) scale(1.25)" fill="#fbf7ea"/>
+                <use href="#cloudShape" transform="translate(304 68) scale(.82)" fill="#f7f1df" opacity=".9"/>
+                <use href="#cloudShape" transform="translate(566 172) scale(.7)" fill="#f9f4e5" opacity=".82"/>
+                <use href="#cloudShape" transform="translate(704 52) scale(.56)" fill="#f7f1df" opacity=".7"/>
+              </g>
+              <g class="cloud-night" filter="url(#cutCloud)" aria-hidden="true">
+                <use href="#cloudShape" transform="translate(86 104) scale(1.25)" fill="#334552"/>
+                <use href="#cloudShape" transform="translate(304 68) scale(.82)" fill="#2c3e4b" opacity=".9"/>
+                <use href="#cloudShape" transform="translate(566 172) scale(.7)" fill="#31434f" opacity=".8"/>
+                <use href="#cloudShape" transform="translate(704 52) scale(.56)" fill="#2b3d4a" opacity=".7"/>
+              </g>
+
+              <!-- far mountains -->
+              <g class="parallax" data-depth="3">
+                <g class="parallax-inner">
+                  <g filter="url(#cutFar)">
+                    <path class="layer-fill" d="M-20 372 L56 298 L112 336 L178 258 L236 318 L302 276 L352 330 L420 284 L478 338 L548 292 L610 342 L678 288 L742 334 L806 292 L862 338 L920 308 L920 680 L-20 680 Z" style="fill:var(--far)"/>
+                    <path d="M162 276 L178 258 L196 276 L188 280 L180 272 L172 282 Z" style="fill:var(--far-snow)" opacity=".85"/>
+                    <path d="M532 308 L548 292 L564 309 L556 313 L548 303 L540 315 Z" style="fill:var(--far-snow)" opacity=".8"/>
+                  </g>
+                </g>
+              </g>
+
+              <!-- middle ridge -->
+              <g class="parallax" data-depth="7">
+                <g class="parallax-inner">
+                  <g filter="url(#cutMid)">
+                    <path class="layer-fill" d="M-20 424 C60 398 96 412 150 402 216 389 252 408 312 410 376 412 414 392 476 402 546 414 582 396 646 404 712 412 752 398 812 408 856 415 884 408 920 400 L920 680 L-20 680 Z" style="fill:var(--mid)"/>
+                    <path d="M170 406 C230 396 262 410 318 409 288 422 218 426 170 406Z" style="fill:var(--far-snow)" opacity=".18"/>
+                  </g>
+                </g>
+              </g>
+
+              <!-- firs on ridge -->
+              <g class="parallax" data-depth="10">
+                <g class="parallax-inner">
+                  <g filter="url(#cutSmall)" style="fill:var(--fir)">
+                    <use href="#firShape" transform="translate(112 404) scale(.72)"/>
+                    <use href="#firShape" transform="translate(146 412) scale(.5)" style="fill:var(--fir-2)"/>
+                    <use href="#firShape" transform="translate(214 398) scale(.92)"/>
+                    <use href="#firShape" transform="translate(250 410) scale(.62)" style="fill:var(--fir-2)"/>
+                    <use href="#firShape" transform="translate(286 402) scale(.45)"/>
+                    <use href="#firShape" transform="translate(706 405) scale(.58)" style="fill:var(--fir-2)"/>
+                    <use href="#firShape" transform="translate(778 398) scale(.82)"/>
+                    <use href="#firShape" transform="translate(820 408) scale(.5)"/>
+                  </g>
+                </g>
+              </g>
+
+              <!-- hill band one -->
+              <g class="parallax" data-depth="14">
+                <g class="parallax-inner">
+                  <g filter="url(#cutMid)">
+                    <path class="layer-fill" d="M-20 468 C56 442 112 460 176 452 246 443 288 458 356 456 430 454 470 434 542 443 618 452 664 440 734 449 798 457 858 447 920 438 L920 680 L-20 680 Z" style="fill:var(--hill)"/>
+                  </g>
+                </g>
+              </g>
+
+              <!-- cottage -->
+              <g class="parallax" data-depth="17">
+                <g class="parallax-inner">
+                  <!-- smoke -->
+                  <g class="smoke" aria-hidden="true">
+                    <path d="M570 423 c-12 -18 10 -28 0 -46 c-10 -17 8 -24 3 -38"/>
+                    <path d="M573 424 c-8 -14 7 -21 1 -34 c-6 -12 5 -18 1 -28"/>
+                    <path d="M566 421 c-9 -12 5 -20 -1 -30"/>
+                  </g>
+                  <g filter="url(#cutSmall)">
+                    <ellipse cx="582" cy="454" rx="82" ry="16" fill="#25432f" opacity=".13"/>
+                    <path d="M548 422 h64 v42 h-64 z" style="fill:var(--wall)"/>
+                    <path d="M536 425 L580 390 L624 425 Z" style="fill:var(--roof)"/>
+                    <path d="M540 424 h80" stroke="#f0d6b4" stroke-width="2" opacity=".45"/>
+                    <rect x="602" y="398" width="9" height="22" style="fill:var(--roof)"/>
+                    <rect x="600" y="396" width="13" height="3" fill="#7b4434"/>
+                    <path d="M558 464 v-16 a7 7 0 0 1 14 0 v16 z" fill="#6b5138"/>
+                    <circle cx="568" cy="455" r="1.2" fill="#e6c78e"/>
+                    <!-- windows -->
+                    <g>
+                      <rect class="window" x="576" y="435" width="12" height="11" rx="1"/>
+                      <rect class="window" x="595" y="435" width="12" height="11" rx="1"/>
+                      <path d="M582 435v11M576 440.5h12M601 435v11M595 440.5h12" stroke="#7a6b4f" stroke-width=".8" opacity=".6"/>
+                    </g>
+                  </g>
+                  <circle class="glow-halo" cx="591" cy="441" r="49" fill="url(#halo)" style="opacity:0"/>
+                </g>
+              </g>
+
+              <!-- hill band two + meadow base -->
+              <g class="parallax" data-depth="24">
+                <g class="parallax-inner">
+                  <g filter="url(#cutNear)">
+                    <path class="layer-fill" d="M-20 520 C70 500 140 516 220 510 302 504 352 520 434 516 522 511 580 494 664 504 748 514 822 502 920 494 L920 680 L-20 680 Z" style="fill:var(--hill-deep)"/>
+                  </g>
+                </g>
+              </g>
+
+              <!-- foreground meadow -->
+              <g class="parallax" data-depth="32">
+                <g class="parallax-inner">
+                  <g filter="url(#cutNear)">
+                    <path class="layer-fill" d="M-20 574 C80 556 168 572 236 562 316 550 372 566 452 558 536 550 604 570 686 560 768 550 836 566 920 556 L920 680 L-20 680 Z" style="fill:var(--meadow)"/>
+                    <path d="M-20 606 C88 590 164 606 252 596 342 586 402 604 486 594 574 584 644 602 728 592 800 583 862 596 920 588 L920 680 L-20 680 Z" style="fill:var(--meadow-deep)" opacity=".65"/>
+                  </g>
+                  <g id="grass" filter="url(#cutSmall)" style="fill:var(--fir)" opacity=".85"></g>
+                  <g id="flowers" aria-hidden="true"></g>
+                </g>
+              </g>
+
+              <!-- fireflies -->
+              <g class="fireflies" id="fireflies" aria-hidden="true"></g>
+
+              <!-- bird -->
+              <g id="bird" aria-hidden="true">
+                <g class="wing wing-l"><path d="M-2 1 C-8 -7 -19 -10 -27 -5 C-20 -2 -12 2 -3 4 Z" fill="#3b3a30"/></g>
+                <g class="wing wing-r"><path d="M2 1 C8 -7 19 -10 27 -5 C20 -2 12 2 3 4 Z" fill="#3b3a30"/></g>
+                <path d="M-2 0 C0 -3 2 -3 3 0 C1 5 -1 5 -2 0Z" fill="#3b3a30"/>
+                <path d="M3 1 l7 -2 -3 3z" fill="#3b3a30"/>
+              </g>
+
+              <!-- paper vignette -->
+              <rect x="0" y="0" width="900" height="660" fill="none" stroke="#000" stroke-opacity=".07" stroke-width="2"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="plate">
+        <span class="serif">Paper Field, looking north-west</span>
+        <span class="no">No. 037 · 24 × 18 cm</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var scene = document.getElementById("scene");
+  var stars = document.getElementById("stars");
+  var fireflies = document.getElementById("fireflies");
+  var grass = document.getElementById("grass");
+  var flowers = document.getElementById("flowers");
+
+  // deterministic random
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  var rand = mulberry32(37037);
+  var NS = "http://www.w3.org/2000/svg";
+
+  // stars
+  var starFrag = document.createDocumentFragment();
+  for (var i = 0; i < 96; i++){
+    var sx = rand() * 900;
+    var sy = 20 + rand() * 380;
+    // keep a loose clearing around the moon
+    var dx = sx - 712, dy = sy - 116;
+    if (Math.sqrt(dx*dx + dy*dy) < 62){ sy = 20 + rand() * 200; }
+    var c = document.createElementNS(NS, "circle");
+    var r = 0.7 + rand() * 1.7;
+    c.setAttribute("cx", sx.toFixed(1));
+    c.setAttribute("cy", sy.toFixed(1));
+    c.setAttribute("r", r.toFixed(2));
+    c.setAttribute("fill", rand() > .8 ? "#ffdda0" : "#f4ecd8");
+    c.setAttribute("class", "star");
+    c.style.animationDelay = (-rand() * 6).toFixed(2) + "s";
+    c.setAttribute("opacity", (0.35 + rand() * 0.65).toFixed(2));
+    starFrag.appendChild(c);
+  }
+  stars.appendChild(starFrag);
+
+  // fireflies
+  var fireflyFrag = document.createDocumentFragment();
+  for (var j = 0; j < 18; j++){
+    var fx = 30 + rand() * 840;
+    var fy = 540 + rand() * 90;
+    var g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "firefly");
+    g.style.animationDelay = (-rand() * 7).toFixed(2) + "s";
+    var glow = document.createElementNS(NS, "circle");
+    glow.setAttribute("cx", fx.toFixed(1));
+    glow.setAttribute("cy", fy.toFixed(1));
+    glow.setAttribute("r", (3.6 + rand() * 2).toFixed(1));
+    glow.setAttribute("fill", "#ffcd6e");
+    glow.setAttribute("opacity", ".12");
+    var dot = document.createElementNS(NS, "circle");
+    dot.setAttribute("cx", fx.toFixed(1));
+    dot.setAttribute("cy", fy.toFixed(1));
+    dot.setAttribute("r", (0.9 + rand() * 0.9).toFixed(1));
+    dot.setAttribute("fill", "#ffe1a2");
+    g.appendChild(glow); g.appendChild(dot);
+    fireflyFrag.appendChild(g);
+  }
+  fireflies.appendChild(fireflyFrag);
+
+  // grass blades in the meadow
+  var grassFrag = document.createDocumentFragment();
+  for (var k = 0; k < 74; k++){
+    var gx = -10 + rand() * 920;
+    var baseY = 616 + rand() * 40;
+    var h = 6 + rand() * 15;
+    var lean = -5 + rand() * 10;
+    var p = document.createElementNS(NS, "path");
+    p.setAttribute("d", "M" + gx.toFixed(1) + " " + baseY.toFixed(1) +
+      " q " + (lean * .5).toFixed(1) + " " + (-h * .6).toFixed(1) + " " + lean.toFixed(1) + " " + (-h).toFixed(1));
+    p.setAttribute("stroke", rand() > .5 ? "var(--fir)" : "var(--hill-deep)");
+    p.setAttribute("stroke-width", (1.4 + rand() * 0.9).toFixed(1));
+    p.setAttribute("fill", "none");
+    p.setAttribute("stroke-linecap", "round");
+    p.setAttribute("opacity", (0.55 + rand() * .4).toFixed(2));
+    grassFrag.appendChild(p);
+  }
+  grass.appendChild(grassFrag);
+
+  // tiny flowers
+  var flowerFrag = document.createDocumentFragment();
+  for (var f = 0; f < 16; f++){
+    var fx2 = 20 + rand() * 860;
+    var fy2 = 590 + rand() * 48;
+    var isRed = rand() > .55;
+    for (var petal = 0; petal < 5; petal++){
+      var ang = petal / 5 * Math.PI * 2;
+      var pet = document.createElementNS(NS, "circle");
+      pet.setAttribute("cx", (fx2 + Math.cos(ang) * 2.1).toFixed(1));
+      pet.setAttribute("cy", (fy2 + Math.sin(ang) * 2.1).toFixed(1));
+      pet.setAttribute("r", "1.55");
+      pet.setAttribute("fill", isRed ? "#f0e6cc" : "#e9c98a");
+      pet.setAttribute("opacity", ".85");
+      flowerFrag.appendChild(pet);
+    }
+    var centre = document.createElementNS(NS, "circle");
+    centre.setAttribute("cx", fx2.toFixed(1));
+    centre.setAttribute("cy", fy2.toFixed(1));
+    centre.setAttribute("r", "1.1");
+    centre.setAttribute("fill", isRed ? "var(--roof)" : "#c98a45");
+    flowerFrag.appendChild(centre);
+  }
+  flowers.appendChild(flowerFrag);
+
+  // day / night
+  var lightToggle = document.getElementById("lightToggle");
+  var lightState = document.getElementById("lightState");
+  var isNight = false;
+  function setNight(next){
+    isNight = next;
+    document.body.classList.toggle("night", isNight);
+    lightToggle.setAttribute("aria-pressed", String(isNight));
+    lightState.textContent = isNight ? "Night — lantern lit" : "Day — lantern off";
+  }
+  lightToggle.addEventListener("click", function(){ setNight(!isNight); });
+
+  // bird flight
+  var bird = document.getElementById("bird");
+  var birdButton = document.getElementById("birdButton");
+  var birdState = document.getElementById("birdState");
+  var flightRAF = 0;
+  var flying = false;
+  var BIRD = {
+    p0: {x: -50, y: 250},
+    p1: {x: 340, y: -40},
+    p2: {x: 940, y: 190}
+  };
+  function launchBird(){
+    if (flightRAF) cancelAnimationFrame(flightRAF);
+    bird.classList.remove("flying");
+    // restart wing animation
+    void bird.getBoundingClientRect();
+    bird.classList.add("flying");
+    bird.style.opacity = "1";
+    flying = true;
+    birdState.textContent = "in flight";
+    birdButton.disabled = true;
+    var start = performance.now();
+    var duration = reduceMotion ? 1800 : 6200;
+    function frame(now){
+      var t = Math.min(1, (now - start) / duration);
+      var e = t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+      var x = (1-e)*(1-e)*BIRD.p0.x + 2*(1-e)*e*BIRD.p1.x + e*e*BIRD.p2.x;
+      var y = (1-e)*(1-e)*BIRD.p0.y + 2*(1-e)*e*BIRD.p1.y + e*e*BIRD.p2.y;
+      var bob = Math.sin(t * 26) * (2 + 3 * Math.sin(t * Math.PI));
+      var tilt = Math.cos(t * 26) * 5;
+      bird.setAttribute("transform", "translate(" + x.toFixed(2) + " " + (y + bob).toFixed(2) + ") rotate(" + (-10 + tilt).toFixed(2) + ") scale(1.05)");
+      // fade near end
+      if (t > .86) bird.style.opacity = String(1 - (t - .86) / .14);
+      if (t < 1){
+        flightRAF = requestAnimationFrame(frame);
+      } else {
+        flying = false;
+        birdButton.disabled = false;
+        bird.style.opacity = "0";
+        bird.classList.remove("flying");
+        birdState.textContent = "release another";
+      }
+    }
+    flightRAF = requestAnimationFrame(frame);
+  }
+  birdButton.addEventListener("click", launchBird);
+
+  // parallax pointer
+  var frameWrap = document.getElementById("frameWrap");
+  var layers = Array.prototype.slice.call(document.querySelectorAll(".parallax"));
+  var targetX = 0, targetY = 0, curX = 0, curY = 0;
+  var parallaxActive = !reduceMotion && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  var pRAF = 0;
+
+  function applyParallax(){
+    curX += (targetX - curX) * 0.08;
+    curY += (targetY - curY) * 0.08;
+    layers.forEach(function(layer){
+      var depth = parseFloat(layer.getAttribute("data-depth")) || 5;
+      var inner = layer.firstElementChild;
+      if (inner){
+        inner.style.transform = "translate(" + (curX * depth).toFixed(2) + "px," + (curY * depth * .6).toFixed(2) + "px)";
+      }
+    });
+    if (Math.abs(curX - targetX) > 0.001 || Math.abs(curY - targetY) > 0.001){
+      pRAF = requestAnimationFrame(applyParallax);
+    } else {
+      pRAF = 0;
+    }
+  }
+  function kickParallax(){
+    if (!pRAF) pRAF = requestAnimationFrame(applyParallax);
+  }
+  if (parallaxActive){
+    frameWrap.addEventListener("pointermove", function(e){
+      var r = frameWrap.getBoundingClientRect();
+      targetX = ((e.clientX - r.left) / r.width - .5) * 2;
+      targetY = ((e.clientY - r.top) / r.height - .5) * 2;
+      kickParallax();
+    });
+    frameWrap.addEventListener("pointerleave", function(){
+      targetX = 0; targetY = 0; kickParallax();
+    });
+  }
+
+  // subtle, deterministic ambient flicker for stars is CSS only.
+  // Respect reduced motion for the bird: the launch still delivers a visible, brief flight.
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shadow Play — an interactive shadow theatre</title>
+<style>
+  :root{
+    --wall:#c69762;
+    --wall-deep:#b0824f;
+    --cream:#f3e9d6;
+    --cream-hi:#fbf4e6;
+    --ink:#3b2918;
+    --ink-soft:#6f553a;
+    --paper:#f7edd9;
+    --brass:#b17c3d;
+    --shadow:58,34,13;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  button,input{font:inherit}
+
+  .scene{
+    position:relative;
+    flex:1 1 auto;
+    min-height:430px;
+    overflow:hidden;
+    --lamp-x:54%;
+    background:
+      radial-gradient(130% 100% at var(--lamp-x) -18%, rgba(255,235,196,.75), rgba(255,219,163,.24) 34%, rgba(255,219,163,0) 64%),
+      radial-gradient(80% 70% at 88% 8%, rgba(255,226,180,.20), transparent 60%),
+      radial-gradient(90% 80% at 6% 92%, rgba(86,49,18,.28), transparent 62%),
+      linear-gradient(178deg,#cfa26c 0%,#c89963 46%,#bd8c56 78%,#b68450 100%);
+    isolation:isolate;
+    touch-action:pan-y;
+  }
+  .scene::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    background-image:
+      radial-gradient(rgba(255,255,255,.13) .6px, transparent .7px),
+      radial-gradient(rgba(86,50,18,.20) .7px, transparent .8px),
+      radial-gradient(rgba(255,246,225,.07) 1.4px, transparent 1.5px);
+    background-size:5px 5px, 9px 9px, 23px 23px;
+    background-position:0 0, 3px 2px, 7px 11px;
+    opacity:.55;
+    mix-blend-mode:soft-light;
+  }
+  .scene::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    background:
+      radial-gradient(120% 88% at 50% 48%, transparent 52%, rgba(74,43,17,.20) 100%),
+      linear-gradient(180deg, transparent 86%, rgba(66,39,16,.20));
+  }
+  .plaster{
+    position:absolute;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    opacity:.35;
+    background-image:
+      repeating-linear-gradient(101deg, transparent 0 13px, rgba(255,255,255,.045) 13px 14px, transparent 14px 31px),
+      repeating-linear-gradient(9deg, transparent 0 27px, rgba(84,48,17,.055) 27px 28px, transparent 28px 57px);
+    mix-blend-mode:soft-light;
+  }
+
+  .light-pool{
+    position:absolute;
+    top:-16%;
+    left:var(--lamp-x);
+    width:min(132vw,1500px);
+    height:min(105vh,1000px);
+    transform:translateX(-50%);
+    z-index:2;
+    pointer-events:none;
+    background:radial-gradient(ellipse at 50% 19%, rgba(255,236,190,.66) 0%, rgba(255,219,160,.26) 29%, rgba(255,210,145,.08) 48%, transparent 68%);
+    filter:blur(6px);
+    mix-blend-mode:screen;
+    transition:left .2s ease-out;
+  }
+  .light-edge{
+    position:absolute;
+    top:-6%;
+    left:var(--lamp-x);
+    width:min(78vw,900px);
+    height:100%;
+    transform:translateX(-50%);
+    z-index:2;
+    pointer-events:none;
+    clip-path:polygon(48% 7%, 52% 7%, 100% 100%, 0% 100%);
+    background:linear-gradient(180deg, rgba(255,236,194,.16), rgba(255,236,194,0) 62%);
+    mix-blend-mode:screen;
+    transition:left .2s ease-out;
+    opacity:.7;
+  }
+
+  .lamp{
+    position:absolute;
+    top:0;
+    left:var(--lamp-x);
+    width:clamp(92px,9vw,128px);
+    z-index:7;
+    transform:translateX(-50%);
+    pointer-events:none;
+    transition:left .2s ease-out;
+    opacity:0;
+    animation:lamp-in .9s ease .15s forwards;
+  }
+  @keyframes lamp-in{from{opacity:0;transform:translate(-50%,-14px)}to{opacity:1;transform:translate(-50%,0)}}
+  .lamp svg{display:block;width:100%;height:auto}
+
+  .wall-note{
+    position:absolute;
+    z-index:6;
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(58,38,18,.5);
+    pointer-events:none;
+  }
+  .wall-note.left{top:22px;left:clamp(18px,3vw,34px)}
+  .wall-note.right{top:22px;right:clamp(18px,3vw,34px);text-align:right}
+  .wall-note b{font-weight:400;color:rgba(58,38,18,.72)}
+
+  .pieces{position:absolute;inset:0;z-index:4}
+  .piece{
+    position:absolute;
+    width:calc(clamp(74px,13vmin,164px) * var(--k,1));
+    transform:translate(-50%,-50%);
+    color:var(--paper);
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+    outline:none;
+    opacity:0;
+    animation:piece-in .7s cubic-bezier(.2,.8,.2,1) forwards;
+    transition:filter .18s ease-out;
+  }
+  @keyframes piece-in{
+    from{opacity:0;transform:translate(-50%,-46%) scale(.94)}
+    to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  }
+  .piece svg{display:block;width:100%;height:auto;overflow:visible}
+  .piece:hover{filter:brightness(1.03)}
+  .piece.dragging{cursor:grabbing;z-index:9}
+  .piece.dragging svg{transform:scale(1.025);transition:transform .15s}
+  .piece:focus-visible{outline:1px dashed rgba(58,34,14,.8);outline-offset:8px}
+  .piece.removing{opacity:0;transition:opacity .25s;animation:none}
+  .piece::after{
+    content:"";
+    position:absolute;
+    inset:6%;
+    border-radius:50%;
+    background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.22), transparent 55%);
+    pointer-events:none;
+    mix-blend-mode:soft-light;
+  }
+
+  .scene-footer{
+    position:absolute;
+    z-index:6;
+    bottom:18px;
+    left:clamp(18px,3vw,34px);
+    right:clamp(18px,3vw,34px);
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.17em;
+    text-transform:uppercase;
+    color:rgba(247,237,219,.56);
+    pointer-events:none;
+    text-shadow:0 1px 6px rgba(60,34,12,.35);
+  }
+  .scene-footer .hint{display:flex;align-items:center;gap:8px}
+  .scene-footer .hint::before{
+    content:"";
+    width:20px;height:1px;background:rgba(247,237,219,.42);
+  }
+
+  .shelf{
+    position:relative;
+    z-index:10;
+    background:
+      linear-gradient(180deg,#f6eddb 0%,#f1e6d1 62%,#ecdfc7 100%);
+    box-shadow:
+      0 -1px 0 rgba(255,255,255,.7) inset,
+      0 -18px 44px -20px rgba(73,44,17,.45);
+    border-top:1px solid rgba(83,55,28,.22);
+  }
+  .shelf::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:5px;
+    background:linear-gradient(90deg, rgba(177,124,61,.0), rgba(177,124,61,.28) 20%, rgba(177,124,61,.28) 80%, rgba(177,124,61,0));
+  }
+  .shelf-inner{
+    max-width:1480px;
+    margin:0 auto;
+    padding:clamp(18px,2.3vw,28px) clamp(18px,4vw,54px) clamp(18px,2.4vw,28px);
+    display:grid;
+    grid-template-columns:minmax(262px,1fr) minmax(218px,1fr) minmax(238px,1.15fr) minmax(292px,1.35fr);
+    gap:clamp(18px,3vw,44px);
+    align-items:end;
+  }
+
+  .shelf-title .kicker{
+    display:block;
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:9px;
+  }
+  .shelf-title h1{
+    margin:0;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(32px,3.2vw,44px);
+    line-height:.98;
+    letter-spacing:-.025em;
+    white-space:nowrap;
+  }
+  .shelf-title h1 .slash{
+    color:#a97438;
+    font-style:italic;
+    padding:0 .08em;
+  }
+  .shelf-title .sub{
+    display:block;
+    margin-top:7px;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:rgba(76,55,32,.5);
+  }
+
+  .instruction p{
+    margin:0 0 12px;
+    font-size:13.5px;
+    line-height:1.55;
+    color:#54402a;
+    max-width:32ch;
+  }
+  .instruction p em{font-style:normal;border-bottom:1px solid rgba(169,116,56,.55);padding-bottom:1px}
+  .inventory{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .inventory .dot{width:5px;height:5px;border-radius:50%;background:#a97438;box-shadow:0 0 0 3px rgba(169,116,56,.14)}
+  .inventory b{font-weight:600;color:var(--ink);font-size:11px}
+
+  .control-label{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:12px;
+  }
+  .control-label output{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.06em;
+    color:var(--ink);
+    background:rgba(169,116,56,.1);
+    border:1px solid rgba(169,116,56,.22);
+    border-radius:4px;
+    padding:2px 6px;
+  }
+  .slider-row{display:flex;align-items:center;gap:12px}
+  .lamp-icon{flex:none;color:#8a6535;width:20px;height:20px}
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:26px;
+    background:transparent;
+    cursor:pointer;
+    margin:0;
+  }
+  input[type="range"]::-webkit-slider-runnable-track{
+    height:2px;
+    background:linear-gradient(90deg, rgba(120,86,48,.25), rgba(120,86,48,.55), rgba(120,86,48,.25));
+    border-radius:2px;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:18px;height:18px;
+    margin-top:-8px;
+    border-radius:50%;
+    background:radial-gradient(circle at 36% 32%, #fff7e5, #e8d4b2 50%, #b98b4f 100%);
+    border:1px solid rgba(106,72,34,.55);
+    box-shadow:0 2px 5px rgba(74,44,16,.28), inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  input[type="range"]::-moz-range-track{
+    height:2px;
+    background:rgba(120,86,48,.4);
+    border-radius:2px;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:17px;height:17px;
+    border-radius:50%;
+    background:radial-gradient(circle at 36% 32%, #fff7e5, #e8d4b2 50%, #b98b4f 100%);
+    border:1px solid rgba(106,72,34,.55);
+    box-shadow:0 2px 5px rgba(74,44,16,.28);
+  }
+  input[type="range"]:focus-visible{outline:1px dashed rgba(169,116,56,.9);outline-offset:4px}
+  .ticks{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:rgba(76,55,32,.45);
+    margin-top:2px;
+    padding:0 2px;
+  }
+
+  .tray .control-label .mini{font-size:7.5px;color:rgba(76,55,32,.45);letter-spacing:.14em}
+  .tray-buttons{display:flex;gap:8px;flex-wrap:wrap}
+  .tray-btn{
+    flex:1 1 0;
+    min-width:62px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    padding:9px 6px 8px;
+    background:rgba(255,251,242,.6);
+    border:1px solid rgba(98,68,35,.24);
+    border-radius:8px;
+    color:#4a3420;
+    cursor:pointer;
+    position:relative;
+    transition:background .18s, border-color .18s, transform .15s, box-shadow .18s;
+  }
+  .tray-btn:hover{
+    background:#fffaf0;
+    border-color:rgba(98,68,35,.42);
+    transform:translateY(-1px);
+    box-shadow:0 4px 10px -5px rgba(74,44,16,.35);
+  }
+  .tray-btn:active{transform:translateY(0)}
+  .tray-btn:focus-visible{outline:1px dashed rgba(169,116,56,.9);outline-offset:3px}
+  .tray-btn svg{width:26px;height:26px;display:block;color:#5a3f24}
+  .tray-btn span{
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#63482c;
+  }
+  .tray-btn .plus{
+    position:absolute;
+    top:4px;right:5px;
+    font-family:var(--mono);
+    font-size:9px;
+    line-height:1;
+    color:#a97438;
+  }
+  .tray-btn.pop{animation:pop .35s ease}
+  @keyframes pop{0%{transform:scale(1)}45%{transform:scale(.94)}100%{transform:scale(1)}}
+
+  @media (max-width:1240px){
+    .shelf-inner{
+      grid-template-columns:1fr 1fr;
+      align-items:start;
+      row-gap:22px;
+    }
+    .instruction{padding-top:4px}
+    .tray{grid-column:auto}
+  }
+  @media (max-width:860px){
+    .scene{min-height:48svh}
+    .shelf-inner{grid-template-columns:1fr 1fr}
+    .shelf-title h1{font-size:clamp(30px,5.6vw,40px)}
+    .tray{grid-column:1/-1}
+  }
+  @media (max-width:620px){
+    body{min-height:100svh}
+    .scene{min-height:47svh;flex:1 1 47svh}
+    .shelf-inner{
+      grid-template-columns:1fr;
+      gap:18px;
+      padding:18px 18px 22px;
+    }
+    .shelf-title{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
+    .shelf-title .sub{display:none}
+    .shelf-title .kicker{margin-bottom:0;order:2;font-size:7.5px;max-width:90px;text-align:right;line-height:1.5}
+    .shelf-title h1{font-size:34px}
+    .instruction p{max-width:none;font-size:13px;margin-bottom:8px}
+    .inventory{margin-bottom:2px}
+    .tray-buttons{gap:6px}
+    .tray-btn{min-width:0;padding:9px 4px 8px}
+    .tray-btn svg{width:23px;height:23px}
+    .wall-note{top:14px;font-size:8px;letter-spacing:.16em}
+    .scene-footer{bottom:10px;font-size:7.5px}
+    .scene-footer .hint::before{display:none}
+  }
+  @media (max-width:420px){
+    .scene{min-height:44svh}
+    .wall-note.right{display:none}
+    .tray-btn span{font-size:7.5px}
+    .shelf-title h1{font-size:31px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true" focusable="false">
+  <defs>
+    <g id="shape-bird" fill="currentColor">
+      <ellipse cx="58" cy="73" rx="30" ry="21"/>
+      <circle cx="84" cy="52" r="13"/>
+      <path d="M96 47 116 52 97 59Z"/>
+      <path d="M33 64 5 49 12 75 35 83Z"/>
+      <path d="M45 82 42 101 49 102 52 82Z"/>
+      <path d="M67 83 65 103 72 104 74 83Z"/>
+      <path d="M47 101 38 108M71 103 80 109" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/>
+      <circle cx="88" cy="49" r="1.9" fill="#8a5c30"/>
+    </g>
+    <g id="shape-rabbit" fill="currentColor">
+      <ellipse cx="58" cy="86" rx="25" ry="29"/>
+      <circle cx="71" cy="53" r="18"/>
+      <ellipse cx="63" cy="23" rx="7.4" ry="24" transform="rotate(-13 63 23)"/>
+      <ellipse cx="81" cy="25" rx="6.8" ry="22" transform="rotate(10 81 25)"/>
+      <circle cx="30" cy="98" r="9"/>
+      <ellipse cx="47" cy="112" rx="12" ry="4.6"/>
+      <ellipse cx="73" cy="112" rx="12" ry="4.6"/>
+      <circle cx="77" cy="51" r="1.9" fill="#8a5c30"/>
+      <path d="M70 62q3 2 6 0" fill="none" stroke="rgba(138,92,48,.45)" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+    <g id="shape-hand" fill="currentColor">
+      <path d="M40 59V37c0-4.5 6.4-4.5 6.4 0v20h3.7V27c0-4.5 6.4-4.5 6.4 0v30h3.7V24c0-4.5 6.4-4.5 6.4 0v33h3.7V34c0-4.5 6.4-4.5 6.4 0v28h3.7V48c0-4.5 6.4-4.5 6.4 0v27c0 17-11.2 29-27.2 29-13.4 0-21.4-8.2-27.3-21.3l-7-17c-1.9-4.6 4.5-7.4 7.3-3.2l5.4 8.5z"/>
+      <path d="M48 88c11 4 21 4 32-1M52 97c8 3 16 3 24-1" fill="none" stroke="rgba(138,92,48,.28)" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+    <g id="shape-tree" fill="currentColor">
+      <circle cx="58" cy="37" r="26"/>
+      <circle cx="34" cy="54" r="20"/>
+      <circle cx="83" cy="53" r="22"/>
+      <circle cx="57" cy="67" r="25"/>
+      <path d="M54 58 54 110 67 110 67 58Z"/>
+      <path d="M60 91 41 70 46 66 62 85Z"/>
+      <path d="M61 96 82 74 87 79 64 101Z"/>
+      <path d="M46 113q14 6 29 0" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+      <path d="M52 44q6-8 14-8M34 58q4-6 10-8M78 44q5 1 8 6" fill="none" stroke="rgba(138,92,48,.22)" stroke-width="1.2" stroke-linecap="round"/>
+    </g>
+  </defs>
+</svg>
+
+<div class="scene" id="scene" aria-label="Shadow theatre wall">
+  <div class="plaster" aria-hidden="true"></div>
+  <div class="light-pool" aria-hidden="true"></div>
+  <div class="light-edge" aria-hidden="true"></div>
+
+  <div class="lamp" id="lamp" aria-hidden="true">
+    <svg viewBox="0 0 120 210" fill="none">
+      <defs>
+        <linearGradient id="brass" x1="46" y1="78" x2="76" y2="132" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#d2a463"/>
+          <stop offset=".45" stop-color="#b7823f"/>
+          <stop offset=".75" stop-color="#8f5e28"/>
+          <stop offset="1" stop-color="#6d451c"/>
+        </linearGradient>
+        <linearGradient id="cord" x1="0" y1="0" x2="0" y2="76" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#4b321b" stop-opacity=".35"/>
+          <stop offset="1" stop-color="#3b2714" stop-opacity=".9"/>
+        </linearGradient>
+        <radialGradient id="bulb" cx="0.5" cy="0.4" r="0.6">
+          <stop offset="0" stop-color="#fffbe8"/>
+          <stop offset=".5" stop-color="#ffe9ae"/>
+          <stop offset="1" stop-color="#ffd277" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <line x1="60" y1="0" x2="60" y2="76" stroke="url(#cord)" stroke-width="1.6"/>
+      <ellipse cx="60" cy="78" rx="8" ry="2.4" fill="#805a2f"/>
+      <path d="M60 78v8" stroke="#5c3d1e" stroke-width="1.4"/>
+      <path d="M39 90h42l6 40H33Z" fill="url(#brass)"/>
+      <path d="M39 90h42" stroke="#e1b878" stroke-opacity=".55" stroke-width="1"/>
+      <path d="M31 128h58l7 8H24Z" fill="#9a6a31"/>
+      <ellipse cx="60" cy="136" rx="36" ry="5.4" fill="#7d5223"/>
+      <ellipse cx="60" cy="137" rx="27" ry="3.4" fill="#4d3115" opacity=".65"/>
+      <circle cx="60" cy="143" r="8" fill="url(#bulb)"/>
+      <circle cx="60" cy="143" r="20" fill="url(#bulb)" opacity=".55"/>
+      <circle cx="60" cy="143" r="3.4" fill="#fff7d9"/>
+      <path d="M60 85v5" stroke="#c99c5a" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <div class="wall-note left">Paper · lamp · wall</div>
+  <div class="wall-note right">No. 04 / <b>Ochre room</b></div>
+
+  <div class="pieces" id="pieces"></div>
+
+  <div class="scene-footer">
+    <span class="hint">Drag a silhouette</span>
+    <span id="lampReadout">Lamp at 54%</span>
+  </div>
+</div>
+
+<section class="shelf" aria-label="Shadow Play controls">
+  <div class="shelf-inner">
+    <div class="shelf-title">
+      <div>
+        <span class="kicker">An interactive shadow theatre</span>
+        <h1>Shadow <span class="slash">/</span> play</h1>
+      </div>
+      <span class="sub">Paper cuts / one warm lamp</span>
+    </div>
+
+    <div class="instruction">
+      <p>Drag the pieces across the wall. Move the lamp to bend their shadows. <em>Double-click</em> one to return it to the tray.</p>
+      <span class="inventory"><span class="dot"></span><b id="count">4</b>&nbsp;<span id="countWord">pieces</span> on the wall</span>
+    </div>
+
+    <div class="lamp-control">
+      <div class="control-label"><span>Lamp position</span><output id="lampOut" for="lampSlider">54%</output></div>
+      <div class="slider-row">
+        <svg class="lamp-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M8 9h8l2 6H6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+          <circle cx="12" cy="18" r="2.4" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M12 15.5v-2" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <input id="lampSlider" type="range" min="8" max="92" value="54" step="1" aria-label="Move the hanging lamp left or right">
+      </div>
+      <div class="ticks"><span>Left wall</span><span>Centre</span><span>Right wall</span></div>
+    </div>
+
+    <div class="tray">
+      <div class="control-label"><span>Tray — add a piece</span><span class="mini">Paper cuts</span></div>
+      <div class="tray-buttons" id="trayButtons">
+        <button class="tray-btn" type="button" data-add="bird" aria-label="Add another paper bird">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#shape-bird"></use></svg>
+          <span>Bird</span><span class="plus" aria-hidden="true">+</span>
+        </button>
+        <button class="tray-btn" type="button" data-add="rabbit" aria-label="Add another paper rabbit">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#shape-rabbit"></use></svg>
+          <span>Rabbit</span><span class="plus" aria-hidden="true">+</span>
+        </button>
+        <button class="tray-btn" type="button" data-add="hand" aria-label="Add another paper hand">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#shape-hand"></use></svg>
+          <span>Hand</span><span class="plus" aria-hidden="true">+</span>
+        </button>
+        <button class="tray-btn" type="button" data-add="tree" aria-label="Add another paper tree">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><use href="#shape-tree"></use></svg>
+          <span>Tree</span><span class="plus" aria-hidden="true">+</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+
+  var scene = document.getElementById("scene");
+  var piecesLayer = document.getElementById("pieces");
+  var countEl = document.getElementById("count");
+  var lampSlider = document.getElementById("lampSlider");
+  var lampOut = document.getElementById("lampOut");
+  var lampReadout = document.getElementById("lampReadout");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var KEYS = ["bird", "rabbit", "hand", "tree"];
+  var K = { bird:0.88, rabbit:0.92, hand:0.98, tree:1.12 };
+  var NAMES = { bird:"bird", rabbit:"rabbit", hand:"hand", tree:"tree" };
+  var SLOTS = {
+    bird:   [[30,27],[54,23],[72,29],[43,36],[64,34]],
+    rabbit: [[39,61],[61,65],[24,70],[78,66],[50,74]],
+    hand:   [[68,38],[82,47],[55,43],[31,48],[74,55]],
+    tree:   [[84,57],[63,60],[16,62],[45,69],[90,72]]
+  };
+
+  var pieces = [];
+  var uid = 0;
+  var lampPct = 54;
+  var addCounter = 0;
+
+  /* ---------- lamp ---------- */
+  function setLamp(value){
+    lampPct = value;
+    scene.style.setProperty("--lamp-x", value + "%");
+    lampOut.value = value + "%";
+    lampOut.textContent = value + "%";
+    lampReadout.textContent = "Lamp at " + value + "%";
+    updateShadows();
+  }
+
+  /* ---------- shadows ---------- */
+  function shadowFor(p, rect){
+    var lx = rect.width * lampPct / 100;
+    var cx = rect.width * p.x / 100;
+    var cy = rect.height * p.y / 100;
+    var dist = Math.abs(cx - lx);
+    var dx = (cx - lx) * 0.16;
+    var dy = 14 + dist * 0.055 + cy * 0.012;
+    var blur = 8 + dist * 0.052;
+    var a1 = 0.64 - Math.min(0.22, dist / rect.width * 0.28);
+    return "drop-shadow(" + dx.toFixed(1) + "px " + dy.toFixed(1) + "px " + blur.toFixed(1) + "px rgba(52,30,10," + a1.toFixed(2) + ")) " +
+           "drop-shadow(" + (dx * 1.55).toFixed(1) + "px " + (dy * 1.55).toFixed(1) + "px " + (blur * 1.9).toFixed(1) + "px rgba(52,30,10,0.28))";
+  }
+  function updateShadows(){
+    var rect = scene.getBoundingClientRect();
+    if(!rect.width) return;
+    for(var i = 0; i < pieces.length; i++){
+      pieces[i].el.style.filter = shadowFor(pieces[i], rect);
+    }
+  }
+
+  function place(p){
+    p.el.style.left = p.x + "%";
+    p.el.style.top = p.y + "%";
+  }
+
+  /* ---------- build pieces ---------- */
+  function addPiece(type, x, y, opts){
+    opts = opts || {};
+    var el = document.createElement("div");
+    el.className = "piece";
+    el.style.setProperty("--k", K[type]);
+    el.setAttribute("role", "img");
+    el.setAttribute("tabindex", "0");
+    el.setAttribute("aria-label", "Paper " + NAMES[type] + " silhouette. Drag with the pointer, or use the arrow keys to move it.");
+
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 120 120");
+    svg.setAttribute("aria-hidden", "true");
+    var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", "#shape-" + type);
+    svg.appendChild(use);
+    el.appendChild(svg);
+
+    var p = {
+      id: ++uid,
+      type: type,
+      x: typeof x === "number" ? x : 50,
+      y: typeof y === "number" ? y : 50,
+      dragging: false,
+      el: el
+    };
+    if(opts.delay) el.style.animationDelay = opts.delay + "ms";
+    place(p);
+    piecesLayer.appendChild(el);
+
+    el.addEventListener("pointerdown", function(e){
+      if(e.pointerType === "mouse" && e.button !== 0) return;
+      var r = scene.getBoundingClientRect();
+      p.dragging = true;
+      p.offX = e.clientX - (r.left + r.width * p.x / 100);
+      p.offY = e.clientY - (r.top + r.height * p.y / 100);
+      el.classList.add("dragging");
+      try{ el.setPointerCapture(e.pointerId); }catch(err){}
+      e.preventDefault();
+    });
+    el.addEventListener("pointermove", function(e){
+      if(!p.dragging) return;
+      var r = scene.getBoundingClientRect();
+      var nx = ((e.clientX - r.left - p.offX) / r.width) * 100;
+      var ny = ((e.clientY - r.top - p.offY) / r.height) * 100;
+      p.x = Math.max(6, Math.min(94, nx));
+      p.y = Math.max(12, Math.min(90, ny));
+      place(p);
+      updateShadows();
+    });
+    function endDrag(e){
+      if(!p.dragging) return;
+      p.dragging = false;
+      el.classList.remove("dragging");
+      try{ el.releasePointerCapture(e.pointerId); }catch(err){}
+    }
+    el.addEventListener("pointerup", endDrag);
+    el.addEventListener("pointercancel", endDrag);
+    el.addEventListener("lostpointercapture", function(){
+      p.dragging = false;
+      el.classList.remove("dragging");
+    });
+
+    el.addEventListener("keydown", function(e){
+      var step = e.shiftKey ? 4 : 1.5;
+      var handled = true;
+      if(e.key === "ArrowLeft") p.x -= step;
+      else if(e.key === "ArrowRight") p.x += step;
+      else if(e.key === "ArrowUp") p.y -= step;
+      else if(e.key === "ArrowDown") p.y += step;
+      else handled = false;
+      if(handled){
+        e.preventDefault();
+        p.x = Math.max(6, Math.min(94, p.x));
+        p.y = Math.max(12, Math.min(90, p.y));
+        place(p);
+        updateShadows();
+      }
+    });
+
+    el.addEventListener("dblclick", function(){
+      removePiece(p);
+    });
+
+    pieces.push(p);
+    updateCount();
+    updateShadows();
+    return p;
+  }
+
+  function removePiece(p){
+    if(p.removing) return;
+    p.removing = true;
+    p.el.classList.add("removing");
+    window.setTimeout(function(){
+      if(p.el.parentNode) p.el.parentNode.removeChild(p.el);
+      var idx = pieces.indexOf(p);
+      if(idx > -1) pieces.splice(idx, 1);
+      updateCount();
+      updateShadows();
+    }, reduceMotion ? 0 : 240);
+  }
+
+  function updateCount(){
+    countEl.textContent = pieces.length;
+    var word = document.getElementById("countWord");
+    if(word) word.textContent = pieces.length === 1 ? "piece" : "pieces";
+  }
+
+  /* ---------- initial arrangement ---------- */
+  addPiece("bird", 24, 30, { delay: 80 });
+  addPiece("rabbit", 41, 61, { delay: 180 });
+  addPiece("hand", 65, 36, { delay: 280 });
+  addPiece("tree", 83, 57, { delay: 380 });
+
+  /* ---------- tray ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll(".tray-btn"), function(btn){
+    btn.addEventListener("click", function(){
+      var type = btn.getAttribute("data-add");
+      addCounter++;
+      var slotList = SLOTS[type];
+      var slot = slotList[addCounter % slotList.length];
+      var jitterX = ((addCounter * 7) % 9) - 4;
+      var jitterY = ((addCounter * 5) % 7) - 3;
+      addPiece(type, Math.max(8, Math.min(92, slot[0] + jitterX)), Math.max(14, Math.min(88, slot[1] + jitterY)));
+      btn.classList.remove("pop");
+      void btn.offsetWidth;
+      btn.classList.add("pop");
+    });
+  });
+
+  /* ---------- lamp slider ---------- */
+  lampSlider.addEventListener("input", function(){
+    setLamp(parseInt(lampSlider.value, 10));
+  });
+
+  window.addEventListener("resize", function(){
+    updateShadows();
+  });
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){ updateShadows(); }).observe(scene);
+  }
+
+  /* ---------- boot ---------- */
+  setLamp(parseInt(lampSlider.value, 10));
+  updateCount();
+})();
+</script>
+</body>
+</html>

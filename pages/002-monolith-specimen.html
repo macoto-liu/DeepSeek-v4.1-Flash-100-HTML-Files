@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MONOLITH — Neo-Grotesque Type Specimen</title>
+<meta name="description" content="MONOLITH is a neo-grotesque typeface built on mass, counter and silence. A specimen from Nordic Letter Works.">
+<style>
+  :root{
+    --paper:#efede4;
+    --ink:#121212;
+    --acid:#d8ff3e;
+    --rule:rgba(18,18,18,.26);
+    --rule-soft:rgba(18,18,18,.13);
+    --muted:rgba(18,18,18,.62);
+    --faint:rgba(18,18,18,.42);
+    --sans:"Helvetica Neue",Helvetica,Arial,"Nimbus Sans",sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --wd:1;
+    --tracking:-.058em;
+  }
+  body.inverted{
+    --paper:#121212;
+    --ink:#efede4;
+    --rule:rgba(239,237,228,.28);
+    --rule-soft:rgba(239,237,228,.14);
+    --muted:rgba(239,237,228,.64);
+    --faint:rgba(239,237,228,.44);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+    transition:background .35s ease,color .35s ease;
+  }
+  ::selection{background:var(--acid);color:#121212}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit}
+  .mono{font-family:var(--mono);font-size:10px;line-height:1.55;letter-spacing:.13em;text-transform:uppercase}
+  .wrap{width:min(1400px,calc(100% - 56px));margin:0 auto}
+  .rules{
+    position:fixed;inset:0;z-index:0;pointer-events:none;display:grid;
+    grid-template-columns:repeat(4,1fr);width:min(1400px,calc(100% - 56px));margin:0 auto;
+    opacity:.5;
+  }
+  .rules i{border-left:1px solid var(--rule-soft)}
+  .rules i:last-child{border-right:1px solid var(--rule-soft)}
+  .page{position:relative;z-index:1}
+
+  /* ---------- header ---------- */
+  .top{
+    display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:24px;align-items:center;
+    padding:22px 0 18px;border-bottom:1px solid var(--ink);
+  }
+  .logo{display:flex;align-items:baseline;gap:7px;font-weight:800;letter-spacing:-.05em;font-size:19px;line-height:1}
+  .logo sup{font-family:var(--mono);font-size:8px;font-weight:400;letter-spacing:0;transform:translateY(-7px)}
+  .logo span{font-family:var(--mono);font-size:8.5px;font-weight:400;letter-spacing:.15em;text-transform:uppercase;margin-left:8px;color:var(--muted)}
+  .top-meta{justify-self:center;text-align:center;color:var(--muted)}
+  .top-right{justify-self:end;text-align:right;color:var(--muted)}
+  .top-right b{font-weight:400;color:var(--ink)}
+
+  /* ---------- hero ---------- */
+  .hero{padding-top:clamp(18px,2vw,30px);overflow:hidden}
+  .hero-meta{
+    display:flex;justify-content:space-between;gap:20px;padding:9px 0;
+    border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);
+    color:var(--muted);
+  }
+  .hero-meta span:nth-child(2){text-align:center}
+  .hero-meta span:last-child{text-align:right}
+  .hero-stage{
+    padding:clamp(14px,2vw,26px) 0 clamp(10px,1.4vw,18px);
+    overflow:hidden;position:relative;
+  }
+  .hero-stage::before,.hero-stage::after{
+    content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--rule-soft);z-index:2;
+  }
+  .hero-stage::before{left:0}
+  .hero-stage::after{right:0}
+  .hero-word{
+    margin:0;
+    display:flex;align-items:flex-start;justify-content:center;white-space:nowrap;
+    font-size:clamp(66px,16.2vw,300px);line-height:.74;font-weight:900;letter-spacing:var(--tracking);
+    text-transform:uppercase;transform:scaleX(var(--wd));transform-origin:center center;
+    transition:letter-spacing .18s ease;
+    will-change:transform;
+  }
+  .glyph{
+    appearance:none;-webkit-appearance:none;background:none;border:0;padding:0;margin:0;
+    font:inherit;font-weight:inherit;letter-spacing:inherit;line-height:inherit;text-transform:inherit;
+    color:inherit;cursor:pointer;position:relative;display:inline-block;
+    transition:color .2s ease,transform .2s ease;
+  }
+  .glyph::after{
+    content:"";position:absolute;left:4%;right:3%;bottom:.015em;height:.045em;background:var(--acid);
+    opacity:0;transition:opacity .2s ease;
+  }
+  .glyph:hover::after,.glyph:focus-visible::after{opacity:.55}
+  .glyph.is-selected::after{opacity:1}
+  .glyph.is-selected{color:var(--ink)}
+  .glyph.pop{animation:pop .32s cubic-bezier(.2,.8,.2,1)}
+  @keyframes pop{0%{transform:translateY(.04em) scale(.96)}60%{transform:translateY(-.012em) scale(1.015)}100%{transform:none}}
+  .hero-note{
+    display:flex;justify-content:space-between;gap:24px;align-items:flex-end;
+    padding:10px 0 16px;border-bottom:1px solid var(--ink);
+  }
+  .hero-note .instruction{max-width:380px;color:var(--muted);transition:color .3s}
+  .hero-note .instruction b{font-weight:400;color:var(--ink)}
+  .hero-note .selected-mark{
+    display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:9px;
+    letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
+  }
+  .selected-mark .swatch{width:16px;height:16px;background:var(--acid);border:1px solid var(--ink);display:inline-block}
+  .selected-mark b{font-weight:400;font-size:13px;letter-spacing:.04em}
+
+  /* ---------- controls ---------- */
+  .controls{padding:18px 0 20px;border-bottom:1px solid var(--ink)}
+  .control-grid{display:grid;grid-template-columns:1fr 1fr 1.15fr 1fr;gap:34px;align-items:start}
+  .control label{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:14px}
+  .control output{font-family:var(--mono);font-size:10px;letter-spacing:.08em;font-variant-numeric:tabular-nums}
+  input[type="range"]{
+    -webkit-appearance:none;appearance:none;display:block;width:100%;height:20px;margin:0;
+    background:transparent;cursor:ew-resize;
+  }
+  input[type="range"]::-webkit-slider-runnable-track{height:1px;background:var(--ink);border:0}
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:15px;height:15px;margin-top:-7px;
+    background:var(--acid);border:1px solid var(--ink);border-radius:0;
+  }
+  input[type="range"]::-moz-range-track{height:1px;background:var(--ink);border:0}
+  input[type="range"]::-moz-range-thumb{width:15px;height:15px;background:var(--acid);border:1px solid var(--ink);border-radius:0}
+  input[type="range"]:focus-visible{outline:1px dashed var(--ink);outline-offset:5px}
+  .control small{display:block;margin-top:8px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .toggle-wrap{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  .switch{
+    display:inline-flex;align-items:center;gap:10px;border:1px solid var(--ink);border-radius:999px;
+    background:transparent;padding:6px 15px 6px 7px;cursor:pointer;min-width:112px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  }
+  .switch .knob{
+    width:26px;height:16px;border-radius:999px;background:transparent;border:1px solid var(--ink);
+    position:relative;flex:none;
+  }
+  .switch .knob::after{
+    content:"";position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;
+    background:var(--ink);transition:transform .22s ease,background .22s ease;
+  }
+  .switch[aria-checked="true"]{background:var(--acid);color:#121212;border-color:#121212}
+  .switch[aria-checked="true"] .knob{border-color:#121212}
+  .switch[aria-checked="true"] .knob::after{transform:translateX(10px);background:#121212}
+  .reset{
+    border:1px solid var(--ink);background:transparent;padding:9px 14px;cursor:pointer;
+    font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+    transition:background .2s,color .2s;
+  }
+  .reset:hover,.reset:focus-visible{background:var(--ink);color:var(--paper);outline:none}
+  .control-actions{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+  .control-actions .mono{color:var(--faint);font-size:8px;line-height:1.6}
+
+  /* ---------- marquee ---------- */
+  .marquee{
+    background:var(--ink);color:var(--paper);overflow:hidden;border-top:1px solid var(--ink);
+    padding:16px 0 13px;position:relative;
+  }
+  .marquee-track{display:flex;width:max-content;animation:marq 34s linear infinite}
+  .marquee:hover .marquee-track{animation-play-state:paused}
+  .marquee-group{display:flex;align-items:center;flex:none}
+  .marquee-group span{
+    font-size:clamp(26px,3.5vw,52px);line-height:1;font-weight:800;letter-spacing:-.035em;
+    text-transform:uppercase;white-space:nowrap;padding:0 26px;
+  }
+  .marquee-group span.outline{
+    color:transparent;-webkit-text-stroke:1px var(--paper);
+  }
+  .marquee-group i{width:11px;height:11px;background:var(--acid);flex:none;display:block}
+  @keyframes marq{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+
+  /* ---------- section shell ---------- */
+  section{padding:clamp(56px,7vw,96px) 0}
+  .section-top{
+    display:flex;justify-content:space-between;gap:20px;padding-bottom:12px;border-bottom:1px solid var(--ink);
+    color:var(--muted);
+  }
+  .section-top span:last-child{text-align:right}
+  .section-heading{
+    display:grid;grid-template-columns:1.3fr .7fr;gap:clamp(30px,6vw,90px);align-items:end;
+    margin:22px 0 clamp(32px,4vw,54px);
+  }
+  .section-heading h2{
+    margin:0;font-weight:800;font-size:clamp(38px,5.8vw,84px);line-height:.92;letter-spacing:-.045em;
+    text-transform:uppercase;
+  }
+  .section-heading h2 em{font-style:normal;background:var(--acid);color:#121212;padding:0 .1em}
+  .section-heading p{margin:0 0 .4em;font-size:13px;line-height:1.75;color:var(--muted);max-width:380px;justify-self:end}
+
+  /* ---------- anatomy ---------- */
+  .anatomy{border-top:1px solid var(--ink)}
+  .anatomy-grid{display:grid;grid-template-columns:1.45fr .55fr;gap:clamp(24px,4vw,56px);align-items:start}
+  .plate{
+    border:1px solid var(--ink);background:var(--paper);position:relative;overflow:hidden;
+  }
+  .plate-tag{
+    position:absolute;top:0;left:0;background:var(--acid);color:#121212;border-right:1px solid var(--ink);
+    border-bottom:1px solid var(--ink);padding:7px 10px;z-index:2;
+    font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .plate svg{display:block;width:100%;height:auto}
+  .plate-caption{
+    display:flex;justify-content:space-between;gap:20px;border-top:1px solid var(--ink);
+    padding:10px 12px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  }
+  .anatomy-copy h3{
+    margin:0 0 18px;font-size:clamp(24px,2.5vw,36px);line-height:1.02;letter-spacing:-.035em;font-weight:800;
+    text-transform:uppercase;
+  }
+  .anatomy-copy p{margin:0 0 26px;font-size:13px;line-height:1.8;color:var(--muted)}
+  .anatomy-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--ink)}
+  .anatomy-list li{
+    display:grid;grid-template-columns:26px 1fr auto;gap:12px;align-items:baseline;
+    padding:11px 0;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.09em;text-transform:uppercase;
+  }
+  .anatomy-list li span:first-child{color:var(--faint)}
+  .anatomy-list li b{font-weight:400;font-family:var(--sans);font-size:11px;letter-spacing:.03em;text-transform:none}
+  .anatomy-list li b strong{font-family:var(--mono);font-size:9px;font-weight:400;letter-spacing:.08em}
+
+  /* ---------- inventory ---------- */
+  .inventory{border-top:1px solid var(--ink)}
+  .inventory-head{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:22px;
+  }
+  .inventory-head h2{margin:0;font-size:clamp(30px,3.6vw,50px);font-weight:800;letter-spacing:-.04em;line-height:1;text-transform:uppercase}
+  .inventory-head p{margin:0;max-width:320px;font-family:var(--mono);font-size:8.5px;line-height:1.7;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);text-align:right}
+  .glyph-grid{
+    display:grid;grid-template-columns:repeat(12,1fr);border-top:1px solid var(--ink);border-left:1px solid var(--ink);
+  }
+  .glyph-btn{
+    appearance:none;border:0;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);
+    background:transparent;color:var(--ink);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    font-size:clamp(14px,1.5vw,23px);font-weight:700;line-height:1;cursor:pointer;
+    transition:background .15s ease,color .15s ease;position:relative;
+  }
+  .glyph-btn:hover,.glyph-btn:focus-visible{background:var(--acid);color:#121212;outline:none}
+  .glyph-btn.in-use::after{
+    content:"";position:absolute;top:4px;right:4px;width:4px;height:4px;background:var(--ink);
+  }
+  .glyph-btn:hover.in-use::after,.glyph-btn:focus-visible.in-use::after{background:#121212}
+  .inventory-foot{display:flex;justify-content:space-between;gap:20px;margin-top:10px;color:var(--faint)}
+  .inventory-foot span{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+
+  /* ---------- specs ---------- */
+  .specs{border-top:1px solid var(--ink)}
+  .specs-grid{display:grid;grid-template-columns:1.5fr .5fr;gap:clamp(28px,4vw,60px);align-items:start}
+  table{width:100%;border-collapse:collapse;font-size:12px;text-align:left}
+  thead th{
+    font-family:var(--mono);font-size:8px;font-weight:400;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);padding:0 10px 10px 0;border-bottom:1px solid var(--ink);vertical-align:bottom;
+  }
+  tbody td{padding:15px 10px 15px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  tbody tr:hover td{background:rgba(216,255,62,.22)}
+  tbody td:first-child{font-weight:700;letter-spacing:-.01em}
+  tbody td:last-child{font-family:var(--mono);font-size:9px;letter-spacing:.05em;color:var(--muted);padding-right:0}
+  td .sample{display:block;font-size:10px;font-weight:400;color:var(--faint);margin-top:4px;font-family:var(--mono);letter-spacing:.06em}
+  .metrics{border:1px solid var(--ink)}
+  .metrics-head{background:var(--acid);color:#121212;padding:9px 12px;font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--ink)}
+  .metrics dl{margin:0;display:grid;grid-template-columns:1fr auto}
+  .metrics dt,.metrics dd{margin:0;padding:10px 12px;border-bottom:1px solid var(--rule);font-family:var(--mono);font-size:9px;letter-spacing:.06em}
+  .metrics dt{color:var(--muted);text-transform:uppercase}
+  .metrics dd{text-align:right;font-variant-numeric:tabular-nums}
+  .metrics dl :nth-last-child(1),.metrics dl :nth-last-child(2){border-bottom:0}
+  .metrics-note{padding:12px;font-size:10.5px;line-height:1.6;color:var(--muted);border-top:1px solid var(--ink)}
+  .formats{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .formats span{border:1px solid var(--ink);padding:5px 8px;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+
+  /* ---------- colophon ---------- */
+  .colophon{background:var(--ink);color:var(--paper);border-top:1px solid var(--ink);padding:0}
+  .colophon .wrap{padding-top:50px;padding-bottom:22px}
+  .colophon-top{display:grid;grid-template-columns:1.35fr .65fr .65fr;gap:40px;align-items:start}
+  .colophon h2{
+    margin:0 0 20px;font-size:clamp(56px,10vw,148px);line-height:.78;letter-spacing:-.06em;font-weight:900;
+    text-transform:uppercase;
+  }
+  .colophon h2 span{-webkit-text-stroke:1px var(--paper);color:transparent}
+  .colophon p{margin:0;max-width:330px;font-size:11.5px;line-height:1.8;color:rgba(239,237,228,.65)}
+  body.inverted .colophon p{color:rgba(18,18,18,.65)}
+  .colophon-col .mono{color:rgba(239,237,228,.45);margin-bottom:14px}
+  body.inverted .colophon-col .mono{color:rgba(18,18,18,.45)}
+  .colophon-col a,.colophon-col address{
+    display:block;font-style:normal;font-size:11.5px;line-height:2;color:rgba(239,237,228,.82);
+  }
+  body.inverted .colophon-col a,body.inverted .colophon-col address{color:rgba(18,18,18,.82)}
+  .colophon-col a:hover{color:var(--acid)}
+  body.inverted .colophon-col a:hover{color:#121212;background:var(--acid)}
+  .colophon-bottom{
+    display:flex;justify-content:space-between;gap:20px;align-items:center;
+    border-top:1px solid rgba(239,237,228,.22);margin-top:48px;padding-top:16px;
+    font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(239,237,228,.5);
+  }
+  body.inverted .colophon-bottom{border-top-color:rgba(18,18,18,.22);color:rgba(18,18,18,.55)}
+  .colophon-bottom .acid{color:var(--acid)}
+  body.inverted .colophon-bottom .acid{color:#121212;background:var(--acid);padding:2px 4px}
+  .visually-hidden{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+  :focus-visible{outline:1px dashed var(--ink);outline-offset:3px}
+
+  @media (max-width:1000px){
+    .control-grid{grid-template-columns:1fr 1fr;gap:26px 34px}
+    .anatomy-grid{grid-template-columns:1fr}
+    .anatomy-copy{display:grid;grid-template-columns:1fr 1fr;gap:0 40px;align-items:start}
+    .anatomy-copy h3,.anatomy-copy p{grid-column:1}
+    .anatomy-list{grid-column:2;grid-row:1/3}
+    .specs-grid{grid-template-columns:1fr}
+    .metrics{max-width:420px}
+    .colophon-top{grid-template-columns:1fr 1fr}
+    .colophon h2{grid-column:1/-1;margin-bottom:30px}
+  }
+  @media (max-width:720px){
+    .wrap,.rules{width:calc(100% - 32px)}
+    .rules{grid-template-columns:repeat(2,1fr)}
+    .top{grid-template-columns:1fr auto;gap:14px;padding:16px 0 13px}
+    .top-meta{display:none}
+    .top-right{font-size:8px}
+    .logo{font-size:16px}
+    .logo span{display:none}
+    .hero-meta{font-size:8px;letter-spacing:.08em}
+    .hero-meta span:nth-child(2){display:none}
+    .hero-word{font-size:clamp(64px,19vw,110px);line-height:.8;transform-origin:center}
+    .hero-note{flex-direction:column;align-items:flex-start;gap:14px}
+    .hero-note .instruction{max-width:100%}
+    .selected-mark{font-size:8px}
+    .control-grid{grid-template-columns:1fr;gap:24px}
+    .control-actions{flex-direction:row;align-items:center;justify-content:space-between;width:100%}
+    .control-actions .mono{max-width:55%}
+    .section-heading{grid-template-columns:1fr;gap:18px;align-items:start}
+    .section-heading p{justify-self:start}
+    .section-top span:last-child{display:none}
+    .anatomy-copy{display:block}
+    .anatomy-list{margin-top:8px}
+    .inventory-head{flex-direction:column;align-items:flex-start;gap:14px}
+    .inventory-head p{text-align:left}
+    .glyph-grid{grid-template-columns:repeat(9,1fr)}
+    .glyph-btn{font-size:16px}
+    .inventory-foot span:last-child{display:none}
+    .specs-grid{gap:30px}
+    table thead th:nth-child(2),table tbody td:nth-child(2){display:none}
+    tbody td{padding:12px 8px 12px 0;font-size:11px}
+    tbody td:last-child{font-size:8px}
+    .colophon .wrap{padding-top:38px}
+    .colophon-top{grid-template-columns:1fr;gap:28px}
+    .colophon-bottom{flex-direction:column;align-items:flex-start;gap:8px}
+    .marquee-group span{padding:0 18px}
+    .plate-caption span:last-child{display:none}
+    .plate-caption{justify-content:flex-start}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+    .marquee-track{animation:none;width:auto;overflow-x:auto}
+    .marquee-group[aria-hidden="true"]{display:none}
+  }
+</style>
+</head>
+<body>
+  <div class="rules" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="page">
+    <header class="wrap top">
+      <a class="logo" href="#top">MONOLITH<sup>®</sup><span>Nordic Letter Works</span></a>
+      <div class="top-meta mono">Neo-grotesque / specimen no. 001</div>
+      <div class="top-right mono">Oslo, NO<br><b>Edition 01 / 2026</b></div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="wrap">
+          <div class="hero-meta mono">
+            <span>A typeface in seven weights</span>
+            <span>Display cut / 15 vw</span>
+            <span>Mass · Counter · Silence</span>
+          </div>
+        </div>
+
+        <div class="hero-stage">
+          <h1 class="hero-word" id="heroWord" aria-label="Grotesk type specimen">
+            <button class="glyph is-selected" type="button" data-index="0" aria-label="Letter 1, G. Click to edit">G</button><button class="glyph" type="button" data-index="1" aria-label="Letter 2, R. Click to edit">R</button><button class="glyph" type="button" data-index="2" aria-label="Letter 3, O. Click to edit">O</button><button class="glyph" type="button" data-index="3" aria-label="Letter 4, T. Click to edit">T</button><button class="glyph" type="button" data-index="4" aria-label="Letter 5, E. Click to edit">E</button><button class="glyph" type="button" data-index="5" aria-label="Letter 6, S. Click to edit">S</button><button class="glyph" type="button" data-index="6" aria-label="Letter 7, K. Click to edit">K</button>
+          </h1>
+        </div>
+
+        <div class="wrap">
+          <div class="hero-note">
+            <p class="instruction mono">Click any letter to select it, then choose a glyph from the inventory below. <b>Seven letters, no ornament.</b></p>
+            <div class="selected-mark"><span class="swatch" aria-hidden="true"></span><span>Editing</span><b id="selectedReadout">01 / G</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="Specimen controls">
+        <div class="wrap">
+          <div class="control-grid">
+            <div class="control">
+              <label for="widthRange"><span class="mono">Width</span><output id="widthOut" for="widthRange">100%</output></label>
+              <input id="widthRange" type="range" min="82" max="128" step="1" value="100" aria-label="Adjust display width">
+              <small>Horizontal scale / live</small>
+            </div>
+            <div class="control">
+              <label for="trackRange"><span class="mono">Letter-spacing</span><output id="trackOut" for="trackRange">−0.058 EM</output></label>
+              <input id="trackRange" type="range" min="-0.12" max="0.02" step="0.002" value="-0.058" aria-label="Adjust letter spacing">
+              <small>Tight by default / −58 units</small>
+            </div>
+            <div class="control">
+              <div class="toggle-wrap">
+                <div>
+                  <label for="invertBtn" style="margin-bottom:10px"><span class="mono">Scheme</span></label>
+                  <button class="switch" id="invertBtn" type="button" role="switch" aria-checked="false">
+                    <span class="knob" aria-hidden="true"></span><span id="invertLabel">Paper / ink</span>
+                  </button>
+                  <small>Invert the specimen</small>
+                </div>
+              </div>
+            </div>
+            <div class="control">
+              <div class="control-actions">
+                <button class="reset" id="resetBtn" type="button">Reset specimen</button>
+                <span class="mono">Restores width, tracking,<br>scheme and the word.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="marquee" aria-label="Foundry manifesto">
+        <div class="marquee-track">
+          <div class="marquee-group">
+            <span>No ornament</span><i></i><span class="outline">No apology</span><i></i><span>Only mass</span><i></i><span class="outline">Counter</span><i></i><span>Silence</span><i></i>
+          </div>
+          <div class="marquee-group" aria-hidden="true">
+            <span>No ornament</span><i></i><span class="outline">No apology</span><i></i><span>Only mass</span><i></i><span class="outline">Counter</span><i></i><span>Silence</span><i></i>
+          </div>
+        </div>
+      </div>
+
+      <section class="anatomy" aria-labelledby="anatomy-title">
+        <div class="wrap">
+          <div class="section-top mono"><span>02 — Letter anatomy</span><span>Plate 001 / R</span></div>
+          <div class="section-heading">
+            <h2 id="anatomy-title">The architecture<br>of a <em>letter.</em></h2>
+            <p>Every decision is structural. MONOLITH is drawn on a 1000-unit em with a generous x-height, blunt terminals and counters that hold their shape at every size.</p>
+          </div>
+
+          <div class="anatomy-grid">
+            <figure class="plate" style="margin:0">
+              <span class="plate-tag">Fig. 01 — R / Black</span>
+              <svg viewBox="0 0 760 580" role="img" aria-label="Letter R anatomy diagram with dashed measurement callouts for cap height, x-height, stem, counter and shoulder">
+                <rect width="760" height="580" fill="none"/>
+                <g stroke="currentColor" opacity=".16" stroke-width="1">
+                  <line x1="60" y1="140" x2="700" y2="140"/>
+                  <line x1="60" y1="270" x2="700" y2="270"/>
+                  <line x1="60" y1="460" x2="700" y2="460"/>
+                  <line x1="150" y1="90" x2="150" y2="525"/>
+                  <line x1="395" y1="90" x2="395" y2="525"/>
+                  <line x1="610" y1="90" x2="610" y2="525"/>
+                </g>
+                <text x="122" y="468" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="390" font-weight="900" fill="currentColor" letter-spacing="-22">R</text>
+
+                <g stroke="currentColor" stroke-width="1" stroke-dasharray="5 5">
+                  <line x1="310" y1="140" x2="690" y2="140"/>
+                  <line x1="310" y1="270" x2="690" y2="270"/>
+                  <line x1="310" y1="460" x2="690" y2="460"/>
+                  <line x1="545" y1="140" x2="545" y2="460"/>
+                  <line x1="442" y1="190" x2="662" y2="190"/>
+                  <line x1="480" y1="250" x2="662" y2="250"/>
+                </g>
+                <g stroke="currentColor" stroke-width="1">
+                  <line x1="536" y1="140" x2="554" y2="140"/>
+                  <line x1="536" y1="460" x2="554" y2="460"/>
+                  <line x1="545" y1="148" x2="545" y2="452"/>
+                  <path d="M540 152 L545 144 L550 152" fill="none"/>
+                  <path d="M540 448 L545 456 L550 448" fill="none"/>
+                  <line x1="310" y1="332" x2="330" y2="332"/>
+                  <line x1="671" y1="190" x2="655" y2="190"/>
+                  <line x1="671" y1="250" x2="655" y2="250"/>
+                  <line x1="671" y1="140" x2="671" y2="460"/>
+                  <path d="M666 148 L671 140 L676 148" fill="none"/>
+                  <path d="M666 452 L671 460 L676 452" fill="none"/>
+                </g>
+                <g fill="currentColor">
+                  <rect x="536" y="133" width="7" height="7"/>
+                  <rect x="536" y="453" width="7" height="7"/>
+                  <rect x="667" y="133" width="7" height="7"/>
+                  <rect x="667" y="453" width="7" height="7"/>
+                </g>
+                <g font-family="SF Mono, Menlo, Consolas, monospace" font-size="8.5" fill="currentColor" letter-spacing="1">
+                  <text x="566" y="303" transform="rotate(90 566 303)">CAP HEIGHT / 720</text>
+                  <text x="682" y="303" transform="rotate(90 682 303)">STEM / 96</text>
+                  <text x="447" y="185">SHOULDER / 22°</text>
+                  <text x="487" y="245">COUNTER / 410</text>
+                  <text x="335" y="325">APERTURE</text>
+                  <text x="64" y="128" opacity=".45">760 — ASCENDER</text>
+                  <text x="64" y="484" opacity=".45">0 — BASELINE</text>
+                  <text x="64" y="166" opacity=".45">720 — CAP</text>
+                  <text x="64" y="292" opacity=".45">520 — X-HEIGHT</text>
+                </g>
+                <g fill="#d8ff3e" stroke="#121212" stroke-width="1">
+                  <rect x="112" y="98" width="55" height="17"/>
+                </g>
+                <text x="118" y="110" font-family="SF Mono, Menlo, Consolas, monospace" font-size="7.5" fill="#121212" letter-spacing=".8">SCALE 1:4</text>
+              </svg>
+              <figcaption class="plate-caption"><span>MONOLITH Black / 390 pt</span><span>Drawn at 1000 UPM</span><span>Oslo, 2026</span></figcaption>
+            </figure>
+
+            <div class="anatomy-copy">
+              <h3>Nothing decorative.<br>Everything deliberate.</h3>
+              <p>The counters are drawn first and the mass is fitted around them. A wide, square shoulder gives the face its catalogue presence; flat terminals keep the page quiet.</p>
+              <ul class="anatomy-list">
+                <li><span>01</span><b>Cap height</b><strong>720</strong></li>
+                <li><span>02</span><b>x-height</b><strong>520</strong></li>
+                <li><span>03</span><b>Stem</b><strong>96</strong></li>
+                <li><span>04</span><b>Counter</b><strong>410</strong></li>
+                <li><span>05</span><b>Aperture</b><strong>22°</strong></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="inventory" aria-labelledby="inventory-title">
+        <div class="wrap">
+          <div class="section-top mono"><span>03 — Glyph inventory</span><span>36 characters / basic latin</span></div>
+          <div class="inventory-head">
+            <h2 id="inventory-title">Choose a glyph.</h2>
+            <p>Click to replace the selected hero character. Selection is shown in acid. Click any letter above to change position.</p>
+          </div>
+          <div class="glyph-grid" id="glyphGrid" role="group" aria-label="Glyph inventory, A to Z and 0 to 9"></div>
+          <div class="inventory-foot"><span>Uppercase A—Z / Figures 0—9</span><span>Click to set / hover to inspect</span></div>
+          <div class="visually-hidden" id="liveRegion" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="specs" aria-labelledby="specs-title">
+        <div class="wrap">
+          <div class="section-top mono"><span>04 — Specification</span><span>Release 1.0 / variable + static</span></div>
+          <div class="section-heading">
+            <h2 id="specs-title">The <em>numbers.</em></h2>
+            <p>Seven weights, eight widths, one voice. MONOLITH is licensed for print, screen and environmental use.</p>
+          </div>
+          <div class="specs-grid">
+            <table>
+              <thead>
+                <tr><th scope="col">Style</th><th scope="col">Width</th><th scope="col">Weight</th><th scope="col">Tracking</th><th scope="col">Intended use</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>MONOLITH Hairline<span class="sample">A quiet statement</span></td><td>100</td><td>200</td><td>−8</td><td>Editorial body</td></tr>
+                <tr><td>MONOLITH Regular<span class="sample">The workhorse</span></td><td>100</td><td>400</td><td>−12</td><td>Text / interface</td></tr>
+                <tr><td>MONOLITH Medium<span class="sample">A firmer voice</span></td><td>100</td><td>500</td><td>−18</td><td>Subheads</td></tr>
+                <tr><td>MONOLITH Bold<span class="sample">Structure, stated</span></td><td>96</td><td>700</td><td>−26</td><td>Posters / covers</td></tr>
+                <tr><td>MONOLITH Black<span class="sample">GROTESK</span></td><td>92</td><td>900</td><td>−40</td><td>Display / mastheads</td></tr>
+              </tbody>
+            </table>
+            <aside class="metrics" aria-label="Font metrics">
+              <div class="metrics-head">Font metrics / UPM 1000</div>
+              <dl>
+                <dt>Units per em</dt><dd>1000</dd>
+                <dt>Cap height</dt><dd>720</dd>
+                <dt>x-height</dt><dd>520</dd>
+                <dt>Ascender</dt><dd>760</dd>
+                <dt>Descender</dt><dd>−240</dd>
+                <dt>Glyph count</dt><dd>612</dd>
+                <dt>Languages</dt><dd>38</dd>
+              </dl>
+              <div class="metrics-note">Static OTF and variable WOFF2. Trial licences on request; no subsets without permission.</div>
+              <div class="formats"><span>OTF</span><span>WOFF2</span><span>Variable</span><span>Print</span></div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="colophon" id="colophon">
+      <div class="wrap">
+        <div class="colophon-top">
+          <div>
+            <h2>Mono<span>lith</span></h2>
+            <p>A neo-grotesque cut for pages that refuse to whisper. Drawn by Nordic Letter Works between a printer’s margin and a northern winter.</p>
+          </div>
+          <div class="colophon-col">
+            <div class="mono">Foundry</div>
+            <address>Nordic Letter Works<br>Grønnegata 22<br>0350 Oslo, Norway</address>
+          </div>
+          <div class="colophon-col">
+            <div class="mono">Enquiries</div>
+            <a href="mailto:trial@nordicletter.example">trial@nordicletter.example</a>
+            <a href="#top">Request specimen</a>
+            <a href="#top">Licensing</a>
+          </div>
+        </div>
+        <div class="colophon-bottom">
+          <span>© 2026 Nordic Letter Works AS</span>
+          <span class="acid">Set in MONOLITH Grotesk</span>
+          <span>Colophon / 01—2026</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  var body = document.body;
+  var heroWord = document.getElementById('heroWord');
+  var glyphs = Array.prototype.slice.call(heroWord.querySelectorAll('.glyph'));
+  var widthRange = document.getElementById('widthRange');
+  var widthOut = document.getElementById('widthOut');
+  var trackRange = document.getElementById('trackRange');
+  var trackOut = document.getElementById('trackOut');
+  var invertBtn = document.getElementById('invertBtn');
+  var invertLabel = document.getElementById('invertLabel');
+  var resetBtn = document.getElementById('resetBtn');
+  var selectedReadout = document.getElementById('selectedReadout');
+  var glyphGrid = document.getElementById('glyphGrid');
+  var liveRegion = document.getElementById('liveRegion');
+
+  var selected = 0;
+  var letters = ['G','R','O','T','E','S','K'];
+  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+
+  function minus(v, digits){
+    var s = Number(v).toFixed(digits);
+    return s.replace('-', '−');
+  }
+
+  function updateSelectedUI(){
+    glyphs.forEach(function(g, i){
+      var active = i === selected;
+      g.classList.toggle('is-selected', active);
+      var ch = letters[i];
+      g.setAttribute('aria-label', 'Letter ' + (i + 1) + ', ' + ch + '. Click to edit');
+      g.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    selectedReadout.textContent = ('0' + (selected + 1)).slice(-2) + ' / ' + letters[selected];
+    Array.prototype.forEach.call(glyphGrid.children, function(btn){
+      btn.classList.toggle('in-use', btn.textContent === letters[selected]);
+    });
+  }
+
+  glyphs.forEach(function(g){
+    g.addEventListener('click', function(){
+      selected = Number(g.getAttribute('data-index'));
+      updateSelectedUI();
+      liveRegion.textContent = 'Editing letter ' + (selected + 1) + ', ' + letters[selected] + '.';
+    });
+  });
+
+  function setGlyph(index, ch, animate){
+    letters[index] = ch;
+    var g = glyphs[index];
+    g.textContent = ch;
+    if (animate){
+      g.classList.remove('pop');
+      void g.offsetWidth;
+      g.classList.add('pop');
+    }
+    updateSelectedUI();
+    liveRegion.textContent = 'Letter ' + (index + 1) + ' set to ' + ch + '.';
+  }
+
+  chars.forEach(function(ch){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'glyph-btn';
+    btn.textContent = ch;
+    btn.setAttribute('aria-label', 'Set selected hero character to ' + ch);
+    btn.addEventListener('click', function(){
+      setGlyph(selected, ch, true);
+    });
+    glyphGrid.appendChild(btn);
+  });
+
+  function applyWidth(){
+    var v = Number(widthRange.value);
+    heroWord.style.setProperty('--wd', (v / 100).toFixed(3));
+    widthOut.textContent = v + '%';
+  }
+
+  function applyTracking(){
+    var v = Number(trackRange.value);
+    heroWord.style.setProperty('--tracking', v.toFixed(3) + 'em');
+    trackOut.textContent = minus(v, 3) + ' EM';
+  }
+
+  widthRange.addEventListener('input', applyWidth);
+  trackRange.addEventListener('input', applyTracking);
+
+  invertBtn.addEventListener('click', function(){
+    var next = !body.classList.contains('inverted');
+    body.classList.toggle('inverted', next);
+    invertBtn.setAttribute('aria-checked', next ? 'true' : 'false');
+    invertLabel.textContent = next ? 'Ink / paper' : 'Paper / ink';
+    liveRegion.textContent = next ? 'Inverted scheme: ink paper.' : 'Standard scheme: paper ink.';
+  });
+
+  resetBtn.addEventListener('click', function(){
+    widthRange.value = '100';
+    trackRange.value = '-0.058';
+    applyWidth();
+    applyTracking();
+    letters = ['G','R','O','T','E','S','K'];
+    glyphs.forEach(function(g, i){ g.textContent = letters[i]; });
+    selected = 0;
+    body.classList.remove('inverted');
+    invertBtn.setAttribute('aria-checked', 'false');
+    invertLabel.textContent = 'Paper / ink';
+    updateSelectedUI();
+    liveRegion.textContent = 'Specimen reset.';
+  });
+
+  applyWidth();
+  applyTracking();
+  updateSelectedUI();
+})();
+</script>
+</body>
+</html>

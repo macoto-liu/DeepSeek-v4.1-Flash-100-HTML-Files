@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura — an interactive light painting</title>
+<style>
+  :root{
+    --bg:#06060b;
+    --paper:#f1ece3;
+    --muted:rgba(241,236,227,.44);
+    --faint:rgba(241,236,227,.22);
+    --line:rgba(241,236,227,.16);
+    --accent:#4de0c9;
+    --pad:clamp(20px,3.6vw,46px);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--paper);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #aura{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    cursor:crosshair;
+    touch-action:none;
+    filter:blur(3.2px);
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:
+      radial-gradient(120% 95% at 50% 46%, transparent 30%, rgba(0,0,0,.38) 72%, rgba(0,0,0,.78) 100%),
+      linear-gradient(180deg, rgba(0,0,0,.34) 0%, transparent 18%, transparent 78%, rgba(0,0,0,.55) 100%);
+  }
+  .grain{
+    position:fixed;inset:-20%;z-index:3;pointer-events:none;
+    opacity:.5;mix-blend-mode:overlay;
+    background-repeat:repeat;
+  }
+  .hud{
+    position:fixed;inset:0;z-index:4;pointer-events:none;
+    padding:var(--pad);
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .top{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+  }
+  .masthead{
+    display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  }
+  .wordmark{
+    font-size:12px;letter-spacing:.46em;text-transform:uppercase;
+    color:var(--paper);font-weight:600;
+  }
+  .masthead .rule{
+    display:block;width:34px;height:1px;background:var(--faint);
+  }
+  .masthead .sub{
+    font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);
+  }
+  .meta{
+    text-align:right;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--muted);line-height:1.9;
+  }
+  .meta b{color:var(--paper);font-weight:400}
+  .edge-note{
+    position:fixed;z-index:4;pointer-events:none;
+    font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--faint);
+    white-space:nowrap;
+  }
+  .edge-note.left{
+    left:calc(var(--pad) - 4px);top:50%;transform:translate(-50%,-50%) rotate(180deg);
+    writing-mode:vertical-rl;
+  }
+  .edge-note.right{
+    right:calc(var(--pad) - 4px);top:50%;transform:translate(50%,-50%);
+    writing-mode:vertical-rl;
+  }
+  .bottom{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:36px;
+  }
+  .statement-wrap{max-width:min(760px,72vw);}
+  .eyebrow{
+    display:flex;align-items:center;gap:12px;
+    font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 clamp(14px,2.2vh,26px);
+  }
+  .eyebrow::before{
+    content:"";width:26px;height:1px;background:var(--accent);
+    box-shadow:0 0 12px var(--accent);
+  }
+  h1{
+    margin:0;
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-weight:400;
+    font-size:clamp(3.5rem,10.5vw,10.5rem);
+    line-height:.84;
+    letter-spacing:-.035em;
+    color:#f4efe6;
+    text-shadow:0 0 60px rgba(0,0,0,.25);
+  }
+  h1 em{
+    font-style:italic;
+    color:rgba(244,239,230,.86);
+  }
+  .controls{
+    pointer-events:auto;
+    display:flex;flex-direction:column;align-items:flex-end;gap:16px;
+    padding-bottom:2px;
+  }
+  .palette{
+    display:flex;align-items:center;gap:2px;
+    padding:5px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:rgba(12,12,18,.42);
+    -webkit-backdrop-filter:blur(14px);
+    backdrop-filter:blur(14px);
+  }
+  .swatch{
+    appearance:none;border:0;background:transparent;color:var(--muted);
+    font:inherit;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    display:flex;align-items:center;gap:7px;
+    padding:9px 13px;border-radius:999px;cursor:pointer;
+    transition:color .3s ease,background .3s ease;
+  }
+  .swatch .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--dot,var(--accent));
+    box-shadow:0 0 8px var(--dot,var(--accent));
+    transition:transform .3s ease;
+  }
+  .swatch:hover{color:var(--paper)}
+  .swatch[aria-pressed="true"]{
+    color:var(--paper);
+    background:rgba(241,236,227,.09);
+  }
+  .swatch[aria-pressed="true"] .dot{transform:scale(1.35)}
+  .clear{
+    appearance:none;border:0;background:transparent;color:var(--muted);
+    font:inherit;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    display:flex;align-items:center;gap:9px;cursor:pointer;padding:7px 2px;
+    transition:color .3s ease;
+  }
+  .clear svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.2}
+  .clear:hover{color:var(--paper)}
+  .hint{
+    font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+    text-align:right;
+  }
+  button:focus-visible{
+    outline:1px solid var(--accent);
+    outline-offset:4px;
+    border-radius:999px;
+  }
+  @media (max-width:760px){
+    .edge-note{display:none}
+    .statement-wrap{max-width:100%}
+    .bottom{flex-direction:column;align-items:flex-start;gap:clamp(24px,4vh,38px)}
+    .controls{align-items:flex-start;width:100%}
+    .hint{text-align:left}
+    .meta{font-size:9px;letter-spacing:.14em}
+    h1{font-size:clamp(3.2rem,15vw,6rem)}
+  }
+  @media (max-height:560px){
+    h1{font-size:clamp(2.8rem,8vw,5rem)}
+    .eyebrow{margin-bottom:10px}
+  }
+</style>
+</head>
+<body>
+<canvas id="aura" aria-label="An interactive light painting. Move the pointer to release plumes of colour."></canvas>
+<div class="vignette"></div>
+<div class="grain" id="grain"></div>
+
+<div class="edge-note left" aria-hidden="true">Additive light · field study 021</div>
+<div class="edge-note right" aria-hidden="true">Move slowly · let it bloom</div>
+
+<div class="hud">
+  <header class="top">
+    <div class="masthead">
+      <span class="wordmark">Aura</span>
+      <span class="rule" aria-hidden="true"></span>
+      <span class="sub">An interactive light painting</span>
+    </div>
+    <div class="meta">
+      <div>Exposure <b>live</b></div>
+      <div>Nº 021 — MMXXVI</div>
+    </div>
+  </header>
+
+  <div class="bottom">
+    <div class="statement-wrap">
+      <p class="eyebrow">Move to paint · touch and drag</p>
+      <h1>trace<br><em>the air.</em></h1>
+    </div>
+
+    <div class="controls">
+      <div class="palette" role="group" aria-label="Colour palette">
+        <button class="swatch" type="button" data-palette="0" aria-pressed="true" style="--dot:#4de0c9">
+          <span class="dot" aria-hidden="true"></span>Aurora
+        </button>
+        <button class="swatch" type="button" data-palette="1" aria-pressed="false" style="--dot:#ffb347">
+          <span class="dot" aria-hidden="true"></span>Ember
+        </button>
+        <button class="swatch" type="button" data-palette="2" aria-pressed="false" style="--dot:#4c7dff">
+          <span class="dot" aria-hidden="true"></span>Tidal
+        </button>
+      </div>
+      <button class="clear" type="button" id="clearBtn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M7 7l10 10"/></svg>
+        Clear the air
+      </button>
+      <div class="hint" id="paletteHint">Aurora · teal, violet, rose</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById("aura");
+  var ctx = canvas.getContext("2d");
+  var hint = document.getElementById("paletteHint");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var PALETTES = [
+    { name: "Aurora", note: "Aurora · teal, violet, rose", accent: "#4de0c9", colors: ["#4de0c9", "#9a6bff", "#ff7fae"] },
+    { name: "Ember", note: "Ember · amber, coral, red", accent: "#ffb347", colors: ["#ffb347", "#ff6b57", "#e8344a"] },
+    { name: "Tidal", note: "Tidal · blue, aqua, white", accent: "#4c7dff", colors: ["#4c7dff", "#58e6d9", "#e8f3ff"] }
+  ];
+  var current = 0;
+  var sprites = [];
+
+  function makeSprite(hex) {
+    var c = document.createElement("canvas");
+    c.width = c.height = 160;
+    var g = c.getContext("2d");
+    var grad = g.createRadialGradient(80, 80, 0, 80, 80, 80);
+    grad.addColorStop(0, hexToRgba(hex, 0.22));
+    grad.addColorStop(0.30, hexToRgba(hex, 0.14));
+    grad.addColorStop(0.55, hexToRgba(hex, 0.06));
+    grad.addColorStop(0.80, hexToRgba(hex, 0.015));
+    grad.addColorStop(1, hexToRgba(hex, 0));
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 160, 160);
+    return c;
+  }
+
+  function hexToRgba(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+  }
+
+  function buildSprites() {
+    sprites = PALETTES.map(function (p) {
+      return p.colors.map(makeSprite);
+    });
+  }
+  buildSprites();
+
+  var W = 0, H = 0, DPR = 1;
+  var particles = [];
+  var pointer = { x: 0, y: 0, px: 0, py: 0, seen: false, last: 0 };
+  var introFrame = 0;
+  var introTotal = reduceMotion ? 60 : 190;
+  var fadeRate = 0.024;
+  var clearing = 0;
+  var startTime = performance.now();
+  var lastTime = startTime;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var oldW = W, oldH = H;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#06060b";
+    ctx.fillRect(0, 0, W, H);
+    if (oldW && oldH) {
+      var sx = W / oldW, sy = H / oldH;
+      for (var i = 0; i < particles.length; i++) {
+        particles[i].x *= sx;
+        particles[i].y *= sy;
+        particles[i].size *= (sx + sy) / 2;
+      }
+    }
+  }
+
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function spawn(x, y, count, power, colorHint) {
+    var pal = sprites[current];
+    var baseX = pointer.seen ? (x - pointer.px) * 0.035 : 0;
+    var baseY = pointer.seen ? (y - pointer.py) * 0.035 : 0;
+    for (var i = 0; i < count; i++) {
+      if (particles.length > 980) particles.shift();
+      var ang = Math.random() * Math.PI * 2;
+      var radius = Math.random() * Math.random() * 40;
+      var colorIndex;
+      if (colorHint !== undefined && Math.random() < 0.84) {
+        colorIndex = colorHint;
+      } else {
+        colorIndex = Math.random() < 0.74 ? 0 : (Math.random() < 0.5 ? 1 : 2);
+      }
+      var size = rand(58, 200) * (power || 1);
+      particles.push({
+        x: x + Math.cos(ang) * radius,
+        y: y + Math.sin(ang) * radius,
+        vx: Math.cos(ang) * rand(0.02, 0.24) + baseX + rand(-0.05, 0.05),
+        vy: Math.sin(ang) * rand(0.02, 0.2) + baseY - rand(0.03, 0.16),
+        size: size,
+        grow: rand(0.2, 0.62),
+        sprite: pal[colorIndex],
+        life: 0,
+        max: rand(210, 460),
+        alpha: rand(0.010, 0.028) * (power || 1),
+        seed: Math.random() * 1000,
+        spin: rand(-0.0015, 0.0015)
+      });
+    }
+  }
+
+  function introPoint(t) {
+    // A gentle plume drifting across the upper air.
+    var p0 = { x: W * 0.27, y: H * 0.60 };
+    var p1 = { x: W * 0.36, y: H * 0.20 };
+    var p2 = { x: W * 0.66, y: H * 0.13 };
+    var p3 = { x: W * 0.79, y: H * 0.40 };
+    var u = 1 - t;
+    var x = u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x;
+    var y = u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y;
+    return { x: x, y: y };
+  }
+
+  var introSpawned = false;
+  function runIntro() {
+    if (introSpawned) return;
+    introFrame++;
+    var t = Math.min(introFrame / introTotal, 1);
+    var p = introPoint(t);
+    var hue = t < 0.38 ? 0 : (t < 0.72 ? 1 : 2);
+    var wobble = Math.sin(t * Math.PI * 3.2) * 30;
+    spawn(p.x + wobble + rand(-36, 36), p.y + Math.cos(t * Math.PI * 2.2) * 22 + rand(-28, 28), 2, 0.95, hue);
+    if (introFrame % 2 === 0) {
+      var hue2 = t < 0.3 ? 0 : (t < 0.6 ? 1 : 2);
+      spawn(p.x - wobble * 0.6 + rand(-58, 58), p.y + rand(-44, 44), 1, 0.8, hue2);
+    }
+    if (introFrame >= introTotal) introSpawned = true;
+  }
+
+  function onPointerMove(e) {
+    var x = e.clientX, y = e.clientY;
+    if (!pointer.seen) {
+      pointer.x = pointer.px = x;
+      pointer.y = pointer.py = y;
+      pointer.seen = true;
+      return;
+    }
+    pointer.px = pointer.x;
+    pointer.py = pointer.y;
+    pointer.x = x;
+    pointer.y = y;
+    var dist = Math.hypot(x - pointer.px, y - pointer.py);
+    if (dist < 0.5) return;
+    var steps = Math.min(9, Math.max(1, Math.round(dist / 14)));
+    for (var i = 0; i < steps; i++) {
+      var t = i / steps;
+      spawn(pointer.px + (x - pointer.px) * t, pointer.py + (y - pointer.py) * t, 1, 0.72);
+    }
+  }
+
+  window.addEventListener("pointermove", onPointerMove, { passive: true });
+  window.addEventListener("pointerdown", function (e) {
+    if (e.target.closest && e.target.closest(".palette,.clear")) return;
+    pointer.x = e.clientX; pointer.y = e.clientY;
+    spawn(e.clientX, e.clientY, 10, 1.25);
+  }, { passive: true });
+
+  // An inhabited screen: spawn a small ambient field even before the intro finishes.
+  for (var a = 0; a < 40; a++) {
+    var p = introPoint(Math.random() * 0.75);
+    spawn(p.x + rand(-85, 85), p.y + rand(-75, 75), 1, 0.8);
+  }
+
+  function tick(now) {
+    var dt = Math.min(2.2, (now - lastTime) / 16.6667);
+    lastTime = now;
+    var time = now - startTime;
+
+    if (!reduceMotion) {
+      runIntro();
+    } else if (!introSpawned) {
+      var ip = introPoint(0.72);
+      spawn(ip.x, ip.y, 24, 1.1);
+      introSpawned = true;
+    }
+
+    ctx.globalCompositeOperation = "source-over";
+    if (clearing > 0) {
+      fadeRate = 0.26;
+      clearing -= dt;
+      if (clearing <= 0) {
+        ctx.fillStyle = "#06060b";
+        ctx.fillRect(0, 0, W, H);
+        fadeRate = 0.024;
+      }
+    }
+    ctx.fillStyle = "rgba(6,6,11," + fadeRate + ")";
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.globalCompositeOperation = "lighter";
+    var alive = [];
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.life += dt;
+      var lifeK = 1 - p.life / p.max;
+      if (lifeK <= 0) continue;
+
+      p.vx += Math.sin(time * 0.00045 + p.seed) * 0.0022 * dt;
+      p.vy -= 0.0028 * dt;
+      p.vx *= Math.pow(0.994, dt);
+      p.vy *= Math.pow(0.995, dt);
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+
+      var grow = 1 + (1 - lifeK) * p.grow;
+      var size = p.size * grow;
+      var alpha = p.alpha * Math.pow(lifeK, 1.7);
+      if (clearing > 0) alpha *= 0.25;
+
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      ctx.drawImage(p.sprite, p.x - size / 2, p.y - size / 2, size, size);
+      alive.push(p);
+    }
+    particles = alive;
+    ctx.globalAlpha = 1;
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // Palette controls
+  var swatches = Array.prototype.slice.call(document.querySelectorAll(".swatch"));
+  function setPalette(index) {
+    current = index;
+    var pal = PALETTES[index];
+    document.documentElement.style.setProperty("--accent", pal.accent);
+    hint.textContent = pal.note;
+    swatches.forEach(function (b, i) {
+      b.setAttribute("aria-pressed", i === index ? "true" : "false");
+    });
+    // A small puff acknowledges the switch, at the pointer or mid-screen.
+    var bx = pointer.seen ? pointer.x : W * 0.5;
+    var by = pointer.seen ? pointer.y : H * 0.45;
+    spawn(bx, by, 18, 1.15);
+  }
+  swatches.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setPalette(parseInt(button.getAttribute("data-palette"), 10));
+    });
+  });
+
+  document.getElementById("clearBtn").addEventListener("click", function () {
+    introSpawned = true;
+    particles.length = 0;
+    clearing = 45;
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" || e.key === "c" || e.key === "C") {
+      if (document.activeElement && document.activeElement.tagName === "BUTTON") return;
+      introSpawned = true;
+      particles.length = 0;
+      clearing = 45;
+    }
+  });
+
+  // Grain: generated locally, so the page stays entirely self-contained.
+  (function makeGrain() {
+    var g = document.createElement("canvas");
+    g.width = g.height = 140;
+    var gc = g.getContext("2d");
+    var img = gc.createImageData(140, 140);
+    for (var i = 0; i < img.data.length; i += 4) {
+      var v = Math.random() * 255;
+      img.data[i] = v;
+      img.data[i + 1] = v;
+      img.data[i + 2] = v;
+      img.data[i + 3] = Math.random() * 34;
+    }
+    gc.putImageData(img, 0, 0);
+    var el = document.getElementById("grain");
+    el.style.backgroundImage = "url(" + g.toDataURL("image/png") + ")";
+    el.style.backgroundSize = "140px 140px";
+  })();
+})();
+</script>
+</body>
+</html>

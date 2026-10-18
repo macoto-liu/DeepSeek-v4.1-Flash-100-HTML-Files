@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Notes, vol. 6 — a working sketchbook</title>
+<style>
+  :root{
+    --desk: #c9bda6;
+    --desk-deep: #b7aa92;
+    --paper: #f7f0dd;
+    --paper-r: #f5ecd6;
+    --paper-edge: #e6d9bd;
+    --ink: #35352c;
+    --ink-soft: #6b6758;
+    --graphite: #8b8779;
+    --grid: rgba(84,122,158,.13);
+    --grid-bold: rgba(84,122,158,.2);
+    --red: #ab3a2b;
+    --yellow: #f2d87a;
+    --pink: #efb6b9;
+    --blue-note: #bad2d2;
+    --tape: rgba(233,220,184,.82);
+    --hand: "Bradley Hand", "Chalkboard SE", "Marker Felt", "Noteworthy", "Segoe Print", "Comic Sans MS", cursive;
+    --mono: "Courier New", "SFMono-Regular", Courier, monospace;
+    --shadow: rgba(66,52,28,.24);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    padding:0;
+    color:var(--ink);
+    background-color:var(--desk);
+    background-image:
+      radial-gradient(ellipse at 24% 4%, rgba(255,255,255,.32), transparent 48%),
+      radial-gradient(ellipse at 78% 92%, rgba(80,62,36,.18), transparent 55%),
+      repeating-linear-gradient(45deg, rgba(82,66,40,.028) 0 2px, transparent 2px 7px),
+      repeating-linear-gradient(-45deg, rgba(82,66,40,.02) 0 1px, transparent 1px 6px);
+    font-family:var(--hand);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(242,216,122,.8); color:#2b2b24}
+
+  .desk{
+    min-height:100svh;
+    padding:clamp(18px,3vw,38px) clamp(14px,3.4vw,48px) clamp(20px,2.6vw,34px);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .desk-meta{
+    width:100%;
+    max-width:1380px;
+    margin:0 auto clamp(28px,4vh,44px);
+    display:flex; align-items:center; justify-content:space-between; gap:18px;
+    font-family:var(--mono);
+    font-size:9px; letter-spacing:.16em; text-transform:uppercase;
+    color:rgba(53,49,38,.64);
+  }
+  .desk-meta .left{display:flex; align-items:center; gap:10px}
+  .desk-meta .left::before{
+    content:""; width:18px; height:18px; border:1px solid currentColor;
+    border-radius:50% 46% 52% 48%; transform:rotate(-8deg);
+  }
+  .desk-meta .right{display:flex; align-items:center; gap:18px}
+  .desk-meta .hint{opacity:.72}
+  .desk-meta .arrow{font-family:var(--hand); font-size:13px; letter-spacing:0}
+
+  /* ---------- book ---------- */
+  .book{
+    position:relative;
+    width:100%;
+    min-width:0;
+    max-width:1380px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:minmax(0,.94fr) 46px minmax(0,1.16fr);
+    perspective:1800px;
+    filter:drop-shadow(0 26px 34px rgba(57,44,23,.3));
+  }
+  .page{
+    position:relative;
+    min-width:0;
+    min-height:clamp(640px, calc(100svh - 158px), 830px);
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      radial-gradient(ellipse at 24% 12%, rgba(255,255,255,.65), transparent 55%),
+      radial-gradient(ellipse at 84% 88%, rgba(160,128,74,.08), transparent 50%);
+    background-size:25px 25px, 25px 25px, 100% 100%, 100% 100%;
+    padding:clamp(28px,3.2vw,46px);
+  }
+  .page-left{
+    border-radius:4px 1px 2px 5px;
+    box-shadow:
+      inset -22px 0 30px -28px rgba(53,42,22,.55),
+      inset 1px 0 0 rgba(255,255,255,.7);
+    display:flex;
+    flex-direction:column;
+    z-index:3;
+  }
+  .page-right{
+    background-color:var(--paper-r);
+    border-radius:1px 4px 5px 2px;
+    box-shadow:
+      inset 22px 0 30px -28px rgba(53,42,22,.5),
+      inset -1px 0 0 rgba(255,255,255,.55);
+    padding-left:clamp(38px,4vw,58px);
+    z-index:2;
+    overflow:hidden;
+    transform-origin:left center;
+  }
+  .page-right::before{
+    content:"";
+    position:absolute;
+    left:26px; top:0; bottom:0;
+    width:1px;
+    background:rgba(171,58,43,.22);
+    pointer-events:none;
+  }
+  .page-right::after{
+    content:"";
+    position:absolute;
+    right:0; bottom:0;
+    width:44px; height:44px;
+    background:linear-gradient(135deg, transparent 0 49%, rgba(120,98,60,.12) 50%, rgba(245,236,214,.9) 51% 100%);
+    box-shadow:-2px -2px 5px rgba(70,55,30,.12);
+    pointer-events:none;
+  }
+  .page-left::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:inherit;
+    background-image:radial-gradient(circle at 12% 8%, rgba(91,73,42,.09) 0 1px, transparent 1.4px),
+      radial-gradient(circle at 72% 63%, rgba(91,73,42,.07) 0 1px, transparent 1.4px);
+    background-size:37px 41px, 53px 47px;
+    opacity:.6;
+    pointer-events:none;
+    mix-blend-mode:multiply;
+  }
+  .page-left > *{position:relative; z-index:2}
+
+  /* ---------- spiral binding ---------- */
+  .binding{
+    position:relative;
+    z-index:5;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-evenly;
+    padding:20px 0;
+    background:
+      linear-gradient(90deg, rgba(60,45,24,.2), transparent 30%, transparent 70%, rgba(60,45,24,.2));
+  }
+  .binding::before{
+    content:"";
+    position:absolute; top:6%; bottom:6%; left:50%;
+    width:1px;
+    background:rgba(80,65,40,.18);
+  }
+  .ring{
+    position:relative;
+    width:46px; height:14px;
+    border-radius:9px;
+    border:1.5px solid #969083;
+    background:linear-gradient(180deg, #f1ece0 0%, #c6c0b2 32%, #918b7e 54%, #d8d2c5 76%, #f3eee3 100%);
+    box-shadow:
+      0 2px 3px rgba(60,45,22,.3),
+      inset 0 1px 1px rgba(255,255,255,.8),
+      inset 0 -1px 1px rgba(0,0,0,.12);
+    transform:rotate(-2.5deg);
+  }
+  .ring:nth-child(3n){transform:rotate(1.6deg); width:44px}
+  .ring:nth-child(4n){transform:rotate(-.8deg); width:48px}
+  .ring::before,.ring::after{
+    content:"";
+    position:absolute; top:50%;
+    width:7px; height:7px;
+    border-radius:50%;
+    background:#a89b82;
+    box-shadow:inset 0 1px 2px rgba(40,30,15,.6), 0 1px 0 rgba(255,255,255,.5);
+    transform:translateY(-50%);
+  }
+  .ring::before{left:-13px}
+  .ring::after{right:-13px}
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    position:absolute;
+    z-index:9;
+    top:-31px;
+    left:clamp(20px,2.8vw,38px);
+    display:flex;
+    align-items:flex-end;
+    gap:5px;
+  }
+  .tab{
+    appearance:none;
+    position:relative;
+    min-width:clamp(74px, 6.4vw, 94px);
+    height:34px;
+    padding:5px 12px 7px;
+    border:1.5px solid var(--ink);
+    border-bottom:none;
+    border-radius:12px 13px 0 0;
+    background:#eee2c6;
+    color:var(--ink);
+    font-family:var(--hand);
+    font-size:clamp(13px,1.12vw,16px);
+    line-height:1;
+    cursor:pointer;
+    transform:rotate(-1.4deg);
+    transition:height .22s ease, background .22s ease, transform .22s ease;
+  }
+  .tab:nth-child(2){background:#ecd8d4; transform:rotate(.8deg)}
+  .tab:nth-child(3){background:#dbe3d4; transform:rotate(-.6deg)}
+  .tab:hover{height:39px}
+  .tab[aria-selected="true"]{
+    height:40px;
+    background:var(--yellow);
+    transform:rotate(0deg) translateY(1px);
+    box-shadow:0 -2px 0 rgba(53,53,44,.06);
+  }
+  .tab[aria-selected="true"]::after{
+    content:"";
+    position:absolute;
+    left:10px; right:10px; bottom:4px;
+    height:2px;
+    background:currentColor;
+    opacity:.35;
+    border-radius:50%;
+    transform:rotate(-.6deg);
+  }
+  .tab:focus-visible{outline:2px dashed var(--ink); outline-offset:3px}
+
+  /* ---------- left page content ---------- */
+  .cover-brand{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    font-family:var(--mono);
+    font-size:9px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:clamp(20px,4vh,42px);
+  }
+  .cover-brand .mark{display:flex; align-items:center; gap:9px}
+  .cover-brand .mark svg{width:18px; height:18px; flex:0 0 auto}
+  .stamp{
+    font-family:var(--mono);
+    font-size:7px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--red);
+    line-height:1.5;
+    padding:5px 7px;
+    border:1px solid rgba(171,58,43,.55);
+    outline:1px solid rgba(171,58,43,.22);
+    outline-offset:2px;
+    transform:rotate(4deg);
+    text-align:center;
+    opacity:.9;
+  }
+  .cover-title{position:relative; margin-bottom:clamp(16px,3vh,26px)}
+  .cover-eyebrow{
+    margin:0 0 8px;
+    font-size:15px;
+    color:var(--ink-soft);
+    transform:rotate(-1deg);
+  }
+  .cover-title h1{
+    margin:0;
+    font-family:var(--hand);
+    font-size:clamp(62px, 7vw, 92px);
+    font-weight:400;
+    line-height:.8;
+    letter-spacing:-.035em;
+    color:var(--ink);
+    transform:rotate(-1.6deg);
+    text-shadow:1px 1px 0 rgba(255,255,255,.4);
+  }
+  .cover-title h1 .period{color:var(--red)}
+  .vol-badge{
+    position:absolute;
+    right:2%;
+    top:16%;
+    width:clamp(58px,6vw,74px);
+    height:clamp(58px,6vw,74px);
+    display:grid;
+    place-items:center;
+    border:1.5px solid var(--ink);
+    border-radius:50% 47% 52% 45%;
+    transform:rotate(9deg);
+    font-family:var(--hand);
+    font-size:clamp(16px,1.5vw,20px);
+    line-height:1.05;
+    text-align:center;
+    color:var(--ink);
+    background:rgba(247,240,221,.55);
+  }
+  .vol-badge::after{
+    content:"";
+    position:absolute; inset:4px;
+    border:1px dashed rgba(53,53,44,.3);
+    border-radius:47% 52% 46% 53%;
+  }
+  .tagline{
+    margin:12px 0 0;
+    font-size:clamp(16px,1.5vw,20px);
+    color:var(--ink-soft);
+    transform:rotate(-.7deg);
+  }
+  .cover-note{
+    margin:0 0 clamp(18px,3vh,28px);
+    max-width:34ch;
+    font-size:clamp(14px,1.24vw,16px);
+    line-height:1.6;
+    color:#555144;
+  }
+  .cover-note .hl{
+    background:linear-gradient(180deg, transparent 38%, rgba(242,216,122,.75) 38% 92%, transparent 92%);
+    padding:0 2px;
+  }
+  .cover-note .aside{
+    display:inline-block;
+    transform:rotate(-2deg);
+    color:var(--red);
+    font-size:.92em;
+    margin-left:4px;
+  }
+
+  .pen-block{
+    border-top:1px dashed rgba(53,53,44,.35);
+    padding-top:14px;
+    margin-bottom:clamp(18px,3vh,24px);
+  }
+  .pen-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    margin-bottom:10px;
+  }
+  .pen-head .label{font-size:15px; letter-spacing:.01em}
+  .pen-head .name{
+    font-family:var(--mono);
+    font-size:8px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .swatches{display:flex; align-items:center; gap:11px; flex-wrap:wrap}
+  .swatch{
+    appearance:none;
+    width:25px; height:25px;
+    border-radius:50% 46% 52% 48%;
+    border:1.7px solid var(--ink);
+    background:var(--c);
+    cursor:pointer;
+    padding:0;
+    position:relative;
+    transition:transform .16s ease;
+    box-shadow:inset -2px -2px 3px rgba(0,0,0,.14), inset 1px 1px 2px rgba(255,255,255,.2);
+  }
+  .swatch:hover{transform:scale(1.13) rotate(-4deg)}
+  .swatch:focus-visible{outline:2px dashed var(--ink); outline-offset:3px}
+  .swatch[aria-pressed="true"]::after{
+    content:"";
+    position:absolute;
+    inset:-5px;
+    border:1.4px solid var(--ink);
+    border-radius:48% 52% 46% 54%;
+    transform:rotate(6deg);
+  }
+  .pen-note{
+    margin:9px 0 0;
+    font-size:12.5px;
+    color:var(--graphite);
+    transform:rotate(-.6deg);
+  }
+
+  .cover-bottom{margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap}
+  .turn-btn{
+    appearance:none;
+    display:inline-flex; align-items:center; gap:11px;
+    padding:11px 17px 12px;
+    border:1.6px solid var(--ink);
+    border-radius:14px 5px 13px 6px / 6px 13px 5px 14px;
+    background:rgba(247,240,221,.6);
+    color:var(--ink);
+    font-family:var(--hand);
+    font-size:17px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:2px 2px 0 rgba(53,53,44,.18);
+    transform:rotate(-.8deg);
+    transition:background .2s, transform .2s, box-shadow .2s;
+  }
+  .turn-btn:hover{background:var(--yellow); transform:rotate(.4deg) translateY(-1px); box-shadow:3px 4px 0 rgba(53,53,44,.16)}
+  .turn-btn:active{transform:translate(1px,1px); box-shadow:1px 1px 0 rgba(53,53,44,.2)}
+  .turn-btn:focus-visible{outline:2px dashed var(--ink); outline-offset:3px}
+  .turn-btn svg{width:34px; height:20px; overflow:visible; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round}
+  .sheet-count{
+    font-family:var(--mono);
+    font-size:9px; letter-spacing:.12em;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .sheet-count strong{font-family:var(--hand); font-size:18px; font-weight:400; color:var(--ink)}
+  .cover-foot{
+    margin-top:clamp(16px,2.6vh,24px);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    font-family:var(--mono);
+    font-size:7px; letter-spacing:.11em; text-transform:uppercase;
+    color:rgba(53,53,44,.48);
+  }
+  .cover-foot .rule{flex:1; height:1px; background:rgba(53,53,44,.16); transform:rotate(-.3deg)}
+
+  /* ---------- sticky notes ---------- */
+  .note{
+    position:absolute;
+    z-index:30;
+    width:clamp(132px, 15vw, 160px);
+    padding:19px 13px 14px;
+    background:var(--yellow);
+    color:#443d2a;
+    font-family:var(--hand);
+    font-size:clamp(12.5px, 1.08vw, 14px);
+    line-height:1.34;
+    box-shadow:2px 5px 12px rgba(62,47,24,.24), 0 1px 0 rgba(255,255,255,.4) inset;
+    transform:rotate(var(--rot,0deg));
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+    transition:box-shadow .2s ease;
+  }
+  .note-b{background:var(--pink)}
+  .note-c{background:var(--blue-note)}
+  .note::before{
+    content:"";
+    position:absolute;
+    top:-8px; left:50%;
+    width:58px; height:17px;
+    background:var(--tape);
+    transform:translateX(-50%) rotate(-2deg);
+    box-shadow:0 1px 1px rgba(70,55,30,.12);
+    opacity:.95;
+  }
+  .note::after{
+    content:"";
+    position:absolute;
+    right:0; bottom:0;
+    width:16px; height:16px;
+    background:linear-gradient(135deg, transparent 49%, rgba(0,0,0,.08) 50%, rgba(255,255,255,.28) 52%);
+  }
+  .note .note-kicker{
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:var(--mono);
+    font-size:6.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:rgba(68,61,42,.55);
+    margin-bottom:5px;
+  }
+  .note .grip{letter-spacing:1px; font-size:9px}
+  .note p{margin:0; transform:rotate(-.5deg)}
+  .note.dragging{
+    cursor:grabbing;
+    box-shadow:7px 16px 26px rgba(55,42,20,.3);
+    z-index:45;
+  }
+  .note:focus-visible{outline:2px dashed var(--ink); outline-offset:4px}
+
+  /* ---------- right page sheets ---------- */
+  .sheet{position:relative; min-height:100%; padding-bottom:24px}
+  .sheet[hidden]{display:none}
+  .sheet.is-active{animation:sheetIn .38s cubic-bezier(.2,.7,.3,1)}
+  @keyframes sheetIn{
+    from{opacity:0; transform:translateY(8px) rotate(.2deg)}
+    to{opacity:1; transform:none}
+  }
+  .page-right.flipping{animation:pageFlip .55s cubic-bezier(.3,.7,.25,1)}
+  @keyframes pageFlip{
+    0%{transform:rotateY(0deg); filter:brightness(1)}
+    38%{transform:rotateY(-5deg) translateX(-9px); filter:brightness(.97)}
+    62%{transform:rotateY(-2deg) translateX(-4px)}
+    100%{transform:rotateY(0deg); filter:brightness(1)}
+  }
+  .sheet-head{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding-bottom:8px;
+    border-bottom:1.6px solid rgba(53,53,44,.75);
+    font-family:var(--mono);
+    font-size:7.5px; letter-spacing:.15em; text-transform:uppercase;
+    color:#585344;
+    margin-bottom:clamp(14px,2.3vh,20px);
+  }
+  .sheet-head .right{display:flex; align-items:center; gap:10px}
+  .sheet-head .dot{
+    width:7px; height:7px; border-radius:50% 44% 54% 46%;
+    background:var(--red);
+    display:inline-block;
+  }
+  .sketch-nav{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    margin-bottom:clamp(14px,2.4vh,22px);
+    font-size:13px;
+    color:var(--ink);
+  }
+  .sketch-nav .nav-logo{
+    font-family:var(--mono);
+    font-size:8px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink);
+  }
+  .sketch-nav .links{display:flex; align-items:center; gap:14px}
+  .sketch-nav .links span{border-bottom:1px solid rgba(53,53,44,.5); transform:rotate(-1deg); padding-bottom:1px}
+  .sketch-nav .links .nav-circle{
+    width:19px; height:19px; border:1px solid var(--ink); border-radius:50% 45% 52% 47%;
+    display:inline-grid; place-items:center;
+    font-family:var(--hand); font-size:12px;
+    transform:rotate(6deg);
+    border-bottom:1px solid var(--ink);
+    padding:0;
+  }
+
+  .hand-headline{
+    margin:0 0 clamp(14px,2.2vh,20px);
+    font-family:var(--hand);
+    font-weight:400;
+    font-size:clamp(31px, 3.1vw, 45px);
+    line-height:1.05;
+    letter-spacing:-.012em;
+    color:var(--ink);
+    font-weight:600;
+    text-shadow:0 0 .35px currentColor;
+    transform:rotate(-.8deg);
+  }
+  .hand-headline mark{
+    background:linear-gradient(180deg, transparent 34%, rgba(242,216,122,.78) 34% 91%, transparent 91%);
+    color:inherit;
+    padding:0 3px;
+    box-decoration-break:clone;
+    -webkit-box-decoration-break:clone;
+  }
+  .hand-headline .under{
+    position:relative; display:inline-block;
+  }
+  .hand-headline .under::after{
+    content:"";
+    position:absolute; left:0; right:0; bottom:-2px; height:7px;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 7' preserveAspectRatio='none'%3E%3Cpath d='M1 5C25 1 63 7 99 3' fill='none' stroke='%23ab3a2b' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center/100% 100%;
+    opacity:.65;
+  }
+  .sketch-copy{
+    margin:0 0 12px;
+    font-size:clamp(13px,1.18vw,15.5px);
+    line-height:1.55;
+    color:#494538;
+    max-width:54ch;
+  }
+
+  /* home */
+  .home-hero{
+    display:grid;
+    grid-template-columns:minmax(0,1.5fr) minmax(0,.78fr);
+    gap:clamp(16px,2vw,26px);
+    align-items:stretch;
+    margin-bottom:clamp(14px,2.2vh,20px);
+  }
+  .hero-xbox{
+    position:relative;
+    min-height:clamp(180px, 23vh, 230px);
+    border:1.8px solid var(--ink);
+    border-radius:12px 4px 14px 5px / 5px 13px 4px 12px;
+    background:
+      linear-gradient(90deg, transparent 49.7%, rgba(53,53,44,.06) 49.7% 50.3%, transparent 50.3%),
+      rgba(255,255,255,.18);
+    transform:rotate(-.35deg);
+    overflow:hidden;
+  }
+  .hero-xbox::after{
+    content:"";
+    position:absolute; inset:4px;
+    border:1px dashed rgba(53,53,44,.25);
+    border-radius:9px 3px 11px 4px;
+    pointer-events:none;
+  }
+  .x-mark{
+    position:absolute; inset:9px;
+    width:calc(100% - 18px); height:calc(100% - 18px);
+    stroke:var(--ink);
+    stroke-width:1.5;
+    fill:none;
+    opacity:.75;
+    stroke-linecap:round;
+    vector-effect:non-scaling-stroke;
+  }
+  .hero-xbox .x-label{
+    position:absolute;
+    left:12px; bottom:10px;
+    background:var(--paper-r);
+    padding:3px 7px;
+    font-family:var(--mono);
+    font-size:7px; letter-spacing:.1em; text-transform:uppercase;
+    color:#4a473a;
+    border:1px solid rgba(53,53,44,.45);
+    transform:rotate(-1deg);
+  }
+  .tape{
+    position:absolute;
+    width:58px; height:17px;
+    background:var(--tape);
+    box-shadow:0 1px 2px rgba(70,55,30,.12);
+    z-index:2;
+  }
+  .tape.tl{top:-8px; left:16px; transform:rotate(-7deg)}
+  .tape.tr{top:-7px; right:18px; transform:rotate(6deg)}
+  .home-side{
+    position:relative;
+    display:flex; flex-direction:column; justify-content:space-between;
+    padding:12px 4px 6px;
+    border-top:1px solid rgba(53,53,44,.25);
+    border-bottom:1px solid rgba(53,53,44,.25);
+  }
+  .home-side p{
+    margin:0;
+    font-size:13.5px;
+    line-height:1.5;
+    color:#4e4a3c;
+  }
+  .circled{
+    display:inline-grid; place-items:center;
+    width:30px; height:30px;
+    border:1.4px solid var(--ink);
+    border-radius:50% 46% 52% 45%;
+    font-family:var(--mono);
+    font-size:9px;
+    transform:rotate(-7deg);
+    color:var(--ink);
+    margin-bottom:10px;
+  }
+  .sketch-btn{
+    appearance:none;
+    display:inline-flex; align-items:center; justify-content:space-between; gap:10px;
+    align-self:flex-start;
+    padding:8px 13px;
+    border:1.5px solid var(--ink);
+    border-radius:11px 4px 12px 5px;
+    background:transparent;
+    color:var(--ink);
+    font-family:var(--hand);
+    font-size:15px;
+    line-height:1;
+    cursor:pointer;
+    text-decoration:none;
+    transform:rotate(-1deg);
+    transition:background .18s, transform .18s;
+  }
+  .sketch-btn:hover{background:rgba(242,216,122,.55); transform:rotate(.4deg)}
+  .sketch-btn:focus-visible{outline:2px dashed var(--ink); outline-offset:3px}
+  .sketch-btn .go{font-family:var(--hand); font-size:17px}
+
+  .mini-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    margin-top:6px;
+  }
+  .mini-box{
+    border:1.3px solid rgba(53,53,44,.65);
+    border-radius:8px 3px 9px 4px;
+    padding:8px 9px;
+    min-height:66px;
+    transform:rotate(-.4deg);
+    background:rgba(255,255,255,.12);
+  }
+  .mini-box:nth-child(2){transform:rotate(.5deg)}
+  .mini-box span{
+    display:block; font-family:var(--mono);
+    font-size:7px; letter-spacing:.1em; color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .mini-box i{
+    display:block; height:5px;
+    border-bottom:1.2px solid rgba(53,53,44,.38);
+    margin-bottom:6px;
+    width:82%;
+    border-radius:40%;
+    transform:rotate(-.5deg);
+  }
+  .mini-box i:nth-child(3){width:58%}
+  .mini-box i:nth-child(4){width:70%}
+
+  .annotation{
+    position:absolute;
+    z-index:5;
+    display:flex; align-items:flex-start; gap:2px;
+    color:var(--ink);
+    font-size:12.5px;
+    line-height:1.25;
+    pointer-events:none;
+  }
+  .annotation svg{
+    width:74px; height:42px;
+    fill:none; stroke:currentColor; stroke-width:1.25;
+    stroke-linecap:round; stroke-linejoin:round;
+    overflow:visible;
+    flex:0 0 auto;
+  }
+  .annotation.flip svg{transform:scaleX(-1)}
+  .annotation.flip{flex-direction:row-reverse; text-align:right}
+  .annotation.red{color:var(--red)}
+  .annotation.small{font-size:11px}
+  .anno-home-1{right:8px; top:86px; transform:rotate(2deg)}
+  .anno-home-1 span{width:112px}
+  .anno-home-2{right:8px; bottom:108px; transform:rotate(1.5deg); flex-direction:row-reverse; text-align:right}
+  .anno-home-2 span{width:96px}
+  .anno-home-2 svg{width:66px; height:52px}
+  .anno-home-3{display:none}
+
+  /* studio */
+  .studio-grid{
+    display:grid;
+    grid-template-columns:minmax(0,.78fr) minmax(0,1fr);
+    gap:clamp(18px,2.4vw,30px);
+    align-items:start;
+  }
+  .portrait{
+    position:relative;
+    margin:0;
+    padding:10px;
+    transform:rotate(-1.2deg);
+  }
+  .portrait::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border:1.5px solid var(--ink);
+    border-radius:13px 5px 12px 6px / 6px 12px 5px 13px;
+    transform:rotate(.7deg);
+  }
+  .portrait svg{display:block; width:100%; height:auto; overflow:visible}
+  .portrait .tape{bottom:-6px; left:44%; top:auto; transform:rotate(2deg)}
+  .portrait figcaption{
+    margin-top:8px;
+    text-align:center;
+    font-size:12px;
+    color:var(--graphite);
+    transform:rotate(-1deg);
+  }
+  .speech{
+    position:relative;
+    margin:0 0 18px;
+    padding:13px 15px;
+    border:1.3px solid rgba(53,53,44,.75);
+    border-radius:16px 8px 15px 7px;
+    font-size:16px;
+    line-height:1.35;
+    transform:rotate(.5deg);
+    background:rgba(255,255,255,.16);
+  }
+  .speech::after{
+    content:"";
+    position:absolute;
+    left:22px; bottom:-9px;
+    width:14px; height:14px;
+    background:var(--paper-r);
+    border-right:1.3px solid rgba(53,53,44,.75);
+    border-bottom:1.3px solid rgba(53,53,44,.75);
+    transform:rotate(45deg);
+  }
+  .studio-copy p{
+    margin:0 0 14px;
+    font-size:13.5px;
+    line-height:1.55;
+    color:#4c483b;
+  }
+  .team-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:clamp(14px,2.2vh,20px);
+  }
+  .team-box{
+    border:1.3px solid var(--ink);
+    border-radius:8px 4px 9px 5px;
+    padding:8px 8px 9px;
+    text-align:center;
+    transform:rotate(-.6deg);
+    background:rgba(255,255,255,.1);
+  }
+  .team-box:nth-child(2){transform:rotate(.8deg)}
+  .team-box:nth-child(3){transform:rotate(-.3deg)}
+  .team-box .face{
+    width:36px; height:36px;
+    margin:0 auto 4px;
+  }
+  .team-box .face svg{width:100%; height:100%; overflow:visible}
+  .team-box b{display:block; font-family:var(--hand); font-size:14px; font-weight:400; line-height:1.2}
+  .team-box span{display:block; font-size:11px; color:var(--graphite); line-height:1.2; margin-top:2px}
+  .studio-quote{
+    margin:16px 0 0;
+    font-size:14px;
+    line-height:1.5;
+    color:#4c483b;
+    transform:rotate(-.4deg);
+  }
+  .studio-quote .hl{background:linear-gradient(180deg, transparent 40%, rgba(242,216,122,.7) 40% 92%, transparent 92%)}
+  .anno-studio-1{left:-8px; top:38%; transform:rotate(-92deg); transform-origin:left top}
+  .anno-studio-1 svg{width:58px; height:32px}
+  .anno-studio-2{right:6px; top:52px; transform:rotate(3deg)}
+
+  /* contact */
+  .contact-grid{
+    display:grid;
+    grid-template-columns:minmax(0,.84fr) minmax(0,1fr);
+    gap:clamp(18px,2.5vw,32px);
+    align-items:start;
+    margin-top:6px;
+  }
+  .envelope-wrap{position:relative; padding-top:6px}
+  .envelope-wrap svg{display:block; width:100%; height:auto; overflow:visible}
+  .postmark{
+    position:absolute;
+    right:-4px; top:-14px;
+    width:76px; height:76px;
+    border:1.4px solid rgba(171,58,43,.7);
+    border-radius:50% 47% 52% 45%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px;
+    font-family:var(--mono);
+    font-size:7px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--red);
+    transform:rotate(13deg);
+    text-align:center;
+    line-height:1.35;
+    opacity:.85;
+    background:rgba(245,236,214,.4);
+  }
+  .postmark::after{
+    content:"";
+    position:absolute; inset:4px;
+    border:1px dashed rgba(171,58,43,.4);
+    border-radius:50% 45% 52% 47%;
+  }
+  .envelope-caption{
+    margin:14px 0 0;
+    font-size:12.5px;
+    color:var(--graphite);
+    transform:rotate(-1deg);
+  }
+  .contact-form{display:flex; flex-direction:column; gap:13px}
+  .field{
+    display:flex; flex-direction:column; gap:4px;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .field .input-line{position:relative}
+  .field input,.field textarea{
+    appearance:none;
+    width:100%;
+    border:none;
+    border-bottom:1.4px solid rgba(53,53,44,.6);
+    border-radius:0 0 40% 20% / 0 0 8px 6px;
+    background:transparent;
+    padding:5px 3px 6px;
+    font-family:var(--hand);
+    font-size:15px;
+    color:var(--ink);
+    outline:none;
+    resize:vertical;
+    transition:border-color .2s, background .2s;
+  }
+  .field textarea{min-height:56px; line-height:1.35; border-bottom-width:1.4px}
+  .field input::placeholder,.field textarea::placeholder{color:rgba(53,53,44,.32); font-style:italic}
+  .field input:focus,.field textarea:focus{
+    border-bottom-color:var(--red);
+    background:rgba(242,216,122,.18);
+  }
+  .form-foot{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:2px}
+  .form-status{
+    margin:0;
+    min-height:18px;
+    font-size:13px;
+    color:var(--red);
+    transform:rotate(-1deg);
+  }
+  .form-note{
+    margin:0;
+    font-size:11px;
+    color:var(--graphite);
+    font-family:var(--mono);
+    letter-spacing:.02em;
+  }
+  .anno-contact-1{right:4px; top:112px; transform:rotate(2deg)}
+  .anno-contact-2{right:4%; top:386px; transform:rotate(-1.4deg); flex-direction:row-reverse; text-align:right}
+  .anno-contact-2 span{width:100px}
+  .anno-contact-2 svg{width:62px; height:54px}
+
+  /* folio */
+  .folio{
+    margin-top:clamp(16px,2.5vh,24px);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    font-family:var(--mono);
+    font-size:7px; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(53,53,44,.45);
+  }
+  .folio .line{flex:1; height:1px; background:rgba(53,53,44,.18); transform:rotate(.2deg)}
+  .folio b{font-family:var(--hand); font-size:13px; font-weight:400; letter-spacing:0; color:var(--ink-soft)}
+
+  .desk-bottom{
+    width:100%;
+    max-width:1380px;
+    margin:clamp(18px,2.6vh,28px) auto 0;
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+    font-family:var(--mono);
+    font-size:8px; letter-spacing:.13em; text-transform:uppercase;
+    color:rgba(53,49,38,.55);
+  }
+  .desk-bottom .pencil-rule{
+    flex:1; height:1px; background:rgba(53,49,38,.25);
+    transform:rotate(-.15deg);
+  }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 1040px){
+    .book{grid-template-columns:minmax(0,.94fr) 38px minmax(0,1.06fr)}
+    .page{padding:clamp(24px,3.4vw,34px)}
+    .page-right{padding-left:34px}
+    .cover-title h1{font-size:clamp(54px,7.6vw,78px)}
+    .home-hero{grid-template-columns:1fr; gap:14px}
+    .home-side{border-bottom:none; padding-top:2px; gap:12px}
+    .home-side p{max-width:46ch}
+    .hero-xbox{min-height:190px}
+    .studio-grid{grid-template-columns:1fr; gap:16px}
+    .portrait{max-width:250px; margin:0 auto}
+    .contact-grid{grid-template-columns:1fr; gap:18px}
+    .envelope-wrap{max-width:300px}
+    .anno-home-3{display:none}
+    .anno-studio-1{display:none}
+  }
+  @media (max-width: 880px){
+    .desk{justify-content:flex-start; padding-top:56px}
+    .desk-meta{margin-bottom:34px}
+    .book{grid-template-columns:minmax(0,1fr); filter:drop-shadow(0 18px 26px rgba(57,44,23,.28))}
+    .page{min-height:0}
+    .page-left{border-radius:4px 4px 1px 1px; box-shadow:inset 0 -18px 26px -24px rgba(53,42,22,.4)}
+    .page-right{border-radius:1px 1px 5px 5px; padding:30px clamp(22px,5vw,38px); box-shadow:inset 0 18px 26px -24px rgba(53,42,22,.4)}
+    .binding{
+      flex-direction:row;
+      justify-content:space-evenly;
+      align-items:center;
+      height:36px;
+      padding:0 14px;
+      background:linear-gradient(180deg, rgba(60,45,24,.18), transparent 35%, transparent 65%, rgba(60,45,24,.18));
+    }
+    .binding::before{top:50%; bottom:auto; left:4%; right:4%; width:auto; height:1px}
+    .ring{width:30px; height:9px; transform:rotate(1deg)}
+    .ring:nth-child(3n){width:28px}
+    .ring:nth-child(4n){width:32px}
+    .ring::before{left:-5px; width:5px; height:5px}
+    .ring::after{right:-5px; width:5px; height:5px}
+    .page-left{padding-top:54px}
+    .cover-brand{margin-bottom:26px}
+    .cover-title h1{font-size:clamp(56px, 12vw, 84px)}
+    .cover-bottom{margin-top:26px}
+    .page-left{padding-bottom:168px}
+    .note{width:112px; padding:15px 10px 11px; font-size:11px; line-height:1.32}
+    .note::before{width:46px; height:14px; top:-7px}
+    .note .note-kicker{font-size:5.5px}
+    .note-a{top:auto !important; bottom:26px; left:10px; right:auto !important}
+    .note-b{top:auto !important; bottom:44px; left:calc(50% - 62px); right:auto !important}
+    .note-c{top:auto !important; bottom:16px; right:8px; left:auto !important}
+  }
+  @media (max-width: 560px){
+    .desk{padding:48px 10px 22px}
+    .desk-meta{font-size:7px; letter-spacing:.1em; padding:0 6px}
+    .desk-meta .hint{display:none}
+    .book{filter:drop-shadow(0 12px 18px rgba(57,44,23,.25))}
+    .tabs{left:12px; top:-29px; gap:3px}
+    .tab{min-width:70px; height:32px; padding:5px 8px 6px; font-size:13px}
+    .tab[aria-selected="true"]{height:37px}
+    .page{padding:24px 20px}
+    .page-left{padding-top:50px}
+    .cover-brand{font-size:7px; letter-spacing:.12em}
+    .stamp{font-size:6px; padding:4px 5px}
+    .cover-title h1{font-size:clamp(52px, 15vw, 72px)}
+    .vol-badge{width:54px; height:54px; font-size:15px; right:0; top:8%}
+    .cover-eyebrow{font-size:13px}
+    .tagline{font-size:15px}
+    .cover-note{font-size:14px}
+    .cover-foot{font-size:6px; letter-spacing:.06em}
+    .cover-foot .rule{display:none}
+    .turn-btn{font-size:16px; padding:10px 13px}
+    .sheet-head{font-size:6.5px; letter-spacing:.1em}
+    .hand-headline{font-size:clamp(28px,8.4vw,36px)}
+    .sketch-nav .links{gap:9px; font-size:11px}
+    .home-hero{gap:12px}
+    .hero-xbox{min-height:165px}
+    .home-side{padding-bottom:2px}
+    .home-side p{font-size:12.5px}
+    .mini-grid{gap:7px}
+    .mini-box{padding:6px; min-height:58px}
+    .mini-box span{font-size:6px}
+    .team-row{gap:7px}
+    .team-box{padding:6px 4px}
+    .team-box b{font-size:12.5px}
+    .team-box span{font-size:10px}
+    .contact-grid{gap:14px}
+    .postmark{width:62px; height:62px; font-size:6px; top:-8px}
+    .field{font-size:13px}
+    .field input,.field textarea{font-size:14px}
+    .annotations-mobile-hide,.anno-home-1,.anno-home-2,.anno-contact-1{display:none}
+    .note{width:132px; font-size:12px; padding:17px 11px 12px}
+    .folio{margin-top:18px}
+    .page-right::before{left:16px}
+    .page-right{padding-left:28px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+<div class="desk">
+  <div class="desk-meta">
+    <span class="left">Field Notes / vol. 6 — a working sketchbook</span>
+    <span class="right">
+      <span class="hint">Drag the notes <span class="arrow">↘</span></span>
+      <span>Inside cover · 2026</span>
+    </span>
+  </div>
+
+  <main class="book" id="book" aria-label="Field Notes volume six sketchbook">
+
+    <section class="page page-left" aria-label="Inside cover">
+      <nav class="tabs" role="tablist" aria-label="Sketchbook sections">
+        <button class="tab" id="tab-home" role="tab" aria-selected="true" aria-controls="sheet-home" tabindex="0" data-tab="home">Home</button>
+        <button class="tab" id="tab-studio" role="tab" aria-selected="false" aria-controls="sheet-studio" tabindex="-1" data-tab="studio">Studio</button>
+        <button class="tab" id="tab-contact" role="tab" aria-selected="false" aria-controls="sheet-contact" tabindex="-1" data-tab="contact">Contact</button>
+      </nav>
+
+      <header class="cover-brand">
+        <span class="mark">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+            <circle cx="10" cy="10" r="7.6"/>
+            <path d="M4 12c3-4 5 2 8-1s4 0 4 0M10 2.4v1.4M10 16.2v1.4"/>
+          </svg>
+          <span>Field Notes</span>
+        </span>
+        <span class="stamp">Inside cover<br>not for filing</span>
+      </header>
+
+      <div class="cover-title">
+        <p class="cover-eyebrow">a working sketchbook for</p>
+        <h1>Field<br>Notes<span class="period">.</span></h1>
+        <span class="vol-badge">vol.<br>6</span>
+        <p class="tagline">Small studio. Large questions.</p>
+      </div>
+
+      <p class="cover-note">Three pages, three moods, one pencil. <span class="hl">Pick a tab</span>, choose an ink, and if a note is in the way — <span class="aside">move it.</span></p>
+
+      <div class="pen-block">
+        <div class="pen-head">
+          <span class="label">Pen colours</span>
+          <span class="name" id="penName">Ink blue</span>
+        </div>
+        <div class="swatches" role="group" aria-label="Choose pen colour">
+          <button class="swatch" type="button" style="--c:#2e4a73" data-color="#2e4a73" data-name="Ink blue" aria-pressed="true" aria-label="Ink blue pen"></button>
+          <button class="swatch" type="button" style="--c:#3a3a34" data-color="#3a3a34" data-name="Graphite" aria-pressed="false" aria-label="Graphite pencil"></button>
+          <button class="swatch" type="button" style="--c:#ab3a2b" data-color="#ab3a2b" data-name="Red pencil" aria-pressed="false" aria-label="Red pencil"></button>
+          <button class="swatch" type="button" style="--c:#4d6b48" data-color="#4d6b48" data-name="Studio green" aria-pressed="false" aria-label="Studio green pen"></button>
+          <button class="swatch" type="button" style="--c:#6a4b78" data-color="#6a4b78" data-name="Violet ink" aria-pressed="false" aria-label="Violet ink"></button>
+          <button class="swatch" type="button" style="--c:#b06a2c" data-color="#b06a2c" data-name="Rust" aria-pressed="false" aria-label="Rust ink"></button>
+        </div>
+        <p class="pen-note">changes the ink on the right-hand page →</p>
+      </div>
+
+      <div class="cover-bottom">
+        <button class="turn-btn" id="turnPage" type="button">
+          Turn the page
+          <svg viewBox="0 0 36 20" aria-hidden="true">
+            <path d="M3 13c7-7 20-8 28-2"/>
+            <path d="M25 6 l7 5 -8 4"/>
+          </svg>
+        </button>
+        <span class="sheet-count"><strong id="sheetNum">01</strong> / 03</span>
+      </div>
+
+      <footer class="cover-foot">
+        <span>Field Notes vol. 6 · 2026</span>
+        <span class="rule" aria-hidden="true"></span>
+        <span>printed on the good paper</span>
+      </footer>
+
+      <!-- draggable notes -->
+      <div class="note note-a" style="--rot:2.4deg; top:300px; right:14px" tabindex="0" role="note" aria-label="Sticky note: make the hero bigger. Then smaller.">
+        <div class="note-kicker"><span>note to self</span><span class="grip" aria-hidden="true">⠿</span></div>
+        <p>make the hero BIGGER.<br>then smaller.</p>
+      </div>
+      <div class="note note-b" style="--rot:-3.2deg; top:565px; left:8px" tabindex="0" role="note" aria-label="Sticky note: the gutter is the idea.">
+        <div class="note-kicker"><span>margin</span><span class="grip" aria-hidden="true">⠿</span></div>
+        <p>the gutter is<br>the idea!!</p>
+      </div>
+      <div class="note note-c" style="--rot:-1.6deg; bottom:72px; right:24px" tabindex="0" role="note" aria-label="Sticky note: ship the rough one. It has the pulse.">
+        <div class="note-kicker"><span>keep</span><span class="grip" aria-hidden="true">⠿</span></div>
+        <p>ship the rough one.<br>it has the pulse.</p>
+      </div>
+    </section>
+
+    <div class="binding" aria-hidden="true" id="binding"></div>
+
+    <section class="page page-right" id="pageRight" aria-label="Sketchbook wireframes">
+
+      <!-- HOME -->
+      <article class="sheet is-active" id="sheet-home" role="tabpanel" aria-labelledby="tab-home" data-sheet="home">
+        <div class="sheet-head">
+          <span>Home / landing</span>
+          <span class="right"><span class="dot"></span>Rough 04 <span>/ pg. 02</span></span>
+        </div>
+
+        <div class="sketch-nav">
+          <span class="nav-logo">Field Notes</span>
+          <span class="links"><span>work</span><span>studio</span><span>contact</span><span class="nav-circle">↗</span></span>
+        </div>
+
+        <h2 class="hand-headline">Make room for<br><mark>better questions.</mark></h2>
+        <p class="sketch-copy">A small independent practice for brands that would rather be useful than loud. Identities, websites, and the occasional poster.</p>
+
+        <div class="home-hero">
+          <div class="hero-xbox" aria-label="Wireframe box marked X for the hero image">
+            <div class="tape tl"></div>
+            <div class="tape tr"></div>
+            <svg class="x-mark" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M2 3 C22 24 58 66 98 97M97 2 C73 26 34 64 3 96"/>
+            </svg>
+            <span class="x-label">hero image / 16:9 / the good one</span>
+          </div>
+
+          <div class="home-side">
+            <span class="circled" aria-hidden="true">01</span>
+            <p>Big type, one good photograph, and a way through. No carousel. No autoplay.</p>
+            <button class="sketch-btn" type="button" data-goto="studio">See the work <span class="go" aria-hidden="true">→</span></button>
+          </div>
+        </div>
+
+        <div class="mini-grid" aria-hidden="true">
+          <div class="mini-box"><span>01 / WORK</span><i></i><i></i><i></i></div>
+          <div class="mini-box"><span>02 / STUDIO</span><i></i><i></i><i></i></div>
+          <div class="mini-box"><span>03 / CONTACT</span><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="annotation flip anno-home-1">
+          <span>one image, doing<br>all the talking</span>
+          <svg viewBox="0 0 80 46" aria-hidden="true"><path d="M4 5c24 2 40 14 52 32"/><path d="M45 33l11 6 3-13"/></svg>
+        </div>
+        <div class="annotation red anno-home-2">
+          <span>three ways in.<br>keep them small.</span>
+          <svg viewBox="0 0 70 58" aria-hidden="true"><path d="M62 52C55 33 38 18 10 8"/><path d="M21 6l-12 1 4 12"/></svg>
+        </div>
+
+        <div class="folio">
+          <span class="line" aria-hidden="true"></span>
+          <b>Field Notes — home page</b>
+          <span class="line" aria-hidden="true"></span>
+          <span>02</span>
+        </div>
+      </article>
+
+      <!-- STUDIO -->
+      <article class="sheet" id="sheet-studio" role="tabpanel" aria-labelledby="tab-studio" data-sheet="studio" hidden>
+        <div class="sheet-head">
+          <span>Studio / about</span>
+          <span class="right"><span class="dot"></span>Rough 02 <span>/ pg. 03</span></span>
+        </div>
+
+        <h2 class="hand-headline">The <span class="under">studio.</span></h2>
+
+        <div class="studio-grid">
+          <figure class="portrait">
+            <div class="tape" aria-hidden="true"></div>
+            <svg viewBox="0 0 240 280" role="img" aria-label="Hand-drawn portrait of a studio person wearing glasses">
+              <ellipse cx="120" cy="126" rx="86" ry="92" fill="rgba(242,216,122,.22)"/>
+              <!-- shoulders -->
+              <path d="M38 268c6-52 34-72 82-72s76 20 82 72" stroke="var(--ink)" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M76 216c10 8 24 12 44 12s34-4 44-12" stroke="var(--ink)" stroke-width="1.2" fill="none" opacity=".5"/>
+              <path d="M92 240l-4 28M148 240l4 28M104 228l6 22M136 228l-6 22" stroke="var(--ink)" stroke-width="1" opacity=".35"/>
+              <!-- neck -->
+              <path d="M104 190v22c0 10 32 10 32 0v-24" stroke="var(--ink)" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <!-- head -->
+              <path d="M84 92c2-28 20-44 42-44 26 0 40 18 40 42 0 18-4 38-14 50-8 10-22 16-34 14-18-3-32-19-34-38-1-8 0-16 0-24Z" stroke="var(--ink)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+              <!-- hair -->
+              <path d="M84 100c-8-26 4-54 30-61 24-7 47 3 54 24 3 9 2 18-1 25" stroke="var(--ink)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+              <path d="M92 68c-2-13 8-26 24-30 14-4 28 0 36 9M85 88c-5-7-7-16-5-24" stroke="var(--ink)" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+              <path d="M108 54c8-9 28-12 39-2M96 78c7 4 14 5 20 3M143 78c8 2 16 0 22-4" stroke="var(--ink)" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".6"/>
+              <!-- glasses -->
+              <path d="M96 112c0-7 7-11 16-11s15 4 15 11-7 12-15 12-16-5-16-12ZM132 111c0-7 7-11 16-11s15 4 15 11-7 12-15 12-16-5-16-12Z" stroke="var(--ink)" stroke-width="1.8" fill="none"/>
+              <path d="M127 111c3-2 5-2 5 0M96 110l-8-2M163 110l7-2" stroke="var(--ink)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <circle cx="112" cy="112" r="2" fill="var(--ink)"/>
+              <circle cx="148" cy="112" r="2" fill="var(--ink)"/>
+              <!-- nose + mouth -->
+              <path d="M128 122c-2 8-5 14-8 17 3 2 6 2 9 1" stroke="var(--ink)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <path d="M112 154c7 6 17 7 25 2" stroke="var(--ink)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+              <path d="M119 156c3 2 7 2 10 0" stroke="var(--ink)" stroke-width="1" fill="none" opacity=".5"/>
+              <!-- ear -->
+              <path d="M84 118c-8-3-12 4-9 11 2 6 7 8 11 7M164 118c7-3 11 4 8 10-2 5-6 7-9 6" stroke="var(--ink)" stroke-width="1.6" fill="none"/>
+              <!-- hand + pencil -->
+              <path d="M169 250c8-16 18-20 26-14 6 5 3 14-4 20l-13 10" stroke="var(--ink)" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M176 258l24-35" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/>
+              <path d="M199 225l7-10 4 8-5 7" stroke="var(--ink)" stroke-width="1" fill="none"/>
+            </svg>
+            <figcaption>portrait, but make it candid</figcaption>
+          </figure>
+
+          <div class="studio-copy">
+            <p class="speech">Three humans, one dog,<br>too many pencils.</p>
+            <p>We work from a room with bad light and good coffee. Most of the thinking happens on paper, which is why this page looks like this.</p>
+            <p class="studio-quote"><span class="hl">We like the messy part.</span> The bit before everything gets sensible.</p>
+          </div>
+        </div>
+
+        <div class="team-row">
+          <div class="team-box">
+            <div class="face" aria-hidden="true">
+              <svg viewBox="0 0 40 40" fill="none" stroke="var(--ink)" stroke-width="1.4" stroke-linecap="round">
+                <circle cx="20" cy="20" r="14"/>
+                <path d="M12 13c4-5 12-5 16 0M14 21h.2M26 21h.2M16 27c3 2 5 2 8 0"/>
+                <path d="M7 35c3-4 8-6 13-6s10 2 13 6"/>
+              </svg>
+            </div>
+            <b>Mara</b><span>words &amp; strategy</span>
+          </div>
+          <div class="team-box">
+            <div class="face" aria-hidden="true">
+              <svg viewBox="0 0 40 40" fill="none" stroke="var(--ink)" stroke-width="1.4" stroke-linecap="round">
+                <circle cx="20" cy="20" r="14"/>
+                <path d="M9 17c1-7 7-10 12-9 5 1 9 4 10 10M12 22h4M24 22h4M16 26c2 3 6 3 8 0"/>
+                <path d="M13 19c1-2 3-2 4 0M25 19c1-2 3-2 4 0"/>
+              </svg>
+            </div>
+            <b>Ines</b><span>pictures &amp; print</span>
+          </div>
+          <div class="team-box">
+            <div class="face" aria-hidden="true">
+              <svg viewBox="0 0 40 40" fill="none" stroke="var(--ink)" stroke-width="1.4" stroke-linecap="round">
+                <circle cx="20" cy="20" r="14"/>
+                <path d="M13 12c2-3 7-4 10-1 3 2 4 5 4 8M12 24c3 4 10 5 15 1"/>
+                <path d="M14 18h.2M26 18h.2M15 30c3-2 8-2 11 0"/>
+              </svg>
+            </div>
+            <b>Tomas</b><span>the web, mostly</span>
+          </div>
+        </div>
+
+        <div class="annotation flip anno-studio-2">
+          <span>the dog is not<br>in the org chart</span>
+          <svg viewBox="0 0 76 42" aria-hidden="true"><path d="M4 4c18 8 32 18 44 36"/><path d="M37 38l11 3 1-12"/></svg>
+        </div>
+
+        <div class="folio">
+          <span class="line" aria-hidden="true"></span>
+          <b>Field Notes — studio page</b>
+          <span class="line" aria-hidden="true"></span>
+          <span>03</span>
+        </div>
+      </article>
+
+      <!-- CONTACT -->
+      <article class="sheet" id="sheet-contact" role="tabpanel" aria-labelledby="tab-contact" data-sheet="contact" hidden>
+        <div class="sheet-head">
+          <span>Contact / say hello</span>
+          <span class="right"><span class="dot"></span>Rough 01 <span>/ pg. 04</span></span>
+        </div>
+
+        <h2 class="hand-headline">Say <span class="under">something.</span></h2>
+
+        <div class="contact-grid">
+          <div class="envelope-wrap">
+            <div class="postmark" aria-hidden="true">Reply<br>within<br>2 days</div>
+            <svg viewBox="0 0 280 210" role="img" aria-label="Hand-drawn envelope with a stamp">
+              <rect x="8" y="42" width="250" height="150" rx="3" fill="rgba(255,255,255,.16)" stroke="var(--ink)" stroke-width="2"/>
+              <path d="M9 43l124 92 124-92" stroke="var(--ink)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+              <path d="M9 191l92-78M258 191l-92-78" stroke="var(--ink)" stroke-width="1.2" fill="none" opacity=".55"/>
+              <rect x="191" y="55" width="48" height="54" rx="1" fill="none" stroke="var(--ink)" stroke-width="1.4"/>
+              <path d="M199 69c6-6 12 4 18-2s8 1 8 1M199 82c7-2 18 1 28-2M199 94c5 2 14-3 24 1" stroke="var(--ink)" stroke-width="1" fill="none" opacity=".65"/>
+              <circle cx="209" cy="118" r="3" fill="none" stroke="var(--ink)" stroke-width=".8" opacity=".5"/>
+              <path d="M40 106h92M40 121h68M40 136h80" stroke="var(--ink)" stroke-width="1.3" fill="none" opacity=".55" stroke-linecap="round"/>
+              <path d="M40 164c26-2 51-2 76 0" stroke="var(--red)" stroke-width="1" fill="none" opacity=".5"/>
+            </svg>
+            <p class="envelope-caption">the old-fashioned way still works.</p>
+          </div>
+
+          <form class="contact-form" id="contactForm" novalidate>
+            <label class="field">Your name
+              <span class="input-line"><input type="text" name="name" placeholder="who's writing?" autocomplete="name"></span>
+            </label>
+            <label class="field">Email
+              <span class="input-line"><input type="email" name="email" placeholder="you@somewhere.com" autocomplete="email"></span>
+            </label>
+            <label class="field">What are we making?
+              <span class="input-line"><textarea name="project" rows="2" placeholder="a site, a sign, a small revolution..."></textarea></span>
+            </label>
+            <div class="form-foot">
+              <button class="sketch-btn" type="submit">Send it <span class="go" aria-hidden="true">↗</span></button>
+              <span class="form-note">no newsletters. promise.</span>
+            </div>
+            <p class="form-status" id="contactStatus" role="status"></p>
+          </form>
+        </div>
+
+        <div class="annotation anno-contact-2 red">
+          <span>this is a real form.<br>go on, try it.</span>
+          <svg viewBox="0 0 62 58" aria-hidden="true"><path d="M8 52C18 38 34 24 54 12"/><path d="M43 10l11 1-4 11"/></svg>
+        </div>
+
+        <div class="folio">
+          <span class="line" aria-hidden="true"></span>
+          <b>Field Notes — contact page</b>
+          <span class="line" aria-hidden="true"></span>
+          <span>04</span>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div class="desk-bottom">
+    <span>Field Notes / vol. 6</span>
+    <span class="pencil-rule" aria-hidden="true"></span>
+    <span>home · studio · contact</span>
+  </div>
+</div>
+
+<p class="sr-only" id="liveRegion" aria-live="polite"></p>
+
+<script>
+(function(){
+  "use strict";
+
+  var book = document.getElementById("book");
+  var pageLeft = document.querySelector(".page-left");
+  var pageRight = document.getElementById("pageRight");
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var sheets = Array.prototype.slice.call(document.querySelectorAll(".sheet"));
+  var sheetNum = document.getElementById("sheetNum");
+  var turnBtn = document.getElementById("turnPage");
+  var penName = document.getElementById("penName");
+  var swatches = Array.prototype.slice.call(document.querySelectorAll(".swatch"));
+  var notes = Array.prototype.slice.call(document.querySelectorAll(".note"));
+  var liveRegion = document.getElementById("liveRegion");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- spiral binding ----------
+  var binding = document.getElementById("binding");
+  var ringCount = 17;
+  var frag = document.createDocumentFragment();
+  for (var i = 0; i < ringCount; i++){
+    var ring = document.createElement("span");
+    ring.className = "ring";
+    ring.style.transform = "rotate(" + ((i % 3 === 0 ? -2.5 : i % 3 === 1 ? 1.4 : -0.6)) + "deg)";
+    frag.appendChild(ring);
+  }
+  binding.appendChild(frag);
+
+  // ---------- tabs / sheet swapping ----------
+  var order = ["home", "studio", "contact"];
+  var index = 0;
+
+  function setTab(name, opts){
+    opts = opts || {};
+    if (order.indexOf(name) === -1) return;
+    var current = tabs[index];
+    index = order.indexOf(name);
+
+    tabs.forEach(function(tab, i){
+      var selected = tab.getAttribute("data-tab") === name;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
+
+    sheets.forEach(function(sheet){
+      var on = sheet.getAttribute("data-sheet") === name;
+      sheet.hidden = !on;
+      sheet.classList.remove("is-active");
+      if (on){
+        // restart entry animation without forcing layout when reduced motion
+        if (!reduceMotion){
+          void sheet.offsetWidth;
+        }
+        sheet.classList.add("is-active");
+      }
+    });
+
+    sheetNum.textContent = String(index + 1).padStart(2, "0");
+
+    if (opts.animate !== false && !reduceMotion){
+      pageRight.classList.remove("flipping");
+      void pageRight.offsetWidth;
+      pageRight.classList.add("flipping");
+    }
+
+    if (opts.focus){
+      tabs[index].focus();
+    }
+    if (opts.announce !== false){
+      liveRegion.textContent = "Showing " + name + " wireframe, sheet " + (index + 1) + " of 3.";
+    }
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      setTab(tab.getAttribute("data-tab"));
+    });
+    tab.addEventListener("keydown", function(e){
+      var dir = 0;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") dir = 1;
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") dir = -1;
+      if (!dir) return;
+      e.preventDefault();
+      var nextIndex = (index + dir + order.length) % order.length;
+      setTab(order[nextIndex], {focus: true});
+    });
+  });
+
+  // wireframe link inside the Home sheet
+  Array.prototype.slice.call(document.querySelectorAll("[data-goto]")).forEach(function(btn){
+    btn.addEventListener("click", function(){
+      setTab(btn.getAttribute("data-goto"));
+    });
+  });
+
+  // turn page cycles through the three sheets
+  turnBtn.addEventListener("click", function(){
+    setTab(order[(index + 1) % order.length], {focus: false});
+  });
+
+  pageRight.addEventListener("animationend", function(e){
+    if (e.animationName === "pageFlip"){
+      pageRight.classList.remove("flipping");
+    }
+  });
+
+  // ---------- pen colours ----------
+  swatches.forEach(function(sw){
+    sw.addEventListener("click", function(){
+      var color = sw.getAttribute("data-color");
+      var name = sw.getAttribute("data-name");
+      book.style.setProperty("--ink", color);
+      document.documentElement.style.setProperty("--ink", color);
+      swatches.forEach(function(other){
+        other.setAttribute("aria-pressed", String(other === sw));
+      });
+      penName.textContent = name;
+      liveRegion.textContent = name + " selected. The sketches have changed ink.";
+    });
+  });
+
+  // ---------- sticky note dragging ----------
+  var zTop = 40;
+
+  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+  function startDrag(note, e){
+    if (e.button !== undefined && e.button !== 0) return;
+    if (e.target.closest("button, a, input, textarea")) return;
+    e.preventDefault();
+
+    var parentRect = pageLeft.getBoundingClientRect();
+    var rect = note.getBoundingClientRect();
+    var offsetX = e.clientX - rect.left;
+    var offsetY = e.clientY - rect.top;
+    var startLeft = rect.left - parentRect.left;
+    var startTop = rect.top - parentRect.top;
+
+    note.style.right = "auto";
+    note.style.bottom = "auto";
+    note.style.left = startLeft + "px";
+    note.style.top = startTop + "px";
+    note.classList.add("dragging");
+    note.style.zIndex = String(++zTop);
+
+    if (note.setPointerCapture){
+      try { note.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+
+    function move(ev){
+      var pr = pageLeft.getBoundingClientRect();
+      var r = note.getBoundingClientRect();
+      var x = ev.clientX - pr.left - offsetX;
+      var y = ev.clientY - pr.top - offsetY;
+      x = clamp(x, 4, Math.max(4, pr.width - r.width - 4));
+      y = clamp(y, 4, Math.max(4, pr.height - r.height - 4));
+      note.style.left = x + "px";
+      note.style.top = y + "px";
+    }
+
+    function end(ev){
+      note.classList.remove("dragging");
+      note.removeEventListener("pointermove", move);
+      note.removeEventListener("pointerup", end);
+      note.removeEventListener("pointercancel", end);
+      if (note.hasPointerCapture && ev && note.hasPointerCapture(ev.pointerId)){
+        note.releasePointerCapture(ev.pointerId);
+      }
+      liveRegion.textContent = "Note moved.";
+    }
+
+    note.addEventListener("pointermove", move);
+    note.addEventListener("pointerup", end);
+    note.addEventListener("pointercancel", end);
+  }
+
+  notes.forEach(function(note, i){
+    note.addEventListener("pointerdown", function(e){ startDrag(note, e); });
+
+    // keyboard repositioning for accessibility
+    note.addEventListener("keydown", function(e){
+      var step = e.shiftKey ? 24 : 8;
+      var keys = ["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"];
+      if (keys.indexOf(e.key) === -1) return;
+      e.preventDefault();
+      var pr = pageLeft.getBoundingClientRect();
+      var r = note.getBoundingClientRect();
+      var x = r.left - pr.left;
+      var y = r.top - pr.top;
+      if (note.style.right !== "auto" || !note.style.left){
+        note.style.right = "auto";
+        note.style.bottom = "auto";
+        note.style.left = x + "px";
+        note.style.top = y + "px";
+      } else {
+        x = parseFloat(note.style.left) || x;
+        y = parseFloat(note.style.top) || y;
+      }
+      if (e.key === "ArrowLeft") x -= step;
+      if (e.key === "ArrowRight") x += step;
+      if (e.key === "ArrowUp") y -= step;
+      if (e.key === "ArrowDown") y += step;
+      x = clamp(x, 4, Math.max(4, pr.width - r.width - 4));
+      y = clamp(y, 4, Math.max(4, pr.height - r.height - 4));
+      note.style.left = x + "px";
+      note.style.top = y + "px";
+    });
+  });
+
+  function clampAllNotes(){
+    var pr = pageLeft.getBoundingClientRect();
+    notes.forEach(function(note){
+      if (!note.style.left) return;
+      var r = note.getBoundingClientRect();
+      var x = clamp(parseFloat(note.style.left) || 0, 4, Math.max(4, pr.width - r.width - 4));
+      var y = clamp(parseFloat(note.style.top) || 0, 4, Math.max(4, pr.height - r.height - 4));
+      note.style.left = x + "px";
+      note.style.top = y + "px";
+    });
+  }
+  window.addEventListener("resize", clampAllNotes);
+
+  // ---------- contact form ----------
+  var form = document.getElementById("contactForm");
+  var status = document.getElementById("contactStatus");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var data = new FormData(form);
+    var name = String(data.get("name") || "").trim();
+    var email = String(data.get("email") || "").trim();
+    var project = String(data.get("project") || "").trim();
+    if (!name && !email && !project){
+      status.textContent = "even a scribble would do.";
+      return;
+    }
+    var who = name ? name : "friend";
+    status.textContent = "got it, " + who + " — sent by hand. ↗";
+    liveRegion.textContent = "Message noted for " + who + ". This is a sketchbook, so no data has left the page.";
+    form.querySelectorAll("input, textarea").forEach(function(field){ field.value = ""; });
+  });
+
+  // ---------- initial state ----------
+  setTab("home", {animate:false, announce:false});
+  book.style.setProperty("--ink", "#2e4a73");
+})();
+</script>
+</body>
+</html>

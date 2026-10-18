@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wind Made Visible — An Aeolian Field Study</title>
+<style>
+  :root{
+    --paper:#f2ebde;
+    --paper-hi:#f8f2e7;
+    --ink:#211e19;
+    --ink-soft:#514b40;
+    --ink-faint:rgba(33,30,25,.45);
+    --line:rgba(33,30,25,.24);
+    --line-soft:rgba(33,30,25,.12);
+    --vermilion:#cd462c;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono","Courier New",monospace;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  html{background:var(--paper)}
+  body{
+    margin:0;overflow:hidden;background:var(--paper);color:var(--ink);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+    touch-action:pan-x pan-y;
+  }
+  #field{position:fixed;inset:0;display:block;width:100%;height:100%;z-index:0}
+
+  .grain{position:fixed;inset:0;width:100%;height:100%;opacity:.045;pointer-events:none;z-index:2;mix-blend-mode:multiply}
+
+  /* page frame */
+  .frame{
+    position:fixed;inset:16px;border:1px solid rgba(33,30,25,.34);
+    pointer-events:none;z-index:8;
+  }
+  .frame::before,.frame::after{
+    content:"";position:absolute;background:var(--ink);opacity:.55;
+  }
+  .frame::before{left:-4px;top:-4px;width:7px;height:7px;border:0}
+  .frame::after{right:-4px;bottom:-4px;width:7px;height:7px;border:0}
+
+  /* ---------- instrument header ---------- */
+  .instrument{
+    position:fixed;top:16px;left:16px;right:16px;height:59px;z-index:6;
+    display:flex;align-items:center;justify-content:space-between;gap:28px;
+    padding:0 24px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(242,235,222,.93),rgba(242,235,222,.55) 70%,rgba(242,235,222,0));
+    pointer-events:none;
+  }
+  .id-block{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+  .id-block .glyph{width:30px;height:24px;display:block;color:var(--ink)}
+  .id-block .stack{display:flex;flex-direction:column;gap:3px}
+  .id-block .study{
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.19em;text-transform:uppercase;color:var(--ink);
+    white-space:nowrap;
+  }
+  .id-block .study-sub{
+    font-family:var(--mono);font-size:7px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-faint);
+    white-space:nowrap;
+  }
+  .id-block .no{color:var(--vermilion)}
+
+  .ruler{flex:1;max-width:430px;min-width:120px;height:34px;margin:0 auto;opacity:.86}
+  .ruler svg{width:100%;height:100%;display:block;overflow:visible}
+  .ruler text{font-family:var(--mono);font-size:5.5px;letter-spacing:.08em;fill:rgba(33,30,25,.48)}
+  .ruler line{stroke:rgba(33,30,25,.45);stroke-width:.6}
+
+  .telemetry{display:flex;align-items:center;gap:26px;flex:0 0 auto}
+  .tele{display:flex;align-items:baseline;gap:6px}
+  .tele .lbl{
+    font-family:var(--mono);font-size:6.5px;letter-spacing:.17em;text-transform:uppercase;
+    color:var(--ink-faint);align-self:center;
+  }
+  .tele b{
+    font-family:var(--mono);font-weight:400;font-size:13px;letter-spacing:.01em;
+    font-variant-numeric:tabular-nums;color:var(--ink);min-width:2.4em;
+  }
+  .tele i{font-family:var(--mono);font-style:normal;font-size:7px;color:var(--ink-faint);letter-spacing:.08em}
+  .tele.state b{font-size:9px;letter-spacing:.15em;text-transform:uppercase;min-width:5.6em}
+  .tele.state b.gust{color:var(--vermilion)}
+
+  /* ---------- vertical edge note ---------- */
+  .edge-note{
+    position:fixed;left:23px;top:50%;transform:translateY(-50%) rotate(180deg);
+    writing-mode:vertical-rl;
+    font-family:var(--mono);font-size:7px;letter-spacing:.24em;text-transform:uppercase;
+    color:rgba(33,30,25,.34);z-index:5;pointer-events:none;white-space:nowrap;
+  }
+
+  /* ---------- console ---------- */
+  .console{
+    position:fixed;right:42px;top:96px;width:236px;z-index:7;
+    border:1px solid rgba(33,30,25,.33);
+    background:linear-gradient(180deg,rgba(246,240,229,.92),rgba(242,235,222,.76));
+    backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    padding:13px 15px 12px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset;
+  }
+  .console-head{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding-bottom:9px;border-bottom:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);
+  }
+  .console-head .live{color:var(--ink-soft)}
+  .console-head .live::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--vermilion);margin-right:5px;vertical-align:1px;animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+  .console-body{display:grid;grid-template-columns:56px 1fr;gap:13px;align-items:center;padding:13px 0 12px}
+  .compass{width:56px;height:56px;color:var(--ink)}
+  .compass svg{width:100%;height:100%;display:block;overflow:visible}
+  .compass circle,.compass line,.compass path{vector-effect:non-scaling-stroke}
+  .compass text{font-family:var(--mono);font-size:5px;fill:var(--ink-soft);letter-spacing:.1em}
+
+  .density label{
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+    font-family:var(--mono);font-size:7px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .density output{font-size:9.5px;letter-spacing:.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+  .density input[type=range]{
+    -webkit-appearance:none;appearance:none;display:block;width:100%;height:16px;margin:7px 0 1px;
+    background:transparent;cursor:pointer;
+  }
+  .density input[type=range]::-webkit-slider-runnable-track{height:1px;background:rgba(33,30,25,.4)}
+  .density input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:10px;height:10px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--paper);margin-top:-4.5px;
+    box-shadow:0 0 0 1px rgba(33,30,25,.45);
+  }
+  .density input[type=range]::-moz-range-track{height:1px;background:rgba(33,30,25,.4)}
+  .density input[type=range]::-moz-range-thumb{
+    width:7px;height:7px;border-radius:50%;background:var(--ink);border:2px solid var(--paper);
+    box-shadow:0 0 0 1px rgba(33,30,25,.45);
+  }
+  .density input[type=range]:focus-visible{outline:1px solid var(--vermilion);outline-offset:3px}
+  .scale{
+    display:flex;justify-content:space-between;
+    font-family:var(--mono);font-size:6px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-faint);
+  }
+
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .action{
+    appearance:none;border:1px solid rgba(33,30,25,.4);background:transparent;color:var(--ink);
+    font-family:var(--mono);font-size:8px;letter-spacing:.15em;text-transform:uppercase;
+    padding:9px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+    transition:background .2s,color .2s,border-color .2s;
+  }
+  .action:hover{background:var(--ink);color:var(--paper)}
+  .action:focus-visible{outline:2px solid var(--vermilion);outline-offset:2px}
+  .action .sym{font-size:8px;line-height:1}
+  #gustBtn{border-color:rgba(205,70,44,.55);color:var(--vermilion)}
+  #gustBtn:hover{background:var(--vermilion);border-color:var(--vermilion);color:var(--paper)}
+  #gustBtn.gusting{background:var(--vermilion);border-color:var(--vermilion);color:var(--paper)}
+  #stillBtn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  #stillBtn[aria-pressed="true"]:hover{background:var(--vermilion);border-color:var(--vermilion)}
+
+  .console-note{
+    margin:10px 0 0;display:flex;align-items:center;gap:6px;
+    font-family:var(--mono);font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);
+  }
+  .console-note::before{content:"";width:12px;height:1px;background:var(--ink-faint);display:inline-block}
+
+  /* ---------- title block ---------- */
+  .title-block{
+    position:fixed;left:42px;bottom:62px;z-index:5;pointer-events:none;
+    max-width:min(820px,72vw);
+  }
+  .title-block::before{
+    content:"";position:absolute;left:-80px;right:-150px;top:-80px;bottom:-55px;
+    background:radial-gradient(ellipse at 38% 58%,rgba(242,235,222,.96) 0%,rgba(242,235,222,.86) 39%,rgba(242,235,222,.35) 66%,rgba(242,235,222,0) 80%);
+    z-index:-1;pointer-events:none;
+  }
+  .kicker{
+    display:flex;align-items:center;gap:11px;margin:0 0 17px;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .kicker::before{content:"";width:26px;height:1px;background:var(--vermilion);display:block;opacity:.85}
+  h1{
+    margin:0;
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(58px,9.4vw,132px);
+    line-height:.85;letter-spacing:-.045em;
+    color:var(--ink);
+  }
+  h1 em{font-style:italic;letter-spacing:-.04em}
+  h1 .period{color:var(--vermilion);font-style:normal}
+
+  .title-meta{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:38px;flex-wrap:wrap;
+    margin-top:24px;padding-top:13px;
+    border-top:1px solid rgba(33,30,25,.26);
+    max-width:700px;
+  }
+  .caption{
+    margin:0;max-width:36ch;
+    font-family:var(--serif);font-size:14.5px;line-height:1.55;color:var(--ink-soft);
+  }
+  .caption em{color:var(--ink)}
+  .coords{
+    display:grid;grid-template-columns:auto auto;gap:2px 14px;flex:0 0 auto;
+    font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;line-height:1.55;
+  }
+  .coords .coord-label{grid-column:1/-1;font-size:6px;letter-spacing:.2em;color:var(--ink-faint);margin-bottom:2px}
+  .coords .place{grid-column:1/-1;font-family:var(--serif);font-style:italic;font-size:10.5px;letter-spacing:.02em;text-transform:none;color:var(--ink-soft);margin-top:2px}
+
+  /* ---------- footer ---------- */
+  .foot{
+    position:fixed;left:16px;right:16px;bottom:16px;height:30px;z-index:6;
+    border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    padding:0 24px;
+    background:linear-gradient(0deg,rgba(242,235,222,.86),rgba(242,235,222,.2));
+    font-family:var(--mono);font-size:6.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-faint);
+    pointer-events:none;white-space:nowrap;
+  }
+  .foot .mid{color:var(--ink-soft)}
+  .foot .utc{color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .foot .scale{display:flex;align-items:center;gap:7px}
+  .foot .scale i{display:block;width:42px;height:1px;background:var(--ink-faint);position:relative}
+  .foot .scale i::before,.foot .scale i::after{content:"";position:absolute;top:-2px;width:1px;height:5px;background:var(--ink-faint)}
+  .foot .scale i::before{left:0}.foot .scale i::after{right:0}
+
+  .is-still .console-head .live::before{animation:none;opacity:.25;background:var(--ink-faint)}
+
+  @media (max-width:1180px){
+    .console{right:30px;width:218px}
+    .title-block{left:32px;max-width:min(720px,74vw)}
+    .edge-note{display:none}
+    .instrument{padding:0 18px;gap:18px}
+    .telemetry{gap:18px}
+  }
+  @media (max-width:860px){
+    .ruler{display:none}
+    .title-block{max-width:calc(100vw - 64px)}
+    .console{top:88px;right:24px;width:204px}
+    .telemetry .hide-md{display:none}
+  }
+  @media (max-width:700px){
+    .frame{inset:8px}
+    .instrument{top:8px;left:8px;right:8px;height:47px;padding:0 12px;gap:10px}
+    .id-block{gap:8px}
+    .id-block .glyph{width:23px;height:19px}
+    .id-block .study{font-size:7px;letter-spacing:.13em}
+    .id-block .study-sub{display:none}
+    .telemetry{gap:10px}
+    .telemetry .hide-sm{display:none}
+    .tele b{font-size:11px;min-width:2.2em}
+    .tele .lbl{font-size:5.5px}
+    .tele.state b{font-size:7.5px;min-width:5em}
+
+    .console{
+      top:65px;left:12px;right:12px;width:auto;
+      padding:9px 12px 8px;
+      display:grid;grid-template-columns:1fr auto;gap:7px 12px;align-items:end;
+    }
+    .console-head{grid-column:1/-1;padding-bottom:6px;font-size:6px}
+    .console-body{display:block;padding:1px 0 0;grid-column:1;min-width:0}
+    .compass{display:none}
+    .density label{font-size:6px;letter-spacing:.1em;gap:6px}
+    .density output{font-size:8.5px}
+    .density input[type=range]{margin:4px 0 0;height:14px}
+    .scale{font-size:5.5px}
+    .actions{grid-column:2;grid-row:2;grid-template-columns:1fr;gap:5px;align-self:stretch}
+    .action{padding:0 12px;font-size:7px;letter-spacing:.11em;min-height:25px}
+    .console-note{grid-column:1/-1;margin:2px 0 0;font-size:5.6px}
+
+    .title-block{left:20px;right:20px;bottom:46px;max-width:none}
+    .title-block::before{left:-24px;right:-24px;top:-45px;bottom:-30px;background:radial-gradient(ellipse at 38% 58%,rgba(242,235,222,.96) 0%,rgba(242,235,222,.85) 45%,rgba(242,235,222,0) 78%)}
+    .kicker{margin-bottom:10px;font-size:6.2px;letter-spacing:.16em;gap:8px}
+    .kicker::before{width:17px}
+    h1{font-size:clamp(51px,15.5vw,76px);line-height:.86;letter-spacing:-.045em}
+    .title-meta{margin-top:14px;padding-top:9px;gap:10px;flex-direction:column;align-items:flex-start}
+    .caption{font-size:11.5px;line-height:1.45;max-width:42ch}
+    .coords{grid-template-columns:auto auto;gap:1px 12px;font-size:6.8px}
+    .coords .coord-label{font-size:5px;margin:0}
+    .coords .place{font-size:8.5px}
+
+    .foot{bottom:8px;left:8px;right:8px;height:25px;padding:0 12px;font-size:5.5px;letter-spacing:.12em;gap:8px}
+    .foot .hide-xs{display:none}
+    .foot .scale i{width:26px}
+  }
+  @media (max-width:390px){
+    .title-block{bottom:42px}
+    h1{font-size:clamp(48px,15vw,66px)}
+    .caption{font-size:10.5px}
+    .coords{font-size:6.2px}
+    .console{top:61px}
+  }
+  @media (orientation:landscape) and (max-height:500px){
+    .instrument{height:42px}
+    .console{top:56px;right:18px;width:206px;padding:8px 12px}
+    .console-body{padding:7px 0}
+    .compass{display:none}
+    .console-note{display:none}
+    .title-block{bottom:38px;left:26px}
+    h1{font-size:clamp(38px,7vw,64px)}
+    .title-meta{margin-top:12px;padding-top:8px}
+    .caption{display:none}
+    .foot{height:24px;font-size:5.5px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="field" aria-label="Animated flow field drawing of wind currents. Use the Gust and Still controls, and move your pointer across the field."></canvas>
+
+<svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <filter id="windGrain"><feTurbulence type="fractalNoise" baseFrequency=".78" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+  <rect width="100%" height="100%" filter="url(#windGrain)"/>
+</svg>
+
+<div class="frame" aria-hidden="true"></div>
+
+<header class="instrument">
+  <div class="id-block">
+    <svg class="glyph" viewBox="0 0 30 24" fill="none" aria-hidden="true">
+      <path d="M2 7h18c3 0 5-1.6 5-4.1C25 1.3 23.7 0 22 0c-1.4 0-2.4 1-2.5 2.3" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <path d="M2 12h23c3 0 4.5 1.4 4.5 3.5S28 19 26 19c-1.4 0-2.4-1-2.5-2.2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <path d="M2 17h12" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+    </svg>
+    <div class="stack">
+      <span class="study">Aeolian field study <span class="no">/ 07</span></span>
+      <span class="study-sub">Continuous observation · Cabo Raso</span>
+    </div>
+  </div>
+
+  <div class="ruler" aria-hidden="true">
+    <svg viewBox="0 0 420 34" preserveAspectRatio="none">
+      <line x1="1" y1="24" x2="419" y2="24"/>
+      <g>
+        <line x1="1" y1="18" x2="1" y2="24"/><line x1="22" y1="21" x2="22" y2="24"/>
+        <line x1="43" y1="21" x2="43" y2="24"/><line x1="64" y1="21" x2="64" y2="24"/>
+        <line x1="84" y1="21" x2="84" y2="24"/><line x1="105" y1="18" x2="105" y2="24"/>
+        <line x1="126" y1="21" x2="126" y2="24"/><line x1="147" y1="21" x2="147" y2="24"/>
+        <line x1="168" y1="21" x2="168" y2="24"/><line x1="189" y1="21" x2="189" y2="24"/>
+        <line x1="210" y1="18" x2="210" y2="24"/><line x1="231" y1="21" x2="231" y2="24"/>
+        <line x1="252" y1="21" x2="252" y2="24"/><line x1="273" y1="21" x2="273" y2="24"/>
+        <line x1="294" y1="21" x2="294" y2="24"/><line x1="315" y1="18" x2="315" y2="24"/>
+        <line x1="336" y1="21" x2="336" y2="24"/><line x1="357" y1="21" x2="357" y2="24"/>
+        <line x1="378" y1="21" x2="378" y2="24"/><line x1="399" y1="21" x2="399" y2="24"/>
+        <line x1="419" y1="18" x2="419" y2="24"/>
+      </g>
+      <text x="1" y="9">0</text><text x="101" y="9">10</text><text x="206" y="9">20</text><text x="311" y="9">30</text>
+      <text x="395" y="9">40 kn</text>
+    </svg>
+  </div>
+
+  <div class="telemetry">
+    <div class="tele">
+      <span class="lbl">Wind</span><b id="windSpeed">12.4</b><i>kn</i>
+    </div>
+    <div class="tele hide-sm">
+      <span class="lbl">Bearing</span><b id="bearing">034°</b>
+    </div>
+    <div class="tele state">
+      <span class="lbl hide-md">State</span><b id="state">Flowing</b>
+    </div>
+  </div>
+</header>
+
+<div class="edge-note" aria-hidden="true">Aeolian observations · sheet 07 · ink &amp; air</div>
+
+<aside class="console" aria-label="Wind field instruments">
+  <div class="console-head">
+    <span>Instruments</span>
+    <span class="live" id="liveLabel">Recording</span>
+  </div>
+  <div class="console-body">
+    <div class="compass" aria-hidden="true">
+      <svg viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="30" stroke="rgba(33,30,25,.35)" fill="none" stroke-width=".8"/>
+        <circle cx="40" cy="40" r="23" stroke="rgba(33,30,25,.16)" fill="none" stroke-width=".6" stroke-dasharray="1 3"/>
+        <g stroke="rgba(33,30,25,.4)" stroke-width=".6">
+          <line x1="40" y1="7" x2="40" y2="11"/><line x1="40" y1="69" x2="40" y2="73"/>
+          <line x1="7" y1="40" x2="11" y2="40"/><line x1="69" y1="40" x2="73" y2="40"/>
+          <line x1="16.7" y1="16.7" x2="19.5" y2="19.5"/><line x1="60.5" y1="60.5" x2="63.3" y2="63.3"/>
+          <line x1="63.3" y1="16.7" x2="60.5" y2="19.5"/><line x1="19.5" y1="60.5" x2="16.7" y2="63.3"/>
+        </g>
+        <text x="40" y="5" text-anchor="middle">N</text>
+        <text x="76" y="42" text-anchor="middle">E</text>
+        <text x="40" y="79" text-anchor="middle">S</text>
+        <text x="4" y="42" text-anchor="middle">W</text>
+        <g id="needle" transform="rotate(34 40 40)">
+          <path d="M40 16 L44.5 40 L40 64 L35.5 40 Z" fill="rgba(33,30,25,.82)"/>
+          <path d="M40 16 L44.5 40 L40 40 L35.5 40 Z" fill="#cd462c"/>
+          <circle cx="40" cy="40" r="2" fill="#f2ebde" stroke="rgba(33,30,25,.6)" stroke-width=".7"/>
+        </g>
+      </svg>
+    </div>
+    <div class="density">
+      <label for="density">Filaments <output id="densityVal" for="density">1,827</output></label>
+      <input id="density" type="range" min="0" max="100" value="62" step="1" aria-label="Filament density">
+      <div class="scale"><span>Sparse</span><span>Dense</span></div>
+    </div>
+  </div>
+  <div class="actions">
+    <button type="button" class="action" id="gustBtn"><span class="sym">≋</span>Gust</button>
+    <button type="button" class="action" id="stillBtn" aria-pressed="false"><span class="sym" id="stillSym">Ⅱ</span><span id="stillLabel">Still</span></button>
+  </div>
+  <p class="console-note">Move the pointer to bend the air</p>
+</aside>
+
+<section class="title-block">
+  <p class="kicker">Field study no. 07 · The Lisbon coast</p>
+  <h1>Wind,<br><em>made visible<span class="period">.</span></em></h1>
+  <div class="title-meta">
+    <p class="caption">Two thousand filaments released into a moving field. Each leaves a few centimetres of itself behind. What accumulates is not the wind, but <em>its handwriting</em>.</p>
+    <div class="coords">
+      <span class="coord-label">Position</span>
+      <span>38°41′52″ N</span>
+      <span>9°25′18″ W</span>
+      <span class="place">Cabo Raso · 41 m above sea</span>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <span>Aeolian observations <span class="hide-xs">· sheet 07</span></span>
+  <span class="mid hide-xs">Ink / paper / air · continuous recording</span>
+  <span class="scale hide-xs"><i></i> 0 — 50 m</span>
+  <span class="utc">UTC <b id="utc">--:--:--</b></span>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById("field");
+  var ctx = canvas.getContext("2d");
+
+  var windEl = document.getElementById("windSpeed");
+  var bearingEl = document.getElementById("bearing");
+  var stateEl = document.getElementById("state");
+  var needle = document.getElementById("needle");
+  var density = document.getElementById("density");
+  var densityVal = document.getElementById("densityVal");
+  var gustBtn = document.getElementById("gustBtn");
+  var stillBtn = document.getElementById("stillBtn");
+  var stillLabel = document.getElementById("stillLabel");
+  var stillSym = document.getElementById("stillSym");
+  var liveLabel = document.getElementById("liveLabel");
+  var utcEl = document.getElementById("utc");
+
+  var PAPER = "#f2ebde";
+  var TAU = Math.PI * 2;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var W = window.innerWidth;
+  var H = window.innerHeight;
+  var dpr = 1;
+  var parts = [];
+  var targetCount = 1827;
+  var pointer = {x:0, y:0, active:false, radius:190};
+  var gust = 0;
+  var paused = reduceMotion;
+  var hasAnimated = !reduceMotion;
+  var lastTime = 0;
+  var simTime = 0;
+  var readoutTimer = 0;
+  var stillQueued = false;
+  var gustTimer = 0;
+
+  /* deterministic pseudo-random source for an authored starting field */
+  var rng = (function(seed){
+    var a = seed >>> 0;
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  })(704081);
+
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  /* ------------------------------------------------------------------ */
+  /*  canvas sizing                                                      */
+  /* ------------------------------------------------------------------ */
+  function resize(){
+    W = window.innerWidth;
+    H = window.innerHeight;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    if (paused){
+      renderStill();
+    } else {
+      resetAllParticles();
+      renderStill();
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  particle population                                                */
+  /* ------------------------------------------------------------------ */
+  function makeParticle(initial){
+    var p = {
+      x:0, y:0, px:0, py:0, age:0, life:70 + rng()*210,
+      step:.55 + rng()*1.35,
+      bucket:(rng()*3) | 0,
+      verm:rng() < 0.007,
+      width:.5 + rng()*.45
+    };
+    resetParticle(p, initial);
+    return p;
+  }
+
+  function resetParticle(p, initial){
+    p.x = rng() * W;
+    p.y = rng() * H;
+    p.px = p.x;
+    p.py = p.y;
+    p.age = initial ? rng() * p.life : 0;
+    p.life = 70 + rng() * 210;
+    p.step = .55 + rng() * 1.35;
+    p.verm = rng() < 0.007;
+  }
+
+  function resetAllParticles(){
+    while (parts.length < targetCount) parts.push(makeParticle(true));
+    if (parts.length > targetCount) parts.length = targetCount;
+    parts.forEach(function(p){ resetParticle(p, true); });
+  }
+
+  function setDensity(value){
+    var v = clamp(Number(value) || 0, 0, 100);
+    targetCount = Math.round(240 + (v / 100) * 2560);
+    densityVal.textContent = targetCount.toLocaleString("en-US");
+
+    if (!paused){
+      if (parts.length < targetCount){
+        while (parts.length < targetCount) parts.push(makeParticle(false));
+      } else {
+        parts.length = targetCount;
+      }
+    } else {
+      queueStill();
+    }
+  }
+
+  function queueStill(){
+    if (stillQueued) return;
+    stillQueued = true;
+    requestAnimationFrame(function(){
+      stillQueued = false;
+      if (paused) renderStill();
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  field                                                              */
+  /* ------------------------------------------------------------------ */
+  function angleAt(x, y, t){
+    var nx = x / Math.max(W, 1);
+    var ny = y / Math.max(H, 1);
+
+    var a = -0.34
+      + Math.sin(ny * 3.1 + nx * 1.25 + t * 0.16) * 0.72
+      + Math.cos(nx * 2.35 - ny * 1.65 - t * 0.11) * 0.56
+      + Math.sin((nx + ny) * 5.15 + t * 0.07) * 0.23;
+
+    var vx = Math.cos(a);
+    var vy = Math.sin(a);
+
+    if (pointer.active){
+      var dx = x - pointer.x;
+      var dy = y - pointer.y;
+      var d = Math.sqrt(dx*dx + dy*dy);
+      if (d < pointer.radius && d > 0.001){
+        var f = 1 - d / pointer.radius;
+        var swirl = f * f * 2.35;
+        vx += (-dy / d) * swirl;
+        vy += (dx / d) * swirl;
+      }
+    }
+
+    return Math.atan2(vy, vx);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  drawing                                                            */
+  /* ------------------------------------------------------------------ */
+  var inkBuckets = [
+    "rgba(33,30,25,0.062)",
+    "rgba(33,30,25,0.095)",
+    "rgba(33,30,25,0.135)"
+  ];
+
+  function drawFrame(dt){
+    // slow wash: lets the lines accumulate into currents
+    ctx.fillStyle = "rgba(242,235,222,0.014)";
+    ctx.fillRect(0, 0, W, H);
+
+    var paths = [new Path2D(), new Path2D(), new Path2D()];
+    var redPath = new Path2D();
+    var frameScale = clamp(dt / 16.667, 0.25, 2.4);
+    var speedMul = (1 + gust * 1.65) * frameScale;
+    var t = simTime;
+
+    for (var i = 0; i < parts.length; i++){
+      var p = parts[i];
+      var a = angleAt(p.x, p.y, t);
+      var len = p.step * speedMul;
+
+      p.px = p.x;
+      p.py = p.y;
+      p.x += Math.cos(a) * len;
+      p.y += Math.sin(a) * len;
+      p.age += frameScale;
+
+      var out = p.x < -24 || p.x > W + 24 || p.y < -24 || p.y > H + 24;
+      if (out || p.age > p.life){
+        resetParticle(p, false);
+        p.px = p.x;
+        p.py = p.y;
+        continue;
+      }
+
+      var path = p.verm ? redPath : paths[p.bucket];
+      path.moveTo(p.px, p.py);
+      path.lineTo(p.x, p.y);
+    }
+
+    ctx.lineWidth = 0.72;
+    for (var b = 0; b < paths.length; b++){
+      ctx.strokeStyle = inkBuckets[b];
+      ctx.stroke(paths[b]);
+    }
+    ctx.lineWidth = 0.85;
+    ctx.strokeStyle = "rgba(205,70,44,0.42)";
+    ctx.stroke(redPath);
+  }
+
+  function renderStill(){
+    ctx.fillStyle = PAPER;
+    ctx.fillRect(0, 0, W, H);
+
+    var paths = [new Path2D(), new Path2D(), new Path2D()];
+    var redPath = new Path2D();
+    var lines = Math.max(140, Math.round(targetCount / 6.2));
+    var t = 2.4;
+
+    for (var i = 0; i < lines; i++){
+      var x = rng() * W;
+      var y = rng() * H;
+      var bucket = (rng() * 3) | 0;
+      var isRed = rng() < 0.008;
+      var path = isRed ? redPath : paths[bucket];
+      var segs = 14 + Math.round(rng() * 18);
+
+      for (var s = 0; s < segs; s++){
+        var a = angleAt(x, y, t);
+        var len = 2.2 + rng() * 4.6;
+        var nx = x + Math.cos(a) * len;
+        var ny = y + Math.sin(a) * len;
+        path.moveTo(x, y);
+        path.lineTo(nx, ny);
+        x = nx;
+        y = ny;
+        if (x < -30 || x > W + 30 || y < -30 || y > H + 30) break;
+      }
+    }
+
+    ctx.lineWidth = 0.68;
+    for (var b = 0; b < paths.length; b++){
+      ctx.strokeStyle = ["rgba(33,30,25,0.085)","rgba(33,30,25,0.125)","rgba(33,30,25,0.17)"][b];
+      ctx.stroke(paths[b]);
+    }
+    ctx.lineWidth = 0.8;
+    ctx.strokeStyle = "rgba(205,70,44,0.5)";
+    ctx.stroke(redPath);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  readouts                                                           */
+  /* ------------------------------------------------------------------ */
+  function updateReadout(){
+    var t = performance.now() / 1000;
+    var base = 11.9 + Math.sin(t * 0.64) * 1.35 + Math.sin(t * 1.73 + 1.2) * 0.55;
+    var speed = Math.max(0, base + gust * 11.4);
+    windEl.textContent = speed.toFixed(1);
+
+    var bearing = (33 + Math.sin(t * 0.27) * 13 + Math.sin(t * 0.63 + 2) * 5 + gust * 20 + 360) % 360;
+    bearingEl.textContent = String(Math.round(bearing)).padStart(3, "0") + "°";
+    needle.setAttribute("transform", "rotate(" + bearing.toFixed(1) + " 40 40)");
+
+    var state = paused ? "Still" : (gust > 0.06 ? "Gusting" : "Flowing");
+    stateEl.textContent = state;
+    stateEl.classList.toggle("gust", gust > 0.06 && !paused);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  animation                                                          */
+  /* ------------------------------------------------------------------ */
+  function loop(now){
+    requestAnimationFrame(loop);
+    if (!lastTime) lastTime = now;
+    var dt = Math.min(now - lastTime, 52);
+    lastTime = now;
+
+    if (paused) return;
+
+    simTime += dt / 1000;
+    if (gust > 0){
+      gust = Math.max(0, gust - dt / 1550);
+    }
+
+    drawFrame(dt);
+
+    if (now - readoutTimer > 260){
+      readoutTimer = now;
+      updateReadout();
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  controls                                                           */
+  /* ------------------------------------------------------------------ */
+  gustBtn.addEventListener("click", function(){
+    gust = 1;
+    gustBtn.classList.add("gusting");
+    clearTimeout(gustTimer);
+    gustTimer = setTimeout(function(){ gustBtn.classList.remove("gusting"); }, 620);
+    updateReadout();
+  });
+
+  stillBtn.addEventListener("click", function(){
+    paused = !paused;
+    stillBtn.setAttribute("aria-pressed", paused ? "true" : "false");
+    stillBtn.setAttribute("aria-label", paused ? "Resume the wind" : "Still the wind");
+    stillLabel.textContent = paused ? "Resume" : "Still";
+    stillSym.textContent = paused ? "▶" : "Ⅱ";
+    liveLabel.textContent = paused ? "Paused" : "Recording";
+    document.body.classList.toggle("is-still", paused);
+    stateEl.textContent = paused ? "Still" : "Flowing";
+
+    if (!paused){
+      lastTime = performance.now();
+      if (!hasAnimated){
+        resetAllParticles();
+        hasAnimated = true;
+      }
+      updateReadout();
+    } else {
+      updateReadout();
+    }
+  });
+
+  density.addEventListener("input", function(){
+    setDensity(density.value);
+  });
+
+  window.addEventListener("pointermove", function(e){
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+    pointer.active = true;
+  }, {passive:true});
+
+  window.addEventListener("pointerleave", function(){ pointer.active = false; });
+  window.addEventListener("blur", function(){ pointer.active = false; });
+
+  var resizeQueued = false;
+  window.addEventListener("resize", function(){
+    if (resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(function(){
+      resizeQueued = false;
+      resize();
+      updateReadout();
+    });
+  });
+
+  /* ------------------------------------------------------------------ */
+  /*  utc clock                                                          */
+  /* ------------------------------------------------------------------ */
+  function updateUTC(){
+    var d = new Date();
+    function p(n){ return n < 10 ? "0" + n : String(n); }
+    utcEl.textContent = p(d.getUTCHours()) + ":" + p(d.getUTCMinutes()) + ":" + p(d.getUTCSeconds());
+  }
+  updateUTC();
+  setInterval(updateUTC, 1000);
+
+  /* ------------------------------------------------------------------ */
+  /*  boot                                                               */
+  /* ------------------------------------------------------------------ */
+  setDensity(density.value);
+
+  if (paused){
+    stillBtn.setAttribute("aria-pressed", "true");
+    stillBtn.setAttribute("aria-label", "Resume the wind");
+    stillLabel.textContent = "Resume";
+    stillSym.textContent = "▶";
+    liveLabel.textContent = "Paused";
+    document.body.classList.add("is-still");
+    stateEl.textContent = "Still";
+  }
+
+  resize();
+  updateReadout();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

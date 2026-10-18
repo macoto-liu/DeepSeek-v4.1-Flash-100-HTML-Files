@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Floral Time — The hour, in bloom</title>
+<style>
+  :root{
+    --paper:#ede3d1;
+    --paper-deep:#e2d5bd;
+    --ink:#3b3a2e;
+    --ink-soft:#6b6a58;
+    --sage:#7c8b6c;
+    --sage-deep:#59684d;
+    --terracotta:#a9553c;
+    --terracotta-deep:#8a4531;
+    --gold:#b9934e;
+    --rose:#b77481;
+    --line:rgba(82,84,64,.28);
+    --line-soft:rgba(82,84,64,.14);
+    --display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:"Avenir Next",Avenir,"Segoe UI",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    font-family:var(--display);
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(ellipse 70% 55% at 78% 38%, rgba(255,251,240,.72), rgba(255,251,240,0) 70%),
+      radial-gradient(ellipse 60% 60% at 8% 90%, rgba(169,85,60,.07), rgba(169,85,60,0) 70%),
+      repeating-linear-gradient(0deg, rgba(76,70,48,.035) 0 1px, rgba(76,70,48,0) 1px 3px),
+      repeating-linear-gradient(90deg, rgba(76,70,48,.025) 0 1px, rgba(76,70,48,0) 1px 4px);
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(86,69,43,.10) 100%),
+      radial-gradient(circle at 16% 12%, rgba(255,255,255,.5), rgba(255,255,255,0) 35%);
+    z-index:20;
+  }
+  .shell{
+    position:relative;
+    max-width:1300px;
+    margin:0 auto;
+    padding:34px 54px 46px;
+    z-index:1;
+  }
+  /* ── masthead ─────────────────────────────────── */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:24px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    font-family:var(--sans);
+    font-size:10.5px;
+    letter-spacing:.32em;
+    text-transform:uppercase;
+    color:var(--sage-deep);
+  }
+  .brand svg{display:block;flex:none;}
+  .masthead-meta{
+    display:flex;
+    gap:26px;
+    font-family:var(--sans);
+    font-size:9.5px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .masthead-meta span:nth-child(2){color:var(--terracotta);}
+  /* ── layout ───────────────────────────────────── */
+  .layout{
+    display:grid;
+    grid-template-columns:390px minmax(0,1fr);
+    gap:56px;
+    align-items:center;
+    padding-top:38px;
+  }
+  .editorial{min-width:0;padding-bottom:10px;}
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-family:var(--sans);
+    font-size:9.5px;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--terracotta);
+    margin:0 0 22px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:38px;height:1px;background:var(--terracotta);opacity:.7;
+  }
+  h1{
+    font-size:clamp(44px,4.6vw,67px);
+    line-height:.99;
+    font-weight:400;
+    letter-spacing:-.022em;
+    margin:0 0 22px;
+  }
+  h1 em{
+    display:block;
+    font-style:italic;
+    color:var(--sage-deep);
+    letter-spacing:-.03em;
+  }
+  .note{
+    font-size:15.5px;
+    line-height:1.65;
+    color:var(--ink-soft);
+    margin:0 0 26px;
+    max-width:34ch;
+  }
+  .note strong{font-weight:400;color:var(--ink);}
+  .rule{
+    height:9px;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line-soft);
+    margin:0 0 22px;
+  }
+  /* selected specimen card */
+  .specimen-card{
+    position:relative;
+    background:linear-gradient(160deg, rgba(255,252,243,.74), rgba(250,244,231,.38));
+    border:1px solid var(--line);
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset, 0 14px 34px -26px rgba(70,62,40,.65);
+    padding:18px 20px 19px;
+    margin-bottom:24px;
+    overflow:hidden;
+  }
+  .specimen-card::after{
+    content:"";
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:3px;
+    background:linear-gradient(var(--gold),rgba(185,147,78,.15));
+  }
+  .specimen-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    font-family:var(--sans);
+    font-size:8.5px;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:11px;
+  }
+  .specimen-top .tag{
+    color:var(--terracotta);
+    white-space:nowrap;
+  }
+  .specimen-body{
+    display:grid;
+    grid-template-columns:74px 1fr;
+    gap:15px;
+    align-items:center;
+  }
+  .specimen-art{
+    width:74px;height:74px;
+    display:grid;place-items:center;
+    border-radius:50%;
+    background:radial-gradient(circle at 50% 45%, rgba(185,147,78,.14), rgba(185,147,78,0) 68%);
+  }
+  .specimen-art svg{display:block;width:70px;height:70px;overflow:visible;}
+  .specimen-name{
+    font-size:26px;
+    font-weight:400;
+    line-height:1.08;
+    margin:0 0 2px;
+    letter-spacing:-.01em;
+  }
+  .specimen-latin{
+    font-style:italic;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin:0 0 7px;
+  }
+  .specimen-meaning{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-family:var(--sans);
+    font-size:8.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--sage-deep);
+  }
+  .specimen-meaning::before{content:"";width:13px;height:1px;background:var(--gold);}
+  .specimen-note{
+    margin:11px 0 0;
+    padding-top:10px;
+    border-top:1px dotted var(--line);
+    font-size:13px;
+    line-height:1.5;
+    color:var(--ink-soft);
+    min-height:39px;
+  }
+  /* controls */
+  .controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+  .btn{
+    font-family:var(--sans);
+    font-size:10px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    border:1px solid transparent;
+    padding:13px 18px;
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    cursor:pointer;
+    transition:background .22s ease,color .22s ease,border-color .22s ease,transform .22s ease;
+    border-radius:1px;
+  }
+  .btn svg{flex:none;}
+  .btn-primary{
+    background:var(--terracotta);
+    color:#f6ecda;
+    border-color:var(--terracotta);
+  }
+  .btn-primary:hover{background:var(--terracotta-deep);border-color:var(--terracotta-deep);}
+  .btn-secondary{
+    background:rgba(255,252,244,.3);
+    color:var(--sage-deep);
+    border-color:rgba(89,104,77,.42);
+  }
+  .btn-secondary:hover{background:rgba(124,139,108,.13);border-color:var(--sage-deep);}
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible,.flower:focus-visible{outline:2px solid var(--terracotta);outline-offset:5px;}
+  .clock-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:var(--sans);
+    font-size:8.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    border-top:1px dotted var(--line);
+    padding-top:11px;
+  }
+  .clock-meta .live{color:var(--sage-deep);}
+  /* ── clock stage ──────────────────────────────── */
+  .clock-column{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-width:0;
+  }
+  .clock-wrap{
+    position:relative;
+    width:100%;
+    max-width:660px;
+    aspect-ratio:1;
+  }
+  .clock-wrap::before{
+    content:"";
+    position:absolute;
+    inset:6%;
+    border-radius:50%;
+    background:radial-gradient(circle at 44% 38%, rgba(255,253,246,.88), rgba(255,253,246,0) 66%);
+    filter:blur(2px);
+    z-index:-1;
+  }
+  .dial{display:block;width:100%;height:100%;overflow:visible;}
+  .dial .ticks line{stroke:rgba(71,78,56,.52);stroke-width:1;}
+  .dial .ticks line.major{stroke:var(--gold);stroke-width:1.8;}
+  .dial .numeral{
+    font-family:var(--display);
+    font-size:15px;
+    fill:var(--sage-deep);
+    font-style:italic;
+    letter-spacing:.04em;
+  }
+  .dial .numeral.here{fill:var(--terracotta);font-size:17px;}
+  .stems path.stem{fill:none;stroke:var(--sage);stroke-width:1.15;stroke-linecap:round;opacity:.82;}
+  .stems path.leaf{fill:var(--sage);opacity:.62;}
+  .stems path.leaf.alt{fill:var(--sage-deep);opacity:.42;}
+  .flower{cursor:pointer;}
+  .flower .hit{fill:transparent;pointer-events:all;}
+  .flower .preview-halo{
+    fill:url(#previewGrad);
+    opacity:0;
+    transition:opacity .3s ease;
+  }
+  .flower .art{transition:opacity .45s ease;}
+  .flower .bud-art{opacity:1;}
+  .flower .open-art{opacity:0;}
+  .flower .open-halo{opacity:0;transition:opacity .5s ease;fill:url(#previewGrad);}
+  .flower .open-ring{fill:none;stroke:var(--gold);stroke-width:1;stroke-dasharray:2 3;opacity:0;transition:opacity .5s ease;}
+  .flower.is-open .open-ring{opacity:.75;}
+  .flower.is-open .bud-art{opacity:0;}
+  .flower.is-open .open-art{opacity:1;}
+  .flower.is-open .open-halo{opacity:.55;}
+  .flower.previewed .preview-halo{opacity:1;}
+  .flower .bud-sepals{fill:var(--sage-deep);opacity:.9;}
+  .flower .petal{stroke:rgba(74,55,40,.20);stroke-width:.5;}
+  .flower .petal-vein{fill:none;stroke:rgba(255,255,255,.34);stroke-width:.6;}
+  .flower .core{fill:var(--gold);}
+  .flower .core-dot{fill:rgba(74,55,40,.55);}
+  .flower .pollen{fill:rgba(255,248,228,.75);}
+  .hand{pointer-events:none;}
+  .hand .stem-hand{fill:none;stroke:var(--sage-deep);stroke-linecap:round;}
+  .hand .leaf-hand{fill:var(--sage-deep);}
+  .hand.hour .stem-hand{stroke-width:3.1;}
+  .hand.minute .stem-hand{stroke-width:2.1;stroke:var(--terracotta-deep);}
+  .hand.minute .leaf-hand{fill:var(--terracotta);}
+  .hand.second .stem-hand{stroke:var(--gold);stroke-width:.9;}
+  .hand.second .leaf-hand{fill:var(--gold);}
+  .hub-outer{fill:var(--paper);stroke:var(--gold);stroke-width:1.4;}
+  .hub-inner{fill:var(--terracotta);}
+  .hub-ring{fill:none;stroke:rgba(185,147,78,.6);stroke-width:.8;stroke-dasharray:1.5 3;}
+  .dial-type{
+    font-family:var(--sans);
+    font-size:8.4px;
+    letter-spacing:.34em;
+    fill:var(--sage-deep);
+    text-transform:uppercase;
+    opacity:.85;
+  }
+  .plate-caption{
+    display:flex;
+    justify-content:space-between;
+    width:100%;
+    max-width:610px;
+    gap:14px;
+    margin-top:8px;
+    font-family:var(--sans);
+    font-size:8.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .plate-caption em{font-family:var(--display);letter-spacing:.02em;text-transform:none;font-size:12px;color:var(--sage-deep);}
+  .sprig{
+    position:absolute;
+    right:-38px;
+    bottom:18px;
+    width:116px;
+    opacity:.45;
+    pointer-events:none;
+  }
+  .sprig.left{left:-46px;right:auto;bottom:auto;top:6px;transform:rotate(-20deg);width:92px;}
+  .visually-hidden{
+    position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+  @media (max-width:1080px){
+    .shell{padding:30px 36px 42px;}
+    .layout{grid-template-columns:340px minmax(0,1fr);gap:34px;}
+    .sprig{display:none;}
+  }
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;gap:38px;padding-top:30px;}
+    .editorial{max-width:620px;}
+    .clock-column{order:-1;}
+    .clock-wrap{max-width:540px;margin:0 auto;}
+    .plate-caption{max-width:540px;}
+    .specimen-card{max-width:520px;}
+  }
+  @media (max-width:560px){
+    .shell{padding:22px 20px 34px;}
+    .masthead-meta span:first-child{display:none;}
+    .masthead-meta{gap:0;}
+    h1{font-size:47px;}
+    .note{font-size:15px;}
+    .layout{padding-top:20px;gap:30px;}
+    .controls{gap:8px;}
+    .btn{padding:12px 14px;font-size:9px;letter-spacing:.14em;}
+    .specimen-card{padding:16px;}
+    .specimen-body{grid-template-columns:62px 1fr;gap:12px;}
+    .specimen-art,.specimen-art svg{width:62px;height:62px;}
+    .specimen-name{font-size:23px;}
+    .clock-wrap{max-width:430px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition-duration:.001ms!important;animation-duration:.001ms!important;}
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="masthead">
+    <div class="brand">
+      <svg width="15" height="24" viewBox="0 0 15 24" aria-hidden="true">
+        <path d="M7.5 23V3" stroke="#59684d" stroke-width=".9" fill="none"/>
+        <path d="M7.5 10C4 9.5 1.8 7.3 1.2 3.7 5 4 7.1 6.2 7.5 10Z" fill="#7c8b6c"/>
+        <path d="M7.5 15c3.5-.5 5.7-2.7 6.3-6.3-3.8.3-5.9 2.5-6.3 6.3Z" fill="#59684d" opacity=".75"/>
+      </svg>
+      <span>Floral Time</span>
+    </div>
+    <div class="masthead-meta">
+      <span>Herbarium clock · plate XII</span>
+      <span>Est. MMXXVI</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- ── editorial column ─────────────────────── -->
+    <section class="editorial" aria-labelledby="page-title">
+      <p class="eyebrow">A botanical clock</p>
+      <h1 id="page-title">The hour,<em>in bloom.</em></h1>
+      <p class="note">Twelve species keep the hours in a garden that never quite agrees with the clock. <strong>One flower opens at a time</strong>; the rest wait, folded, for their turn.</p>
+
+      <div class="rule" aria-hidden="true"></div>
+
+      <article class="specimen-card" aria-live="polite" aria-atomic="true">
+        <div class="specimen-top">
+          <span class="tag" id="cardTag">Now in flower</span>
+          <span id="cardHour">IX · nine o'clock</span>
+        </div>
+        <div class="specimen-body">
+          <div class="specimen-art" id="specimenArt" aria-hidden="true"></div>
+          <div>
+            <h2 class="specimen-name" id="cardName">Marigold</h2>
+            <p class="specimen-latin" id="cardLatin">Calendula officinalis</p>
+            <span class="specimen-meaning" id="cardMeaning">Warmth</span>
+          </div>
+        </div>
+        <p class="specimen-note" id="cardNote">A low sun in the border. It closes its petals at dusk and keeps the colour of the day a little longer than the day itself.</p>
+      </article>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="advanceBtn" type="button">
+          <svg width="15" height="11" viewBox="0 0 15 11" aria-hidden="true" fill="none">
+            <path d="M1 5.5h12M9 1.5l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Advance an hour
+        </button>
+        <button class="btn btn-secondary" id="returnBtn" type="button">
+          <svg width="13" height="13" viewBox="0 0 13 13" aria-hidden="true" fill="none">
+            <path d="M11.3 6.5a4.8 4.8 0 1 1-1.5-3.5M11.6 1.4v3.4H8.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Return to now
+        </button>
+      </div>
+
+      <div class="clock-meta">
+        <span class="live" id="localTime">Local time 09:41:22</span>
+        <span id="offsetLabel">On the hour</span>
+      </div>
+    </section>
+
+    <!-- ── dial ─────────────────────────────────── -->
+    <section class="clock-column" aria-label="The floral dial">
+      <div class="clock-wrap">
+        <svg class="dial" viewBox="0 0 680 680" role="img" aria-labelledby="dialTitle dialDesc">
+          <title id="dialTitle">Floral Time — a twelve-flower botanical clock</title>
+          <desc id="dialDesc">A circular herbarium dial with one flower for each hour. The current hour's flower is open; the others are closed buds. A leaf-shaped second hand sweeps the dial.</desc>
+          <defs>
+            <radialGradient id="previewGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#c8a25c" stop-opacity=".30"/>
+              <stop offset="55%" stop-color="#c8a25c" stop-opacity=".12"/>
+              <stop offset="100%" stop-color="#c8a25c" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="dialWash" cx="44%" cy="38%" r="65%">
+              <stop offset="0%" stop-color="#fbf6ea"/>
+              <stop offset="68%" stop-color="#f2e8d5"/>
+              <stop offset="100%" stop-color="#e7d9c0"/>
+            </radialGradient>
+            <radialGradient id="hubGrad" cx="38%" cy="32%" r="72%">
+              <stop offset="0%" stop-color="#fff8e9"/>
+              <stop offset="100%" stop-color="#e8d9bd"/>
+            </radialGradient>
+            <path id="ringTextPath" d="M340,34 a306,306 0 1,1 -0.01,0" fill="none"/>
+            <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="5" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- dial plate -->
+          <circle cx="340" cy="340" r="326" fill="#e9dcc4" opacity=".55"/>
+          <circle cx="340" cy="340" r="320" fill="url(#dialWash)" stroke="rgba(89,104,77,.55)" stroke-width="1.1"/>
+          <circle cx="340" cy="340" r="312" fill="none" stroke="rgba(185,147,78,.55)" stroke-width=".8"/>
+          <circle cx="340" cy="340" r="303" fill="none" stroke="rgba(89,104,77,.28)" stroke-width=".7"/>
+          <circle cx="340" cy="340" r="246" fill="none" stroke="rgba(89,104,77,.20)" stroke-width=".7" stroke-dasharray="1 5"/>
+          <circle cx="340" cy="340" r="160" fill="none" stroke="rgba(185,147,78,.42)" stroke-width=".9"/>
+          <circle cx="340" cy="340" r="154" fill="none" stroke="rgba(89,104,77,.22)" stroke-width=".6" stroke-dasharray="2 6"/>
+
+          <text class="dial-type">
+            <textPath href="#ringTextPath" startOffset="3%">Floral time · horologium florale · twelve hours in leaf and petal ·</textPath>
+          </text>
+
+          <g class="ticks" id="ticks" aria-hidden="true"></g>
+          <g id="numerals" aria-hidden="true"></g>
+          <g class="stems" id="stems" aria-hidden="true"></g>
+          <g id="flowers"></g>
+
+          <!-- hands -->
+          <g class="hand hour" id="hourHand">
+            <path class="stem-hand" d="M340 340 C 338 306, 342 274, 340 246"/>
+            <path class="leaf-hand" d="M340 282 C 329 276, 323 266, 323 255 C 333 257, 340 265, 340 282 Z"/>
+            <path class="leaf-hand" d="M340 310 C 350 305, 356 297, 356 288 C 347 289, 341 296, 340 310 Z" opacity=".7"/>
+          </g>
+          <g class="hand minute" id="minuteHand">
+            <path class="stem-hand" d="M340 340 C 342 292, 337 234, 340 186"/>
+            <path class="leaf-hand" d="M340 234 C 327 226, 321 213, 321 201 C 333 204, 340 215, 340 234 Z"/>
+          </g>
+          <g class="hand second" id="secondHand">
+            <path class="stem-hand" d="M340 352 L340 96"/>
+            <path class="leaf-hand" d="M340 150 C 331 133, 331 114, 340 99 C 349 114, 349 133, 340 150 Z"/>
+            <path d="M340 148 V104" stroke="rgba(122,92,44,.45)" stroke-width=".5" fill="none"/>
+          </g>
+
+          <circle cx="340" cy="340" r="14" fill="url(#hubGrad)" class="hub-outer"/>
+          <circle cx="340" cy="340" r="9" fill="none" class="hub-ring"/>
+          <circle cx="340" cy="340" r="4.2" class="hub-inner"/>
+        </svg>
+
+        <svg class="sprig left" viewBox="0 0 100 150" aria-hidden="true">
+          <path d="M52 148C50 108 54 60 60 10" stroke="#7c8b6c" stroke-width="1" fill="none"/>
+          <path d="M57 36c-17-2-26-14-28-32 17 3 26 15 28 32Z" fill="#7c8b6c" opacity=".65"/>
+          <path d="M56 68c16-2 25-13 27-30-16 2-25 13-27 30Z" fill="#59684d" opacity=".5"/>
+          <path d="M53 98c-14-1-22-11-24-25 14 2 22 11 24 25Z" fill="#7c8b6c" opacity=".5"/>
+        </svg>
+      </div>
+      <div class="plate-caption" aria-hidden="true">
+        <span><em>Fig. 1</em> — the floral dial</span>
+        <span>Select a bud to read its meaning</span>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  var CX = 340, CY = 340, FLOWER_R = 200;
+  var svgNS = "http://www.w3.org/2000/svg";
+
+  var species = [
+    { name:"Rose", latin:"Rosa gallica", meaning:"Devotion", hour:"XII", note:"The herbarium's oldest specimen. Twelve petals for the twelve hours, pressed flat between two winters.", color:"#b77481", deep:"#8e4c5c", petals:8, kind:"round" },
+    { name:"Snowdrop", latin:"Galanthus nivalis", meaning:"Hope", hour:"I", note:"The first thing to break the white ground. It opens while the garden is still deciding whether to wake.", color:"#f4efe2", deep:"#cfc7ae", petals:6, kind:"droop" },
+    { name:"Violet", latin:"Viola odorata", meaning:"Modesty", hour:"II", note:"Small enough to be missed, sweet enough not to be. Grown at the north wall where the light is thin.", color:"#8a7aa8", deep:"#615477", petals:5, kind:"round" },
+    { name:"Daffodil", latin:"Narcissus poeticus", meaning:"Renewal", hour:"III", note:"A trumpet of pale gold, leaning toward the window. Each spring it returns to precisely this place.", color:"#d9b65c", deep:"#a8862f", petals:6, kind:"star" },
+    { name:"Daisy", latin:"Bellis perennis", meaning:"Innocence", hour:"IV", note:"A sun of thread-fine petals. It closes in the evening and reopens with the earliest light.", color:"#f7f1e2", deep:"#d9cfae", petals:12, kind:"daisy" },
+    { name:"Lily of the valley", latin:"Convallaria majalis", meaning:"Return of happiness", hour:"V", note:"Bells hung along a single stem, fragrant before they are visible. Shade, moisture, patience.", color:"#efece0", deep:"#c8c5ae", petals:6, kind:"bell" },
+    { name:"Peony", latin:"Paeonia officinalis", meaning:"A tender heart", hour:"VI", note:"Brief and enormous. It arrives all at once and leaves the same way, scattering a summer of petals.", color:"#c5848c", deep:"#9e5b66", petals:10, kind:"round" },
+    { name:"Lavender", latin:"Lavandula angustifolia", meaning:"Calm", hour:"VII", note:"A dry, resinous calm. Bees work the spikes from the bottom upward, unhurried.", color:"#9a92b6", deep:"#6f6a8c", petals:6, kind:"spike" },
+    { name:"Poppy", latin:"Papaver rhoeas", meaning:"Remembrance", hour:"VIII", note:"Four petals like crumpled silk. A field edge in June, gone by the afternoon.", color:"#c4553a", deep:"#8f3527", petals:4, kind:"round" },
+    { name:"Marigold", latin:"Calendula officinalis", meaning:"Warmth", hour:"IX", note:"A low sun in the border. It closes its petals at dusk and keeps the colour of the day a little longer than the day itself.", color:"#d98a33", deep:"#a9631f", petals:9, kind:"star" },
+    { name:"Aster", latin:"Aster amellus", meaning:"Patience", hour:"X", note:"The last colour before the frost. A small constellation of a flower, assembled from many smaller ones.", color:"#8f82b0", deep:"#665a86", petals:11, kind:"daisy" },
+    { name:"Chrysanthemum", latin:"Chrysanthemum indicum", meaning:"Longevity", hour:"XI", note:"A hundred petals, folded each night. The garden gives this one to the year's end, as a keepsake.", color:"#c9a45c", deep:"#987430", petals:12, kind:"star" }
+  ];
+
+  var el = {
+    ticks: document.getElementById("ticks"),
+    numerals: document.getElementById("numerals"),
+    stems: document.getElementById("stems"),
+    flowers: document.getElementById("flowers"),
+    hourHand: document.getElementById("hourHand"),
+    minuteHand: document.getElementById("minuteHand"),
+    secondHand: document.getElementById("secondHand"),
+    cardTag: document.getElementById("cardTag"),
+    cardHour: document.getElementById("cardHour"),
+    cardName: document.getElementById("cardName"),
+    cardLatin: document.getElementById("cardLatin"),
+    cardMeaning: document.getElementById("cardMeaning"),
+    cardNote: document.getElementById("cardNote"),
+    specimenArt: document.getElementById("specimenArt"),
+    localTime: document.getElementById("localTime"),
+    offsetLabel: document.getElementById("offsetLabel"),
+    advance: document.getElementById("advanceBtn"),
+    ret: document.getElementById("returnBtn")
+  };
+
+  var offsetHours = 0;
+  var hoverIndex = null;
+  var pinnedIndex = null;
+  var currentIndex = 9;
+  var flowerEls = [];
+  var numeralEls = [];
+  var lastArtIndex = -1;
+  var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+
+  function angleFor(index){ return index * 30; }
+
+  function posFor(index){
+    var a = (angleFor(index) - 90) * Math.PI / 180;
+    return { x: CX + FLOWER_R * Math.cos(a), y: CY + FLOWER_R * Math.sin(a) };
+  }
+
+  /* ── build ticks and numerals ─────────────────── */
+  var tickMarkup = "", numeralMarkup = "";
+  for (var t = 0; t < 60; t++) {
+    var isMajor = t % 5 === 0;
+    var a = (t * 6 - 90) * Math.PI / 180;
+    var r1 = isMajor ? 288 : 292;
+    var r2 = isMajor ? 300 : 298;
+    tickMarkup += '<line x1="' + (CX + r1 * Math.cos(a)).toFixed(2) + '" y1="' + (CY + r1 * Math.sin(a)).toFixed(2) +
+      '" x2="' + (CX + r2 * Math.cos(a)).toFixed(2) + '" y2="' + (CY + r2 * Math.sin(a)).toFixed(2) +
+      '" class="' + (isMajor ? "major" : "") + '"/>';
+  }
+  for (var h = 0; h < 12; h++) {
+    var ang = (h * 30 - 90) * Math.PI / 180;
+    var nr = 271;
+    var nx = CX + nr * Math.cos(ang);
+    var ny = CY + nr * Math.sin(ang);
+    var label = h === 0 ? "XII" : ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI"][h - 1];
+    numeralMarkup += '<text class="numeral" data-hour="' + h + '" x="' + nx.toFixed(1) + '" y="' + (ny + 5).toFixed(1) + '" text-anchor="middle">' + label + "</text>";
+  }
+  el.ticks.innerHTML = tickMarkup;
+  el.numerals.innerHTML = numeralMarkup;
+  numeralEls = Array.prototype.slice.call(el.numerals.querySelectorAll(".numeral"));
+
+  /* ── build stems ──────────────────────────────── */
+  var stemMarkup = "";
+  for (var s = 0; s < 12; s++) {
+    var sp = posFor(s);
+    stemMarkup += '<g transform="translate(' + sp.x.toFixed(2) + " " + sp.y.toFixed(2) + ') rotate(' + angleFor(s) + ')">' +
+      '<path class="stem" d="M0 6 C -4 22, 4 38, 0 53"/>' +
+      '<path class="leaf" d="M0 22 C -12 24, -18 32, -18 41 C -7 40, -1 32, 0 22 Z"/>' +
+      '<path class="leaf alt" d="M0 34 C 11 37, 17 44, 17 52 C 7 51, 1 43, 0 34 Z"/>' +
+      "</g>";
+  }
+  el.stems.innerHTML = stemMarkup;
+
+  /* ── flower construction ──────────────────────── */
+  function petalsMarkup(sp){
+    var out = "";
+    var count = sp.petals;
+    var i, a;
+    if (sp.kind === "daisy") {
+      for (i = 0; i < count; i++) {
+        a = (360 / count) * i;
+        out += '<ellipse class="petal" cx="0" cy="-15" rx="3.2" ry="11" fill="' + (i % 3 === 0 ? sp.deep : sp.color) + '" transform="rotate(' + a + ')"/>';
+      }
+      out += '<circle class="core" r="5.4"/><circle class="core-dot" r="2.6"/>';
+      return out;
+    }
+    if (sp.kind === "bell") {
+      for (i = 0; i < 6; i++) {
+        a = (360 / 6) * i;
+        out += '<path class="petal" d="M0 0 C -6 -5, -7 -16, 0 -24 C 7 -16, 6 -5, 0 0 Z" fill="' + (i % 2 ? sp.deep : sp.color) + '" transform="rotate(' + a + ')"/>';
+      }
+      out += '<circle class="core" r="3.6"/>';
+      for (i = 0; i < 3; i++) {
+        a = i * 120 + 30;
+        out += '<circle class="core-dot" cx="' + (Math.cos(a * Math.PI / 180) * 2).toFixed(1) + '" cy="' + (Math.sin(a * Math.PI / 180) * 2).toFixed(1) + '" r=".7"/>';
+      }
+      return out;
+    }
+    if (sp.kind === "spike") {
+      out += '<path d="M0 4 C -1 -10, 1 -24, 0 -32" stroke="' + sp.deep + '" stroke-width="1.2" fill="none" opacity=".55"/>';
+      for (var row = 0; row < 5; row++) {
+        var cols = row % 2 === 0 ? 3 : 2;
+        var rowY = -6 - row * 5.2;
+        for (var col = 0; col < cols; col++) {
+          var fx = (col - (cols - 1) / 2) * 8.4;
+          out += '<g transform="translate(' + fx.toFixed(1) + ' ' + rowY.toFixed(1) + ') rotate(' + ((row + col) % 2 ? 18 : -14) + ')">' +
+            '<ellipse class="petal" cx="0" cy="-2.1" rx="1.8" ry="2.5" fill="' + sp.color + '"/>' +
+            '<ellipse class="petal" cx="0" cy="2.1" rx="1.8" ry="2.5" fill="' + sp.deep + '"/>' +
+            '<ellipse class="petal" cx="-2.1" cy="0" rx="2.5" ry="1.8" fill="' + sp.deep + '"/>' +
+            '<ellipse class="petal" cx="2.1" cy="0" rx="2.5" ry="1.8" fill="' + sp.color + '"/>' +
+            '<circle cx="0" cy="0" r=".9" fill="#c9a45c"/>' +
+            '</g>';
+        }
+      }
+      out += '<circle class="core" r="2.4" cy="-31"/>';
+      return out;
+    }
+    if (sp.kind === "droop") {
+      for (i = 0; i < 6; i++) {
+        a = -70 + i * 28;
+        out += '<ellipse class="petal" cx="0" cy="-17" rx="4.4" ry="12.5" fill="' + (i % 2 ? sp.deep : sp.color) + '" transform="rotate(' + a + ' 0 0)" opacity="' + (i % 2 ? ".95" : "1") + '"/>';
+      }
+      out += '<path d="M0 -14 C 4 -8, 4 0, 0 4" stroke="#c9a45c" stroke-width="1.4" fill="none"/>';
+      out += '<circle class="core" r="2.6" cy="-15"/>';
+      return out;
+    }
+    if (sp.kind === "star") {
+      for (i = 0; i < count; i++) {
+        a = (360 / count) * i;
+        out += '<path class="petal" d="M0 0 C -6 -8, -8 -20, 0 -30 C 8 -20, 6 -8, 0 0 Z" fill="' + (i % 2 ? sp.deep : sp.color) + '" transform="rotate(' + a + ')"/>';
+      }
+      out += '<circle class="core" r="5" />';
+      for (i = 0; i < 6; i++) {
+        a = i * 60;
+        out += '<circle class="core-dot" cx="' + (Math.cos(a * Math.PI / 180) * 2.9).toFixed(1) + '" cy="' + (Math.sin(a * Math.PI / 180) * 2.9).toFixed(1) + '" r=".7"/>';
+      }
+      return out;
+    }
+    /* round / peony / poppy / rose */
+    for (i = 0; i < count; i++) {
+      a = (360 / count) * i;
+      var inner = i % 2 === 0;
+      out += '<path class="petal" d="M0 0 C -9 -7, -10 -19, 0 -27 C 10 -19, 9 -7, 0 0 Z" fill="' + (inner ? sp.color : sp.deep) + '" transform="rotate(' + a + ') scale(' + (inner ? 1 : .84) + ')" opacity="' + (inner ? "1" : ".92") + '"/>';
+    }
+    out += '<circle class="core" r="4.6"/>';
+    for (i = 0; i < 5; i++) {
+      a = i * 72 + 18;
+      out += '<circle class="core-dot" cx="' + (Math.cos(a * Math.PI / 180) * 2.6).toFixed(1) + '" cy="' + (Math.sin(a * Math.PI / 180) * 2.6).toFixed(1) + '" r=".65"/>';
+    }
+    return out;
+  }
+
+  function buildFlower(sp, index){
+    var p = posFor(index);
+    var g = document.createElementNS(svgNS, "g");
+    g.setAttribute("class", "flower");
+    g.setAttribute("transform", "translate(" + p.x.toFixed(2) + " " + p.y.toFixed(2) + ") rotate(" + angleFor(index) + ")");
+    g.setAttribute("data-price-index", index);
+    g.setAttribute("role", "button");
+    g.setAttribute("tabindex", "0");
+    g.setAttribute("aria-label", sp.name + ", " + sp.hour + " o'clock — " + sp.meaning);
+    g.innerHTML =
+      '<circle class="open-halo" r="72"/>' +
+      '<circle class="open-ring" r="56"/>' +
+      '<circle class="preview-halo" r="62"/>' +
+      '<circle class="hit" r="46"/>' +
+      '<g class="art bud-art" transform="scale(1.35)">' +
+        '<path d="M0 6 C -7 0, -7.5 -12, -2.6 -20 C -1.4 -23, 0 -25, 0 -27 C 0 -25, 1.4 -23, 2.6 -20 C 7.5 -12, 7 -2, 0 6 Z" fill="' + sp.deep + '"/>' +
+        '<path d="M0 5 C -3.4 -1, -3.6 -12, 0 -23 C 3.6 -12, 3.4 -1, 0 5 Z" fill="' + sp.color + '" opacity=".92"/>' +
+        '<path class="bud-sepals" d="M0 2 C -9 0, -12 -6, -11 -10 C -6 -8, -2 -4, 0 2 Z"/>' +
+        '<path class="bud-sepals" d="M0 2 C 9 0, 12 -6, 11 -10 C 6 -8, 2 -4, 0 2 Z"/>' +
+        '<path d="M0 6 V13" stroke="' + sp.deep + '" stroke-width="1.1" opacity=".55"/>' +
+      '</g>' +
+      '<g class="art open-art" transform="scale(2)">' +
+        petalsMarkup(sp) +
+      '</g>' +
+      '<g class="art pollen" transform="scale(1.5)">' +
+        '<circle cx="-14" cy="-18" r=".9" fill="' + sp.color + '"/>' +
+        '<circle cx="15" cy="-24" r=".8" fill="' + sp.deep + '"/>' +
+      '</g>';
+    el.flowers.appendChild(g);
+    flowerEls.push(g);
+
+    g.addEventListener("mouseenter", function(){ hoverIndex = index; syncCard(); syncFlowers(); });
+    g.addEventListener("mouseleave", function(){ if (hoverIndex === index) hoverIndex = null; syncCard(); syncFlowers(); });
+    g.addEventListener("pointerenter", function(){ hoverIndex = index; syncCard(); syncFlowers(); });
+    g.addEventListener("pointerleave", function(){ if (hoverIndex === index) hoverIndex = null; syncCard(); syncFlowers(); });
+    g.addEventListener("focus", function(){ hoverIndex = index; syncCard(); syncFlowers(); });
+    g.addEventListener("blur", function(){ if (hoverIndex === index) hoverIndex = null; syncCard(); syncFlowers(); });
+    g.addEventListener("click", function(ev){
+      ev.stopPropagation();
+      pinnedIndex = pinnedIndex === index ? null : index;
+      syncCard(); syncFlowers();
+    });
+    g.addEventListener("keydown", function(ev){
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        pinnedIndex = pinnedIndex === index ? null : index;
+        syncCard(); syncFlowers();
+      }
+    });
+  }
+
+  species.forEach(buildFlower);
+
+  /* ── card + flower state ──────────────────────── */
+  function activeIndex(){
+    if (hoverIndex !== null) return hoverIndex;
+    if (pinnedIndex !== null) return pinnedIndex;
+    return currentIndex;
+  }
+
+  function artFor(sp){
+    var petals = "";
+    var count = Math.min(sp.petals, 10);
+    for (var i = 0; i < count; i++) {
+      var a = (360 / count) * i;
+      petals += '<path d="M50 50 C ' + (50 - 13) + ' 41, ' + (50 - 14) + ' 26, 50 15 C ' + (50 + 14) + ' 26, ' + (50 + 13) + ' 41, 50 50 Z" fill="' + (i % 2 ? sp.color : sp.deep) + '" transform="rotate(' + a + ' 50 50)"/>';
+    }
+    return '<svg viewBox="0 0 100 100" role="presentation">' +
+      '<circle cx="50" cy="50" r="31" fill="none" stroke="#b9934e" stroke-width=".5" stroke-dasharray="1 4" opacity=".7"/>' +
+      '<g>' + petals + '<circle cx="50" cy="50" r="6" fill="#b9934e"/><circle cx="50" cy="50" r="2.4" fill="#6b5a34" opacity=".65"/></g>' +
+      '<path d="M50 83 V96 M50 89 C 43 88, 39 84, 38 79 C 45 80, 49 83, 50 89 Z" fill="#7c8b6c" stroke="#59684d" stroke-width=".35"/>' +
+      '</svg>';
+  }
+
+  function syncCard(){
+    var idx = activeIndex();
+    var sp = species[idx];
+    var previewing = (hoverIndex !== null || pinnedIndex !== null);
+    el.cardTag.textContent = previewing ? "Specimen preview" : "Now in flower";
+    el.cardTag.style.color = previewing ? "#59684d" : "";
+    el.cardHour.textContent = sp.hour + " · " + ["twelve","one","two","three","four","five","six","seven","eight","nine","ten","eleven"][idx] + " o'clock";
+    el.cardName.textContent = sp.name;
+    el.cardLatin.textContent = sp.latin;
+    el.cardMeaning.textContent = sp.meaning;
+    el.cardNote.textContent = sp.note;
+    if (lastArtIndex !== idx) {
+      el.specimenArt.innerHTML = artFor(sp);
+      lastArtIndex = idx;
+    }
+  }
+
+  function syncFlowers(){
+    var preview = hoverIndex !== null ? hoverIndex : pinnedIndex;
+    for (var i = 0; i < flowerEls.length; i++) {
+      var g = flowerEls[i];
+      g.classList.toggle("is-open", i === currentIndex);
+      g.classList.toggle("previewed", preview === i && i !== currentIndex);
+      g.setAttribute("aria-pressed", pinnedIndex === i ? "true" : "false");
+    }
+    for (var n = 0; n < numeralEls.length; n++) {
+      numeralEls[n].classList.toggle("here", parseInt(numeralEls[n].getAttribute("data-hour"), 10) === currentIndex);
+    }
+  }
+
+  /* ── time and hands ───────────────────────────── */
+  function currentDate(){
+    return new Date(Date.now() + offsetHours * 3600000);
+  }
+
+  function setHand(group, deg){
+    group.setAttribute("transform", "rotate(" + deg.toFixed(3) + " " + CX + " " + CY + ")");
+  }
+
+  function updateHands(){
+    var d = currentDate();
+    var sec = d.getSeconds() + d.getMilliseconds() / 1000;
+    var min = d.getMinutes() + sec / 60;
+    var hr = (d.getHours() % 12) + min / 60;
+    setHand(el.hourHand, hr * 30);
+    setHand(el.minuteHand, min * 6);
+    setHand(el.secondHand, sec * 6);
+    var hh = d.getHours();
+    el.localTime.textContent = "Local time " + pad(hh) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+  }
+
+  function updateClock(){
+    var d = currentDate();
+    var newIndex = d.getHours() % 12;
+    if (newIndex !== currentIndex) {
+      currentIndex = newIndex;
+      syncFlowers();
+      if (hoverIndex === null && pinnedIndex === null) syncCard();
+    }
+    updateHands();
+  }
+
+  function resetPreview(){
+    hoverIndex = null;
+    pinnedIndex = null;
+    syncCard();
+    syncFlowers();
+  }
+
+  el.advance.addEventListener("click", function(){
+    offsetHours += 1;
+    el.offsetLabel.textContent = offsetHours === 0 ? "On the hour" : "Advanced " + offsetHours + (offsetHours === 1 ? " hour" : " hours");
+    resetPreview();
+    updateClock();
+  });
+
+  el.ret.addEventListener("click", function(){
+    offsetHours = 0;
+    el.offsetLabel.textContent = "On the hour";
+    resetPreview();
+    updateClock();
+  });
+
+  document.addEventListener("click", function(ev){
+    if (!ev.target.closest(".flower") && pinnedIndex !== null) {
+      pinnedIndex = null;
+      syncCard();
+      syncFlowers();
+    }
+  });
+
+  /* initial paint */
+  syncFlowers();
+  syncCard();
+  updateClock();
+
+  if (prefersReduced) {
+    setInterval(updateClock, 1000);
+  } else {
+    (function frame(){
+      updateHands();
+      requestAnimationFrame(frame);
+    })();
+    setInterval(updateClock, 1000);
+  }
+})();
+</script>
+</body>
+</html>

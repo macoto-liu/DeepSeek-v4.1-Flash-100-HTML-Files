@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swarm Type — A word is a crowd</title>
+<style>
+  :root{
+    --bg:#070808;
+    --cream:#f1ede2;
+    --muted:rgba(241,237,226,.55);
+    --faint:rgba(241,237,226,.32);
+    --line:rgba(241,237,226,.15);
+    --acid:#c9f24b;
+    --ember:#ff6a33;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    height:100dvh;
+    min-height:520px;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr) auto;
+    overflow:hidden;
+    background:
+      radial-gradient(1100px 640px at 50% 44%, #101313 0%, #080909 55%, #060707 100%);
+    color:var(--cream);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background-image:radial-gradient(rgba(241,237,226,.14) 1px, transparent 1.2px);
+    background-size:34px 34px;
+    -webkit-mask-image:radial-gradient(ellipse at 50% 52%, #000 0%, transparent 70%);
+    mask-image:radial-gradient(ellipse at 50% 52%, #000 0%, transparent 70%);
+    opacity:.35;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:4;
+    pointer-events:none;
+    box-shadow:inset 0 0 190px 60px rgba(0,0,0,.65);
+  }
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+  .masthead{
+    position:relative;
+    z-index:5;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:18px clamp(18px,3.6vw,46px);
+    border-bottom:1px solid var(--line);
+    font:500 10px/1 var(--mono);
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .brand{
+    display:flex;align-items:center;gap:11px;
+    color:var(--cream);
+    letter-spacing:.22em;
+    font-size:11px;
+  }
+  .brand .glyph{
+    width:20px;height:20px;flex:none;display:block;
+  }
+  .brand .thin{color:var(--faint);font-weight:400}
+  .masthead-meta{display:flex;align-items:center;gap:22px}
+  .masthead-meta .dot{
+    display:inline-block;width:5px;height:5px;border-radius:50%;
+    background:var(--acid);margin-right:8px;vertical-align:1px;
+  }
+  .stage{
+    position:relative;
+    z-index:1;
+    min-height:0;
+    overflow:hidden;
+    touch-action:pan-y;
+  }
+  #swarm{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+  }
+  .statement{
+    position:absolute;
+    z-index:2;
+    top:clamp(18px,4vh,44px);
+    left:clamp(18px,4.6vw,64px);
+    pointer-events:none;
+    margin:0;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(34px,5.6vw,74px);
+    line-height:.96;
+    letter-spacing:-.035em;
+    color:var(--cream);
+    text-wrap:balance;
+  }
+  .statement .line{display:block}
+  .statement em{
+    font-style:italic;
+    color:var(--acid);
+    letter-spacing:-.02em;
+  }
+  .stage-note{
+    position:absolute;
+    z-index:2;
+    right:clamp(18px,4.6vw,64px);
+    bottom:20px;
+    margin:0;
+    pointer-events:none;
+    font:500 9px/1.6 var(--mono);
+    letter-spacing:.22em;
+    text-align:right;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+  .stage-note b{display:block;color:var(--muted);font-weight:500}
+  .console{
+    position:relative;
+    z-index:5;
+    padding:14px clamp(18px,3.6vw,46px) 22px;
+    border-top:1px solid var(--line);
+    background:linear-gradient(to bottom, rgba(7,8,8,.35), rgba(7,8,8,.92) 42%);
+  }
+  .console-row{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px 16px;
+    margin-bottom:13px;
+  }
+  .count{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font:500 10px/1 var(--mono);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--faint);
+    white-space:nowrap;
+  }
+  .count output{
+    font-size:13px;
+    letter-spacing:.06em;
+    color:var(--cream);
+    font-variant-numeric:tabular-nums;
+  }
+  .actions{display:flex;gap:7px}
+  button{font:inherit}
+  .ghost{
+    appearance:none;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--muted);
+    border-radius:999px;
+    padding:8px 14px;
+    font:500 10px/1 var(--mono);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:color .2s, border-color .2s, background .2s;
+  }
+  .ghost:hover{color:var(--cream);border-color:rgba(241,237,226,.5);background:rgba(241,237,226,.04)}
+  .ghost:focus-visible,.pal:focus-visible,.wordbar button:focus-visible{
+    outline:2px solid var(--acid);
+    outline-offset:3px;
+  }
+  .palette{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin-left:auto;
+    flex-wrap:wrap;
+  }
+  .pal{
+    appearance:none;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--faint);
+    border-radius:999px;
+    padding:7px 11px 7px 9px;
+    font:500 9px/1 var(--mono);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:color .2s,border-color .2s,background .2s;
+  }
+  .pal:hover{color:var(--cream);border-color:rgba(241,237,226,.4)}
+  .pal .sw{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--sw);
+    box-shadow:0 0 9px color-mix(in srgb, var(--sw) 55%, transparent);
+  }
+  .pal[aria-pressed="true"]{
+    color:var(--cream);
+    border-color:rgba(241,237,226,.55);
+    background:rgba(241,237,226,.07);
+  }
+  .wordbar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:min(640px,100%);
+    margin:0 auto;
+    padding:5px 5px 5px 20px;
+    border:1px solid rgba(241,237,226,.19);
+    border-radius:999px;
+    background:rgba(241,237,226,.035);
+    transition:border-color .25s, box-shadow .25s, background .25s;
+  }
+  .wordbar:focus-within{
+    border-color:rgba(201,242,75,.65);
+    box-shadow:0 0 0 4px rgba(201,242,75,.07);
+    background:rgba(241,237,226,.05);
+  }
+  .wordbar input{
+    flex:1 1 auto;
+    min-width:0;
+    padding:11px 0;
+    border:0;
+    background:transparent;
+    outline:0;
+    color:var(--cream);
+    font:500 14px/1.2 var(--mono);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    caret-color:var(--acid);
+  }
+  .wordbar input::placeholder{
+    color:rgba(241,237,226,.3);
+    letter-spacing:.13em;
+  }
+  .wordbar button{
+    width:44px;height:44px;
+    flex:none;
+    display:grid;
+    place-items:center;
+    border:0;
+    border-radius:50%;
+    background:var(--acid);
+    color:#0a0c08;
+    cursor:pointer;
+    transition:transform .25s cubic-bezier(.2,.8,.2,1), filter .2s;
+  }
+  .wordbar button:hover{transform:rotate(-38deg)}
+  .wordbar button:active{transform:scale(.93)}
+  .wordbar svg{width:18px;height:18px;display:block}
+  .hint{
+    margin:9px 0 0;
+    text-align:center;
+    font:400 9px/1 var(--mono);
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(241,237,226,.25);
+  }
+  @media (max-width:700px){
+    .masthead{padding-top:14px;padding-bottom:14px}
+    .masthead-meta .hide-sm{display:none}
+    .statement{font-size:clamp(30px,9.4vw,44px);top:16px}
+    .stage-note{display:none}
+    .console{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+    .palette{width:100%;margin-left:0;order:3}
+    .console-row{margin-bottom:11px}
+    .pal{padding:7px 10px 7px 8px;font-size:8.5px}
+    .hint{display:none}
+  }
+  @media (max-height:520px){
+    .statement{font-size:clamp(26px,5vh,40px)}
+    .console-row{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .ghost,.pal,.wordbar,.wordbar button{transition:none}
+  }
+</style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand">
+      <svg class="glyph" viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="10" cy="10" r="8.4" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-width=".7"/>
+        <circle cx="10" cy="10" r="1.5" fill="#c9f24b"/>
+        <circle cx="10" cy="2.4" r=".85" fill="currentColor"/>
+        <circle cx="17.2" cy="14.6" r=".85" fill="currentColor"/>
+        <circle cx="2.8" cy="14.6" r=".85" fill="currentColor"/>
+      </svg>
+      <span>Swarm <span class="thin">Type</span></span>
+    </div>
+    <div class="masthead-meta">
+      <span class="hide-sm">Particle lettering study</span>
+      <span><i class="dot"></i>No. 069</span>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <canvas id="swarm" aria-label="A swarm of particles forming the word FLUX. Move your pointer to disturb them."></canvas>
+    <p class="statement" aria-hidden="true">
+      <span class="line">A word is</span>
+      <span class="line"><em>a crowd.</em></span>
+    </p>
+    <p class="stage-note" aria-hidden="true"><b>Move to disturb</b>press + hold to shove</p>
+  </main>
+
+  <section class="console" aria-label="Swarm controls">
+    <div class="console-row">
+      <div class="count"><output id="count" aria-live="off">0</output> particles</div>
+      <div class="actions">
+        <button class="ghost" type="button" id="scatter">Scatter</button>
+        <button class="ghost" type="button" id="reform">Reform</button>
+      </div>
+      <div class="palette" role="group" aria-label="Particle palette">
+        <button class="pal" type="button" data-palette="chalk" aria-pressed="true" style="--sw:#f1ede2">
+          <span class="sw" aria-hidden="true"></span>Chalk
+        </button>
+        <button class="pal" type="button" data-palette="acid" aria-pressed="false" style="--sw:#c9f24b">
+          <span class="sw" aria-hidden="true"></span>Acid
+        </button>
+        <button class="pal" type="button" data-palette="ember" aria-pressed="false" style="--sw:#ff6a33">
+          <span class="sw" aria-hidden="true"></span>Ember
+        </button>
+      </div>
+    </div>
+    <form class="wordbar" id="wordform">
+      <label class="sr-only" for="word">Set the word the swarm should form</label>
+      <input id="word" name="word" type="text" value="FLUX" maxlength="18" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Type a word">
+      <button type="submit" aria-label="Send word to the swarm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </form>
+    <p class="hint">up to eighteen characters · press enter to reform</p>
+  </section>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById("swarm");
+  var ctx = canvas.getContext("2d");
+  var stage = document.getElementById("stage");
+  var countEl = document.getElementById("count");
+  var input = document.getElementById("word");
+  var form = document.getElementById("wordform");
+  var scatterBtn = document.getElementById("scatter");
+  var reformBtn = document.getElementById("reform");
+  var paletteBtns = Array.prototype.slice.call(document.querySelectorAll("[data-palette]"));
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var COLORS = ["#f1ede2", "#c9f24b", "#ff6a33"];
+  var W = 0, H = 0, DPR = 1;
+  var particles = [];
+  var word = "FLUX";
+  var palette = "chalk";
+  var scattered = false;
+  var pointer = { x: -9999, y: -9999, active: false, down: false };
+  var resizeTimer = 0;
+  var lastTime = performance.now();
+  var initialized = false;
+
+  function mulberry32(a){
+    return function(){
+      a |= 0;
+      a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function hashString(str){
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  var colorRand = mulberry32(0xB4A7C3);
+  var targetRand = mulberry32(1);
+
+  function colorIndexFor(roll){
+    if (palette === "acid"){
+      if (roll < 0.66) return 1;
+      if (roll < 0.92) return 0;
+      return 2;
+    }
+    if (palette === "ember"){
+      if (roll < 0.5) return 2;
+      if (roll < 0.88) return 0;
+      return 1;
+    }
+    if (roll < 0.82) return 0;
+    if (roll < 0.96) return 1;
+    return 2;
+  }
+
+  function desiredCount(){
+    var density = W * H / 165;
+    var max = W < 640 ? 3000 : 5600;
+    var min = W < 640 ? 2400 : 2600;
+    return Math.round(Math.max(min, Math.min(max, density)));
+  }
+
+  function sampleTargets(text){
+    var off = document.createElement("canvas");
+    var ow = Math.max(1, Math.floor(W));
+    var oh = Math.max(1, Math.floor(H));
+    off.width = ow;
+    off.height = oh;
+    var octx = off.getContext("2d", { willReadFrequently: true });
+    var maxWidth = W * 0.84;
+    var fontFamily = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+    var size = Math.min(H * 0.54, 400);
+    var label = text.toUpperCase();
+
+    function setFont(s){ octx.font = "800 " + s + "px " + fontFamily; }
+    setFont(size);
+    var measured = octx.measureText(label).width || 1;
+    if (measured > maxWidth) size *= maxWidth / measured;
+    size = Math.max(20, Math.min(size, H * 0.62));
+    setFont(size);
+
+    octx.clearRect(0, 0, ow, oh);
+    octx.textAlign = "center";
+    octx.textBaseline = "middle";
+    octx.fillStyle = "#ffffff";
+    octx.fillText(label, W / 2, H * 0.54);
+
+    var data;
+    try {
+      data = octx.getImageData(0, 0, ow, oh).data;
+    } catch (err){
+      return [];
+    }
+
+    var points = [];
+    var step = W < 640 ? 2 : 2;
+    for (var y = 0; y < oh; y += step){
+      for (var x = 0; x < ow; x += step){
+        if (data[(y * ow + x) * 4 + 3] > 120){
+          points.push({ x: x + (targetRand() - 0.5) * 1.6, y: y + (targetRand() - 0.5) * 1.6 });
+        }
+      }
+    }
+
+    // Deterministic shuffle so the same word always gets the same swarm.
+    for (var i = points.length - 1; i > 0; i--){
+      var j = Math.floor(targetRand() * (i + 1));
+      var tmp = points[i];
+      points[i] = points[j];
+      points[j] = tmp;
+    }
+    return points;
+  }
+
+  function makeParticle(target){
+    var size = 0.75 + colorRand() * 1.15;
+    var c = colorIndexFor(colorRand());
+    return {
+      x: reduceMotion ? target.x : targetRand() * W,
+      y: reduceMotion ? target.y : targetRand() * H,
+      hx: target.x,
+      hy: target.y,
+      vx: 0,
+      vy: 0,
+      size: size,
+      roll: colorRand(),
+      c: c
+    };
+  }
+
+  function updatePalette(){
+    for (var i = 0; i < particles.length; i++){
+      particles[i].c = colorIndexFor(particles[i].roll);
+    }
+  }
+
+  function buildSwarm(){
+    if (!W || !H) return;
+    targetRand = mulberry32(hashString(word) ^ 0x85EBCA6B);
+    var points = sampleTargets(word);
+    if (!points.length) return;
+    var n = Math.min(desiredCount(), points.length);
+
+    while (particles.length > n) particles.pop();
+    for (var i = particles.length; i < n; i++){
+      particles.push(makeParticle(points[i]));
+    }
+    for (var j = 0; j < particles.length; j++){
+      var p = particles[j];
+      p.hx = points[j].x;
+      p.hy = points[j].y;
+      if (reduceMotion || !initialized){
+        p.x = p.hx;
+        p.y = p.hy;
+        p.vx = 0;
+        p.vy = 0;
+      }
+    }
+    scattered = false;
+    countEl.textContent = particles.length.toLocaleString("en-US");
+    initialized = true;
+  }
+
+  function resize(){
+    var rect = stage.getBoundingClientRect();
+    var nw = Math.max(1, rect.width);
+    var nh = Math.max(1, rect.height);
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = nw;
+    H = nh;
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    buildSwarm();
+  }
+
+  function pushAt(px, py, strength){
+    var radius = Math.min(180, Math.max(100, W * 0.13));
+    var r2 = radius * radius;
+    for (var i = 0; i < particles.length; i++){
+      var p = particles[i];
+      var dx = p.x - px;
+      var dy = p.y - py;
+      var d2 = dx * dx + dy * dy;
+      if (d2 < r2 && d2 > 0.0001){
+        var d = Math.sqrt(d2);
+        var f = (1 - d / radius) * strength;
+        p.vx += (dx / d) * f;
+        p.vy += (dy / d) * f;
+      }
+    }
+  }
+
+  function update(dt){
+    var cx = W / 2, cy = H / 2;
+    var spring = scattered ? 0.0009 : 0.052;
+    var damp = scattered ? Math.pow(0.988, dt) : Math.pow(0.845, dt);
+
+    for (var i = 0; i < particles.length; i++){
+      var p = particles[i];
+      p.vx += (p.hx - p.x) * spring * dt;
+      p.vy += (p.hy - p.y) * spring * dt;
+
+      if (pointer.active){
+        var dx = p.x - pointer.x;
+        var dy = p.y - pointer.y;
+        var radius = pointer.down ? 210 : 150;
+        var d2 = dx * dx + dy * dy;
+        if (d2 < radius * radius && d2 > 0.001){
+          var d = Math.sqrt(d2);
+          var f = (1 - d / radius);
+          var power = (pointer.down ? 5.2 : 2.1) * f;
+          p.vx += (dx / d) * power * dt;
+          p.vy += (dy / d) * power * dt;
+        }
+      }
+
+      p.vx *= damp;
+      p.vy *= damp;
+
+      var maxV = scattered ? 34 : 26;
+      if (p.vx > maxV) p.vx = maxV;
+      if (p.vx < -maxV) p.vx = -maxV;
+      if (p.vy > maxV) p.vy = maxV;
+      if (p.vy < -maxV) p.vy = -maxV;
+
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+
+      if (scattered){
+        if (p.x < 2){ p.x = 2; p.vx *= -0.62; }
+        if (p.x > W - 2){ p.x = W - 2; p.vx *= -0.62; }
+        if (p.y < 2){ p.y = 2; p.vy *= -0.62; }
+        if (p.y > H - 2){ p.y = H - 2; p.vy *= -0.62; }
+      }
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    var big = W > 900;
+    var order = palette === "acid" ? [0, 2, 1] : palette === "ember" ? [0, 1, 2] : [1, 2, 0];
+    for (var k = 0; k < 3; k++){
+      var c = order[k];
+      ctx.beginPath();
+      for (var i = 0; i < particles.length; i++){
+        var p = particles[i];
+        if (p.c !== c) continue;
+        var r = (big ? 1.55 : 1.3) * p.size * (c === 0 ? 1 : 0.92);
+        ctx.moveTo(p.x + r, p.y);
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      }
+      ctx.fillStyle = COLORS[c];
+      ctx.globalAlpha = c === 0 ? 0.96 : 0.94;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function frame(now){
+    var dt = (now - lastTime) / 16.6667;
+    lastTime = now;
+    if (!isFinite(dt) || dt <= 0) dt = 1;
+    dt = Math.min(dt, 2.6);
+    update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  function scatter(){
+    scattered = true;
+    var cx = W / 2, cy = H / 2;
+    for (var i = 0; i < particles.length; i++){
+      var p = particles[i];
+      var angle = Math.atan2(p.y - cy, p.x - cx) + (targetRand() - 0.5) * 1.1;
+      var speed = 5 + targetRand() * 25;
+      p.vx += Math.cos(angle) * speed;
+      p.vy += Math.sin(angle) * speed;
+    }
+  }
+
+  function reform(){
+    scattered = false;
+    for (var i = 0; i < particles.length; i++){
+      particles[i].vx *= 0.4;
+      particles[i].vy *= 0.4;
+    }
+  }
+
+  function setWord(raw){
+    var next = String(raw || "").trim().toUpperCase().slice(0, 18);
+    if (!next) return;
+    word = next;
+    input.value = next;
+    canvas.setAttribute("aria-label", "A swarm of particles forming the word " + word + ". Move your pointer to disturb them.");
+    buildSwarm();
+  }
+
+  stage.addEventListener("pointermove", function(e){
+    var rect = stage.getBoundingClientRect();
+    pointer.x = e.clientX - rect.left;
+    pointer.y = e.clientY - rect.top;
+    pointer.active = true;
+  }, { passive: true });
+
+  stage.addEventListener("pointerleave", function(){
+    pointer.active = false;
+    pointer.down = false;
+  });
+
+  stage.addEventListener("pointerdown", function(e){
+    if (e.button !== undefined && e.button !== 0 && e.pointerType === "mouse") return;
+    var rect = stage.getBoundingClientRect();
+    pointer.x = e.clientX - rect.left;
+    pointer.y = e.clientY - rect.top;
+    pointer.active = true;
+    pointer.down = true;
+    pushAt(pointer.x, pointer.y, 8);
+  });
+
+  window.addEventListener("pointerup", function(){ pointer.down = false; });
+  window.addEventListener("blur", function(){ pointer.down = false; pointer.active = false; });
+
+  scatterBtn.addEventListener("click", scatter);
+  reformBtn.addEventListener("click", reform);
+
+  paletteBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      palette = btn.getAttribute("data-palette");
+      paletteBtns.forEach(function(other){
+        other.setAttribute("aria-pressed", other === btn ? "true" : "false");
+      });
+      updatePalette();
+    });
+  });
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    setWord(input.value);
+    input.blur();
+  });
+
+  input.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){
+      input.value = word;
+      input.blur();
+    }
+  });
+
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(resize, 120);
+  });
+
+  if (window.ResizeObserver){
+    var ro = new ResizeObserver(function(){
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(resize, 100);
+    });
+    ro.observe(stage);
+  }
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

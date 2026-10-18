@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karesansui — a dry landscape</title>
+<style>
+  :root{
+    --sand:#e8dfca;
+    --sand-deep:#ddd2ba;
+    --ink:#3d3f34;
+    --ink-soft:rgba(61,63,52,.58);
+    --ink-faint:rgba(61,63,52,.32);
+    --vermilion:#b03a2a;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Songti SC","Hiragino Mincho ProN",serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--sand);color:var(--ink);}
+  body{font-family:var(--serif);-webkit-font-smoothing:antialiased;}
+  button{font:inherit;color:inherit;}
+  .page{min-height:100svh;display:flex;flex-direction:column;}
+
+  .garden{
+    position:relative;flex:1;min-height:600px;overflow:hidden;
+    background:var(--sand);user-select:none;
+  }
+  #sand{
+    position:absolute;inset:0;width:100%;height:100%;display:block;
+    touch-action:none;cursor:crosshair;
+    transition:opacity .5s ease;
+  }
+  #sand.settle{opacity:.45;}
+
+  .masthead{
+    position:absolute;top:clamp(20px,3.4vw,38px);left:clamp(20px,4.2vw,58px);
+    z-index:3;pointer-events:none;
+  }
+  .mark{
+    font-family:var(--mono);font-size:clamp(10px,.9vw,12px);letter-spacing:.42em;
+    padding-bottom:11px;border-bottom:1px solid var(--ink-faint);width:max-content;
+  }
+  .mark span{color:var(--ink-soft);letter-spacing:.28em}
+  .sub{
+    margin-top:9px;font-family:var(--mono);font-size:9px;letter-spacing:.19em;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+
+  .title-block{
+    position:absolute;z-index:3;right:clamp(18px,3.8vw,56px);top:19%;
+    display:flex;align-items:flex-start;gap:clamp(8px,1vw,16px);
+    writing-mode:vertical-rl;pointer-events:none;
+  }
+  .title-block h1{
+    margin:0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(46px,6.2vw,92px);line-height:1;letter-spacing:.2em;
+    color:rgba(47,49,40,.9);
+  }
+  .romaji{
+    writing-mode:vertical-rl;font-family:var(--mono);font-size:9px;
+    letter-spacing:.42em;text-transform:uppercase;color:var(--ink-soft);
+    padding-top:6px;
+  }
+
+  .seal{
+    position:absolute;z-index:3;right:clamp(26px,4.6vw,68px);top:calc(19% + clamp(200px,24vw,350px));
+    width:clamp(36px,3.6vw,50px);aspect-ratio:1;background:var(--vermilion);
+    color:#f2e6d2;display:grid;place-items:center;
+    font-family:var(--serif);font-size:clamp(19px,2vw,26px);line-height:1;
+    transform:rotate(-2.5deg);
+    box-shadow:inset 0 0 0 2px rgba(247,232,209,.32),0 1px 0 rgba(90,50,35,.14);
+    opacity:.94;pointer-events:none;
+  }
+  .seal::after{
+    content:"";position:absolute;inset:4px;border:1px solid rgba(247,232,209,.28);
+  }
+
+  .instruction{
+    position:absolute;left:clamp(20px,4.2vw,58px);bottom:clamp(26px,4.5vh,48px);
+    z-index:3;pointer-events:none;
+  }
+  .instruction .rule{display:block;width:38px;height:1px;background:var(--ink-faint);margin-bottom:13px}
+  .instruction p{
+    margin:0;font-family:var(--mono);font-size:10px;line-height:1.9;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .instruction p.primary{color:rgba(61,63,52,.9);font-size:10.5px}
+  .instruction p.dim{color:var(--ink-faint);letter-spacing:.12em}
+
+  .reset{
+    position:absolute;z-index:4;top:clamp(20px,3.4vw,38px);right:clamp(18px,3.8vw,56px);
+    background:rgba(232,223,202,.25);border:1px solid var(--ink-faint);
+    padding:10px 14px 9px;border-radius:2px;cursor:pointer;
+    font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ink-soft);transition:background .3s,border-color .3s,color .3s;
+  }
+  .reset span{display:inline-block;margin-right:7px;font-size:11px;transition:transform .6s ease}
+  .reset:hover{background:rgba(255,251,240,.4);border-color:rgba(61,63,52,.5);color:var(--ink)}
+  .reset:hover span{transform:rotate(-180deg)}
+  .reset:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+
+  .breathe{
+    position:absolute;z-index:3;right:clamp(20px,3.8vw,58px);bottom:clamp(26px,4.2vh,44px);
+    display:flex;align-items:center;gap:11px;pointer-events:none;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .breathe .dot{
+    position:relative;width:7px;height:7px;border-radius:50%;
+    background:#7b8062;animation:breathe 9s ease-in-out infinite;
+  }
+  .breathe .dot::after{
+    content:"";position:absolute;inset:-7px;border:1px solid rgba(123,128,98,.45);
+    border-radius:50%;animation:breatheRing 9s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{transform:scale(.78);box-shadow:0 0 0 0 rgba(123,128,98,.18)}
+    50%{transform:scale(1.18);box-shadow:0 0 0 7px rgba(123,128,98,0)}
+  }
+  @keyframes breatheRing{
+    0%,100%{transform:scale(.7);opacity:.25}
+    50%{transform:scale(1.25);opacity:.55}
+  }
+
+  footer{
+    background:var(--sand-deep);border-top:1px solid rgba(61,63,52,.14);
+    padding:20px clamp(20px,4.2vw,58px);
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 36px;
+    align-items:end;
+  }
+  .note{
+    margin:0;max-width:66ch;font-family:var(--mono);font-size:9.5px;line-height:1.85;
+    letter-spacing:.03em;color:rgba(61,63,52,.62);
+  }
+  .note b{font-family:var(--serif);font-style:italic;font-weight:400;font-size:12px;letter-spacing:.01em;color:rgba(61,63,52,.82)}
+  .foot-right{
+    text-align:right;font-family:var(--mono);font-size:8.5px;line-height:1.9;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap;
+  }
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+
+  @media (max-width:720px){
+    .garden{min-height:640px}
+    .title-block{top:20%}
+    .seal{right:26px}
+    .instruction{bottom:78px}
+    .breathe{right:20px;bottom:26px;font-size:8px}
+    footer{grid-template-columns:1fr;padding-block:18px}
+    .foot-right{text-align:left;margin-top:4px}
+  }
+  @media (max-width:420px){
+    .mark span{display:none}
+    .sub{max-width:290px;font-size:8px;letter-spacing:.15em;line-height:1.8}
+    .title-block h1{font-size:52px}
+    .romaji{display:none}
+    .masthead .mark{letter-spacing:.32em}
+    .breathe span:last-child{max-width:110px;line-height:1.7}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .breathe .dot,.breathe .dot::after{animation:none}
+    .reset span{transition:none}
+    #sand{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <main class="garden" id="garden">
+    <canvas id="sand" aria-label="A raked sand garden with three stones, a patch of moss and concentric rake rings. Drag to carve new lines."></canvas>
+
+    <header class="masthead">
+      <div class="mark">KARESANSUI <span>/ 枯山水</span></div>
+      <div class="sub">A dry landscape · raked by hand</div>
+    </header>
+
+    <div class="title-block" aria-hidden="true">
+      <h1>枯山水</h1>
+      <span class="romaji">karesansui</span>
+    </div>
+    <div class="seal" aria-hidden="true">枯</div>
+
+    <div class="instruction">
+      <span class="rule"></span>
+      <p class="primary">drag across the sand</p>
+      <p class="dim">five tines will follow your hand</p>
+    </div>
+
+    <button class="reset" id="reset" type="button"><span>↺</span>rake anew</button>
+
+    <div class="breathe" aria-hidden="true">
+      <span class="dot"></span>
+      <span>breathe with the garden</span>
+    </div>
+
+    <p class="sr-only" id="live" aria-live="polite"></p>
+    <p class="sr-only">Karesansui is a Japanese dry landscape garden. Raked sand suggests water; stones suggest mountains. Drag a finger or pointer over the sand to carve five parallel grooves, or use the rake anew button to smooth the garden.</p>
+  </main>
+
+  <footer>
+    <p class="note"><b>Karesansui</b> — the dry landscape garden. Gravel is raked into water; a few stones become mountains; moss holds the edge of the world. Nothing is planted, and nothing is finished. The rake is the only weather.</p>
+    <div class="foot-right">Raked by hand<br>MMXXVI · Kyoto, in spirit</div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var stage = document.getElementById("garden");
+  var canvas = document.getElementById("sand");
+  var resetBtn = document.getElementById("reset");
+  var live = document.getElementById("live");
+  var ctx = canvas.getContext("2d");
+
+  var W = 0, H = 0, dpr = 1;
+  var base = document.createElement("canvas");
+  var baseCtx = base.getContext("2d");
+  var stones = [];
+  var moss = null;
+  var strokes = [];
+  var active = false;
+  var lastPoint = null;
+  var raf = 0;
+  var resizeTimer = 0;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function smoothClosed(c, pts) {
+    var n = pts.length;
+    if (n < 3) return;
+    var mx = (pts[n - 1].x + pts[0].x) / 2;
+    var my = (pts[n - 1].y + pts[0].y) / 2;
+    c.beginPath();
+    c.moveTo(mx, my);
+    for (var i = 0; i < n; i++) {
+      var p = pts[i];
+      var q = pts[(i + 1) % n];
+      c.quadraticCurveTo(p.x, p.y, (p.x + q.x) / 2, (p.y + q.y) / 2);
+    }
+    c.closePath();
+  }
+
+  function buildComposition() {
+    var m = Math.min(W, H);
+    var defs = [
+      { x: 0.435, y: 0.605, rx: 0.132, ry: 0.094, rot: -0.22, sides: 17, seed: 9.17, rmax: 2.42 },
+      { x: 0.645, y: 0.395, rx: 0.083, ry: 0.061, rot: 0.42, sides: 14, seed: 4.31, rmax: 2.58 },
+      { x: 0.300, y: 0.348, rx: 0.059, ry: 0.045, rot: 1.1, sides: 13, seed: 7.73, rmax: 2.52 }
+    ];
+
+    stones = defs.map(function (d) {
+      var rnd = mulberry32(Math.floor(d.seed * 10000));
+      var pts = [];
+      for (var i = 0; i < d.sides; i++) {
+        var a = (i / d.sides) * Math.PI * 2 + (rnd() - 0.5) * 0.09;
+        var rad = 1 + (rnd() - 0.5) * 0.26;
+        var px = Math.cos(a) * d.rx * m * rad;
+        var py = Math.sin(a) * d.ry * m * rad;
+        var rx = px * Math.cos(d.rot) - py * Math.sin(d.rot);
+        var ry = px * Math.sin(d.rot) + py * Math.cos(d.rot);
+        pts.push({ x: W * d.x + rx, y: H * d.y + ry });
+      }
+      return {
+        x: W * d.x, y: H * d.y,
+        rx: d.rx * m, ry: d.ry * m,
+        seed: d.seed, rmax: d.rmax, pts: pts
+      };
+    });
+
+    var mrnd = mulberry32(881);
+    var mcx = W * 0.305, mcy = H * 0.745;
+    var mrx = m * 0.083, mry = m * 0.040;
+    var mpts = [];
+    for (var i = 0; i < 22; i++) {
+      var a = (i / 22) * Math.PI * 2;
+      var rad = 1 + (mrnd() - 0.5) * 0.34;
+      mpts.push({ x: mcx + Math.cos(a) * mrx * rad, y: mcy + Math.sin(a) * mry * rad });
+    }
+    moss = { x: mcx, y: mcy, rx: mrx, ry: mry, pts: mpts, seed: 42 };
+  }
+
+  function insideMoss(x, y, pad) {
+    if (!moss) return false;
+    var dx = (x - moss.x) / moss.rx;
+    var dy = (y - moss.y) / moss.ry;
+    return dx * dx + dy * dy < (pad || 1.18);
+  }
+
+  function inStoneZone(x, y, except) {
+    for (var i = 0; i < stones.length; i++) {
+      var s = stones[i];
+      if (s === except) continue;
+      var dx = (x - s.x) / s.rx;
+      var dy = (y - s.y) / s.ry;
+      var q = Math.sqrt(dx * dx + dy * dy);
+      if (q < s.rmax * 0.995) return true;
+    }
+    return false;
+  }
+
+  function onStone(x, y, pad) {
+    for (var i = 0; i < stones.length; i++) {
+      var s = stones[i];
+      var dx = (x - s.x) / s.rx;
+      var dy = (y - s.y) / s.ry;
+      if (dx * dx + dy * dy < (pad || 1.02)) return true;
+    }
+    return false;
+  }
+
+  function addSeg(path, p1, p2) {
+    path.moveTo(p1.x, p1.y);
+    path.lineTo(p2.x, p2.y);
+  }
+
+  function drawRake(c) {
+    var rnd = mulberry32(20261018);
+    var spacing = Math.max(11, Math.min(14, W / 108));
+    var dark = new Path2D();
+
+    // Broad, gently wavering horizontal rake, interrupted around stones and moss.
+    for (var y0 = 4; y0 < H + 12; y0 += spacing) {
+      var run = [];
+      for (var x = -10; x <= W + 10; x += 4) {
+        var y = y0 + Math.sin(x * 0.0055 + y0 * 0.021) * 2.8 + Math.sin(x * 0.017 - y0 * 0.6) * 0.7;
+        var blocked = inStoneZone(x, y, null) || insideMoss(x, y, 1.25);
+        if (!blocked) {
+          run.push({ x: x, y: y });
+        } else if (run.length > 1) {
+          for (var k = 1; k < run.length; k++) addSeg(dark, run[k - 1], run[k]);
+          run = [];
+        } else {
+          run = [];
+        }
+      }
+      if (run.length > 1) {
+        for (var k2 = 1; k2 < run.length; k2++) addSeg(dark, run[k2 - 1], run[k2]);
+      }
+    }
+
+    // Concentric rings around each stone, interrupted by neighbouring gardens.
+    stones.forEach(function (s) {
+      var stepQ = spacing / ((s.rx + s.ry) / 2);
+      var samples = 220;
+      for (var q = 1.14; q < s.rmax; q += stepQ) {
+        var prev = null;
+        for (var i = 0; i <= samples; i++) {
+          var a = (i / samples) * Math.PI * 2;
+          var wob = 1 + Math.sin(a * 3 + s.seed) * 0.012 + Math.sin(a * 7 - s.seed) * 0.007;
+          var px = s.x + Math.cos(a) * s.rx * q * wob;
+          var py = s.y + Math.sin(a) * s.ry * q * wob;
+          var skip = (i === samples) || inStoneZone(px, py, s) || insideMoss(px, py, 1.2) ||
+                     px < -8 || px > W + 8 || py < -8 || py > H + 8;
+          if (!skip && prev) addSeg(dark, prev, { x: px, y: py });
+          prev = skip ? null : { x: px, y: py };
+        }
+      }
+    });
+
+    // A few tiny natural gaps, like wind-blown grit.
+    c.save();
+    c.lineCap = "round";
+    c.strokeStyle = "rgba(124,107,80,0.30)";
+    c.lineWidth = 1.25;
+    c.stroke(dark);
+    c.save();
+    c.translate(0, 1.6);
+    c.strokeStyle = "rgba(255,251,239,0.52)";
+    c.lineWidth = 1.05;
+    c.stroke(dark);
+    c.restore();
+    c.restore();
+
+    // Fine grit along a handful of grooves.
+    c.save();
+    c.fillStyle = "rgba(118,102,76,0.14)";
+    for (var g = 0; g < 280; g++) {
+      var gx = rnd() * W;
+      var gy = rnd() * H;
+      if (inStoneZone(gx, gy, null) || insideMoss(gx, gy, 1.1)) continue;
+      c.fillRect(gx, gy, 1, 1);
+    }
+    c.restore();
+  }
+
+  function drawSandBase(c) {
+    var grad = c.createLinearGradient(0, 0, W * 0.8, H);
+    grad.addColorStop(0, "#ece4d2");
+    grad.addColorStop(0.55, "#e8dfca");
+    grad.addColorStop(1, "#e1d6bf");
+    c.fillStyle = grad;
+    c.fillRect(0, 0, W, H);
+
+    var glow = c.createRadialGradient(W * 0.32, H * 0.24, 0, W * 0.32, H * 0.24, Math.max(W, H) * 0.75);
+    glow.addColorStop(0, "rgba(255,252,240,0.40)");
+    glow.addColorStop(0.5, "rgba(255,252,240,0.10)");
+    glow.addColorStop(1, "rgba(255,252,240,0)");
+    c.fillStyle = glow;
+    c.fillRect(0, 0, W, H);
+
+    var shade = c.createLinearGradient(0, H * 0.55, W, H);
+    shade.addColorStop(0, "rgba(120,104,78,0)");
+    shade.addColorStop(1, "rgba(120,104,78,0.10)");
+    c.fillStyle = shade;
+    c.fillRect(0, 0, W, H);
+
+    var rnd = mulberry32(5150);
+    var count = Math.round((W * H) / 620);
+    c.save();
+    for (var i = 0; i < count; i++) {
+      var x = rnd() * W;
+      var y = rnd() * H;
+      var a = rnd();
+      c.fillStyle = a > 0.55 ? "rgba(255,252,240,0.30)" : "rgba(116,102,78,0.10)";
+      var s = rnd() > 0.87 ? 1.3 : 0.7;
+      c.fillRect(x, y, s, s);
+    }
+    c.restore();
+  }
+
+  function drawMoss(c) {
+    if (!moss) return;
+    c.save();
+    c.shadowColor = "rgba(72,78,52,0.22)";
+    c.shadowBlur = 18;
+    c.shadowOffsetY = 4;
+    smoothClosed(c, moss.pts);
+    var grad = c.createRadialGradient(moss.x - moss.rx * 0.25, moss.y - moss.ry * 0.4, 2, moss.x, moss.y, moss.rx * 1.25);
+    grad.addColorStop(0, "#7d8761");
+    grad.addColorStop(0.55, "#687552");
+    grad.addColorStop(1, "#535f43");
+    c.fillStyle = grad;
+    c.fill();
+    c.restore();
+
+    c.save();
+    smoothClosed(c, moss.pts);
+    c.clip();
+    var rnd = mulberry32(1234);
+    var n = Math.round(moss.rx * moss.ry * 0.9);
+    for (var i = 0; i < n; i++) {
+      var a = rnd() * Math.PI * 2;
+      var r = Math.sqrt(rnd());
+      var x = moss.x + Math.cos(a) * moss.rx * r;
+      var y = moss.y + Math.sin(a) * moss.ry * r;
+      var len = 1.5 + rnd() * 3.4;
+      var tilt = (rnd() - 0.5) * 1.2;
+      c.strokeStyle = rnd() > 0.45 ? "rgba(44,54,34,0.45)" : "rgba(166,177,133,0.48)";
+      c.lineWidth = 0.8;
+      c.beginPath();
+      c.moveTo(x, y);
+      c.lineTo(x + Math.sin(tilt) * len, y - Math.cos(tilt) * len);
+      c.stroke();
+    }
+    c.restore();
+
+    c.save();
+    smoothClosed(c, moss.pts);
+    c.strokeStyle = "rgba(52,62,42,0.24)";
+    c.lineWidth = 1;
+    c.stroke();
+    c.restore();
+  }
+
+  function drawStones(c) {
+    stones.forEach(function (s) {
+      var rnd = mulberry32(Math.floor(s.seed * 9991));
+      c.save();
+      c.translate(6, 9);
+      c.shadowColor = "rgba(78,68,50,0.38)";
+      c.shadowBlur = 22;
+      c.shadowOffsetX = 3;
+      c.shadowOffsetY = 8;
+      smoothClosed(c, s.pts);
+      c.fillStyle = "#4b483b";
+      c.fill();
+      c.restore();
+
+      c.save();
+      smoothClosed(c, s.pts);
+      c.clip();
+      var grad = c.createRadialGradient(
+        s.x - s.rx * 0.38, s.y - s.ry * 0.55, s.rx * 0.06,
+        s.x, s.y, s.rx * 1.5
+      );
+      grad.addColorStop(0, "#969181");
+      grad.addColorStop(0.4, "#7a7769");
+      grad.addColorStop(0.78, "#5d5c50");
+      grad.addColorStop(1, "#44443a");
+      c.fillStyle = grad;
+      c.fillRect(s.x - s.rx * 1.8, s.y - s.ry * 1.8, s.rx * 3.6, s.ry * 3.6);
+
+      // mineral speckle
+      for (var i = 0; i < 110; i++) {
+        var a = rnd() * Math.PI * 2;
+        var r = Math.sqrt(rnd());
+        var x = s.x + Math.cos(a) * s.rx * r;
+        var y = s.y + Math.sin(a) * s.ry * r;
+        c.fillStyle = rnd() > 0.6 ? "rgba(210,207,187,0.20)" : "rgba(40,42,34,0.22)";
+        c.fillRect(x, y, 1.2, 1.2);
+      }
+
+      // one or two hairline cracks
+      c.strokeStyle = "rgba(36,38,30,0.30)";
+      c.lineWidth = 0.8;
+      for (var k = 0; k < 2; k++) {
+        var sx = s.x + (rnd() - 0.5) * s.rx * 0.4;
+        var sy = s.y - s.ry * (0.55 + rnd() * 0.2);
+        c.beginPath();
+        c.moveTo(sx, sy);
+        c.bezierCurveTo(
+          sx + (rnd() - 0.5) * s.rx * 0.7, sy + s.ry * 0.4,
+          sx + (rnd() - 0.5) * s.rx * 0.8, sy + s.ry * 0.8,
+          sx + (rnd() - 0.5) * s.rx * 0.5, sy + s.ry * 1.35
+        );
+        c.stroke();
+      }
+
+      // lichen bloom near the crown
+      var lg = c.createRadialGradient(
+        s.x + s.rx * 0.1, s.y - s.ry * 0.5, 0,
+        s.x + s.rx * 0.1, s.y - s.ry * 0.5, s.rx * 0.55
+      );
+      lg.addColorStop(0, "rgba(164,171,128,0.22)");
+      lg.addColorStop(1, "rgba(164,171,128,0)");
+      c.fillStyle = lg;
+      c.fillRect(s.x - s.rx, s.y - s.ry, s.rx * 2, s.ry * 2);
+      c.restore();
+
+      c.save();
+      smoothClosed(c, s.pts);
+      c.strokeStyle = "rgba(248,243,226,0.22)";
+      c.lineWidth = 1.1;
+      c.stroke();
+      c.restore();
+    });
+  }
+
+  function drawUserStrokes(c) {
+    if (!strokes.length) return;
+    var offsets = [-2, -1, 0, 1, 2];
+    var spacing = Math.max(11, Math.min(14, W / 108));
+    c.save();
+    c.lineCap = "round";
+    c.lineJoin = "round";
+
+    strokes.forEach(function (stroke) {
+      var pts = stroke.pts;
+      if (pts.length < 2) return;
+      offsets.forEach(function (tine) {
+        var path = new Path2D();
+        var prev = null;
+        var off = tine * spacing;
+        for (var i = 0; i < pts.length; i++) {
+          var p = pts[i];
+          var pPrev = pts[Math.max(0, i - 1)];
+          var pNext = pts[Math.min(pts.length - 1, i + 1)];
+          var dx = pNext.x - pPrev.x;
+          var dy = pNext.y - pPrev.y;
+          var len = Math.sqrt(dx * dx + dy * dy) || 1;
+          var nx = -dy / len;
+          var ny = dx / len;
+          var point = { x: p.x + nx * off, y: p.y + ny * off };
+          var blocked = onStone(point.x, point.y, 1.04) || insideMoss(point.x, point.y, 1.18);
+          if (!blocked && prev) {
+            path.moveTo(prev.x, prev.y);
+            path.lineTo(point.x, point.y);
+          }
+          prev = blocked ? null : point;
+        }
+        c.strokeStyle = "rgba(124,107,80,0.34)";
+        c.lineWidth = 1.4;
+        c.stroke(path);
+        c.save();
+        c.translate(0, 1.5);
+        c.strokeStyle = "rgba(255,251,239,0.56)";
+        c.lineWidth = 1.1;
+        c.stroke(path);
+        c.restore();
+      });
+    });
+    c.restore();
+  }
+
+  function drawOverlay() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (base.width) ctx.drawImage(base, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawUserStrokes(ctx);
+  }
+
+  function renderAll() {
+    drawOverlay();
+  }
+
+  function rebuild() {
+    var rect = stage.getBoundingClientRect();
+    W = Math.max(320, Math.round(rect.width));
+    H = Math.max(320, Math.round(rect.height));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    base.width = canvas.width;
+    base.height = canvas.height;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    baseCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    buildComposition();
+
+    baseCtx.clearRect(0, 0, W, H);
+    drawSandBase(baseCtx);
+    drawRake(baseCtx);
+    drawMoss(baseCtx);
+    drawStones(baseCtx);
+
+    drawOverlay();
+  }
+
+  function scheduleDraw() {
+    if (raf) return;
+    raf = requestAnimationFrame(function () {
+      raf = 0;
+      drawOverlay();
+    });
+  }
+
+  function pointFromEvent(e) {
+    var rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function addPoint(pt) {
+    var stroke = strokes[strokes.length - 1];
+    if (!stroke) return;
+    var last = stroke.pts[stroke.pts.length - 1];
+    var dx = pt.x - last.x;
+    var dy = pt.y - last.y;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 0.6) return;
+    var steps = Math.max(1, Math.ceil(dist / 5));
+    for (var i = 1; i <= steps; i++) {
+      stroke.pts.push({
+        x: last.x + (dx * i) / steps,
+        y: last.y + (dy * i) / steps
+      });
+    }
+  }
+
+  canvas.addEventListener("pointerdown", function (e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    active = true;
+    canvas.setPointerCapture(e.pointerId);
+    var pt = pointFromEvent(e);
+    lastPoint = pt;
+    strokes.push({ pts: [pt] });
+    scheduleDraw();
+  });
+
+  canvas.addEventListener("pointermove", function (e) {
+    if (!active) return;
+    var pt = pointFromEvent(e);
+    addPoint(pt);
+    lastPoint = pt;
+    scheduleDraw();
+  });
+
+  function endStroke() {
+    if (!active) return;
+    active = false;
+    lastPoint = null;
+    live.textContent = "New grooves have been carved into the sand.";
+    scheduleDraw();
+  }
+
+  canvas.addEventListener("pointerup", endStroke);
+  canvas.addEventListener("pointercancel", endStroke);
+  canvas.addEventListener("pointerleave", function () {
+    if (active) endStroke();
+  });
+
+  resetBtn.addEventListener("click", function () {
+    strokes = [];
+    active = false;
+    live.textContent = "The sand has been smoothed. Begin again.";
+    if (!reduced) {
+      canvas.classList.add("settle");
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { canvas.classList.remove("settle"); });
+      });
+    }
+    scheduleDraw();
+  });
+
+  var ro = new ResizeObserver(function () {
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(function () {
+      if (active) active = false;
+      rebuild();
+    }, 140);
+  });
+  ro.observe(stage);
+
+  window.addEventListener("orientationchange", function () {
+    window.setTimeout(rebuild, 240);
+  });
+
+  rebuild();
+})();
+</script>
+</body>
+</html>

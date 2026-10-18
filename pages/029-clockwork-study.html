@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calibre 07 — A machine for noticing.</title>
+<style>
+  :root{
+    --forest-black:#06120c;
+    --forest:#0a1b12;
+    --forest-lit:#123024;
+    --brass:#c9a35c;
+    --brass-bright:#ecd39a;
+    --brass-deep:#7d5e2d;
+    --ivory:#f1e8d6;
+    --ivory-soft:rgba(241,232,214,.68);
+    --ivory-faint:rgba(241,232,214,.38);
+    --line:rgba(201,163,92,.28);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --mono:"SFMono-Regular",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--forest-black);overflow-x:hidden}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ivory);
+    font-family:var(--serif);
+    background:
+      radial-gradient(1100px 760px at 71% 34%, rgba(201,163,92,.15), rgba(201,163,92,0) 62%),
+      radial-gradient(900px 800px at 18% 8%, rgba(35,74,55,.45), rgba(35,74,55,0) 65%),
+      radial-gradient(1400px 900px at 50% 110%, rgba(0,0,0,.65), rgba(0,0,0,0) 70%),
+      linear-gradient(170deg,#0c1f15 0%,#07150e 48%,#050f0a 100%);
+    background-attachment:fixed;
+    overflow-x:hidden;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:radial-gradient(ellipse at 52% 42%, rgba(0,0,0,0) 32%, rgba(0,0,0,.42) 100%);
+    z-index:1;
+  }
+  .grain{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    opacity:.055;
+    mix-blend-mode:overlay;
+    z-index:4;
+  }
+  .shell{
+    position:relative;
+    z-index:2;
+    width:min(1440px,100%);
+    margin:0 auto;
+    padding:0 clamp(18px,4.4vw,66px);
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:20px 0 15px;
+    border-bottom:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.24em;
+    line-height:1.5;
+    text-transform:uppercase;
+    color:var(--brass);
+  }
+  .topbar .brand{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    white-space:nowrap;
+  }
+  .topbar .mark{
+    display:inline-grid;
+    place-items:center;
+    width:22px;
+    height:22px;
+    border:1px solid var(--line);
+    border-radius:50%;
+    color:var(--brass-bright);
+  }
+  .topbar .mark svg{display:block}
+  .topbar .mid{
+    color:var(--ivory-faint);
+    text-align:center;
+    letter-spacing:.3em;
+  }
+  .topbar .right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    justify-content:flex-end;
+    text-align:right;
+    color:var(--ivory-soft);
+  }
+  .topbar .right .num{color:var(--brass-bright)}
+  .topbar .poincon{
+    width:24px;
+    height:24px;
+    flex:0 0 auto;
+    opacity:.9;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(300px,.82fr) minmax(0,1.18fr);
+    grid-template-areas:
+      "intro clock"
+      "essay clock"
+      "readouts clock"
+      "controls clock";
+    column-gap:clamp(26px,4.6vw,74px);
+    align-items:start;
+    padding:clamp(28px,4.4vw,64px) 0 clamp(18px,2.4vw,30px);
+  }
+  .intro{grid-area:intro;max-width:31ch}
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:0 0 22px;
+    font-family:var(--mono);
+    font-size:9px;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--brass);
+  }
+  .eyebrow::before{
+    content:"";
+    width:34px;
+    height:1px;
+    background:linear-gradient(90deg,var(--brass),rgba(201,163,92,0));
+  }
+  h1{
+    margin:0;
+    font-weight:400;
+    font-size:clamp(44px,5.6vw,80px);
+    line-height:.96;
+    letter-spacing:-.028em;
+    color:var(--ivory);
+    text-wrap:balance;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--brass-bright);
+    letter-spacing:-.035em;
+  }
+  .intro .rule{
+    width:100%;
+    height:1px;
+    margin:28px 0 0;
+    background:linear-gradient(90deg,var(--line),rgba(201,163,92,0));
+  }
+  .essay{grid-area:essay;max-width:46ch;margin-top:clamp(24px,3.6vw,40px)}
+  .essay p{
+    margin:0 0 15px;
+    font-size:clamp(14px,1.06vw,15.5px);
+    line-height:1.78;
+    color:var(--ivory-soft);
+  }
+  .essay p:first-child::first-letter{
+    float:left;
+    font-size:3.3em;
+    line-height:.78;
+    padding:6px 9px 0 0;
+    color:var(--brass-bright);
+  }
+  .essay .sign{
+    margin:18px 0 0;
+    font-family:var(--mono);
+    font-size:8.6px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .readouts{
+    grid-area:readouts;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:0;
+    margin-top:clamp(26px,3.4vw,38px);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid rgba(201,163,92,.14);
+  }
+  .readout{
+    padding:14px 12px 14px 0;
+    min-width:0;
+  }
+  .readout + .readout{
+    padding-left:16px;
+    border-left:1px solid rgba(201,163,92,.16);
+  }
+  .readout .k{
+    display:block;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+    margin-bottom:7px;
+    white-space:nowrap;
+  }
+  .readout .v{
+    display:block;
+    font-size:clamp(18px,1.7vw,23px);
+    font-variant-numeric:tabular-nums;
+    color:var(--ivory);
+    line-height:1;
+    white-space:nowrap;
+  }
+  .readout .v small{
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.08em;
+    color:var(--brass);
+    margin-left:3px;
+  }
+  .reserve{
+    margin-top:9px;
+    height:3px;
+    background:rgba(201,163,92,.15);
+    overflow:hidden;
+    border-radius:2px;
+  }
+  .reserve i{
+    display:block;
+    height:100%;
+    width:88%;
+    background:linear-gradient(90deg,var(--brass-deep),var(--brass-bright));
+    transition:width .4s ease;
+    box-shadow:0 0 8px rgba(201,163,92,.35);
+  }
+  .controls{grid-area:controls;margin-top:clamp(24px,3.2vw,34px)}
+  .controls .buttons{display:flex;flex-wrap:wrap;gap:10px}
+  .btn{
+    position:relative;
+    appearance:none;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--ivory);
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    padding:14px 20px;
+    min-height:46px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    transition:background .25s ease,color .25s ease,border-color .25s ease,transform .1s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn .dot{
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:currentColor;
+    opacity:.65;
+    flex:0 0 auto;
+  }
+  .btn:hover{border-color:var(--brass)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:2px solid var(--brass-bright);outline-offset:3px}
+  .btn.primary{
+    background:linear-gradient(150deg,var(--brass-bright),var(--brass) 55%,#a3803f);
+    border-color:rgba(236,211,154,.8);
+    color:#1b1509;
+    font-weight:700;
+    box-shadow:0 1px 0 rgba(255,255,255,.28) inset,0 8px 20px rgba(0,0,0,.24);
+  }
+  .btn.primary .dot{background:#3b2c10;opacity:.7}
+  .btn.primary:hover{
+    background:linear-gradient(150deg,#f7e1ad,var(--brass) 58%,#b08a45);
+  }
+  .btn.primary.kick{animation:kick .5s ease}
+  @keyframes kick{
+    0%{transform:translateY(0)}
+    28%{transform:translateY(2px) scale(.985)}
+    100%{transform:translateY(0)}
+  }
+  .btn[aria-pressed="true"]{
+    border-color:rgba(183,92,72,.6);
+    color:#e4b5a2;
+    background:rgba(96,42,30,.2);
+  }
+  .status{
+    margin:12px 0 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-height:14px;
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .status .led{
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:var(--brass-bright);
+    box-shadow:0 0 7px rgba(236,211,154,.7);
+    flex:0 0 auto;
+    transition:background .3s ease,box-shadow .3s ease;
+  }
+  .status.held .led{background:#b45b45;box-shadow:0 0 7px rgba(180,91,69,.55);animation:none}
+
+  .clock-wrap{
+    grid-area:clock;
+    position:relative;
+    align-self:center;
+    justify-self:center;
+    width:min(100%,690px);
+    margin-top:clamp(-18px,-1vw,0px);
+  }
+  .clock-wrap::before{
+    content:"";
+    position:absolute;
+    inset:-9% -7% -3%;
+    background:radial-gradient(ellipse at 50% 44%, rgba(201,163,92,.2), rgba(201,163,92,.06) 42%, rgba(201,163,92,0) 67%);
+    filter:blur(12px);
+    pointer-events:none;
+    transition:opacity .8s ease;
+  }
+  .clock-wrap.wound::before{
+    animation:glow .9s ease;
+  }
+  @keyframes glow{
+    0%{opacity:.6;filter:blur(8px)}
+    35%{opacity:1;filter:blur(16px)}
+    100%{opacity:1;filter:blur(12px)}
+  }
+  .clock-wrap::after{
+    content:"";
+    position:absolute;
+    left:15%;
+    right:15%;
+    bottom:2%;
+    height:9%;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,.5), rgba(0,0,0,0) 70%);
+    filter:blur(8px);
+    pointer-events:none;
+  }
+  .clock-svg{
+    position:relative;
+    z-index:1;
+    display:block;
+    width:100%;
+    height:auto;
+    overflow:visible;
+    filter:drop-shadow(0 22px 30px rgba(0,0,0,.35));
+  }
+  .clock-caption{
+    position:relative;
+    z-index:2;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:4px clamp(8px,2vw,26px) 0;
+    padding-top:10px;
+    border-top:1px solid rgba(201,163,92,.18);
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .clock-caption .hm{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    color:var(--brass);
+  }
+  .clock-caption .hm svg{display:block;width:18px;height:18px}
+  .annotation{
+    position:absolute;
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(201,163,92,.62);
+    pointer-events:none;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    white-space:nowrap;
+  }
+  .annotation::before{
+    content:"";
+    width:26px;
+    height:1px;
+    background:linear-gradient(90deg,rgba(201,163,92,.5),rgba(201,163,92,.08));
+  }
+  .ann-a{top:12%;right:0;transform:translateX(14%)}
+  .ann-b{bottom:16%;left:-1%;transform:translateX(-12%)}
+  .footer{
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:12px 24px;
+    padding:20px 0 26px;
+    border-top:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.18em;
+    line-height:1.7;
+    text-transform:uppercase;
+    color:var(--ivory-faint);
+  }
+  .footer .r{text-align:right}
+  .footer b{font-weight:400;color:var(--brass)}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  @media (max-width:900px){
+    .layout{
+      grid-template-columns:1fr;
+      grid-template-areas:"intro" "clock" "essay" "readouts" "controls";
+      padding-top:clamp(26px,6vw,44px);
+    }
+    .intro{max-width:34ch}
+    .clock-wrap{width:min(100%,620px);margin:clamp(20px,5vw,36px) auto 0}
+    .essay{margin-top:clamp(24px,5vw,34px);max-width:54ch}
+    .topbar .mid{display:none}
+    .annotation{display:none}
+    h1{font-size:clamp(46px,10vw,72px)}
+  }
+  @media (max-width:600px){
+    .topbar{font-size:8px;letter-spacing:.18em;padding:16px 0 12px}
+    .topbar .brand{gap:8px}
+    .topbar .right .hide-sm{display:none}
+    .clock-wrap{width:100%}
+    .readout{padding-right:8px}
+    .readout + .readout{padding-left:10px}
+    .readout .v{font-size:18px}
+    .readout .k{font-size:7px;letter-spacing:.13em;white-space:normal}
+    .btn{padding:13px 16px;font-size:9.5px;min-height:48px}
+    .btn span.lbl{white-space:nowrap}
+    .clock-caption{font-size:6.8px;letter-spacing:.14em;margin:6px 2px 0}
+    .clock-caption .fig{display:none}
+    .footer{font-size:7px;letter-spacing:.13em}
+    .footer .r{text-align:left}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+
+<svg class="grain" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <filter id="grainFilter"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+  <rect width="100%" height="100%" filter="url(#grainFilter)" opacity=".7"/>
+</svg>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="8.2"/><path d="M12 6.5v5.9l3.6 2.2"/></svg>
+      </span>
+      <span>Calibre&nbsp;07</span>
+    </div>
+    <div class="mid">Horlogerie · étude du temps mécanique</div>
+    <div class="right">
+      <span class="hide-sm">Atelier de l'Heure</span>
+      <span class="num">N° 07 · 0421</span>
+      <span class="poincon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10.4" stroke="#c9a35c" stroke-width="1"/>
+          <circle cx="12" cy="12" r="7.6" stroke="#c9a35c" stroke-width=".55" opacity=".6"/>
+          <path d="M12 5.4 13.4 10.6 18.6 12 13.4 13.4 12 18.6 10.6 13.4 5.4 12 10.6 10.6Z" fill="#c9a35c" opacity=".82"/>
+        </svg>
+      </span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div class="intro">
+      <p class="eyebrow">A study in mechanical time</p>
+      <h1>A machine<br>for <em>noticing.</em></h1>
+      <div class="rule"></div>
+    </div>
+
+    <section class="clock-wrap" id="clockWrap" aria-label="Mechanical clock assembly">
+      <span class="annotation ann-a">going train · three wheels</span>
+      <span class="annotation ann-b">chapter ring · 60 divisions</span>
+      <svg class="clock-svg" id="clockSvg" viewBox="0 0 720 720" role="img" aria-label="A skeleton clock with three interlocking brass gears, a chapter ring of sixty hand-drawn ticks and Roman hour numerals, showing the local time.">
+        <defs>
+          <radialGradient id="brassGrad" cx="34%" cy="24%" r="82%">
+            <stop offset="0" stop-color="#f2ddab"/>
+            <stop offset=".28" stop-color="#d5b273"/>
+            <stop offset=".6" stop-color="#a98344"/>
+            <stop offset=".84" stop-color="#7d5e2d"/>
+            <stop offset="1" stop-color="#5d451f"/>
+          </radialGradient>
+          <linearGradient id="brassEdge" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f6e3b4"/>
+            <stop offset=".5" stop-color="#b28d4c"/>
+            <stop offset="1" stop-color="#6e5226"/>
+          </linearGradient>
+          <linearGradient id="ivoryHand" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fbf4e3"/>
+            <stop offset=".55" stop-color="#e8ddc3"/>
+            <stop offset="1" stop-color="#bfb298"/>
+          </linearGradient>
+          <radialGradient id="jewel" cx="35%" cy="30%" r="80%">
+            <stop offset="0" stop-color="#c56a5c"/>
+            <stop offset=".55" stop-color="#7e2f2a"/>
+            <stop offset="1" stop-color="#3b1212"/>
+          </radialGradient>
+          <radialGradient id="dialGlow" cx="50%" cy="46%" r="55%">
+            <stop offset="0" stop-color="#c9a35c" stop-opacity=".10"/>
+            <stop offset=".55" stop-color="#c9a35c" stop-opacity=".03"/>
+            <stop offset="1" stop-color="#c9a35c" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="handShadow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="2.5" dy="4" stdDeviation="3.2" flood-color="#02100a" flood-opacity=".6"/>
+          </filter>
+          <filter id="gearShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="3" dy="5" stdDeviation="4" flood-color="#020c08" flood-opacity=".55"/>
+          </filter>
+          <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="7" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <circle cx="360" cy="360" r="345" fill="url(#dialGlow)"/>
+        <circle cx="360" cy="360" r="266" fill="none" stroke="rgba(201,163,92,.14)" stroke-width="1"/>
+        <circle cx="360" cy="360" r="240" fill="none" stroke="rgba(201,163,92,.07)" stroke-width="1" stroke-dasharray="1 9"/>
+
+        <g id="gearLayer" filter="url(#gearShadow)"></g>
+
+        <g id="chapterRing">
+          <circle cx="360" cy="360" r="298" fill="none" stroke="rgba(4,12,8,.55)" stroke-width="57"/>
+          <circle cx="360" cy="360" r="326" fill="none" stroke="url(#brassEdge)" stroke-width="1.7"/>
+          <circle cx="360" cy="360" r="318.5" fill="none" stroke="rgba(201,163,92,.4)" stroke-width=".7"/>
+          <circle cx="360" cy="360" r="270" fill="none" stroke="url(#brassEdge)" stroke-width="1.4"/>
+          <circle cx="360" cy="360" r="266.5" fill="none" stroke="rgba(201,163,92,.22)" stroke-width=".6"/>
+        </g>
+
+        <g id="tickLayer" aria-hidden="true"></g>
+        <g id="numeralLayer" aria-hidden="true"></g>
+
+        <g id="arbor" aria-hidden="true">
+          <circle cx="360" cy="360" r="30" fill="#0a1a12" stroke="rgba(201,163,92,.55)" stroke-width="1"/>
+          <circle cx="360" cy="360" r="22" fill="none" stroke="rgba(201,163,92,.22)" stroke-width=".7"/>
+          <circle cx="360" cy="360" r="8" fill="url(#brassGrad)" stroke="#5e4620" stroke-width=".7"/>
+          <circle cx="360" cy="360" r="3.4" fill="url(#jewel)"/>
+        </g>
+
+        <g id="hands" filter="url(#handShadow)">
+          <g id="hourHand">
+            <path d="M360 212 C366 252 368 302 369 353 L360 368 L351 353 C352 302 354 252 360 212 Z" fill="url(#ivoryHand)" stroke="rgba(94,70,32,.55)" stroke-width=".8"/>
+            <circle cx="360" cy="330" r="3.4" fill="#0a1a12" opacity=".45"/>
+          </g>
+          <g id="minuteHand">
+            <path d="M360 128 C363.2 216 364.4 306 365 359 L360 370 L355 359 C355.6 306 356.8 216 360 128 Z" fill="url(#ivoryHand)" stroke="rgba(94,70,32,.5)" stroke-width=".7"/>
+            <path d="M360 372 L363 352 L360 346 L357 352 Z" fill="url(#ivoryHand)"/>
+          </g>
+          <g id="secondHand">
+            <line x1="360" y1="404" x2="360" y2="106" stroke="url(#brassEdge)" stroke-width="1.15"/>
+            <circle cx="360" cy="404" r="8.5" fill="none" stroke="url(#brassEdge)" stroke-width="2.2"/>
+            <circle cx="360" cy="404" r="3.3" fill="url(#brassGrad)"/>
+            <circle cx="360" cy="106" r="2.6" fill="#f1e8d6"/>
+          </g>
+          <circle cx="360" cy="360" r="4.6" fill="url(#brassGrad)" stroke="#4f3a19" stroke-width=".6"/>
+        </g>
+
+        <text x="360" y="636" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="11" letter-spacing="2.4" fill="rgba(201,163,92,.58)">a machine for noticing</text>
+        <g aria-hidden="true" opacity=".55">
+          <path d="M300 654h120" stroke="rgba(201,163,92,.22)" stroke-width=".7"/>
+          <circle cx="360" cy="654" r="1.7" fill="#c9a35c"/>
+        </g>
+      </svg>
+
+      <div class="clock-caption">
+        <span class="fig">Fig. 1 — going train</span>
+        <span class="hm">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9.5" stroke="#c9a35c" stroke-width="1"/>
+            <path d="M12 6.2 13.2 10.8 17.8 12 13.2 13.2 12 17.8 10.8 13.2 6.2 12 10.8 10.8Z" fill="#c9a35c" opacity=".85"/>
+          </svg>
+          Poinçon de maître · C.07
+        </span>
+        <span>Montre&nbsp;→&nbsp;<span id="liveTime">—</span></span>
+      </div>
+    </section>
+
+    <div class="essay">
+      <p>A mechanical watch does not measure time; it negotiates with it. Energy leaves a coiled spring in fractions too small to feel, and a train of wheels turns that trickle into a regular argument of seconds.</p>
+      <p>The escapement is the hinge of the whole affair — a tiny pallet that locks, releases, locks again, twenty-one thousand six hundred times an hour. Between each beat the hands hold still. That stillness is not a flaw. It is the smallest unit of attention the machine can offer.</p>
+      <p>Wind the mainspring and watch the train quicken. Stop the escapement and the conversation pauses, though the afternoon outside carries on.</p>
+      <p class="sign">Notes from the bench · no. 7</p>
+    </div>
+
+    <div class="readouts" aria-label="Movement readouts">
+      <div class="readout">
+        <span class="k">Amplitude</span>
+        <span class="v"><span id="ampValue">302</span><small>°</small></span>
+      </div>
+      <div class="readout">
+        <span class="k">Beat</span>
+        <span class="v">21,600<small>vph</small></span>
+      </div>
+      <div class="readout">
+        <span class="k">Power reserve</span>
+        <span class="v"><span id="reserveValue">64.2</span><small>h</small></span>
+        <div class="reserve" aria-hidden="true"><i id="reserveBar" style="width:89%"></i></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="buttons">
+        <button class="btn primary" id="windBtn" type="button">
+          <span class="dot" aria-hidden="true"></span><span class="lbl">Wind</span>
+        </button>
+        <button class="btn" id="stopBtn" type="button" aria-pressed="false">
+          <span class="dot" aria-hidden="true"></span><span class="lbl" id="stopLabel">Stop the escapement</span>
+        </button>
+      </div>
+      <p class="status" id="statusLine" role="status" aria-live="polite">
+        <span class="led" aria-hidden="true"></span><span id="statusText">Escapement running · beat stable</span>
+      </p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>SERIAL <b>N° 07.0421</b> &nbsp;·&nbsp; POINÇON C.07 &nbsp;·&nbsp; HAND-WOUND</span>
+    <span>18 jewels · 21,600 vph · 72 h reserve</span>
+    <span class="r">Atelier de l'Heure · Vallée de Joux<br>MMXXVI</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var clockSvg = document.getElementById("clockSvg");
+  var gearLayer = document.getElementById("gearLayer");
+  var tickLayer = document.getElementById("tickLayer");
+  var numeralLayer = document.getElementById("numeralLayer");
+  var hourHand = document.getElementById("hourHand");
+  var minuteHand = document.getElementById("minuteHand");
+  var secondHand = document.getElementById("secondHand");
+  var ampValue = document.getElementById("ampValue");
+  var reserveValue = document.getElementById("reserveValue");
+  var reserveBar = document.getElementById("reserveBar");
+  var statusLine = document.getElementById("statusLine");
+  var statusText = document.getElementById("statusText");
+  var windBtn = document.getElementById("windBtn");
+  var stopBtn = document.getElementById("stopBtn");
+  var stopLabel = document.getElementById("stopLabel");
+  var liveTime = document.getElementById("liveTime");
+  var clockWrap = document.getElementById("clockWrap");
+
+  function el(name, attrs, parent) {
+    var node = document.createElementNS(SVGNS, name);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    }
+    if (parent) parent.appendChild(node);
+    return node;
+  }
+
+  /* ---------- deterministic jitter for the hand-drawn chapter ring ---------- */
+  var seed = 0x0c1b07;
+  function rand() {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  }
+
+  /* ---------- chapter ring ticks ---------- */
+  (function buildTicks() {
+    for (var i = 0; i < 60; i++) {
+      var major = i % 5 === 0;
+      var angle = (i * 6) * Math.PI / 180;
+      var jitter = (rand() - 0.5) * 0.45;
+      var inner = major ? 291 + rand() * 1.6 : 302 + rand() * 1.4;
+      var outer = 315 + rand() * 1.2;
+      var a1 = angle - Math.PI / 2 + jitter * Math.PI / 180;
+      var a2 = angle - Math.PI / 2 + jitter * Math.PI / 180;
+      el("line", {
+        x1: (360 + Math.cos(a1) * inner).toFixed(2),
+        y1: (360 + Math.sin(a1) * inner).toFixed(2),
+        x2: (360 + Math.cos(a2) * outer).toFixed(2),
+        y2: (360 + Math.sin(a2) * outer).toFixed(2),
+        stroke: major ? "#e7d2a1" : "rgba(201,163,92,.62)",
+        "stroke-width": major ? (1.5 + rand() * 0.4).toFixed(2) : (0.62 + rand() * 0.24).toFixed(2),
+        "stroke-linecap": "round",
+        opacity: major ? 0.92 : 0.62 + rand() * 0.2
+      }, tickLayer);
+    }
+  })();
+
+  /* ---------- Roman numerals ---------- */
+  (function buildNumerals() {
+    var numerals = ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
+    numerals.forEach(function (label, h) {
+      var angle = (h * 30 - 90) * Math.PI / 180;
+      var radius = 279;
+      var x = 360 + Math.cos(angle) * radius;
+      var y = 360 + Math.sin(angle) * radius + 8.2;
+      el("text", {
+        x: x.toFixed(2),
+        y: y.toFixed(2),
+        "text-anchor": "middle",
+        "font-family": "Georgia, 'Times New Roman', serif",
+        "font-size": label.length > 2 ? 20 : 23,
+        "letter-spacing": "1.5",
+        fill: h === 0 ? "#ecd39a" : "rgba(241,232,214,.88)"
+      }, numeralLayer).textContent = label;
+    });
+    /* quarter-hour diamonds, set just inside the ring */
+    [0, 15, 30, 45].forEach(function (deg) {
+      var a = (deg - 90) * Math.PI / 180;
+      var x = 360 + Math.cos(a) * 262;
+      var y = 360 + Math.sin(a) * 262;
+      el("circle", { cx: x.toFixed(2), cy: y.toFixed(2), r: deg === 0 ? 3.2 : 1.9, fill: "#c9a35c", opacity: deg === 0 ? .95 : .55 }, numeralLayer);
+    });
+  })();
+
+  /* ---------- gears ---------- */
+  function gearPath(cx, cy, r, teeth) {
+    var outer = r * 1.065;
+    var root = r * 0.925;
+    var step = Math.PI * 2 / teeth;
+    var d = "";
+    function pt(a, rad) {
+      return (cx + Math.cos(a) * rad).toFixed(2) + " " + (cy + Math.sin(a) * rad).toFixed(2);
+    }
+    for (var i = 0; i < teeth; i++) {
+      var a = i * step;
+      d += (i === 0 ? "M " : " L ") + pt(a - step * 0.5, root);
+      d += " L " + pt(a - step * 0.3, root);
+      d += " L " + pt(a - step * 0.19, outer);
+      d += " Q " + pt(a, outer * 1.012) + " " + pt(a + step * 0.19, outer);
+      d += " L " + pt(a + step * 0.3, root);
+      d += " A " + root + " " + root + " 0 0 1 " + pt(a + step * 0.5, root);
+    }
+    return d + " Z";
+  }
+
+  function circlePath(cx, cy, r) {
+    return "M " + (cx - r) + " " + cy +
+      " a " + r + " " + r + " 0 1 0 " + (r * 2) + " 0" +
+      " a " + r + " " + r + " 0 1 0 " + (-r * 2) + " 0 Z";
+  }
+
+  var gearDefs = [
+    { cx: 282, cy: 337, r: 90, teeth: 36, dir: 1, rate: 9.5, spokes: 5, phase: 0.15 },
+    { cx: 421, cy: 381, r: 57, teeth: 23, dir: -1, rate: 14.6, spokes: 4, phase: -0.3 },
+    { cx: 474, cy: 287, r: 47, teeth: 19, dir: 1, rate: 17.9, spokes: 3, phase: 0.55 }
+  ];
+
+  var gears = gearDefs.map(function (g, index) {
+    var maskId = "gearMask" + index;
+    var defs = clockSvg.querySelector("defs");
+    var mask = el("mask", {
+      id: maskId,
+      maskUnits: "userSpaceOnUse",
+      maskContentUnits: "userSpaceOnUse",
+      x: g.cx - g.r * 1.2,
+      y: g.cy - g.r * 1.2,
+      width: g.r * 2.4,
+      height: g.r * 2.4
+    }, defs);
+    el("path", { d: gearPath(g.cx, g.cy, g.r, g.teeth), fill: "#fff" }, mask);
+    for (var s = 0; s < g.spokes; s++) {
+      var a = (s / g.spokes) * Math.PI * 2 + 0.4;
+      el("circle", {
+        cx: (g.cx + Math.cos(a) * g.r * 0.58).toFixed(2),
+        cy: (g.cy + Math.sin(a) * g.r * 0.58).toFixed(2),
+        r: (g.r * 0.145).toFixed(2),
+        fill: "#000"
+      }, mask);
+    }
+
+    var group = el("g", { "data-gear": index }, gearLayer);
+    el("path", {
+      d: gearPath(g.cx, g.cy, g.r, g.teeth),
+      fill: "url(#brassGrad)",
+      stroke: "rgba(58,39,15,.72)",
+      "stroke-width": 1,
+      "stroke-linejoin": "round",
+      mask: "url(#" + maskId + ")"
+    }, group);
+    /* inner rim and arbor */
+    el("circle", {
+      cx: g.cx, cy: g.cy, r: g.r * 0.34,
+      fill: "none", stroke: "rgba(94,68,30,.55)", "stroke-width": 1.2,
+      opacity: .9
+    }, group);
+    el("circle", {
+      cx: g.cx, cy: g.cy, r: g.r * 0.19,
+      fill: "none", stroke: "url(#brassEdge)", "stroke-width": 2.4
+    }, group);
+    el("circle", {
+      cx: g.cx, cy: g.cy, r: g.r * 0.13,
+      fill: "#0a1a12", stroke: "rgba(201,163,92,.5)", "stroke-width": .9
+    }, group);
+    el("circle", {
+      cx: g.cx, cy: g.cy, r: g.r * 0.048,
+      fill: "url(#jewel)"
+    }, group);
+    /* fine tick chatter on the gear face */
+    for (var t = 0; t < g.teeth; t += 2) {
+      var ta = t / g.teeth * Math.PI * 2;
+      el("line", {
+        x1: (g.cx + Math.cos(ta) * g.r * 0.4).toFixed(2),
+        y1: (g.cy + Math.sin(ta) * g.r * 0.4).toFixed(2),
+        x2: (g.cx + Math.cos(ta) * g.r * 0.47).toFixed(2),
+        y2: (g.cy + Math.sin(ta) * g.r * 0.47).toFixed(2),
+        stroke: "rgba(64,45,18,.35)",
+        "stroke-width": .7
+      }, group);
+    }
+    return { el: group, angle: g.phase * 180, rate: g.rate, dir: g.dir, cx: g.cx, cy: g.cy };
+  });
+
+  /* ---------- running state ---------- */
+  var running = true;
+  var frozen = null;
+  var boost = 0;
+  var gearSpeed = 1;
+  var reserve = 64.2;
+  var reserveTarget = 68.4;
+  var amplitude = 302;
+
+  function pad(n) { return n < 10 ? "0" + n : String(n); }
+
+  function setHand(node, angle) {
+    node.setAttribute("transform", "rotate(" + angle.toFixed(3) + " 360 360)");
+  }
+
+  function updateHands() {
+    var d = frozen || new Date();
+    var sec = d.getSeconds();
+    var min = d.getMinutes();
+    var hour = d.getHours() % 12;
+    setHand(hourHand, hour * 30 + min * 0.5);
+    setHand(minuteHand, min * 6 + sec * 0.1);
+    setHand(secondHand, sec * 6);
+    liveTime.textContent = pad(d.getHours()) + ":" + pad(min) + ":" + pad(sec) + " local";
+  }
+
+  function renderGears() {
+    gears.forEach(function (gear) {
+      gear.el.setAttribute("transform", "rotate(" + gear.angle.toFixed(2) + " " + gear.cx + " " + gear.cy + ")");
+    });
+  }
+
+  var lastFrame = performance.now();
+  function frame(now) {
+    var dt = Math.min(0.05, Math.max(0.001, (now - lastFrame) / 1000));
+    lastFrame = now;
+
+    var targetSpeed = running ? 1 + boost * 7.5 : 0;
+    gearSpeed += (targetSpeed - gearSpeed) * Math.min(1, dt * 5.5);
+    boost *= Math.exp(-dt * 1.05);
+
+    gears.forEach(function (gear) {
+      gear.angle += gearSpeed * gear.rate * gear.dir * dt;
+      if (gear.angle > 360) gear.angle -= 360;
+      if (gear.angle < 0) gear.angle += 360;
+    });
+    renderGears();
+
+    if (running) updateHands();
+
+    var ampTarget = running ? 302 + boost * 12 + (gearSpeed > 1.2 ? 4 : 0) : 0;
+    amplitude += (ampTarget - amplitude) * Math.min(1, dt * 5);
+    ampValue.textContent = String(Math.round(amplitude));
+
+    if (running) reserveTarget = Math.max(0, reserveTarget - dt * 0.0025);
+    reserve += (reserveTarget - reserve) * Math.min(1, dt * 1.6);
+    reserveValue.textContent = reserve.toFixed(1);
+    reserveBar.style.width = Math.max(0, Math.min(100, reserve / 72 * 100)).toFixed(1) + "%";
+
+    requestAnimationFrame(frame);
+  }
+
+  function setStatus(text, held) {
+    statusText.textContent = text;
+    statusLine.classList.toggle("held", !!held);
+  }
+
+  windBtn.addEventListener("click", function () {
+    boost = Math.min(1.5, boost + 1.05);
+    reserveTarget = 71.9;
+    clockWrap.classList.remove("wound");
+    /* force restart of the glow animation */
+    void clockWrap.offsetWidth;
+    clockWrap.classList.add("wound");
+    windBtn.classList.remove("kick");
+    void windBtn.offsetWidth;
+    windBtn.classList.add("kick");
+    setStatus(running ? "Mainspring wound · train accelerating" : "Mainspring wound · escapement still held", !running);
+    window.setTimeout(function () {
+      windBtn.classList.remove("kick");
+      setStatus(running ? "Escapement running · beat stable" : "Escapement held · seconds suspended", !running);
+    }, 2600);
+  });
+
+  stopBtn.addEventListener("click", function () {
+    running = !running;
+    if (!running) {
+      frozen = new Date();
+      boost = Math.min(boost, 0.12);
+      stopBtn.setAttribute("aria-pressed", "true");
+      stopLabel.textContent = "Release the escapement";
+      setStatus("Escapement held · seconds suspended", true);
+    } else {
+      frozen = null;
+      stopBtn.setAttribute("aria-pressed", "false");
+      stopLabel.textContent = "Stop the escapement";
+      setStatus("Escapement released · beat resumed", false);
+      updateHands();
+    }
+  });
+
+  updateHands();
+  renderGears();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

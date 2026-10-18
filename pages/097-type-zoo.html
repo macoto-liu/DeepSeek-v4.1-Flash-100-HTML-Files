@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Type Zoo — A Bestiary of the Alphabet</title>
+<style>
+  :root{
+    --paper:#f1e8d4;
+    --paper-2:#f8f2e2;
+    --paper-3:#e8ddc4;
+    --ink:#191510;
+    --ink-soft:#554b3b;
+    --ink-faint:rgba(25,21,16,.18);
+    --rust:#b0442a;
+    --moss:#4d6039;
+    --gold:#a87d2c;
+    --teal:#2d6771;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    color:var(--ink);
+    font-family:var(--serif);
+    background:
+      radial-gradient(circle at 12% 18%, rgba(176,68,42,.05), transparent 28%),
+      radial-gradient(circle at 88% 72%, rgba(45,103,113,.05), transparent 30%),
+      repeating-linear-gradient(0deg, rgba(25,21,16,.018) 0 1px, transparent 1px 4px),
+      var(--paper);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(25,21,16,.10) 100%);
+  }
+  .page{position:relative;z-index:1;width:min(1280px,100% - 48px);margin:0 auto;padding:26px 0 48px}
+  .skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--paper);padding:10px 16px;z-index:50}
+  .skip:focus{left:0}
+
+  /* Masthead */
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+    font-family:var(--sans);font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+    border-bottom:1px solid var(--ink);padding-bottom:10px;color:var(--ink-soft)}
+  .masthead strong{font-weight:600;color:var(--ink);letter-spacing:.28em}
+  .masthead .mid{text-align:center;flex:1}
+  .masthead .right{text-align:right}
+  .hero{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:36px;align-items:end;
+    padding:34px 0 26px;border-bottom:1px solid var(--ink)}
+  h1.title{margin:0;font-weight:400;line-height:.8;letter-spacing:-.055em;
+    font-size:clamp(4.6rem,13.4vw,10.5rem)}
+  h1.title em{font-style:italic;color:var(--rust);letter-spacing:-.06em}
+  h1.title .amp{font-size:.42em;vertical-align:.34em;letter-spacing:0;color:var(--ink-soft);margin-left:.06em}
+  .hero-aside{padding-bottom:8px}
+  .hero-aside p{margin:0;font-size:16px;line-height:1.5;color:var(--ink-soft)}
+  .hero-aside p em{color:var(--ink);font-style:italic}
+  .hero-aside .rule{width:44px;height:1px;background:var(--ink);margin:0 0 14px}
+  .hero-aside .folio{font-family:var(--sans);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;
+    margin-top:16px;color:var(--ink-soft);display:flex;justify-content:space-between;border-top:1px solid var(--ink-faint);padding-top:8px}
+
+  /* Controls */
+  .controls{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;
+    padding:22px 0 18px;border-bottom:1px solid var(--ink-faint)}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .filters .flabel{font-family:var(--sans);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ink-soft);margin-right:8px}
+  .chip{
+    appearance:none;border:1px solid transparent;background:transparent;color:var(--ink);
+    font-family:var(--sans);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+    padding:7px 13px 6px;border-radius:999px;cursor:pointer;transition:background .18s,color .18s,border-color .18s;
+  }
+  .chip:hover{border-color:var(--ink-faint);background:rgba(25,21,16,.045)}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--paper-2);border-color:var(--ink)}
+  .chip .n{font-size:8.5px;opacity:.62;margin-left:4px;letter-spacing:.05em}
+  .search{position:relative;display:flex;align-items:center;border-bottom:1.5px solid var(--ink);min-width:236px}
+  .search svg{width:14px;height:14px;flex:none;margin-right:8px;stroke:var(--ink-soft)}
+  .search input{
+    appearance:none;border:0;background:transparent;outline:none;color:var(--ink);
+    font-family:var(--serif);font-style:italic;font-size:15px;padding:7px 2px 8px;width:200px;
+  }
+  .search input::placeholder{color:var(--ink-soft);opacity:.75}
+  .search:focus-within{border-color:var(--rust)}
+  .count{font-family:var(--sans);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-soft);padding-bottom:4px}
+
+  /* Grid */
+  .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--ink-faint);
+    border-bottom:1px solid var(--ink);margin-top:0}
+  .card{background:var(--paper-2);min-width:0;position:relative;
+    background-image:radial-gradient(circle at 50% 28%, rgba(255,255,255,.55), transparent 62%)}
+  .card-btn{
+    display:flex;flex-direction:column;width:100%;height:100%;text-align:left;
+    background:none;border:0;padding:16px 18px 20px;color:inherit;font-family:inherit;cursor:pointer;
+    transition:background .25s ease;position:relative;min-height:340px;
+  }
+  .card-btn:hover{background:#fbf6e9}
+  .card-btn:focus-visible{outline:2px solid var(--rust);outline-offset:-4px}
+  .card-head{display:flex;justify-content:space-between;align-items:baseline;width:100%;
+    font-family:var(--sans);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+  .card-head .no{color:var(--ink)}
+  .tag{display:inline-flex;align-items:center;gap:5px}
+  .tag::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--tagc,var(--gold))}
+  .figure{flex:1;display:flex;align-items:center;justify-content:center;padding:6px 0 2px;min-height:0}
+  .figure svg{width:100%;max-width:224px;height:auto;display:block;
+    transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+  .card-btn:hover .figure svg{transform:translateY(-4px) rotate(-1.6deg)}
+  .card-foot{width:100%;border-top:1px solid var(--ink-faint);padding-top:10px}
+  .card-foot h2{margin:0;font-size:25px;font-weight:400;letter-spacing:-.015em;line-height:1.05}
+  .card-foot .latin{margin:3px 0 0;font-style:italic;font-size:13.5px;color:var(--ink-soft)}
+  .card-foot .klass{margin:5px 0 0;font-family:var(--sans);font-size:8.5px;letter-spacing:.19em;
+    text-transform:uppercase;color:var(--tagc,var(--gold))}
+  .card-btn::after{content:"";position:absolute;right:16px;top:16px;width:20px;height:20px;
+    border-top:1px solid var(--ink-faint);border-right:1px solid var(--ink-faint);opacity:0;transition:opacity .2s}
+  .card-btn:hover::after{opacity:1}
+  .empty{display:none;padding:64px 20px;text-align:center;background:var(--paper-2);grid-column:1/-1}
+  .empty.show{display:block}
+  .empty p{margin:0;font-size:19px;font-style:italic;color:var(--ink-soft)}
+  .empty small{display:block;margin-top:8px;font-family:var(--sans);font-size:9.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-soft)}
+
+  /* Letter art */
+  .face .glyph{font-family:var(--serif);fill:var(--ink);font-weight:400}
+  .eyes{transform-box:fill-box;transform-origin:center;animation:blink 7.5s infinite}
+  @keyframes blink{0%,91%,100%{transform:scaleY(1)}94%,96%{transform:scaleY(.06)}}
+  @media (prefers-reduced-motion:reduce){
+    .eyes{animation:none}
+    .figure svg,.card-btn{transition:none}
+  }
+
+  /* Footer */
+  .colophon{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    padding-top:16px;font-family:var(--sans);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+  .colophon .dash{flex:1;border-top:1px solid var(--ink-faint);margin-top:5px}
+
+  /* Dialog */
+  dialog{
+    border:0;padding:0;background:transparent;max-width:1000px;width:calc(100% - 40px);
+    color:var(--ink);font-family:var(--serif);overflow:visible;
+  }
+  dialog::backdrop{background:rgba(18,14,9,.74);backdrop-filter:blur(5px)}
+  .sheet{
+    background:var(--paper-2);border:1px solid var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.4);
+    display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);position:relative;
+    max-height:calc(100vh - 48px);overflow:auto;
+  }
+  .sheet::before{content:"";position:absolute;inset:7px;border:1px solid rgba(25,21,16,.16);pointer-events:none}
+  .sheet-art{background:
+      radial-gradient(circle at 50% 40%, rgba(255,255,255,.7), transparent 65%),
+      color-mix(in srgb, var(--tint) 12%, var(--paper));
+    padding:46px 34px 34px;display:flex;flex-direction:column;justify-content:space-between;
+    border-right:1px solid var(--ink);position:relative}
+  .sheet-art .plate{font-family:var(--sans);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);
+    display:flex;justify-content:space-between}
+  .sheet-art .big{width:100%;max-width:330px;margin:12px auto;display:block}
+  .sheet-art .big svg{width:100%;height:auto;display:block}
+  .sheet-art .stamp{font-family:var(--sans);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ink-soft);text-align:center;border-top:1px solid var(--ink-faint);padding-top:10px}
+  .sheet-body{padding:44px 42px 32px;display:flex;flex-direction:column}
+  .eyebrow{font-family:var(--sans);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--tagc);
+    display:flex;align-items:center;gap:8px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:currentColor}
+  .sheet-body h2{margin:14px 0 0;font-weight:400;font-size:clamp(2.6rem,5vw,3.6rem);line-height:.94;letter-spacing:-.03em}
+  .sheet-body .latin{margin:8px 0 0;font-style:italic;font-size:17px;color:var(--ink-soft)}
+  .facts{margin:22px 0 0;border-top:1px solid var(--ink-faint)}
+  .facts div{display:grid;grid-template-columns:82px 1fr;gap:14px;padding:9px 0;border-bottom:1px solid var(--ink-faint)}
+  .facts dt{font-family:var(--sans);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);padding-top:3px}
+  .facts dd{margin:0;font-size:14.5px;line-height:1.42}
+  .fieldnote{margin:20px 0 0;font-size:16.5px;line-height:1.55;font-style:italic;position:relative;padding-left:18px}
+  .fieldnote::before{content:"";position:absolute;left:0;top:5px;bottom:4px;width:2px;background:var(--tagc)}
+  .fieldnote .fl{display:block;font-family:var(--sans);font-style:normal;font-size:8.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
+  .sheet-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;
+    padding-top:22px;border-top:1px solid var(--ink-faint)}
+  .navbtn{appearance:none;background:none;border:1px solid var(--ink);color:var(--ink);
+    font-family:var(--sans);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    padding:9px 14px;cursor:pointer;transition:background .18s,color .18s}
+  .navbtn:hover{background:var(--ink);color:var(--paper)}
+  .navbtn:disabled{opacity:.3;cursor:default}
+  .navbtn:disabled:hover{background:none;color:var(--ink)}
+  .sheet-nav .pos{font-family:var(--sans);font-size:9px;letter-spacing:.2em;color:var(--ink-soft)}
+  .closebtn{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;
+    background:var(--paper-2);border:1px solid var(--ink);color:var(--ink);cursor:pointer;z-index:3;
+    display:grid;place-items:center;transition:transform .25s,background .2s}
+  .closebtn:hover{transform:rotate(90deg);background:var(--ink);color:var(--paper)}
+  .closebtn svg{width:13px;height:13px;stroke:currentColor;stroke-width:1.5}
+
+  @media (max-width:1000px){
+    .page{width:calc(100% - 40px)}
+    .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .hero{grid-template-columns:1fr 220px;gap:24px}
+    .card-btn{min-height:310px}
+    .sheet-art{padding:40px 24px 26px}
+    .sheet-body{padding:40px 30px 26px}
+  }
+  @media (max-width:760px){
+    .masthead .mid{display:none}
+    .hero{grid-template-columns:1fr;gap:18px;padding-top:24px}
+    .hero-aside{max-width:360px}
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .controls{gap:14px}
+    .search{width:100%;min-width:0}
+    .search input{width:100%}
+    .count{width:100%;padding-bottom:0}
+    .card-btn{min-height:280px;padding:13px 14px 16px}
+    .card-foot h2{font-size:21px}
+    .card-foot .latin{font-size:12px}
+    dialog{width:calc(100% - 24px)}
+    .sheet{grid-template-columns:1fr;max-height:calc(100vh - 24px)}
+    .sheet-art{border-right:0;border-bottom:1px solid var(--ink);padding:32px 22px 18px;
+      flex-direction:row;align-items:center;gap:10px}
+    .sheet-art .plate{display:none}
+    .sheet-art .big{max-width:170px;margin:0}
+    .sheet-art .stamp{border-top:0;padding-top:0;writing-mode:vertical-rl;text-align:left;letter-spacing:.14em}
+    .sheet-body{padding:26px 24px 24px}
+    .sheet-body h2{font-size:2.5rem}
+    .facts{margin-top:16px}
+    .sheet-nav{margin-top:18px}
+  }
+  @media (max-width:520px){
+    .page{width:calc(100% - 28px);padding-top:18px}
+    h1.title{font-size:clamp(4rem,23vw,6.2rem)}
+    .grid{grid-template-columns:1fr}
+    .card-btn{min-height:0;flex-direction:row;align-items:center;gap:8px;padding:14px}
+    .card-btn .figure{width:46%;flex:none;padding:0}
+    .card-foot{width:54%;border-top:0;border-left:1px solid var(--ink-faint);padding:6px 0 6px 14px}
+    .card-head{position:absolute;left:14px;top:10px;width:calc(46% - 28px)}
+    .card-btn .figure{padding-top:14px}
+    .masthead{font-size:8.5px;letter-spacing:.16em}
+    .filters .flabel{display:none}
+    .chip{padding:6px 10px 5px;font-size:9.5px}
+    .sheet-art{display:flex;padding:20px 19px 8px;border-bottom:1px solid var(--ink);align-items:center}
+    .sheet-art .plate{display:none}
+    .sheet-art .big{max-width:118px;margin:0 auto}
+    .sheet-art .stamp{display:none}
+    .sheet-body{padding:20px 19px 18px}
+    .sheet-body h2{font-size:2.25rem}
+    .sheet-body .latin{font-size:15px}
+    .facts{margin-top:14px}
+    .facts div{padding:7px 0}
+    .fieldnote{font-size:15px;margin-top:14px}
+    .sheet-nav{padding-top:16px;margin-top:16px}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#collection">Skip to the collection</a>
+<div class="page">
+  <header class="masthead">
+    <span><strong>Type Zoo</strong></span>
+    <span class="mid">A Bestiary of the Alphabet · Plates I–XII</span>
+    <span class="right">Vol. XII · MMXXVI</span>
+  </header>
+
+  <section class="hero" aria-labelledby="page-title">
+    <h1 class="title" id="page-title">Type<br><em>Zoo</em><span class="amp">&nbsp;*</span></h1>
+    <div class="hero-aside">
+      <div class="rule"></div>
+      <p>Twelve letters, each carrying its creature. The alphabet as a field station: observe quietly, and do not feed the diacritics.</p>
+      <div class="folio"><span>Printed in the open</span><span>No. 097</span></div>
+    </div>
+  </section>
+
+  <section class="controls" aria-label="Collection filters">
+    <div class="filters" role="group" aria-label="Filter creatures by class">
+      <span class="flabel">Browse</span>
+      <button class="chip" data-filter="all" aria-pressed="true">All <span class="n">12</span></button>
+      <button class="chip" data-filter="Mammals" aria-pressed="false">Mammals <span class="n">03</span></button>
+      <button class="chip" data-filter="Birds" aria-pressed="false">Birds <span class="n">04</span></button>
+      <button class="chip" data-filter="Water" aria-pressed="false">Water <span class="n">03</span></button>
+      <button class="chip" data-filter="Reptiles" aria-pressed="false">Reptiles <span class="n">02</span></button>
+    </div>
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+      <input id="search" type="search" placeholder="Search the menagerie…" autocomplete="off" aria-label="Search by species, Latin name or class">
+    </label>
+    <span class="count" id="count" aria-live="polite">12 specimens</span>
+  </section>
+
+  <main id="collection">
+    <div class="grid" id="grid">
+      <div class="empty" id="empty">
+        <p>No creature answers to that description.</p>
+        <small>Try another name, or clear the search</small>
+      </div>
+    </div>
+  </main>
+
+  <footer class="colophon">
+    <span>Type Zoo</span>
+    <span class="dash"></span>
+    <span>Set in the public serif</span>
+    <span class="dash"></span>
+    <span>Twelve of twenty-six observed</span>
+  </footer>
+</div>
+
+<dialog id="detail" aria-labelledby="d-name">
+  <div class="sheet" id="sheet">
+    <button class="closebtn" id="close" aria-label="Close specimen">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14"/></svg>
+    </button>
+    <div class="sheet-art">
+      <div class="plate"><span>Specimen</span><span id="d-no">01</span></div>
+      <div class="big" id="d-art"></div>
+      <div class="stamp">Collected &amp; drawn<br>for the Type Zoo</div>
+    </div>
+    <div class="sheet-body">
+      <div class="eyebrow" id="d-eyebrow">Mammals · Class Mammalia</div>
+      <h2 id="d-name">Axolotl</h2>
+      <p class="latin" id="d-latin">Ambystoma mexicanum</p>
+      <dl class="facts">
+        <div><dt>Habitat</dt><dd id="d-habitat"></dd></div>
+        <div><dt>Diet</dt><dd id="d-diet"></dd></div>
+        <div><dt>Voice</dt><dd id="d-voice"></dd></div>
+        <div><dt>Class</dt><dd id="d-class"></dd></div>
+      </dl>
+      <p class="fieldnote"><span class="fl">Field note</span><span id="d-note"></span></p>
+      <div class="sheet-nav">
+        <button class="navbtn" id="prev" aria-label="Previous specimen">← Prev</button>
+        <span class="pos" id="d-pos">01 / 12</span>
+        <button class="navbtn" id="next" aria-label="Next specimen">Next →</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  "use strict";
+
+  var CREATURES = [
+    {
+      letter:"A", name:"Axolotl", latin:"Ambystoma mexicanum", klass:"Amphibia",
+      group:"Water", tint:"var(--teal)", field:"Canals of Xochimilco",
+      habitat:"The still canals of Xochimilco, where the water keeps its secrets and the light arrives green.",
+      diet:"Worms, insect larvae, and the occasional unwise tadpole.",
+      voice:"A soft click, like a pebble turning over underwater.",
+      note:"It keeps its childhood gills for life — a permanent refusal to grow up. Once a year it surfaces, looks at the sky, and returns."
+    },
+    {
+      letter:"B", name:"Bear", latin:"Ursus arctos", klass:"Mammalia",
+      group:"Mammals", tint:"var(--rust)", field:"Pine forests & treelines",
+      habitat:"High pine forests and the long grass above the treeline, where the path runs out.",
+      diet:"Berries, honey, salmon, and any picnic left unattended.",
+      voice:"A low chuff; the sound of a heavy door closing far away.",
+      note:"The bear's letter is the oldest in the zoo. It was carved once, on a cave wall, and never improved."
+    },
+    {
+      letter:"C", name:"Crane", latin:"Grus grus", klass:"Aves",
+      group:"Birds", tint:"var(--gold)", field:"Reedbeds & wet meadows",
+      habitat:"Reedbeds and wet meadows, on a migration that outlasts memory.",
+      diet:"Grain, roots, insects, and the small frogs of spring.",
+      voice:"A bugling call that carries three valleys further than it should.",
+      note:"Cranes pair for decades and dance without music. Ornithologists call this courtship; the cranes call it Tuesday."
+    },
+    {
+      letter:"D", name:"Dolphin", latin:"Delphinus delphis", klass:"Mammalia",
+      group:"Water", tint:"var(--teal)", field:"Open temperate seas",
+      habitat:"Open temperate seas, wherever the water runs blue and quick.",
+      diet:"Sardines, squid, and the bright shoals of morning.",
+      voice:"Whistles, clicks, and a private name only its pod can pronounce.",
+      note:"It sleeps with one eye open and one half of its brain awake. The other half dreams of the sea it is already in."
+    },
+    {
+      letter:"E", name:"Egret", latin:"Egretta garzetta", klass:"Aves",
+      group:"Birds", tint:"var(--gold)", field:"Shallow river margins",
+      habitat:"Shallow margins of slow rivers and flooded fields.",
+      diet:"Small fish, amphibians, and patience.",
+      voice:"A harsh croak, oddly small for so elegant a bird.",
+      note:"The egret stands utterly still for eleven minutes and then strikes once. It is the only creature here that understands proofreading."
+    },
+    {
+      letter:"F", name:"Fox", latin:"Vulpes vulpes", klass:"Mammalia",
+      group:"Mammals", tint:"var(--rust)", field:"Field edges & churchyards",
+      habitat:"Field edges, churchyards, and the warm spaces behind sheds.",
+      diet:"Voles, beetles, windfall apples, and a dropped sandwich.",
+      voice:"A three-part scream at night that no one ever described accurately.",
+      note:"It hears a mouse moving under a metre of snow. The letter F, appropriately, is a creature with two ears and no need for the rest of the alphabet."
+    },
+    {
+      letter:"G", name:"Gecko", latin:"Gekko gecko", klass:"Reptilia",
+      group:"Reptiles", tint:"var(--moss)", field:"Warm walls & old houses",
+      habitat:"Warm walls, bark, and the ceilings of old houses.",
+      diet:"Crickets, moths, and anything foolish enough to fly at dusk.",
+      voice:"A chirrup, then its own name, said twice, with feeling.",
+      note:"It walks on glass because it has solved adhesion without affection. Its tail is a spare, detachable argument."
+    },
+    {
+      letter:"H", name:"Heron", latin:"Ardea cinerea", klass:"Aves",
+      group:"Birds", tint:"var(--gold)", field:"Riverbanks",
+      habitat:"Riverbanks and the shallow ends of everything.",
+      diet:"Fish, eels, and the occasional small mammal with bad timing.",
+      voice:"A hoarse, prehistoric croak at takeoff.",
+      note:"The heron is a folded umbrella that has learned to fish. When it flies, it looks faintly embarrassed by its own legs."
+    },
+    {
+      letter:"I", name:"Ibex", latin:"Capra ibex", klass:"Mammalia",
+      group:"Mammals", tint:"var(--rust)", field:"Alpine rock faces",
+      habitat:"Rock faces above the tree line, where the path becomes a rumour.",
+      diet:"Alpine grass, juniper, and salt licked from stone.",
+      voice:"A low whistle and a clatter of hooves on granite.",
+      note:"Its horns record every winter in ridges, one year per groove. It has never once looked down to check."
+    },
+    {
+      letter:"J", name:"Jellyfish", latin:"Aurelia aurita", klass:"Scyphozoa",
+      group:"Water", tint:"var(--teal)", field:"Coastal water",
+      habitat:"Drifting in coastal water, carried wherever the current is going.",
+      diet:"Plankton, tiny fish, and whatever the tide delivers.",
+      voice:"Silence, which is not the same as having nothing to say.",
+      note:"The jellyfish is 95 percent water and 100 percent unbothered. It has no brain, no bones, and a very old plan."
+    },
+    {
+      letter:"K", name:"Kingfisher", latin:"Alcedo atthis", klass:"Aves",
+      group:"Birds", tint:"var(--gold)", field:"Slow, clean rivers",
+      habitat:"Clean, slow rivers with a branch low over the water.",
+      diet:"Minnows, sticklebacks, and the flash of silver.",
+      voice:"A high, sharp whistle, like a coin dropped on glass.",
+      note:"It flies like a thrown jewel and returns with a fish. The river remembers the blue streak longer than the fish does."
+    },
+    {
+      letter:"L", name:"Leatherback", latin:"Dermochelys coriacea", klass:"Reptilia",
+      group:"Reptiles", tint:"var(--moss)", field:"Open ocean",
+      habitat:"The open ocean, from the tropics to the edge of the ice.",
+      diet:"Jellyfish, mostly, and a great many of them.",
+      voice:"A low rumble felt more than heard; the sand moves when it speaks.",
+      note:"It crossed an ocean to lay eggs on the beach where it was born, then turned around and crossed back. Nobody taught it the way."
+    }
+  ];
+
+  var SERIF = "'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif";
+
+  function eyePair(delay){
+    return '<g class="eyes" style="animation-delay:'+delay+'s">'+
+      '<ellipse cx="76" cy="101" rx="11.5" ry="12.5" fill="#fbf6e8" stroke="#191510" stroke-width="2.2"/>'+
+      '<ellipse cx="124" cy="101" rx="11.5" ry="12.5" fill="#fbf6e8" stroke="#191510" stroke-width="2.2"/>'+
+      '<circle cx="78.5" cy="103" r="4.8" fill="#191510"/>'+
+      '<circle cx="126.5" cy="103" r="4.8" fill="#191510"/>'+
+      '<circle cx="80.5" cy="100" r="1.5" fill="#fff"/>'+
+      '<circle cx="128.5" cy="100" r="1.5" fill="#fff"/>'+
+    '</g>';
+  }
+
+  function features(a, idx){
+    var t = a.tint;
+    var back = "";
+    var front = "";
+    var delay = (-(idx*1.13+0.7)).toFixed(2);
+
+    switch(a.letter){
+      case "A":
+        back = [1,-1].map(function(s){
+          return '<g stroke="'+t+'" stroke-width="7" stroke-linecap="round" fill="none" opacity=".92">'+
+            '<path d="M'+(100+s*48)+' 76 q '+(s*28)+' -18 '+(s*42)+' -10"/>'+
+            '<path d="M'+(100+s*51)+' 94 q '+(s*30)+' -8 '+(s*44)+' 4"/>'+
+            '<path d="M'+(100+s*48)+' 112 q '+(s*27)+' 0 '+(s*38)+' 16"/>'+
+          '</g>';
+        }).join("");
+        front = '<path d="M87 128 q13 9 26 0" fill="none" stroke="#191510" stroke-width="2.4" stroke-linecap="round"/>';
+        break;
+      case "B":
+        back = '<g>'+
+          '<circle cx="53" cy="50" r="20" fill="'+t+'"/><circle cx="147" cy="50" r="20" fill="'+t+'"/>'+
+          '<circle cx="53" cy="50" r="10" fill="#f1e8d4" stroke="#191510" stroke-width="1.4"/>'+
+          '<circle cx="147" cy="50" r="10" fill="#f1e8d4" stroke="#191510" stroke-width="1.4"/>'+
+        '</g>';
+        front = '<ellipse cx="100" cy="128" rx="14" ry="11" fill="#f8f2e2" stroke="#191510" stroke-width="1.4"/>'+
+          '<path d="M92 126 q8 -7 16 0 q-8 8 -16 0Z" fill="#191510"/>'+
+          '<path d="M100 133 v5" stroke="#191510" stroke-width="2"/>';
+        break;
+      case "C":
+        back = '<circle cx="99" cy="48" r="6" fill="'+t+'"/>';
+        front = '<path d="M122 102 L187 97 L124 111 Z" fill="'+t+'" stroke="#191510" stroke-width="1.3" stroke-linejoin="round"/>'+
+          '<path d="M139 104 l22 -3" stroke="#f8f2e2" stroke-width="1" opacity=".5"/>';
+        break;
+      case "D":
+        back = '<path d="M100 54 q 5 -27 25 -39 q 0 21 5 39 Z" fill="'+t+'" opacity=".95"/>'+
+          '<g stroke="'+t+'" stroke-width="2.2" stroke-linecap="round" fill="none" opacity=".7">'+
+          '<path d="M78 48 q -2 -17 -9 -24"/><path d="M90 44 q 0 -16 -4 -26"/>'+
+          '</g>';
+        front = '<path d="M85 124 q15 11 30 0" fill="none" stroke="#191510" stroke-width="2.4" stroke-linecap="round"/>';
+        break;
+      case "E":
+        back = '<g stroke="'+t+'" stroke-width="2.4" stroke-linecap="round" fill="none">'+
+          '<path d="M104 48 q 8 -18 24 -25"/>'+
+          '<path d="M97 48 q 2 -20 12 -31"/>'+
+          '<path d="M90 48 q -4 -16 -13 -23"/>'+
+        '</g>';
+        front = '<path d="M121 102 L188 99 L123 110 Z" fill="'+t+'" stroke="#191510" stroke-width="1.2" stroke-linejoin="round" opacity=".95"/>';
+        break;
+      case "F":
+        back = '<path d="M44 38 L72 76 L43 82 Z" fill="'+t+'" stroke="#191510" stroke-width="1.4" stroke-linejoin="round"/>'+
+          '<path d="M156 38 L128 76 L157 82 Z" fill="'+t+'" stroke="#191510" stroke-width="1.4" stroke-linejoin="round"/>'+
+          '<path d="M52 52 L63 74 L51 76 Z" fill="#f1e8d4" opacity=".8"/>'+
+          '<path d="M148 52 L137 74 L149 76 Z" fill="#f1e8d4" opacity=".8"/>';
+        front = '<path d="M94 129 q6 -6 12 0 q-6 8 -12 0Z" fill="#191510"/>'+
+          '<g stroke="#191510" stroke-width="1.5" stroke-linecap="round" opacity=".85">'+
+          '<path d="M86 131 l-19 -4"/><path d="M86 136 l-18 4"/><path d="M114 131 l19 -4"/><path d="M114 136 l18 4"/>'+
+          '</g>';
+        break;
+      case "G":
+        back = '<circle cx="64" cy="82" r="7" fill="'+t+'" opacity=".9"/><circle cx="136" cy="82" r="7" fill="'+t+'" opacity=".9"/>'+
+          '<path d="M140 150 q 28 6 20 24 q -8 14 -22 4" fill="none" stroke="'+t+'" stroke-width="5" stroke-linecap="round"/>';
+        front = '<path d="M85 127 q15 10 30 0" fill="none" stroke="#191510" stroke-width="2.4" stroke-linecap="round"/>'+
+          '<g fill="'+t+'" opacity=".9"><circle cx="67" cy="138" r="3"/><circle cx="59" cy="150" r="2.2"/><circle cx="72" cy="155" r="2.6"/></g>';
+        break;
+      case "H":
+        back = '<path d="M97 50 q 6 -18 -2 -28" fill="none" stroke="'+t+'" stroke-width="3" stroke-linecap="round"/>';
+        front = '<path d="M122 100 L189 104 L123 112 Z" fill="'+t+'" stroke="#191510" stroke-width="1.3" stroke-linejoin="round"/>'+
+          '<path d="M124 106 l26 1" stroke="#191510" stroke-width="1.4" opacity=".5"/>';
+        break;
+      case "I":
+        back = '<g fill="none" stroke="'+t+'" stroke-width="8" stroke-linecap="round">'+
+          '<path d="M72 54 q -22 -24 -30 -46"/>'+
+          '<path d="M128 54 q 22 -24 30 -46"/>'+
+        '</g><g fill="none" stroke="#191510" stroke-width="1.2" opacity=".45">'+
+          '<path d="M67 47 l-8 -4"/><path d="M61 39 l-8 -4"/><path d="M56 31 l-7 -4"/>'+
+          '<path d="M133 47 l8 -4"/><path d="M139 39 l8 -4"/><path d="M144 31 l7 -4"/>'+
+        '</g>';
+        front = '<path d="M90 152 q10 12 20 0" fill="none" stroke="#191510" stroke-width="2.4" stroke-linecap="round"/>'+
+          '<path d="M92 154 q4 20 8 24 q5 -6 9 -24" fill="'+t+'" opacity=".85"/>';
+        break;
+      case "J":
+        back = '<path d="M48 74 q 52 -44 104 0 l -10 8 q -42 -34 -84 0 Z" fill="'+t+'" opacity=".22"/>'+
+          '<g stroke="'+t+'" stroke-width="3" fill="none" opacity=".65" stroke-linecap="round">'+
+          '<path d="M63 160 q -14 14 -2 30"/><path d="M78 164 q 10 14 2 26"/>'+
+          '<path d="M122 164 q -10 14 -2 26"/><path d="M137 160 q 14 14 2 30"/>'+
+          '</g>';
+        front = '<path d="M86 127 q14 8 28 0" fill="none" stroke="#191510" stroke-width="2.2" stroke-linecap="round" opacity=".9"/>';
+        break;
+      case "K":
+        back = '<path d="M92 51 q 4 -20 17 -28 q 1 16 8 24 Z" fill="'+t+'" stroke="#191510" stroke-width="1.2" stroke-linejoin="round"/>'+
+          '<path d="M57 118 q -20 18 -18 42 q 20 -10 30 -24 Z" fill="'+t+'" opacity=".85"/>';
+        front = '<path d="M121 101 L184 99 L123 112 Z" fill="'+t+'" stroke="#191510" stroke-width="1.3" stroke-linejoin="round"/>'+
+          '<path d="M68 150 q8 4 12 12" stroke="#f1e8d4" stroke-width="2" fill="none" opacity=".6"/>';
+        break;
+      case "L":
+        back = '<path d="M46 150 q -26 6 -32 22 q 20 6 36 -6 Z" fill="'+t+'" stroke="#191510" stroke-width="1.2"/>'+
+          '<path d="M154 150 q 26 6 32 22 q -20 6 -36 -6 Z" fill="'+t+'" stroke="#191510" stroke-width="1.2"/>';
+        front = '<g fill="'+t+'" opacity=".75">'+
+          '<circle cx="80" cy="140" r="2.6"/><circle cx="94" cy="148" r="1.8"/><circle cx="110" cy="141" r="2.2"/>'+
+          '<circle cx="124" cy="150" r="2.6"/><circle cx="73" cy="156" r="1.8"/>'+
+        '</g><path d="M92 160 q 10 8 20 0" fill="none" stroke="#191510" stroke-width="2" stroke-linecap="round" opacity=".8"/>';
+        break;
+    }
+
+    return '<svg viewBox="0 0 200 200" role="img" aria-hidden="true" focusable="false">'+
+      '<g>'+back+'</g>'+
+      '<text class="glyph" x="100" y="157" text-anchor="middle" font-size="150" font-family="'+SERIF+'">'+a.letter+'</text>'+
+      '<g>'+eyePair(delay)+'</g>'+
+      front+
+    '</svg>';
+  }
+
+  var grid = document.getElementById("grid");
+  var empty = document.getElementById("empty");
+  var countEl = document.getElementById("count");
+  var searchEl = document.getElementById("search");
+  var chips = Array.prototype.slice.call(document.querySelectorAll(".chip"));
+  var state = { filter:"all", query:"" };
+
+  function makeCard(a, idx){
+    var card = document.createElement("article");
+    card.className = "card";
+    card.style.setProperty("--tagc", a.tint);
+    card.dataset.group = a.group;
+    var btn = document.createElement("button");
+    btn.className = "card-btn";
+    btn.type = "button";
+    btn.setAttribute("aria-label", a.name + ", " + a.latin + ". Open specimen details.");
+    btn.dataset.idx = String(idx);
+    btn.innerHTML =
+      '<div class="card-head"><span class="no">'+String(idx+1).padStart(2,"0")+'</span>'+
+        '<span class="tag">'+a.group+'</span></div>'+
+      '<div class="figure">'+features(a, idx)+'</div>'+
+      '<div class="card-foot">'+
+        '<h2>'+a.name+'</h2>'+
+        '<p class="latin">'+a.latin+'</p>'+
+        '<p class="klass">Class '+a.klass+'</p>'+
+      '</div>';
+    btn.addEventListener("click", function(){ openDetail(idx); });
+    card.appendChild(btn);
+    return card;
+  }
+
+  CREATURES.forEach(function(a, i){ grid.insertBefore(makeCard(a, i), empty); });
+
+  function matches(a){
+    if(state.filter !== "all" && a.group !== state.filter) return false;
+    if(!state.query) return true;
+    var q = state.query.toLowerCase();
+    return (a.name+" "+a.latin+" "+a.klass+" "+a.group+" "+a.letter).toLowerCase().indexOf(q) !== -1;
+  }
+
+  function apply(){
+    var visible = 0;
+    Array.prototype.forEach.call(grid.querySelectorAll(".card"), function(card){
+      var show = matches(CREATURES[Number(card.querySelector(".card-btn").dataset.idx)]);
+      card.hidden = !show;
+      if(show) visible++;
+    });
+    empty.classList.toggle("show", visible === 0);
+    countEl.textContent = visible + (visible === 1 ? " specimen" : " specimens");
+  }
+
+  chips.forEach(function(chip){
+    chip.addEventListener("click", function(){
+      state.filter = chip.dataset.filter;
+      chips.forEach(function(c){ c.setAttribute("aria-pressed", String(c === chip)); });
+      apply();
+    });
+  });
+
+  searchEl.addEventListener("input", function(){
+    state.query = searchEl.value.trim();
+    apply();
+  });
+
+  // Detail dialog
+  var dlg = document.getElementById("detail");
+  var sheet = document.getElementById("sheet");
+  var dName = document.getElementById("d-name");
+  var dLatin = document.getElementById("d-latin");
+  var dEyebrow = document.getElementById("d-eyebrow");
+  var dNo = document.getElementById("d-no");
+  var dArt = document.getElementById("d-art");
+  var dHabitat = document.getElementById("d-habitat");
+  var dDiet = document.getElementById("d-diet");
+  var dVoice = document.getElementById("d-voice");
+  var dClass = document.getElementById("d-class");
+  var dNote = document.getElementById("d-note");
+  var dPos = document.getElementById("d-pos");
+  var prevBtn = document.getElementById("prev");
+  var nextBtn = document.getElementById("next");
+  var closeBtn = document.getElementById("close");
+  var current = 0;
+  var dialogList = [];
+
+  function renderDetail(i){
+    var a = CREATURES[i];
+    current = i;
+    sheet.style.setProperty("--tagc", a.tint);
+    sheet.style.setProperty("--tint", a.tint);
+    dNo.textContent = String(i+1).padStart(2,"0");
+    dEyebrow.textContent = a.group + " · Class " + a.klass;
+    dName.textContent = a.name;
+    dLatin.textContent = a.latin;
+    dArt.innerHTML = features(a, i);
+    dHabitat.textContent = a.habitat;
+    dDiet.textContent = a.diet;
+    dVoice.textContent = a.voice;
+    dClass.textContent = a.klass;
+    dNote.textContent = a.note;
+    var posInList = dialogList.indexOf(i);
+    var total = dialogList.length;
+    dPos.textContent = (posInList >= 0 ? String(posInList+1).padStart(2,"0") : "01") + " / " + String(total).padStart(2,"0");
+    prevBtn.disabled = total < 2;
+    nextBtn.disabled = total < 2;
+  }
+
+  function openDetail(i){
+    dialogList = CREATURES.map(function(a, idx){ return matches(a) ? idx : -1; }).filter(function(n){ return n >= 0; });
+    if(dialogList.indexOf(i) === -1) dialogList = CREATURES.map(function(_, idx){ return idx; });
+    renderDetail(i);
+    if(typeof dlg.showModal === "function"){
+      dlg.showModal();
+    } else {
+      dlg.setAttribute("open","");
+    }
+    closeBtn.focus();
+  }
+
+  function step(dir){
+    if(dialogList.length < 2) return;
+    var at = dialogList.indexOf(current);
+    at = (at + dir + dialogList.length) % dialogList.length;
+    renderDetail(dialogList[at]);
+  }
+
+  prevBtn.addEventListener("click", function(){ step(-1); });
+  nextBtn.addEventListener("click", function(){ step(1); });
+  closeBtn.addEventListener("click", function(){ dlg.close(); });
+  dlg.addEventListener("click", function(e){ if(e.target === dlg) dlg.close(); });
+  dlg.addEventListener("keydown", function(e){
+    if(e.key === "ArrowLeft"){ e.preventDefault(); step(-1); }
+    if(e.key === "ArrowRight"){ e.preventDefault(); step(1); }
+  });
+
+  apply();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ambre Noir No. 07 — Maison Orré</title>
+<style>
+  :root{
+    --noir:#12070a;
+    --burgundy:#2a0f16;
+    --gold:#c6a15b;
+    --gold-soft:#e3c894;
+    --gold-dim:rgba(198,161,91,.42);
+    --ivory:#f3e8d6;
+    --ivory-dim:rgba(243,232,214,.62);
+    --ivory-faint:rgba(243,232,214,.38);
+    --serif:"Didot","Bodoni 72","Bodoni MT","Playfair Display",Georgia,serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;padding:0;background:var(--noir);color:var(--ivory);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:rgba(198,161,91,.35);color:#fff}
+
+  /* ---------- atmosphere ---------- */
+  .atmosphere{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(ellipse 52% 56% at 74% 70%, rgba(198,137,60,.22), transparent 62%),
+      radial-gradient(ellipse 34% 36% at 88% 86%, rgba(255,174,86,.17), transparent 65%),
+      radial-gradient(ellipse 55% 60% at 4% 4%, rgba(92,32,44,.38), transparent 60%),
+      linear-gradient(158deg,#1c0b10 0%,#14080b 46%,#0b0406 100%);
+  }
+  .atmosphere::before{
+    content:"";position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(90deg, rgba(243,232,214,.014) 0 1px, transparent 1px 3px);
+    opacity:.7;
+  }
+  .atmosphere::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 44%, transparent 30%, rgba(4,1,2,.55) 100%);
+  }
+
+  .page{position:relative;z-index:1}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    max-width:1460px;margin:0 auto;
+    padding:20px clamp(18px,4.4vw,62px);
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    border-bottom:1px solid rgba(198,161,91,.16);
+  }
+  .house{display:flex;align-items:center;gap:13px;min-width:0}
+  .monogram{
+    flex:0 0 auto;width:36px;height:36px;border:1px solid rgba(198,161,91,.55);
+    border-radius:50%;position:relative;display:grid;place-items:center;
+    font-family:var(--serif);font-size:17px;font-style:italic;color:var(--gold-soft);
+    letter-spacing:0;
+  }
+  .monogram::after{
+    content:"";position:absolute;width:3px;height:3px;border-radius:50%;
+    background:var(--gold);bottom:5px;left:50%;transform:translateX(-50%);
+  }
+  .house-name{
+    font-family:var(--serif);font-size:15px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ivory);line-height:1.1;white-space:nowrap;
+  }
+  .house-sub{
+    font-family:var(--mono);font-size:6.5px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--ivory-faint);margin-top:4px;white-space:nowrap;
+  }
+  .top-center{
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.32em;text-transform:uppercase;
+    color:rgba(243,232,214,.44);white-space:nowrap;
+  }
+  .top-right{
+    display:flex;align-items:center;gap:12px;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ivory-faint);white-space:nowrap;
+  }
+  .top-right .num{color:var(--gold-soft)}
+  .top-right .rule{width:26px;height:1px;background:rgba(198,161,91,.45)}
+
+  /* ---------- hero ---------- */
+  .hero{
+    max-width:1460px;margin:0 auto;
+    padding:clamp(26px,4vw,56px) clamp(18px,4.4vw,62px) clamp(38px,5vw,66px);
+    display:grid;grid-template-columns:1.04fr .96fr;
+    gap:clamp(20px,3vw,42px);align-items:center;
+    min-height:calc(100vh - 79px);
+    position:relative;
+  }
+  .hero-copy{position:relative;z-index:4;max-width:680px;padding-top:8px;animation:riseIn 1.2s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+  .eyebrow{
+    display:flex;align-items:center;gap:12px;
+    font-family:var(--mono);font-size:8px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--gold-soft);margin:0 0 22px;
+  }
+  .eyebrow::before{content:"";width:32px;height:1px;background:rgba(198,161,91,.65);display:block}
+
+  h1{
+    margin:0 0 24px;font-family:var(--serif);font-weight:400;
+    font-size:clamp(47px,6.35vw,99px);line-height:.93;letter-spacing:-.015em;
+    color:var(--ivory);
+  }
+  h1 em{
+    font-style:italic;color:var(--gold-soft);
+    letter-spacing:-.005em;
+  }
+  .notes{
+    margin:0 0 18px;font-family:var(--mono);font-size:9px;
+    letter-spacing:.26em;text-transform:uppercase;color:rgba(243,232,214,.7);
+  }
+  .notes i{font-style:normal;color:var(--gold);padding:0 5px}
+  .intro{
+    margin:0 0 30px;max-width:41ch;
+    font-family:var(--serif);font-size:clamp(14px,1.15vw,17px);
+    line-height:1.6;color:rgba(243,232,214,.6);
+    font-style:italic;
+  }
+  .buy{
+    display:flex;align-items:center;gap:clamp(22px,3.4vw,46px);
+    flex-wrap:wrap;padding-top:2px;
+  }
+  .price{display:flex;flex-direction:column;gap:3px}
+  .price span{
+    font-family:var(--mono);font-size:7px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--ivory-faint);
+  }
+  .price strong{
+    font-family:var(--serif);font-size:27px;font-weight:400;color:var(--ivory);
+    letter-spacing:.01em;line-height:1;
+  }
+  .cta{
+    appearance:none;background:none;border:0;border-bottom:1px solid rgba(198,161,91,.55);
+    padding:9px 0 10px;cursor:pointer;
+    font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--gold-soft);
+    display:inline-flex;align-items:center;gap:16px;
+    transition:color .25s,border-color .25s,gap .25s;
+  }
+  .cta .arrow{font-family:var(--sans);font-size:13px;transition:transform .25s}
+  .cta:hover{color:var(--ivory);border-color:var(--ivory)}
+  .cta:hover .arrow{transform:translateX(4px)}
+  .cta:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
+  .batch{
+    margin:26px 0 0;font-family:var(--mono);font-size:6.8px;letter-spacing:.18em;
+    text-transform:uppercase;color:rgba(243,232,214,.3);
+  }
+
+  /* ---------- bottle stage ---------- */
+  .hero-bottle{
+    position:relative;z-index:2;min-height:600px;
+    display:flex;align-items:center;justify-content:center;
+    animation:riseIn 1.4s .12s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .niche{
+    position:absolute;left:50%;bottom:8%;transform:translateX(-50%);
+    width:min(390px,84%);height:min(540px,88%);
+    border:1px solid rgba(198,161,91,.14);
+    border-bottom:0;border-radius:220px 220px 0 0;
+    background:
+      radial-gradient(ellipse at 50% 88%, rgba(198,137,60,.12), transparent 62%),
+      linear-gradient(180deg, rgba(255,255,255,.012), rgba(0,0,0,0));
+    box-shadow:inset 0 0 80px rgba(0,0,0,.25);
+  }
+  .niche::after{
+    content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:116%;height:1px;background:linear-gradient(90deg,transparent,rgba(198,161,91,.3),transparent);
+  }
+  .lamp{
+    position:absolute;left:58%;bottom:6%;transform:translateX(-50%);
+    width:min(480px,96%);height:min(480px,82%);
+    background:
+      radial-gradient(ellipse at 50% 68%, rgba(255,173,86,.3), transparent 58%),
+      radial-gradient(ellipse at 50% 78%, rgba(198,120,50,.16), transparent 70%);
+    filter:blur(2px);pointer-events:none;
+  }
+  .dust{
+    position:absolute;inset:0;pointer-events:none;overflow:hidden;
+  }
+  .dust i{
+    position:absolute;width:2px;height:2px;border-radius:50%;
+    background:rgba(239,205,150,.5);filter:blur(.3px);
+    animation:drift 9s ease-in-out infinite;
+  }
+  .dust i:nth-child(1){left:31%;top:36%;animation-delay:-1s}
+  .dust i:nth-child(2){left:66%;top:28%;width:1px;height:1px;animation-delay:-4s}
+  .dust i:nth-child(3){left:74%;top:60%;animation-delay:-2.5s}
+  .dust i:nth-child(4){left:26%;top:66%;width:1px;height:1px;animation-delay:-6s}
+  .dust i:nth-child(5){left:57%;top:76%;animation-delay:-7s}
+  @keyframes drift{
+    0%,100%{transform:translate3d(0,0,0);opacity:.18}
+    50%{transform:translate3d(6px,-16px,0);opacity:.55}
+  }
+
+  .stage-inner{
+    position:relative;z-index:3;width:100%;
+    display:flex;flex-direction:column;align-items:center;
+    padding-top:24px;perspective:1000px;
+  }
+  .bottle-holder{
+    position:relative;display:flex;justify-content:center;width:100%;
+    margin-bottom:84px;
+  }
+  .bottle-rig{
+    --rx:0deg;--ry:0deg;
+    position:relative;
+    width:clamp(184px,18vw,246px);
+    aspect-ratio:.6;
+    transform:perspective(950px) rotateX(var(--rx)) rotateY(var(--ry));
+    transform-style:preserve-3d;
+    transition:transform .35s cubic-bezier(.2,.7,.2,1);
+    will-change:transform;
+  }
+
+  /* flacon */
+  .flacon{
+    position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:100%;height:75%;z-index:2;
+    clip-path:polygon(8% 0,92% 0,100% 7%,100% 95%,97% 100%,3% 100%,0 95%,0 7%);
+    background:
+      linear-gradient(90deg,
+        rgba(255,255,255,.26) 0%,
+        rgba(255,255,255,.07) 4%,
+        rgba(255,255,255,.02) 7%,
+        rgba(38,15,10,.42) 16%,
+        rgba(255,184,110,.05) 45%,
+        rgba(38,15,10,.42) 84%,
+        rgba(255,255,255,.05) 92%,
+        rgba(255,255,255,.28) 97%,
+        rgba(255,255,255,.07) 100%),
+      linear-gradient(180deg,rgba(74,33,19,.86) 0%,rgba(45,18,12,.94) 55%,rgba(25,9,7,.98) 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,225,180,.16),
+      inset 8px 0 18px rgba(255,255,255,.05),
+      inset -8px 0 22px rgba(0,0,0,.4),
+      0 34px 60px -20px rgba(0,0,0,.8);
+    overflow:hidden;
+    transition:transform .4s ease;
+  }
+  .liquid{
+    position:absolute;left:0;right:0;bottom:0;height:70%;
+    background:
+      radial-gradient(ellipse at 28% 20%, rgba(255,205,132,.7), transparent 52%),
+      radial-gradient(ellipse at 76% 84%, rgba(255,145,58,.28), transparent 55%),
+      linear-gradient(180deg,#d68d3e 0%,#b96522 34%,#8b3f13 68%,#5a230a 100%);
+  }
+  .liquid::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,rgba(255,228,180,.15),rgba(255,236,200,.8),rgba(255,228,180,.15));
+  }
+  .liquid::after{
+    content:"";position:absolute;top:3px;left:6%;right:6%;height:26px;
+    background:linear-gradient(180deg,rgba(255,216,160,.24),transparent);
+  }
+  .inner-light{
+    position:absolute;left:11%;top:12%;width:34%;height:56%;
+    background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 75%);
+    filter:blur(7px);pointer-events:none;
+  }
+  .glass-edge{
+    position:absolute;top:2%;height:96%;z-index:5;pointer-events:none;
+  }
+  .glass-edge.le{
+    left:2.5%;width:4%;
+    background:linear-gradient(180deg,rgba(255,255,255,.48),rgba(255,255,255,.1) 45%,rgba(255,255,255,.02));
+    filter:blur(.6px);opacity:.7;
+  }
+  .glass-edge.re{
+    right:2.2%;width:5.5%;
+    background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.04) 38%,rgba(255,200,140,.24) 78%,rgba(255,255,255,.3));
+    filter:blur(.7px);opacity:.75;
+  }
+  .glass-base{
+    position:absolute;left:2%;right:2%;bottom:0;height:5px;z-index:5;
+    background:linear-gradient(90deg,rgba(255,255,255,.1),rgba(255,240,210,.5),rgba(255,255,255,.08));
+    filter:blur(.4px);
+  }
+  .glass-shoulder{
+    position:absolute;left:0;right:0;top:0;height:10%;z-index:4;
+    background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,0) 60%);
+    pointer-events:none;
+  }
+
+  .label{
+    position:absolute;z-index:4;left:50%;top:49%;
+    transform:translate(-50%,-50%) rotate(-.8deg);
+    width:63%;padding:13px 8px 11px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:
+      radial-gradient(ellipse at 30% 10%, rgba(255,255,255,.65), transparent 60%),
+      linear-gradient(175deg,#f7eedd,#e5d3b7);
+    color:#2b1410;
+    box-shadow:
+      0 2px 10px rgba(0,0,0,.3),
+      inset 0 0 0 1px rgba(122,88,42,.28);
+    text-align:center;
+  }
+  .label::after{
+    content:"";position:absolute;inset:4px;
+    border:1px solid rgba(139,101,48,.32);pointer-events:none;
+  }
+  .label-house{
+    font-family:var(--mono);font-size:5.4px;letter-spacing:.23em;
+    text-transform:uppercase;color:rgba(43,20,16,.7);
+  }
+  .label-rule{width:24px;height:1px;background:rgba(139,101,48,.65);margin:6px 0}
+  .label-name{
+    font-family:var(--serif);font-size:clamp(12px,1.35vw,17px);
+    line-height:1.02;letter-spacing:.1em;text-transform:uppercase;color:#2b1410;
+  }
+  .label-no{
+    font-family:var(--mono);font-size:5.6px;letter-spacing:.2em;
+    margin-top:7px;color:rgba(43,20,16,.65);
+  }
+
+  .neck{
+    position:absolute;left:50%;top:23.4%;transform:translateX(-50%);
+    width:24%;height:5.4%;z-index:1;
+    background:linear-gradient(90deg,#4a2410,#b87c3c 38%,#e0b06a 52%,#7b4a20 78%,#3c1c0b);
+    box-shadow:inset 0 0 4px rgba(0,0,0,.5);
+  }
+  .atomiser{
+    position:absolute;left:50%;top:18.5%;transform:translateX(-50%);
+    width:42%;height:8%;z-index:3;
+  }
+  .collar{
+    position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:46%;height:52%;
+    background:linear-gradient(90deg,#6a471b,#caa25c 26%,#efd9a5 48%,#a77c3c 72%,#5c3b14);
+    box-shadow:inset 0 1px 0 rgba(255,244,210,.6),0 2px 4px rgba(0,0,0,.45);
+  }
+  .actuator{
+    position:absolute;left:50%;top:8%;transform:translateX(-50%);
+    width:34%;height:42%;
+    background:linear-gradient(90deg,#4d3110,#b78e4a 40%,#e4c78c 55%,#7b5620);
+    border-radius:2px 2px 0 0;
+  }
+  .nozzle{
+    position:absolute;left:50%;top:0;transform:translateX(-50%);
+    width:13%;height:14%;background:#20120a;
+    box-shadow:0 0 0 1px rgba(220,190,130,.5);
+  }
+
+  .cap{
+    position:absolute;left:50%;top:7.6%;transform:translateX(-50%);
+    width:48%;height:16.2%;z-index:4;
+    background:
+      repeating-linear-gradient(90deg, rgba(60,38,10,.2) 0 1px, transparent 1px 5px),
+      linear-gradient(90deg,#5b3c16 0%,#9a7133 13%,#e4c68a 31%,#f4e2b3 43%,#c39a55 64%,#8a652c 83%,#d3b071 100%);
+    border-radius:3px 3px 1px 1px;
+    box-shadow:
+      inset 0 2px 1px rgba(255,246,214,.55),
+      inset 0 -9px 16px rgba(34,17,4,.55),
+      0 10px 22px rgba(0,0,0,.5);
+    cursor:pointer;
+    transition:transform .75s cubic-bezier(.2,.85,.2,1),box-shadow .4s;
+    transform-origin:50% 100%;
+  }
+  .cap::before{
+    content:"";position:absolute;left:0;right:0;top:14%;height:1px;
+    background:rgba(72,48,16,.6);box-shadow:0 3px 0 rgba(255,240,200,.22);
+  }
+  .cap::after{
+    content:"";position:absolute;left:0;right:0;bottom:8%;height:1px;
+    background:rgba(72,48,16,.5);
+  }
+  .cap-top{
+    position:absolute;left:0;right:0;top:0;height:14%;
+    background:linear-gradient(90deg,rgba(255,246,214,.1),rgba(255,248,224,.5),rgba(255,246,214,.1));
+    border-radius:3px 3px 0 0;
+  }
+  .cap-grooves{
+    position:absolute;inset:17% 3% 9%;
+    background:repeating-linear-gradient(90deg, rgba(70,45,12,.24) 0 1px, transparent 1px 4px);
+    opacity:.45;
+  }
+  .hero-bottle.cap-lifted .cap{
+    transform:translateX(-50%) translateY(-62px) rotate(-5deg);
+    box-shadow:inset 0 2px 1px rgba(255,246,214,.55),0 22px 34px rgba(0,0,0,.55);
+  }
+
+  .mist{
+    position:absolute;left:50%;top:17.5%;width:70%;height:16%;
+    transform:translate(-50%,-50%) scale(.3);
+    border-radius:50%;
+    background:radial-gradient(ellipse at center,rgba(255,238,204,.42),rgba(240,196,130,.12) 45%,transparent 70%);
+    filter:blur(7px);opacity:0;pointer-events:none;z-index:6;
+  }
+  .hero-bottle.cap-lifted .mist{
+    animation:mistPuff 1.8s ease-out .18s both;
+  }
+  @keyframes mistPuff{
+    0%{opacity:0;transform:translate(-50%,-40%) scale(.35)}
+    22%{opacity:.65}
+    100%{opacity:0;transform:translate(-50%,-120%) scale(1.6)}
+  }
+
+  .bottle-shadow{
+    position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);
+    width:76%;height:16px;border-radius:50%;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.7),rgba(0,0,0,0) 70%);
+    filter:blur(4px);
+  }
+  .reflection{
+    position:absolute;left:50%;bottom:-84px;transform:translateX(-50%);
+    width:80%;height:84px;pointer-events:none;
+    background:
+      linear-gradient(180deg,rgba(206,134,58,.4),rgba(126,61,22,.18) 44%,rgba(60,24,10,0) 92%);
+    filter:blur(9px);opacity:.85;
+    -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 88%);
+    mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 88%);
+  }
+  .reflection::after{
+    content:"";position:absolute;left:18%;right:18%;top:0;height:60%;
+    background:linear-gradient(180deg,rgba(255,215,160,.3),transparent);
+    filter:blur(5px);
+  }
+
+  .cap-btn{
+    position:relative;z-index:5;appearance:none;
+    display:inline-flex;align-items:center;gap:11px;
+    background:none;border:0;border-bottom:1px solid rgba(243,232,214,.32);
+    padding:9px 2px 10px;cursor:pointer;
+    font-family:var(--mono);font-size:8.2px;letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(243,232,214,.8);
+    transition:color .25s,border-color .25s;
+  }
+  .cap-btn:hover{color:var(--gold-soft);border-color:rgba(198,161,91,.6)}
+  .cap-btn:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
+  .cap-btn-dot{
+    width:5px;height:5px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 0 3px rgba(198,161,91,.12);
+    transition:transform .3s,background .3s;
+  }
+  .hero-bottle.cap-lifted .cap-btn-dot{transform:scale(.6);background:var(--gold-soft)}
+
+  /* ---------- composition ---------- */
+  .composition{
+    position:relative;z-index:3;
+    max-width:1460px;margin:0 auto;
+    padding:clamp(48px,6.4vw,92px) clamp(18px,4.4vw,62px) clamp(40px,5vw,70px);
+    border-top:1px solid rgba(198,161,91,.18);
+    background:linear-gradient(180deg,rgba(10,4,6,.06),rgba(8,3,4,.4));
+  }
+  .comp-head{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;
+    padding-bottom:24px;border-bottom:1px solid rgba(198,161,91,.18);
+  }
+  .comp-head .eyebrow{margin-bottom:14px}
+  .comp-head h2{
+    margin:0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(36px,4.8vw,62px);line-height:1;color:var(--ivory);
+  }
+  .comp-head h2 em{font-style:italic;color:var(--gold-soft)}
+  .comp-meta{
+    text-align:right;font-family:var(--mono);font-size:7px;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--ivory-faint);
+    line-height:2;white-space:nowrap;
+  }
+  .comp-meta b{font-weight:400;color:var(--ivory-dim)}
+
+  .notes-grid{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:clamp(20px,3.2vw,48px);
+    padding:clamp(26px,3.6vw,48px) 0 clamp(30px,4vw,52px);
+  }
+  .note-col{position:relative;padding-top:2px;min-width:0}
+  .note-col + .note-col{padding-left:clamp(20px,3.2vw,48px);border-left:1px solid rgba(198,161,91,.14)}
+  .note-col + .note-col::before{
+    content:"";position:absolute;left:-1px;top:0;width:1px;height:38px;
+    background:linear-gradient(180deg,var(--gold),transparent);
+  }
+  .note-top{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--gold-soft);
+  }
+  .note-num{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--gold);line-height:1}
+  .note-col h3{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(22px,2.2vw,30px);margin:17px 0 13px;line-height:1.12;color:var(--ivory);
+  }
+  .note-list{
+    list-style:none;margin:0 0 15px;padding:0;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:rgba(243,232,214,.72);line-height:2.05;
+  }
+  .note-list li{display:flex;align-items:baseline;gap:7px}
+  .note-list li::before{
+    content:"";width:3px;height:3px;border-radius:50%;
+    background:rgba(198,161,91,.6);flex:0 0 auto;transform:translateY(-1px);
+  }
+  .note-col p{
+    margin:0;font-family:var(--serif);font-style:italic;font-size:13.5px;
+    line-height:1.55;color:rgba(243,232,214,.48);max-width:31ch;
+  }
+
+  .perfumer{
+    display:grid;grid-template-columns:minmax(120px,.36fr) minmax(0,1.15fr) minmax(0,.65fr);
+    gap:clamp(22px,4vw,58px);
+    border-top:1px solid rgba(198,161,91,.18);
+    padding-top:clamp(26px,3.4vw,40px);
+    align-items:start;
+  }
+  .perf-label{
+    font-family:var(--mono);font-size:7px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ivory-faint);line-height:2;
+  }
+  .perf-label .num{display:block;font-family:var(--serif);font-style:italic;font-size:28px;color:var(--gold);margin-bottom:8px;line-height:1}
+  blockquote{
+    margin:0;font-family:var(--serif);font-weight:400;
+    font-size:clamp(23px,2.8vw,34px);line-height:1.28;
+    color:rgba(243,232,214,.92);letter-spacing:-.005em;
+  }
+  blockquote em{color:var(--gold-soft)}
+  .perf-side{padding-top:3px}
+  .perf-side p{
+    margin:0 0 18px;font-size:11.5px;line-height:1.68;
+    color:rgba(243,232,214,.48);max-width:34ch;
+  }
+  .signature{
+    font-family:var(--serif);font-style:italic;font-size:17px;color:var(--gold-soft);
+    margin-bottom:4px;
+  }
+  .signature-role{
+    font-family:var(--mono);font-size:6.8px;letter-spacing:.18em;
+    text-transform:uppercase;color:rgba(243,232,214,.34);
+  }
+
+  footer{
+    position:relative;z-index:3;
+    max-width:1460px;margin:0 auto;
+    padding:22px clamp(18px,4.4vw,62px) 30px;
+    border-top:1px solid rgba(198,161,91,.16);
+    display:flex;justify-content:space-between;gap:14px 28px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:6.8px;letter-spacing:.18em;
+    text-transform:uppercase;color:rgba(243,232,214,.32);
+  }
+  footer .foot-mark{color:rgba(198,161,91,.7)}
+
+  @media (max-width:1120px){
+    .hero{grid-template-columns:1.03fr .97fr;min-height:auto}
+    .hero-bottle{min-height:560px}
+    .intro{font-size:14px}
+  }
+  @media (max-width:920px){
+    .hero{grid-template-columns:1fr;gap:10px;padding-top:34px}
+    .hero-copy{max-width:none}
+    .intro{max-width:52ch}
+    .hero-bottle{min-height:520px;margin-top:8px}
+    .niche{height:86%}
+    .lamp{left:50%;width:96%;height:380px}
+    .perfumer{grid-template-columns:1fr 1.4fr;gap:24px 32px}
+    .perf-label{grid-column:1 / -1}
+    .perf-side{grid-column:2;padding-top:0}
+    .bottle-rig{width:clamp(182px,46vw,220px)}
+  }
+  @media (max-width:760px){
+    .top-center{display:none}
+    .topbar{padding:15px 18px}
+    .comp-head{flex-direction:column;align-items:flex-start;gap:12px}
+    .comp-meta{text-align:left}
+    .notes-grid{grid-template-columns:1fr;gap:0;padding-bottom:20px}
+    .note-col{padding:20px 0;border-bottom:1px solid rgba(198,161,91,.12)}
+    .note-col + .note-col{padding-left:0;border-left:0}
+    .note-col + .note-col::before{display:none}
+    .note-col:last-child{border-bottom:0}
+    .perfumer{grid-template-columns:1fr;gap:22px}
+    .perf-side{grid-column:auto}
+    h1{font-size:clamp(46px,10.8vw,72px)}
+    .hero{padding-bottom:20px}
+    .hero-bottle{min-height:500px}
+    .bottle-holder{margin-bottom:80px}
+    .composition{padding-top:48px}
+    footer{gap:10px 20px}
+  }
+  @media (max-width:430px){
+    .house-sub{display:none}
+    .top-right{gap:8px}
+    .top-right .rule{width:16px}
+    h1{font-size:43px}
+    .notes{letter-spacing:.2em;font-size:8px}
+    .buy{gap:20px;justify-content:space-between;width:100%}
+    .cta{font-size:7.4px;gap:10px}
+    .bottle-rig{width:min(190px,54vw)}
+    .hero-bottle{min-height:470px}
+    .bottle-holder{margin-bottom:72px}
+    .niche{width:88%}
+    blockquote{font-size:22px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+<div class="atmosphere" aria-hidden="true"></div>
+
+<div class="page">
+  <header class="topbar">
+    <div class="house">
+      <span class="monogram" aria-hidden="true">O</span>
+      <div>
+        <div class="house-name">Maison Orr&eacute;</div>
+        <div class="house-sub">Paris &middot; Grasse &middot; Est. 1927</div>
+      </div>
+    </div>
+    <div class="top-center">Extrait de parfum</div>
+    <div class="top-right">
+      <span class="num">No. 07</span>
+      <span class="rule" aria-hidden="true"></span>
+      <span>MMXXVI</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-label="Ambre Noir No. 07">
+      <div class="hero-copy">
+        <p class="eyebrow">Ambre Noir &mdash; N&ordm; 07</p>
+        <h1>The dark<br>has a <em>warmth.</em></h1>
+        <p class="notes">Bergamot <i>&middot;</i> Iris <i>&middot;</i> Amber</p>
+        <p class="intro">An extrait composed at the edge of dusk: cold iris over resin, a trace of smoke, and the slow heat of amber on skin.</p>
+        <div class="buy">
+          <div class="price"><span>50 ml &middot; extrait</span><strong>&euro;240</strong></div>
+          <button class="cta" id="discover" type="button">
+            <span>Discover the composition</span><span class="arrow" aria-hidden="true">&rarr;</span>
+          </button>
+        </div>
+        <p class="batch">Extrait de parfum &middot; 28% concentration &middot; composed in Grasse</p>
+      </div>
+
+      <div class="hero-bottle" id="bottleStage">
+        <div class="niche" aria-hidden="true"></div>
+        <div class="lamp" aria-hidden="true"></div>
+        <div class="dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+        <div class="stage-inner">
+          <div class="bottle-holder">
+            <div class="bottle-rig" id="bottleRig">
+              <div class="flacon">
+                <div class="liquid" aria-hidden="true"></div>
+                <div class="inner-light" aria-hidden="true"></div>
+                <div class="label">
+                  <span class="label-house">Maison Orr&eacute;</span>
+                  <span class="label-rule" aria-hidden="true"></span>
+                  <span class="label-name">Ambre<br>Noir</span>
+                  <span class="label-no">N&ordm; 07</span>
+                </div>
+                <span class="glass-shoulder" aria-hidden="true"></span>
+                <span class="glass-edge le" aria-hidden="true"></span>
+                <span class="glass-edge re" aria-hidden="true"></span>
+                <span class="glass-base" aria-hidden="true"></span>
+              </div>
+
+              <div class="neck" aria-hidden="true"></div>
+
+              <div class="atomiser" aria-hidden="true">
+                <span class="collar"></span>
+                <span class="actuator"></span>
+                <span class="nozzle"></span>
+              </div>
+
+              <div class="cap" id="cap" title="Lift the cap" aria-hidden="true">
+                <span class="cap-top"></span>
+                <span class="cap-grooves"></span>
+              </div>
+
+              <span class="mist" aria-hidden="true"></span>
+            </div>
+            <div class="bottle-shadow" aria-hidden="true"></div>
+            <div class="reflection" aria-hidden="true"></div>
+          </div>
+
+          <button class="cap-btn" id="capBtn" type="button" aria-pressed="false" aria-label="Lift the cap to reveal the atomiser">
+            <span class="cap-btn-dot" aria-hidden="true"></span>
+            <span id="capBtnText">Lift the cap</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="composition" id="composition" aria-labelledby="compositionTitle">
+      <div class="comp-head">
+        <div>
+          <p class="eyebrow">Olfactive architecture</p>
+          <h2 id="compositionTitle">The <em>composition</em></h2>
+        </div>
+        <div class="comp-meta">
+          <b>Top &middot; Heart &middot; Base</b><br>
+          Extrait &mdash; 28%<br>
+          Bottled in Grasse
+        </div>
+      </div>
+
+      <div class="notes-grid">
+        <article class="note-col">
+          <div class="note-top"><span>Top</span><span class="note-num">I</span></div>
+          <h3>The first light</h3>
+          <ul class="note-list">
+            <li>Bergamot</li>
+            <li>Pink pepper</li>
+            <li>Bitter orange</li>
+          </ul>
+          <p>A cold spark at the opening: citrus peel torn over black pepper, gone almost before it arrives.</p>
+        </article>
+
+        <article class="note-col">
+          <div class="note-top"><span>Heart</span><span class="note-num">II</span></div>
+          <h3>Powder &amp; shadow</h3>
+          <ul class="note-list">
+            <li>Iris absolute</li>
+            <li>Orris root</li>
+            <li>Jasmine</li>
+          </ul>
+          <p>The room turns inward. Iris gives the scent its pale, suede softness; jasmine keeps it alive.</p>
+        </article>
+
+        <article class="note-col">
+          <div class="note-top"><span>Base</span><span class="note-num">III</span></div>
+          <h3>The long exhale</h3>
+          <ul class="note-list">
+            <li>Amber</li>
+            <li>Labdanum</li>
+            <li>Vetiver</li>
+            <li>Tonka</li>
+          </ul>
+          <p>Resin, smoke and warm skin. The drydown stays close, like a coat carried in from the cold.</p>
+        </article>
+      </div>
+
+      <div class="perfumer">
+        <div class="perf-label"><span class="num">IV</span>Notes from<br>the atelier</div>
+        <blockquote>&ldquo;I wanted a fragrance that behaves like a room at dusk &mdash; the last light on the wall, the smell of resin <em>warming in a closed hand.</em>&rdquo;</blockquote>
+        <div class="perf-side">
+          <p>Ambre Noir was built around a single accord of labdanum and orris, left to macerate for seven weeks before the amber was added. Nothing in it is bright for long.</p>
+          <div class="signature">&Eacute;lodie Vannier</div>
+          <div class="signature-role">Perfumer &middot; Grasse &middot; 2026</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span class="foot-mark">Maison Orr&eacute;</span>
+    <span>14 rue de la Paix, Paris</span>
+    <span>Ambre Noir N&ordm; 07 &middot; Extrait de parfum</span>
+    <span>&copy; MMXXVI</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var stage = document.getElementById('bottleStage');
+  var rig = document.getElementById('bottleRig');
+  var cap = document.getElementById('cap');
+  var capBtn = document.getElementById('capBtn');
+  var capBtnText = document.getElementById('capBtnText');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var lifted = false;
+
+  function toggleCap() {
+    lifted = !lifted;
+    stage.classList.toggle('cap-lifted', lifted);
+    capBtn.setAttribute('aria-pressed', lifted ? 'true' : 'false');
+    capBtn.setAttribute('aria-label', lifted ? 'Replace the cap on Ambre Noir No. 07' : 'Lift the cap to reveal the atomiser');
+    capBtnText.textContent = lifted ? 'Replace the cap' : 'Lift the cap';
+  }
+
+  capBtn.addEventListener('click', toggleCap);
+
+  if (cap) {
+    cap.addEventListener('click', toggleCap);
+  }
+
+  /* pointer tilt */
+  if (!reduced && window.matchMedia('(pointer:fine)').matches) {
+    var frame = null;
+    var tx = 0;
+    var ty = 0;
+
+    var update = function () {
+      frame = null;
+      rig.style.setProperty('--ry', (tx * 7).toFixed(2) + 'deg');
+      rig.style.setProperty('--rx', (-ty * 5).toFixed(2) + 'deg');
+    };
+
+    stage.addEventListener('pointermove', function (e) {
+      var rect = stage.getBoundingClientRect();
+      tx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      ty = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      tx = Math.max(-1, Math.min(1, tx));
+      ty = Math.max(-1, Math.min(1, ty));
+      if (!frame) { frame = requestAnimationFrame(update); }
+    });
+
+    stage.addEventListener('pointerleave', function () {
+      tx = 0;
+      ty = 0;
+      if (!frame) { frame = requestAnimationFrame(update); }
+    });
+  }
+
+  var discover = document.getElementById('discover');
+  discover.addEventListener('click', function () {
+    var target = document.getElementById('composition');
+    if (!target) { return; }
+    try {
+      target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    } catch (err) {
+      target.scrollIntoView();
+    }
+  });
+})();
+</script>
+</body>
+</html>

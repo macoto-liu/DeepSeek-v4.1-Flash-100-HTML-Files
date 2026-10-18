@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOODLE//9 — Slurp after midnight.</title>
+<meta name="description" content="NOODLE//9. Late-night ramen, four bowls, open twenty-four hours.">
+<style>
+  :root{
+    --room:#07070b;
+    --room-2:#0b0b12;
+    --panel:#0e0e16;
+    --pink:#ff2e88;
+    --cyan:#33e6f5;
+    --yolk:#ffcf4a;
+    --cream:#f4ead9;
+    --dim:#958ea0;
+    --line:rgba(244,234,217,.14);
+    --mono:"SFMono-Regular", ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+    --sans:"Helvetica Neue", "Arial Narrow", Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--room); color:var(--cream);
+    font-family:var(--sans); -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 520px at 72% 24%, rgba(255,46,136,.08), transparent 70%),
+      radial-gradient(700px 500px at 12% 78%, rgba(51,230,245,.05), transparent 70%);
+    overflow-x:hidden;
+  }
+  body.no-scroll{overflow:hidden}
+  ::selection{background:var(--pink); color:#0a0a0e}
+  a{color:inherit}
+  button{font:inherit; color:inherit}
+  .mono{font-family:var(--mono); letter-spacing:.08em; text-transform:uppercase; font-size:10px}
+  .skip{position:absolute; left:-9999px; top:0; background:var(--pink); color:#000; padding:10px 14px; z-index:100}
+  .skip:focus{left:0}
+
+  .scanlines{position:fixed; inset:0; pointer-events:none; z-index:90;
+    background:repeating-linear-gradient(to bottom, rgba(255,255,255,.035) 0, rgba(255,255,255,.035) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:screen; opacity:.5}
+  .vignette{position:fixed; inset:0; pointer-events:none; z-index:89;
+    background:radial-gradient(120% 90% at 50% 40%, transparent 45%, rgba(0,0,0,.55) 100%)}
+
+  /* header */
+  .shop-head{border-bottom:1px solid var(--line); position:relative; z-index:10}
+  .head-inner{display:flex; align-items:center; justify-content:space-between; gap:18px; padding:0 clamp(16px,3vw,40px); min-height:70px; max-width:1540px; margin:0 auto}
+  .logo{display:flex; align-items:baseline; gap:2px; font-size:clamp(20px,2.4vw,28px); font-weight:800; letter-spacing:-.04em; line-height:1; text-decoration:none; text-transform:uppercase}
+  .logo .slash{color:var(--pink); text-shadow:0 0 12px rgba(255,46,136,.9)}
+  .logo .nine{color:var(--cyan); text-shadow:0 0 10px rgba(51,230,245,.55); font-family:var(--mono); font-size:.75em; margin-left:3px}
+  .head-center{font-family:var(--mono); font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); text-align:center; line-height:1.7}
+  .head-center b{display:block; color:var(--cream); font-weight:400; letter-spacing:.12em}
+  .head-right{display:flex; align-items:center; gap:clamp(10px,2vw,24px)}
+  .open-badge{border:1px solid var(--cyan); color:var(--cyan); padding:7px 10px 6px; font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; display:flex; align-items:center; gap:7px; box-shadow:0 0 14px rgba(51,230,245,.22), inset 0 0 12px rgba(51,230,245,.08); text-shadow:0 0 7px rgba(51,230,245,.8); white-space:nowrap}
+  .open-badge .dot{width:5px; height:5px; border-radius:50%; background:var(--cyan); box-shadow:0 0 7px var(--cyan); animation:pulse 2.2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .head-ticket{font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); white-space:nowrap}
+  .head-ticket b{color:var(--yolk); font-weight:400}
+
+  /* hero */
+  .hero{max-width:1540px; margin:0 auto; padding:clamp(22px,3.6vw,50px) clamp(16px,3vw,40px) 0;
+    display:grid; grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);
+    grid-template-areas:"intro stage" "order stage"; column-gap:clamp(24px,4vw,70px); row-gap:clamp(20px,3vw,38px)}
+  .intro{grid-area:intro; min-width:0; padding-top:6px; position:relative; z-index:2}
+  .eyebrow{display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); margin-bottom:clamp(16px,2.4vw,26px)}
+  .eyebrow .bar{display:inline-block; width:26px; height:1px; background:var(--pink)}
+  .eyebrow .hot{color:var(--pink)}
+  h1{margin:0; font-weight:800; font-size:clamp(64px,8.6vw,142px); line-height:.84; letter-spacing:-.045em; text-transform:none; color:transparent; -webkit-text-stroke:2px rgba(244,234,217,.9); text-shadow:0 0 26px rgba(244,234,217,.08)}
+  h1 .l{display:block}
+  h1 .midnight{-webkit-text-stroke-color:var(--pink); filter:drop-shadow(0 0 18px rgba(255,46,136,.28)); white-space:nowrap}
+  h1 .dot{color:var(--pink); -webkit-text-stroke:0; text-shadow:0 0 18px rgba(255,46,136,.8)}
+  .note{margin:clamp(20px,2.8vw,28px) 0 0; padding-left:14px; border-left:2px solid var(--pink); max-width:42ch; font-size:clamp(13px,1.05vw,14.5px); line-height:1.65; color:#bdb4c2}
+  .note b{color:var(--cream); font-weight:500}
+  .note .small{display:block; margin-top:9px; font-family:var(--mono); font-size:9px; letter-spacing:.09em; text-transform:uppercase; color:var(--dim)}
+
+  /* stage */
+  .stage-wrap{grid-area:stage; min-width:0; align-self:stretch}
+  .bowl-stage{position:relative; height:100%; min-height:clamp(500px,68vh,760px); border:1px solid rgba(244,234,217,.16); overflow:hidden; background:
+      radial-gradient(58% 46% at 50% 44%, rgba(255,60,140,.13), transparent 70%),
+      radial-gradient(40% 32% at 82% 22%, rgba(51,230,245,.09), transparent 70%),
+      linear-gradient(180deg, #0b0b13 0%, #08080e 55%, #050509 100%);
+  }
+  .bowl-stage::before{content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+    background:
+      linear-gradient(to right, transparent calc(50% - 1px), rgba(244,234,217,.045) 50%, transparent calc(50% + 1px)) 0 0 / 120px 100%,
+      linear-gradient(to bottom, transparent calc(50% - 1px), rgba(244,234,217,.035) 50%, transparent calc(50% + 1px)) 0 0 / 100% 120px;
+    mask-image:radial-gradient(circle at 50% 42%, #000 20%, transparent 80%);
+  }
+  .stage-frame{position:absolute; inset:14px; border:1px solid rgba(244,234,217,.06); pointer-events:none}
+  .stage-top{position:absolute; top:22px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; z-index:4; pointer-events:none}
+  .neon-open{display:inline-flex; align-items:center; gap:8px; border:1px solid var(--pink); color:#ffd3e4; font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; padding:8px 11px 7px; background:rgba(255,46,136,.05); box-shadow:0 0 18px rgba(255,46,136,.25), inset 0 0 14px rgba(255,46,136,.12); text-shadow:0 0 8px rgba(255,46,136,.9)}
+  .neon-open .dot{width:5px; height:5px; border-radius:50%; background:var(--pink); box-shadow:0 0 8px var(--pink)}
+  .stage-ko{font-family:var(--mono); font-size:8px; letter-spacing:.18em; color:rgba(244,234,217,.35); text-transform:uppercase; text-align:right; line-height:1.8; padding-top:4px}
+
+  .vert-sign{position:absolute; right:20px; top:74px; z-index:5; writing-mode:vertical-rl; text-orientation:mixed; display:flex; align-items:center; gap:10px; padding:16px 10px; border:1px solid rgba(255,46,136,.65); background:rgba(10,6,12,.55); box-shadow:0 0 22px rgba(255,46,136,.18), inset 0 0 18px rgba(255,46,136,.08); backdrop-filter:blur(3px)}
+  .vert-sign .word{font-family:var(--sans); font-weight:800; font-size:clamp(18px,1.7vw,26px); letter-spacing:.32em; color:#ffe4ee; text-shadow:0 0 8px rgba(255,46,136,.9), 0 0 22px rgba(255,46,136,.5); animation:flicker 7s infinite}
+  .vert-sign .num{font-family:var(--mono); font-size:12px; letter-spacing:.22em; color:var(--cyan); text-shadow:0 0 8px rgba(51,230,245,.8); animation:flicker2 5.5s infinite}
+  .vert-sign .bullet{width:5px; height:5px; background:var(--pink); box-shadow:0 0 8px var(--pink)}
+  @keyframes flicker{
+    0%,6%,8%,100%{opacity:1}
+    7%{opacity:.35}
+    42%{opacity:1}
+    43%{opacity:.55}
+    44%{opacity:1}
+    72%{opacity:.8}
+    73%{opacity:.25}
+    74.5%{opacity:1}
+  }
+  @keyframes flicker2{
+    0%,100%{opacity:1}
+    30%{opacity:.4}
+    31%{opacity:1}
+    63%{opacity:.65}
+    64%{opacity:.3}
+    65.5%{opacity:1}
+  }
+
+  .bowl-svg{position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:min(100%,900px); height:auto; display:block; z-index:2}
+  .bowl-stage[data-spice="1"]{--broth-a:#e2a236; --broth-b:#8a4413; --broth-c:#5b280c; --slick:.0; --steam:.55}
+  .bowl-stage[data-spice="2"]{--broth-a:#e6942b; --broth-b:#94400f; --broth-c:#5c2108; --slick:.28; --steam:.72}
+  .bowl-stage[data-spice="3"]{--broth-a:#e87920; --broth-b:#a1340b; --broth-c:#601604; --slick:.6; --steam:.9}
+  .bowl-stage[data-spice="4"]{--broth-a:#e85316; --broth-b:#a11b08; --broth-c:#5c0b02; --slick:.87; --steam:1}
+  .broth-a{stop-color:var(--broth-a)}
+  .broth-b{stop-color:var(--broth-b)}
+  .broth-c{stop-color:var(--broth-c)}
+  #brothSlick{opacity:var(--slick); transition:opacity .4s ease}
+  .bowl-stage .steam{opacity:var(--steam); transition:opacity .4s ease}
+  .bowl-stage .steam path{animation:steam 5.2s ease-in-out infinite; transform-origin:50% 100%}
+  .bowl-stage .steam path:nth-child(2){animation-delay:-1.4s; animation-duration:6.1s}
+  .bowl-stage .steam path:nth-child(3){animation-delay:-2.6s; animation-duration:4.6s}
+  .bowl-stage .steam path:nth-child(4){animation-delay:-3.7s; animation-duration:6.8s}
+  @keyframes steam{
+    0%{opacity:0; transform:translateY(14px) scaleX(.9)}
+    22%{opacity:.85}
+    65%{opacity:.4}
+    100%{opacity:0; transform:translateY(-30px) scaleX(1.15)}
+  }
+  .bowl-stage[data-spice="4"] .steam path{animation-duration:3.2s !important}
+  .bowl-stage[data-spice="4"] .steam path:nth-child(2){animation-duration:3.8s !important}
+
+  .stage-foot{position:absolute; left:24px; right:24px; bottom:20px; display:flex; justify-content:space-between; align-items:flex-end; gap:12px; z-index:4; font-family:var(--mono); font-size:8px; letter-spacing:.12em; text-transform:uppercase; color:rgba(244,234,217,.4); pointer-events:none}
+  .stage-foot .heat-read{color:var(--pink); text-shadow:0 0 8px rgba(255,46,136,.45)}
+  .stage-foot .heat-read span{color:rgba(244,234,217,.4); text-shadow:none}
+
+  /* ordering */
+  .order{grid-area:order; align-self:end; min-width:0}
+  .heat-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px; border-top:1px solid var(--line); padding-top:14px; margin-bottom:12px}
+  .heat-head .label{font-family:var(--mono); font-size:9px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim)}
+  .heat-readout{font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--pink); text-align:right; text-shadow:0 0 8px rgba(255,46,136,.35)}
+  .heat-readout span{display:block; color:var(--dim); text-shadow:none; margin-top:4px; font-size:8px}
+  .heat-buttons{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+  .heat{appearance:none; background:transparent; border:1px solid rgba(244,234,217,.22); padding:10px 7px 9px; cursor:pointer; text-align:left; display:flex; flex-direction:column; gap:5px; transition:border-color .18s, background .18s, color .18s; min-width:0}
+  .heat .n{font-family:var(--mono); font-size:8px; letter-spacing:.1em; color:var(--dim)}
+  .heat .t{font-size:11px; letter-spacing:.02em; color:var(--cream); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .heat .chilis{display:flex; gap:2px; height:4px}
+  .heat .chilis i{display:block; width:4px; height:4px; border-radius:50%; background:var(--pink); opacity:.2; transition:opacity .2s}
+  .heat[aria-pressed="true"]{border-color:var(--pink); background:rgba(255,46,136,.08); box-shadow:0 0 14px rgba(255,46,136,.16), inset 0 0 12px rgba(255,46,136,.07)}
+  .heat[aria-pressed="true"] .n{color:var(--pink)}
+  .heat[aria-pressed="true"] .t{color:#fff}
+  .heat[aria-pressed="true"] .chilis i{opacity:1; box-shadow:0 0 6px var(--pink)}
+  .heat:hover{border-color:rgba(255,46,136,.6)}
+
+  .add-row{display:grid; grid-template-columns:1fr auto; gap:10px; margin-top:12px}
+  .add-btn{border:1px solid var(--pink); background:linear-gradient(180deg, rgba(255,46,136,.16), rgba(255,46,136,.06)); color:#fff; padding:15px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; box-shadow:0 0 18px rgba(255,46,136,.18), inset 0 0 16px rgba(255,46,136,.08); transition:background .2s, box-shadow .2s; min-width:0}
+  .add-btn .plus{font-family:var(--sans); font-size:18px; line-height:1; color:var(--pink); transition:transform .3s}
+  .add-btn:hover{background:var(--pink); color:#0a0710; box-shadow:0 0 30px rgba(255,46,136,.45)}
+  .add-btn:hover .plus{color:#0a0710; transform:rotate(90deg)}
+  .add-btn.added{background:var(--yolk); border-color:var(--yolk); color:#0a0710; box-shadow:0 0 30px rgba(255,207,74,.4)}
+  .ticket-stub{border:1px dashed rgba(255,207,74,.6); background:rgba(255,207,74,.04); padding:9px 12px 8px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:3px; min-width:78px; position:relative}
+  .ticket-stub::before,.ticket-stub::after{content:""; position:absolute; width:8px; height:8px; border-radius:50%; background:var(--room); border:1px solid rgba(255,207,74,.4); top:50%; transform:translateY(-50%)}
+  .ticket-stub::before{left:-5px}
+  .ticket-stub::after{right:-5px}
+  .ticket-stub .tl{font-family:var(--mono); font-size:7px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,207,74,.7)}
+  .ticket-stub .tv{font-family:var(--mono); font-size:22px; letter-spacing:.04em; color:var(--yolk); line-height:1; text-shadow:0 0 10px rgba(255,207,74,.4)}
+  .ticket-stub.bump .tv{animation:bump .35s ease}
+  @keyframes bump{50%{transform:scale(1.22); color:#fff}}
+  .order-line{display:flex; justify-content:space-between; gap:12px; margin:10px 0 0; font-family:var(--mono); font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); line-height:1.6}
+  .order-line b{color:var(--cream); font-weight:400}
+
+  /* menu */
+  .menu-section{max-width:1540px; margin:clamp(30px,4.5vw,60px) auto 0; padding:0 clamp(16px,3vw,40px) clamp(30px,4vw,48px); border-top:1px solid var(--line)}
+  .menu-head{display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding:18px 0 12px; border-bottom:1px solid var(--line)}
+  .menu-head h2{margin:0; font-family:var(--mono); font-size:10px; letter-spacing:.15em; text-transform:uppercase; font-weight:400; color:var(--cream)}
+  .menu-head h2 span{color:var(--pink)}
+  .menu-head .hint{font-family:var(--mono); font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim)}
+  .menu-list{list-style:none; margin:0; padding:0}
+  .menu-item{border-bottom:1px solid var(--line); position:relative}
+  .menu-btn{appearance:none; width:100%; background:transparent; border:0; padding:clamp(13px,1.7vw,18px) 10px; display:grid; grid-template-columns:44px minmax(0,1.1fr) minmax(0,1.6fr) auto; align-items:center; gap:14px; cursor:pointer; text-align:left; transition:background .2s, padding .2s; position:relative}
+  .menu-btn::before{content:""; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--pink); transform:scaleY(0); transition:transform .2s; box-shadow:0 0 10px var(--pink)}
+  .menu-item.active .menu-btn, .menu-btn:hover{background:linear-gradient(90deg, rgba(255,46,136,.09), rgba(255,46,136,0) 60%)}
+  .menu-item.active .menu-btn::before, .menu-btn:hover::before{transform:scaleY(1)}
+  .menu-btn .idx{font-family:var(--mono); font-size:9px; letter-spacing:.08em; color:var(--dim); transition:color .2s}
+  .menu-item.active .idx, .menu-btn:hover .idx{color:var(--pink)}
+  .menu-name{font-size:clamp(14px,1.3vw,17px); line-height:1.15; letter-spacing:-.01em; color:var(--cream); text-transform:uppercase; font-weight:600; transition:transform .2s}
+  .menu-item.active .menu-name, .menu-btn:hover .menu-name{transform:translateX(3px)}
+  .menu-desc{font-size:11px; line-height:1.45; color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .menu-price{font-family:var(--mono); font-size:13px; letter-spacing:.02em; color:var(--yolk); text-align:right; white-space:nowrap}
+  .menu-price .unit{font-size:8px; color:var(--dim); margin-left:3px}
+  .menu-detail{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 30px; padding:12px 10px 14px 68px; min-height:46px; font-family:var(--mono); font-size:8.5px; letter-spacing:.06em; line-height:1.7; color:var(--dim); text-transform:uppercase}
+  .menu-detail .ing-name{color:var(--pink)}
+  .menu-detail .ing-list{color:#b6aeb9; max-width:96ch}
+  .menu-detail .ing-price{color:var(--dim); white-space:nowrap}
+
+  /* footer */
+  footer{border-top:1px solid var(--line); margin-top:auto}
+  .foot-inner{max-width:1540px; margin:0 auto; padding:20px clamp(16px,3vw,40px) 26px; display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 24px; font-family:var(--mono); font-size:8px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); line-height:1.8}
+  .foot-inner .pink{color:var(--pink)}
+  .foot-inner .yolk{color:var(--yolk)}
+
+  .toast{position:fixed; left:50%; bottom:22px; transform:translate(-50%,18px); z-index:95; background:#0c0c13; border:1px solid var(--pink); color:var(--cream); padding:11px 16px; font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase; box-shadow:0 0 24px rgba(255,46,136,.25); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; max-width:calc(100vw - 32px)}
+  .toast.on{opacity:1; transform:translate(-50%,0)}
+
+  @media (max-width: 1060px){
+    .hero{grid-template-columns:minmax(0,1fr); grid-template-areas:"intro" "stage" "order"; row-gap:24px}
+    .intro,.order,.stage-wrap{min-width:0; width:100%}
+    .bowl-stage{min-height:0; aspect-ratio:1/1.02}
+    .head-center{display:none}
+    h1{font-size:clamp(64px,13vw,120px)}
+    .stage-wrap{max-width:720px; margin:0 auto; width:100%}
+  }
+  @media (max-width: 640px){
+    .head-inner{min-height:58px; gap:10px}
+    .head-ticket{display:none}
+    .open-badge{font-size:8px; padding:6px 8px}
+    .hero{padding-top:20px}
+    h1{font-size:clamp(46px,15.6vw,70px); -webkit-text-stroke-width:1.5px}
+    .note{font-size:13px}
+    .bowl-stage{aspect-ratio:1/1.1}
+    .vert-sign{right:10px; top:58px; padding:11px 7px}
+    .vert-sign .word{font-size:16px; letter-spacing:.24em}
+    .stage-top{top:14px; left:14px; right:14px}
+    .stage-foot{left:14px; right:14px; bottom:12px; font-size:7px}
+    .stage-frame{inset:8px}
+    .heat-buttons{grid-template-columns:repeat(2,1fr)}
+    .heat{padding:9px 8px; flex-direction:row; align-items:center; justify-content:space-between; gap:6px}
+    .heat .chilis{display:none}
+    .add-row{grid-template-columns:minmax(0,1fr) auto}
+    .add-btn{padding:13px 10px; font-size:8px; letter-spacing:.06em; gap:8px; min-width:0}
+    .add-btn #addLabel{min-width:0; overflow-wrap:anywhere}
+    .menu-btn{grid-template-columns:28px minmax(0,1fr) auto; gap:10px; padding:14px 4px}
+    .menu-desc{display:none}
+    .menu-detail{padding-left:42px; min-height:54px}
+    .menu-head .hint{display:none}
+    .ticket-stub{min-width:64px; padding:8px 8px 7px}
+    .ticket-stub .tv{font-size:19px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important}
+    html{scroll-behavior:auto}
+    .bowl-stage .steam path{opacity:.5 !important}
+  }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to the ramen</a>
+
+<header class="shop-head">
+  <div class="head-inner">
+    <a class="logo" href="#main" aria-label="Noodle Nine">NOODLE<span class="slash">//</span><span class="nine">9</span></a>
+    <div class="head-center"><b>Late-night ramen &amp; trains</b>Nine is open while the city sleeps</div>
+    <div class="head-right">
+      <span class="head-ticket">Tickets <b data-tickets>000</b></span>
+      <span class="open-badge"><span class="dot" aria-hidden="true"></span>Open 24H</span>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="pageTitle">
+    <div class="intro">
+      <div class="eyebrow"><span class="bar" aria-hidden="true"></span><span>Ramen window № 9</span><span class="hot">/ 23:00 — 05:00</span></div>
+      <h1 id="pageTitle"><span class="l">Slurp after</span><span class="l midnight">midnight<span class="dot">.</span></span></h1>
+      <p class="note"><b>Nine seats. One pot. No daylight.</b> The tonkotsu has been at a whisper since noon. We do not rush broth, and we do not ask you to be quiet — the slurp is the point.
+        <span class="small">Kitchen closes never · Last train 05:12 · Cash preferred</span>
+      </p>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="bowl-stage" id="bowlStage" data-spice="1">
+        <div class="stage-frame" aria-hidden="true"></div>
+        <div class="stage-top">
+          <span class="neon-open"><span class="dot" aria-hidden="true"></span>Open 24H</span>
+          <span class="stage-ko">深夜営業<br>NO RESERVATIONS</span>
+        </div>
+
+        <div class="vert-sign" aria-hidden="true">
+          <span class="word">NOODLE</span>
+          <span class="bullet"></span>
+          <span class="num">//9</span>
+        </div>
+
+        <svg class="bowl-svg" viewBox="0 0 900 760" role="img" aria-labelledby="bowlTitle bowlDesc">
+          <title id="bowlTitle">A bowl of late-night tonkotsu ramen</title>
+          <desc id="bowlDesc">A dark ceramic bowl filled with golden broth, noodles, egg, chashu and scallions, with chopsticks lifting a strand and steam rising, reflected on a wet counter.</desc>
+          <defs>
+            <linearGradient id="brothGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop class="broth-a" offset="0"/>
+              <stop class="broth-b" offset=".62"/>
+              <stop class="broth-c" offset="1"/>
+            </linearGradient>
+            <linearGradient id="bowlGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#242430"/>
+              <stop offset=".4" stop-color="#15151d"/>
+              <stop offset="1" stop-color="#0c0c12"/>
+            </linearGradient>
+            <linearGradient id="rimGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#3a3a48"/>
+              <stop offset=".28" stop-color="#6f6f80"/>
+              <stop offset=".55" stop-color="#2a2a36"/>
+              <stop offset=".8" stop-color="#5a5a6b"/>
+              <stop offset="1" stop-color="#23232c"/>
+            </linearGradient>
+            <linearGradient id="slickGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ff3a1f"/>
+              <stop offset="1" stop-color="#b31205"/>
+            </linearGradient>
+            <radialGradient id="eggWhite" cx=".4" cy=".35" r=".75">
+              <stop offset="0" stop-color="#fff8e6"/>
+              <stop offset=".7" stop-color="#efdfbd"/>
+              <stop offset="1" stop-color="#d6c39c"/>
+            </radialGradient>
+            <radialGradient id="yolkGrad" cx=".42" cy=".35" r=".7">
+              <stop offset="0" stop-color="#ffd964"/>
+              <stop offset=".65" stop-color="#f2a51f"/>
+              <stop offset="1" stop-color="#c46f0c"/>
+            </radialGradient>
+            <linearGradient id="chopGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#5d3a22"/>
+              <stop offset=".45" stop-color="#b98a5c"/>
+              <stop offset=".6" stop-color="#8c5e38"/>
+              <stop offset="1" stop-color="#3e2415"/>
+            </linearGradient>
+            <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="7"/>
+            </filter>
+            <filter id="reflectBlur" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2.2"/>
+            </filter>
+            <linearGradient id="fadeMask" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#fff" stop-opacity=".85"/>
+              <stop offset=".45" stop-color="#fff" stop-opacity=".3"/>
+              <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <mask id="reflMask">
+              <rect x="0" y="592" width="900" height="180" fill="url(#fadeMask)"/>
+            </mask>
+            <clipPath id="floorClip"><rect x="0" y="592" width="900" height="168"/></clipPath>
+
+            <g id="ramenScene">
+              <!-- backlight halo -->
+              <ellipse cx="450" cy="360" rx="300" ry="230" fill="#ff2e88" opacity=".075" filter="url(#softGlow)"/>
+              <!-- steam -->
+              <g class="steam" fill="none" stroke="#f4ead9" stroke-linecap="round">
+                <path d="M352 300 C336 262 366 244 352 206 C340 174 362 154 356 122" stroke-width="7" opacity=".6"/>
+                <path d="M424 288 C410 248 436 230 424 194 C414 164 438 146 430 110" stroke-width="5" opacity=".5"/>
+                <path d="M500 296 C486 260 512 240 500 206 C490 178 512 160 506 132" stroke-width="8" opacity=".45"/>
+                <path d="M566 306 C552 274 574 254 562 226 C552 202 570 184 566 158" stroke-width="4.5" opacity=".4"/>
+              </g>
+
+              <!-- bowl shadow on counter -->
+              <ellipse cx="450" cy="606" rx="250" ry="26" fill="#000" opacity=".55"/>
+              <ellipse cx="450" cy="602" rx="176" ry="15" fill="#000" opacity=".5"/>
+
+              <!-- bowl foot -->
+              <path d="M338 570 C338 600 562 600 562 570 L548 604 C520 622 380 622 352 604 Z" fill="#101017" stroke="#34343f" stroke-width="2"/>
+              <ellipse cx="450" cy="604" rx="112" ry="13" fill="#0b0b11" stroke="#3a3a46" stroke-width="1.5"/>
+
+              <!-- bowl body -->
+              <path d="M215 340 C300 394 600 394 685 340 C676 470 601 592 450 592 C299 592 224 470 215 340 Z" fill="url(#bowlGrad)" stroke="#4b4b5b" stroke-width="2.5"/>
+              <path d="M232 356 C258 468 330 566 450 574" fill="none" stroke="#5d5d70" stroke-width="2" opacity=".5"/>
+              <path d="M668 356 C642 468 570 566 450 574" fill="none" stroke="#181820" stroke-width="6" opacity=".55"/>
+              <path d="M300 430 C340 520 380 552 450 566" fill="none" stroke="#ffffff" stroke-width="1" opacity=".12"/>
+
+              <!-- rim -->
+              <ellipse cx="450" cy="340" rx="235" ry="64" fill="#101017" stroke="url(#rimGrad)" stroke-width="9"/>
+              <ellipse cx="450" cy="342" rx="213" ry="50" fill="#0b0b10" stroke="#2b2b36" stroke-width="2"/>
+
+              <!-- broth -->
+              <ellipse cx="450" cy="347" rx="208" ry="45" fill="url(#brothGrad)"/>
+              <ellipse id="brothSlick" cx="470" cy="346" rx="188" ry="38" fill="url(#slickGrad)"/>
+              <ellipse cx="450" cy="340" rx="208" ry="45" fill="none" stroke="#ffcf4a" stroke-width="1" opacity=".22"/>
+              <!-- oil beads -->
+              <g fill="#ffd479" opacity=".55">
+                <circle cx="300" cy="338" r="4"/><circle cx="338" cy="356" r="2.4"/><circle cx="392" cy="330" r="3"/><circle cx="596" cy="350" r="3.4"/><circle cx="642" cy="332" r="2"/><circle cx="524" cy="372" r="2.2"/><circle cx="470" cy="320" r="2.8"/>
+              </g>
+
+              <!-- noodles -->
+              <g fill="none" stroke-linecap="round">
+                <path d="M302 350 C330 330 356 366 386 346 C416 326 440 362 470 342 C500 322 524 356 552 336 C576 320 598 342 616 334" stroke="#f0cc72" stroke-width="6"/>
+                <path d="M316 362 C344 344 366 376 396 358 C426 340 450 372 480 352 C510 332 536 364 562 346 C586 330 606 350 624 344" stroke="#e2b957" stroke-width="5"/>
+                <path d="M336 374 C362 358 386 386 414 368 C442 350 466 380 494 362 C522 344 546 372 572 356" stroke="#f6d98f" stroke-width="4"/>
+                <path d="M472 336 C500 300 536 268 576 248 C606 232 636 222 664 218" stroke="#ecc76b" stroke-width="5.5"/>
+                <path d="M486 344 C516 312 548 284 588 264 C614 250 640 240 666 236" stroke="#f4d98d" stroke-width="4"/>
+              </g>
+
+              <!-- nori -->
+              <g>
+                <path d="M286 300 L322 252 L362 286 L336 344 Z" fill="#14251b" stroke="#0a130e" stroke-width="2"/>
+                <path d="M292 302 L322 260 L352 288 L332 336 Z" fill="#1b3325" opacity=".8"/>
+                <path d="M344 288 L382 246 L416 280 L392 332 Z" fill="#101e15" stroke="#0a130e" stroke-width="2"/>
+              </g>
+
+              <!-- chashu -->
+              <g>
+                <ellipse cx="364" cy="330" rx="57" ry="31" fill="#7c4a2a" stroke="#5b3119" stroke-width="2"/>
+                <ellipse cx="364" cy="328" rx="46" ry="23" fill="#a86a41"/>
+                <path d="M330 326 C342 316 360 318 374 326 C388 334 400 330 406 322" fill="none" stroke="#d9a374" stroke-width="3" opacity=".75"/>
+                <path d="M338 338 C352 330 366 334 380 340" fill="none" stroke="#68381e" stroke-width="2" opacity=".6"/>
+                <ellipse cx="566" cy="368" rx="47" ry="25" fill="#7c4a2a" stroke="#5b3119" stroke-width="2"/>
+                <ellipse cx="566" cy="366" rx="37" ry="18" fill="#b07349"/>
+                <path d="M544 364 C556 356 570 358 580 366" fill="none" stroke="#dca97a" stroke-width="2.5" opacity=".7"/>
+              </g>
+
+              <!-- egg -->
+              <g>
+                <ellipse cx="512" cy="318" rx="48" ry="33" fill="url(#eggWhite)" stroke="#c4ae86" stroke-width="1.5"/>
+                <ellipse cx="512" cy="318" rx="21" ry="17" fill="url(#yolkGrad)"/>
+                <ellipse cx="505" cy="311" rx="6" ry="4" fill="#ffeeb5" opacity=".6"/>
+                <ellipse cx="596" cy="316" rx="40" ry="27" fill="url(#eggWhite)" stroke="#c4ae86" stroke-width="1.5" opacity=".92"/>
+                <ellipse cx="596" cy="316" rx="17" ry="14" fill="url(#yolkGrad)" opacity=".95"/>
+              </g>
+
+              <!-- menma / corn -->
+              <g fill="#e8bc51">
+                <rect x="428" y="286" width="24" height="7" rx="3" transform="rotate(-18 428 286)"/>
+                <rect x="452" y="282" width="20" height="6" rx="3" transform="rotate(8 452 282)"/>
+                <rect x="474" y="288" width="18" height="6" rx="3" transform="rotate(-8 474 288)"/>
+              </g>
+
+              <!-- scallions -->
+              <g fill="#7fb04c">
+                <ellipse cx="404" cy="362" rx="9" ry="5" stroke="#4c7529" stroke-width="2"/>
+                <ellipse cx="430" cy="374" rx="7" ry="4" stroke="#4c7529" stroke-width="2"/>
+                <ellipse cx="606" cy="352" rx="8" ry="4.5" stroke="#4c7529" stroke-width="2"/>
+                <ellipse cx="630" cy="340" rx="6" ry="3.5" stroke="#4c7529" stroke-width="2"/>
+                <ellipse cx="548" cy="378" rx="8" ry="4" stroke="#4c7529" stroke-width="2"/>
+                <ellipse cx="340" cy="374" rx="6" ry="3.5" stroke="#4c7529" stroke-width="2"/>
+              </g>
+
+              <!-- chopped spring onion bits -->
+              <g fill="#a9d46f">
+                <circle cx="418" cy="378" r="2.6"/><circle cx="586" cy="362" r="2.2"/><circle cx="458" cy="382" r="2"/><circle cx="324" cy="348" r="2.4"/>
+              </g>
+
+              <!-- chopsticks -->
+              <g>
+                <g transform="rotate(52 640 300)">
+                  <rect x="640" y="112" width="9" height="330" rx="4.5" fill="url(#chopGrad)" stroke="#2a170c" stroke-width="1"/>
+                  <rect x="640" y="112" width="9" height="36" rx="4.5" fill="#2f1c10"/>
+                  <rect x="662" y="128" width="8" height="318" rx="4" fill="url(#chopGrad)" stroke="#2a170c" stroke-width="1" opacity=".95"/>
+                  <rect x="662" y="128" width="8" height="32" rx="4" fill="#2f1c10"/>
+                </g>
+              </g>
+
+              <!-- bowl rim front highlight -->
+              <path d="M240 366 C320 414 580 414 660 366" fill="none" stroke="#f4ead9" stroke-width="1.5" opacity=".2"/>
+            </g>
+          </defs>
+
+          <use href="#ramenScene"/>
+          <!-- wet counter reflection -->
+          <g clip-path="url(#floorClip)" opacity=".62" filter="url(#reflectBlur)" style="mix-blend-mode:screen">
+            <use href="#ramenScene" transform="translate(0 592) scale(1 -0.62) translate(0 -592)"/>
+          </g>
+          <g aria-hidden="true" opacity=".5">
+            <ellipse cx="450" cy="660" rx="212" ry="10" fill="#e6942b" opacity=".22" filter="url(#softGlow)"/>
+            <ellipse cx="450" cy="700" rx="150" ry="14" fill="#ffcf4a" opacity=".1" filter="url(#softGlow)"/>
+            <path d="M260 638 C350 630 560 630 646 640" fill="none" stroke="#ffcf4a" stroke-width="1.2" opacity=".28"/>
+            <path d="M300 684 C390 676 520 676 610 686" fill="none" stroke="#ff2e88" stroke-width="1" opacity=".22"/>
+          </g>
+          <!-- counter sheen -->
+          <g aria-hidden="true">
+            <path d="M120 640 C240 618 660 618 780 640" fill="none" stroke="#ff2e88" stroke-width="1" opacity=".22"/>
+            <path d="M180 672 C300 654 600 654 720 672" fill="none" stroke="#33e6f5" stroke-width="1" opacity=".1"/>
+            <ellipse cx="450" cy="608" rx="300" ry="9" fill="#ff2e88" opacity=".08" filter="url(#softGlow)"/>
+          </g>
+        </svg>
+
+        <div class="stage-foot">
+          <span>Tonkotsu / 18h · bowl № 04</span>
+          <span class="heat-read" id="stageHeat">Heat <span>—</span> level 01</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="order">
+      <div class="heat-head">
+        <span class="label">Choose your heat</span>
+        <span class="heat-readout" id="heatReadout">Level 01 · Mild<span id="heatShu">1,200 SHU</span></span>
+      </div>
+      <div class="heat-buttons" role="group" aria-label="Spice level">
+        <button class="heat" data-heat="1" aria-pressed="true"><span class="n">01</span><span class="t">Mild</span><span class="chilis"><i></i></span></button>
+        <button class="heat" data-heat="2" aria-pressed="false"><span class="n">02</span><span class="t">Medium</span><span class="chilis"><i></i><i></i></span></button>
+        <button class="heat" data-heat="3" aria-pressed="false"><span class="n">03</span><span class="t">Hot</span><span class="chilis"><i></i><i></i><i></i></span></button>
+        <button class="heat" data-heat="4" aria-pressed="false"><span class="n">04</span><span class="t">Fiery</span><span class="chilis"><i></i><i></i><i></i><i></i></span></button>
+      </div>
+
+      <div class="add-row">
+        <button class="add-btn" id="addBtn" aria-describedby="orderLine">
+          <span id="addLabel"><span id="addPrefix">Add to order — </span><span id="addName">Tonkotsu 9</span></span>
+          <span style="display:flex;align-items:center;gap:12px"><span id="addPrice">$16</span><span class="plus" aria-hidden="true">+</span></span>
+        </button>
+        <div class="ticket-stub" id="ticketStub" aria-live="polite">
+          <span class="tl">Tickets</span>
+          <span class="tv" data-tickets>000</span>
+        </div>
+      </div>
+      <p class="order-line" id="orderLine"><span>No tickets yet — the pot is ready.</span><span>Total <b id="orderTotal">$0</b></span></p>
+    </div>
+  </section>
+
+  <section class="menu-section" aria-labelledby="menuTitle">
+    <div class="menu-head">
+      <h2 id="menuTitle">Menu <span>/ 04 bowls</span></h2>
+      <span class="hint">Hover a bowl to read its ingredients</span>
+    </div>
+    <ul class="menu-list" id="menuList">
+      <li class="menu-item active" data-key="tonkotsu" data-price="16">
+        <button class="menu-btn" type="button" aria-describedby="menuDetail">
+          <span class="idx">01</span>
+          <span class="menu-name">Tonkotsu 9</span>
+          <span class="menu-desc">18-hour pork bone, chashu, ajitama, black garlic oil</span>
+          <span class="menu-price">$16<span class="unit">/bowl</span></span>
+        </button>
+      </li>
+      <li class="menu-item" data-key="shoyu" data-price="14">
+        <button class="menu-btn" type="button" aria-describedby="menuDetail">
+          <span class="idx">02</span>
+          <span class="menu-name">Shoyu 9</span>
+          <span class="menu-desc">Clear chicken dashi, soy tare, menma, nori</span>
+          <span class="menu-price">$14<span class="unit">/bowl</span></span>
+        </button>
+      </li>
+      <li class="menu-item" data-key="miso" data-price="17">
+        <button class="menu-btn" type="button" aria-describedby="menuDetail">
+          <span class="idx">03</span>
+          <span class="menu-name">Spicy Miso</span>
+          <span class="menu-desc">Red miso, chilli tare, ground pork, corn, butter</span>
+          <span class="menu-price">$17<span class="unit">/bowl</span></span>
+        </button>
+      </li>
+      <li class="menu-item" data-key="yuzu" data-price="15">
+        <button class="menu-btn" type="button" aria-describedby="menuDetail">
+          <span class="idx">04</span>
+          <span class="menu-name">Yuzu Shio</span>
+          <span class="menu-desc">Yuzu zest, sea salt tare, chicken, shiso, pickled ginger</span>
+          <span class="menu-price">$15<span class="unit">/bowl</span></span>
+        </button>
+      </li>
+    </ul>
+    <div class="menu-detail" id="menuDetail" aria-live="polite">
+      <span class="ing-name">Tonkotsu 9 —</span>
+      <span class="ing-list">18-hour pork bone broth, rolled chashu, ajitama, bamboo menma, black garlic oil, spring onion.</span>
+      <span class="ing-price">Adds at $16 / bowl</span>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <span><span class="pink">NOODLE//9</span> · 9 Rue de la Nuit, basement level</span>
+    <span>Open 24H · kitchen never closes · last train 05:12</span>
+    <span>No reservations · <span class="yolk">cash preferred</span> · slurping encouraged</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<script>
+(function(){
+  "use strict";
+  var MENU = {
+    tonkotsu: {name:"Tonkotsu 9", price:16, ing:"18-hour pork bone broth, rolled chashu, ajitama, bamboo menma, black garlic oil, spring onion."},
+    shoyu:    {name:"Shoyu 9",    price:14, ing:"Clear chicken dashi, soy tare, menma, nori, spring onion, a soft egg on the side."},
+    miso:     {name:"Spicy Miso", price:17, ing:"Red miso, chilli tare, ground pork, sweet corn, butter, sesame, spring onion."},
+    yuzu:     {name:"Yuzu Shio",  price:15, ing:"Yuzu zest, sea salt tare, poached chicken, shiso, pickled ginger, clear broth."}
+  };
+  var HEAT = {
+    1: {label:"Mild", shu:"1,200 SHU", note:"gentle warmth, pork-forward"},
+    2: {label:"Medium", shu:"6,500 SHU", note:"a slow burn at the back"},
+    3: {label:"Hot", shu:"24,000 SHU", note:"sweat on the upper lip"},
+    4: {label:"Fiery", shu:"58,000 SHU", note:"you have been warned"}
+  };
+  var state = { heat:1, item:"tonkotsu", tickets:0, total:0 };
+
+  var stage = document.getElementById("bowlStage");
+  var heatButtons = Array.prototype.slice.call(document.querySelectorAll(".heat"));
+  var heatReadout = document.getElementById("heatReadout");
+  var heatShu = document.getElementById("heatShu");
+  var stageHeat = document.getElementById("stageHeat");
+  var addBtn = document.getElementById("addBtn");
+  var addName = document.getElementById("addName");
+  var addPrefix = document.getElementById("addPrefix");
+  var addPrice = document.getElementById("addPrice");
+  var ticketStub = document.getElementById("ticketStub");
+  var orderLine = document.getElementById("orderLine");
+  var orderTotal = document.getElementById("orderTotal");
+  var ticketEls = Array.prototype.slice.call(document.querySelectorAll("[data-tickets]"));
+  var menuItems = Array.prototype.slice.call(document.querySelectorAll(".menu-item"));
+  var menuDetail = document.getElementById("menuDetail");
+  var toast = document.getElementById("toast");
+  var toastTimer = null, resetTimer = null;
+
+  function pad(n){ return String(n).padStart(3,"0"); }
+  function money(n){ return "$" + n; }
+
+  function renderHeat(){
+    var h = HEAT[state.heat];
+    stage.setAttribute("data-spice", String(state.heat));
+    heatReadout.firstChild.textContent = "Level 0" + state.heat + " · " + h.label;
+    heatShu.textContent = h.shu + " · " + h.note;
+    stageHeat.innerHTML = "Heat <span>—</span> level 0" + state.heat;
+    heatButtons.forEach(function(b){
+      b.setAttribute("aria-pressed", Number(b.getAttribute("data-heat")) === state.heat ? "true" : "false");
+    });
+  }
+
+  function renderMenu(){
+    var m = MENU[state.item];
+    addName.textContent = m.name;
+    addPrice.textContent = money(m.price);
+    menuDetail.innerHTML = '<span class="ing-name">' + m.name + ' —</span><span class="ing-list">' + m.ing + '</span><span class="ing-price">Adds at ' + money(m.price) + ' / bowl</span>';
+    menuItems.forEach(function(li){
+      li.classList.toggle("active", li.getAttribute("data-key") === state.item);
+    });
+  }
+
+  function renderOrder(){
+    ticketEls.forEach(function(el){ el.textContent = pad(state.tickets); });
+    orderTotal.textContent = money(state.total);
+    if(state.tickets === 0){
+      orderLine.firstElementChild.textContent = "No tickets yet — the pot is ready.";
+    } else {
+      orderLine.firstElementChild.textContent = pad(state.tickets) + " ticket" + (state.tickets > 1 ? "s" : "") + " · " + MENU[state.item].name + " × " + state.tickets;
+      orderLine.firstElementChild.innerHTML = "<b>" + pad(state.tickets) + "</b> ticket" + (state.tickets > 1 ? "s" : "") + " · " + MENU[state.item].name + " × " + state.tickets;
+    }
+  }
+
+  function selectItem(key){
+    if(!MENU[key]) return;
+    state.item = key;
+    renderMenu();
+    if(state.tickets > 0) renderOrder();
+  }
+
+  heatButtons.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      state.heat = Number(btn.getAttribute("data-heat"));
+      renderHeat();
+      toast.textContent = "Heat set to " + HEAT[state.heat].label + " — broth adjusted";
+      showToast();
+    });
+  });
+
+  menuItems.forEach(function(li){
+    var key = li.getAttribute("data-key");
+    li.addEventListener("mouseenter", function(){ selectItem(key); });
+    var btn = li.querySelector(".menu-btn");
+    btn.addEventListener("focus", function(){ selectItem(key); });
+    btn.addEventListener("click", function(){ selectItem(key); });
+  });
+
+  function showToast(){
+    toast.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("on"); }, 2600);
+  }
+
+  addBtn.addEventListener("click", function(){
+    var m = MENU[state.item];
+    state.tickets += 1;
+    state.total += m.price;
+    renderOrder();
+    addBtn.classList.add("added");
+    addPrefix.textContent = "Ticket printed — ";
+    // restore label after a beat
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(function(){
+      addBtn.classList.remove("added");
+      addPrefix.textContent = "Add to order — ";
+    }, 1600);
+    ticketStub.classList.remove("bump");
+    void ticketStub.offsetWidth;
+    ticketStub.classList.add("bump");
+    toast.textContent = "Ticket " + pad(state.tickets) + " · " + m.name + " · heat 0" + state.heat + " — " + money(m.price);
+    showToast();
+  });
+
+  renderHeat();
+  renderMenu();
+  renderOrder();
+})();
+</script>
+</body>
+</html>

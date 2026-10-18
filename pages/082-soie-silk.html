@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soie — maison de tissus</title>
+<style>
+  :root{
+    --paper:#f4ece1;
+    --paper-deep:#eadfd1;
+    --ink:#4b3242;
+    --ink-soft:#6e5663;
+    --line:rgba(75,50,66,.16);
+    --rose:#c9908a;
+    --champagne:#d8c3a1;
+    --sage:#aeb59c;
+    --aubergine:#4c3040;
+    --accent:#b07a76;
+    --serif:"Didot","Bodoni 72","Bodoni MT","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .scene{position:fixed;inset:0;overflow:hidden;background:var(--paper)}
+  .silk{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    pointer-events:none;
+  }
+  .veil{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    background:
+      radial-gradient(68% 60% at 16% 28%,rgba(246,239,230,.97) 0%,rgba(246,239,230,.86) 36%,rgba(246,239,230,.42) 60%,rgba(246,239,230,0) 78%),
+      linear-gradient(180deg,rgba(246,239,230,.34) 0%,rgba(246,239,230,0) 22%);
+  }
+  .overlay{
+    position:absolute;
+    inset:0;
+    z-index:3;
+    display:flex;
+    flex-direction:column;
+    pointer-events:none;
+  }
+  .masthead{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:24px;
+    padding:clamp(22px,3vw,40px) clamp(22px,4.2vw,66px) 0;
+  }
+  .brand{display:flex;flex-direction:column;gap:7px}
+  .wordmark{
+    font-family:var(--serif);
+    font-size:clamp(24px,2.4vw,31px);
+    font-weight:400;
+    letter-spacing:.42em;
+    line-height:1;
+    margin-right:-.42em;
+    color:var(--ink);
+  }
+  .brand .sub{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:12.5px;
+    letter-spacing:.04em;
+    color:var(--ink-soft);
+  }
+  .head-meta{
+    text-align:right;
+    font-family:var(--mono);
+    font-size:8px;
+    line-height:1.9;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(75,50,66,.55);
+  }
+
+  .hero{
+    max-width:min(660px,84vw);
+    padding:0 clamp(22px,4.2vw,66px);
+    margin-top:clamp(32px,8.5vh,96px);
+  }
+  .kicker{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    margin:0 0 clamp(14px,2.4vh,26px);
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    opacity:.88;
+  }
+  .kicker::before{
+    content:"";
+    width:24px;
+    height:1px;
+    background:currentColor;
+    opacity:.55;
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(50px,7.6vw,118px);
+    line-height:.9;
+    letter-spacing:-.035em;
+    margin:0;
+    color:var(--ink);
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:400;
+    color:var(--accent);
+    transition:color .7s ease;
+  }
+  .note-row{
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+    margin-top:clamp(18px,3.6vh,38px);
+    max-width:35em;
+  }
+  .note-row .rule{
+    width:34px;
+    height:1px;
+    margin-top:9px;
+    flex:0 0 auto;
+    background:rgba(75,50,66,.35);
+  }
+  .note-row p{
+    margin:0;
+    flex:1;
+    min-width:0;
+    font-family:var(--serif);
+    font-size:clamp(13px,1.08vw,15px);
+    line-height:1.68;
+    color:#4f3646;
+    letter-spacing:.005em;
+    text-shadow:0 1px 0 rgba(247,241,233,.6);
+  }
+  .note-row p i{font-style:italic}
+
+  .side-note{
+    position:absolute;
+    right:clamp(14px,1.4vw,20px);
+    top:50%;
+    transform:translateY(-50%);
+    writing-mode:vertical-rl;
+    font-family:var(--mono);
+    font-size:7px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:rgba(75,50,66,.5);
+    white-space:nowrap;
+    pointer-events:none;
+    mix-blend-mode:multiply;
+  }
+
+  .dock{
+    position:relative;
+    margin-top:auto;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:clamp(20px,3vw,46px);
+    padding:34px clamp(22px,4.2vw,66px) clamp(20px,3.2vh,32px);
+    pointer-events:auto;
+    background:linear-gradient(180deg,rgba(246,239,230,0) 0%,rgba(246,239,230,.62) 38%,rgba(246,239,230,.9) 100%);
+  }
+  .dock::before{
+    content:"";
+    position:absolute;
+    left:clamp(22px,4.2vw,66px);
+    right:clamp(22px,4.2vw,66px);
+    top:22px;
+    height:1px;
+    background:linear-gradient(90deg,rgba(75,50,66,.34),rgba(75,50,66,.08) 72%,rgba(75,50,66,0));
+  }
+  .tension{
+    width:min(330px,40vw);
+    padding-top:4px;
+  }
+  .tension-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:7px;
+  }
+  .tension-head label{
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .tension-head output{
+    font-family:var(--serif);
+    font-size:15px;
+    letter-spacing:.02em;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  input[type=range].tension{
+    -webkit-appearance:none;
+    appearance:none;
+    display:block;
+    width:100%;
+    height:20px;
+    margin:0;
+    background:transparent;
+    cursor:ew-resize;
+  }
+  input[type=range].tension::-webkit-slider-runnable-track{
+    height:1px;
+    background:linear-gradient(90deg,rgba(75,50,66,.28),rgba(75,50,66,.62));
+  }
+  input[type=range].tension::-moz-range-track{
+    height:1px;
+    background:rgba(75,50,66,.45);
+  }
+  input[type=range].tension::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:13px;
+    height:13px;
+    margin-top:-6px;
+    border-radius:50%;
+    background:var(--paper);
+    border:1px solid var(--ink);
+    box-shadow:0 0 0 3px rgba(244,236,225,.7),0 2px 7px rgba(75,50,66,.18);
+    transition:transform .2s ease;
+  }
+  input[type=range].tension::-moz-range-thumb{
+    width:12px;height:12px;border-radius:50%;
+    background:var(--paper);border:1px solid var(--ink);
+    box-shadow:0 2px 7px rgba(75,50,66,.18);
+  }
+  input[type=range].tension:hover::-webkit-slider-thumb{transform:scale(1.12)}
+  input[type=range].tension:focus-visible{outline:1px solid var(--ink);outline-offset:7px}
+  .scale-labels{
+    display:flex;
+    justify-content:space-between;
+    margin-top:2px;
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(75,50,66,.44);
+  }
+  .dock-right{
+    display:flex;
+    align-items:center;
+    gap:clamp(12px,2vw,26px);
+  }
+  .palettes{display:flex;align-items:center;gap:7px}
+  .palettes .pal-label{
+    font-family:var(--mono);
+    font-size:7.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(75,50,66,.45);
+    margin-right:4px;
+  }
+  .pal{
+    appearance:none;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:8px 11px;
+    border:1px solid rgba(75,50,66,.2);
+    border-radius:999px;
+    background:rgba(255,255,255,.26);
+    -webkit-backdrop-filter:blur(7px);
+    backdrop-filter:blur(7px);
+    color:var(--ink-soft);
+    font-family:var(--mono);
+    font-size:8px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .3s ease,color .3s ease,border-color .3s ease,transform .2s ease;
+    white-space:nowrap;
+  }
+  .pal .sw{
+    width:9px;height:9px;border-radius:50%;
+    border:1px solid rgba(75,50,66,.16);
+    flex:0 0 auto;
+  }
+  .pal:hover{transform:translateY(-1px);border-color:rgba(75,50,66,.4);color:var(--ink)}
+  .pal[aria-pressed="true"]{
+    background:var(--aubergine);
+    border-color:var(--aubergine);
+    color:#f7efe4;
+  }
+  .pal[aria-pressed="true"] .sw{border-color:rgba(247,239,228,.5)}
+  .pal:focus-visible{outline:1px solid var(--ink);outline-offset:3px}
+  .fall{
+    appearance:none;
+    display:inline-flex;
+    align-items:center;
+    gap:11px;
+    padding:12px 20px 12px 22px;
+    border:1px solid var(--aubergine);
+    border-radius:999px;
+    background:var(--aubergine);
+    color:#f8f0e5;
+    font-family:var(--mono);
+    font-size:8.5px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .3s ease,transform .25s ease,box-shadow .3s ease;
+    white-space:nowrap;
+  }
+  .fall svg{display:block;width:12px;height:14px;transition:transform .35s ease}
+  .fall:hover{background:#3d2735;transform:translateY(-1px);box-shadow:0 12px 26px rgba(75,50,66,.18)}
+  .fall:hover svg{transform:translateY(2px)}
+  .fall:active{transform:translateY(0)}
+  .fall:focus-visible{outline:1px solid var(--ink);outline-offset:4px}
+  .fall.pushing{animation:push .6s ease}
+  @keyframes push{
+    0%{box-shadow:0 0 0 0 rgba(75,50,66,.28)}
+    100%{box-shadow:0 0 0 15px rgba(75,50,66,0)}
+  }
+
+  @media (max-width:1000px){
+    .side-note{display:none}
+    .hero{margin-top:clamp(24px,6vh,60px)}
+    .dock{flex-wrap:wrap;align-items:flex-end}
+    .tension{width:min(330px,46vw)}
+    .dock-right{flex-wrap:wrap;justify-content:flex-end}
+    .palettes .pal-label{display:none}
+  }
+  @media (max-width:720px){
+    .head-meta{display:none}
+    .veil{
+      background:radial-gradient(96% 58% at 18% 30%,rgba(246,239,230,.97) 0%,rgba(246,239,230,.9) 42%,rgba(246,239,230,.45) 66%,rgba(246,239,230,0) 82%);
+    }
+    .hero{max-width:100%;margin-top:clamp(22px,5vh,44px)}
+    h1{font-size:clamp(48px,14vw,72px)}
+    .note-row{margin-top:20px;max-width:100%}
+    .note-row p{font-size:12.5px;line-height:1.6}
+    .dock{
+      flex-direction:column;
+      align-items:stretch;
+      gap:11px;
+      padding-top:22px;
+      padding-bottom:12px;
+    }
+    .dock::before{top:12px}
+    .tension{width:100%}
+    .dock-right{width:100%;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .palettes{gap:5px}
+    .pal{padding:7px 8px;font-size:7px;letter-spacing:.08em}
+    .fall{padding:10px 14px;font-size:7.5px;letter-spacing:.12em;margin-left:auto}
+  }
+  @media (max-height:640px){
+    .hero{margin-top:18px}
+    h1{font-size:clamp(42px,10vh,78px)}
+    .note-row{margin-top:12px}
+    .note-row p{font-size:12px}
+    .dock{padding-top:22px;padding-bottom:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms !important;animation-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="scene">
+  <svg class="silk" id="silk" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="rg0" x1="0" y1="0" x2="1" y2=".18">
+        <stop offset="0" stop-color="#fdf8f0"/><stop offset=".52" stop-color="#efe3d1"/><stop offset="1" stop-color="#d6c2a6"/>
+      </linearGradient>
+      <linearGradient id="rg1" x1="0" y1="0" x2="1" y2=".18">
+        <stop offset="0" stop-color="#fdf8f0"/><stop offset=".52" stop-color="#efe3d1"/><stop offset="1" stop-color="#d6c2a6"/>
+      </linearGradient>
+      <linearGradient id="rg2" x1="0" y1="0" x2="1" y2=".18">
+        <stop offset="0" stop-color="#fdf8f0"/><stop offset=".52" stop-color="#efe3d1"/><stop offset="1" stop-color="#d6c2a6"/>
+      </linearGradient>
+      <linearGradient id="rg3" x1="0" y1="0" x2="1" y2=".18">
+        <stop offset="0" stop-color="#fdf8f0"/><stop offset=".52" stop-color="#efe3d1"/><stop offset="1" stop-color="#d6c2a6"/>
+      </linearGradient>
+      <linearGradient id="rg4" x1="0" y1="0" x2="1" y2=".18">
+        <stop offset="0" stop-color="#fdf8f0"/><stop offset=".52" stop-color="#efe3d1"/><stop offset="1" stop-color="#d6c2a6"/>
+      </linearGradient>
+      <linearGradient id="rg5" x1="0" y1="0" x2="1" y2=".18">
+        <stop offset="0" stop-color="#fdf8f0"/><stop offset=".52" stop-color="#efe3d1"/><stop offset="1" stop-color="#d6c2a6"/>
+      </linearGradient>
+      <linearGradient id="shine" x1="-200" y1="0" x2="1800" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#fffdf8" stop-opacity="0"/>
+        <stop offset=".14" stop-color="#fffdf8" stop-opacity=".5"/>
+        <stop offset=".33" stop-color="#fffdf8" stop-opacity=".08"/>
+        <stop offset=".52" stop-color="#fffdf8" stop-opacity=".55"/>
+        <stop offset=".72" stop-color="#fffdf8" stop-opacity=".04"/>
+        <stop offset=".88" stop-color="#fffdf8" stop-opacity=".38"/>
+        <stop offset="1" stop-color="#fffdf8" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="shineSoft" x1="0" y1="0" x2="1800" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#fffdf8" stop-opacity="0"/>
+        <stop offset=".25" stop-color="#fffdf8" stop-opacity=".16"/>
+        <stop offset=".55" stop-color="#fffdf8" stop-opacity=".05"/>
+        <stop offset=".8" stop-color="#fffdf8" stop-opacity=".2"/>
+        <stop offset="1" stop-color="#fffdf8" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="hazeA" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#cf9a93" stop-opacity=".36"/>
+        <stop offset="1" stop-color="#cf9a93" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="hazeB" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#aeb59c" stop-opacity=".3"/>
+        <stop offset="1" stop-color="#aeb59c" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="hazeC" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#f0dcc0" stop-opacity=".48"/>
+        <stop offset="1" stop-color="#f0dcc0" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="softBlur" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="14"/>
+      </filter>
+      <filter id="depth" x="-10%" y="-10%" width="120%" height="120%">
+        <feGaussianBlur stdDeviation="1.7"/>
+      </filter>
+      <filter id="shadowBlur" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="10"/>
+      </filter>
+      <filter id="grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency=".82" numOctaves="3" stitchTiles="stitch"/>
+        <feColorMatrix type="saturate" values="0"/>
+      </filter>
+    </defs>
+
+    <rect width="1600" height="1000" fill="#f4ece1"/>
+    <ellipse cx="1180" cy="260" rx="440" ry="300" fill="url(#hazeC)" filter="url(#softBlur)"/>
+    <ellipse cx="330" cy="650" rx="380" ry="300" fill="url(#hazeA)" filter="url(#softBlur)"/>
+    <ellipse cx="1390" cy="820" rx="360" ry="260" fill="url(#hazeB)" filter="url(#softBlur)"/>
+
+    <g id="ribbons" transform="rotate(-7 800 500)"></g>
+
+    <g id="threads" fill="none" stroke-linecap="round">
+      <path d="M -80 292 C 340 220 552 406 912 356 C 1180 318 1398 210 1700 268" stroke="#4b3242" stroke-opacity=".1" stroke-width=".9"/>
+      <path d="M -60 646 C 300 560 610 726 916 638 C 1208 554 1444 640 1680 566" stroke="#4b3242" stroke-opacity=".08" stroke-width=".8"/>
+      <path d="M 180 1030 C 380 800 690 792 906 824 C 1160 862 1330 690 1660 696" stroke="#b07a76" stroke-opacity=".18" stroke-width=".8"/>
+      <path d="M 920 -40 C 1010 190 1290 190 1388 370 C 1472 524 1560 560 1680 540" stroke="#4b3242" stroke-opacity=".07" stroke-width=".9"/>
+    </g>
+
+    <rect width="1600" height="1000" filter="url(#grain)" opacity=".045" style="mix-blend-mode:multiply"/>
+  </svg>
+
+  <div class="veil"></div>
+
+  <div class="overlay">
+    <header class="masthead">
+      <div class="brand">
+        <div class="wordmark">SOIE</div>
+        <div class="sub">maison de tissus</div>
+      </div>
+      <div class="head-meta">Étude de tissu — N° 04<br>Soie sauvage, 22 momme<br>Lyon · depuis 1926</div>
+    </header>
+
+    <main class="hero">
+      <p class="kicker">A study in fluid drape</p>
+      <h1>Softness,<br>in <em>motion</em>.</h1>
+      <div class="note-row">
+        <span class="rule" aria-hidden="true"></span>
+        <p>Mulberry silk, cut on the bias. A metre of cloth holds a thousand small decisions — weight, light, <i>the way it remembers a hand.</i></p>
+      </div>
+    </main>
+
+    <div class="side-note" aria-hidden="true">Soie sauvage · filée à Lyon · 100% mûrier</div>
+
+    <footer class="dock">
+      <div class="tension">
+        <div class="tension-head">
+          <label for="tension">Tension</label>
+          <output id="tensionOut" for="tension">42</output>
+        </div>
+        <input class="tension" id="tension" type="range" min="0" max="100" step="1" value="42" aria-describedby="tensionHint">
+        <div class="scale-labels" aria-hidden="true"><span>slack</span><span>taut</span></div>
+        <span id="tensionHint" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Changes the number and amplitude of the silk folds.</span>
+      </div>
+
+      <div class="dock-right">
+        <div class="palettes" role="group" aria-label="Fabric palette">
+          <span class="pal-label">Palette</span>
+          <button class="pal" type="button" data-palette="ivory" aria-pressed="false">
+            <span class="sw" style="background:#e9dcc8"></span>Ivory
+          </button>
+          <button class="pal" type="button" data-palette="rose" aria-pressed="true">
+            <span class="sw" style="background:#d8a29b"></span>Rose
+          </button>
+          <button class="pal" type="button" data-palette="sage" aria-pressed="false">
+            <span class="sw" style="background:#aeb59c"></span>Sage
+          </button>
+        </div>
+        <button class="fall" id="fallBtn" type="button">
+          <span>Let it fall</span>
+          <svg viewBox="0 0 12 14" fill="none" aria-hidden="true">
+            <path d="M6 1v11M1.6 8.2 6 12.6l4.4-4.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var silk = document.getElementById("silk");
+  var ribbonsEl = document.getElementById("ribbons");
+  var tension = document.getElementById("tension");
+  var tensionOut = document.getElementById("tensionOut");
+  var fallBtn = document.getElementById("fallBtn");
+  var palBtns = Array.prototype.slice.call(document.querySelectorAll(".pal"));
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var W = 1600, H = 1000;
+  var STEPS = 86;
+
+  var palettes = {
+    ivory: {
+      accent: "#a68a6d",
+      ribbons: [
+        ["#fdf8f0","#efe3d1","#d6c2a6"],
+        ["#f7eee2","#e4d4c0","#c8b096"],
+        ["#b6a08c","#8e7663","#675243"],
+        ["#fbf6ee","#eadcc8","#cbb79e"],
+        ["#efebe2","#d8d0c3","#b3a996"],
+        ["#f3ebe0","#ddcdb8","#c1ad93"],
+        ["#faf4ea","#e6d9c5","#cbb69a"]
+      ]
+    },
+    rose: {
+      accent: "#b07a76",
+      ribbons: [
+        ["#fbf4ea","#eadbc5","#cfb99d"],
+        ["#f4dcd6","#dfaaa2","#bb7d7c"],
+        ["#9a7689","#66455a","#402838"],
+        ["#f7e9df","#e6cbb6","#c8a98c"],
+        ["#ece9dc","#cdd2bc","#a3ad93"],
+        ["#f2ded8","#dcb0a8","#c08a85"],
+        ["#fdf6ec","#ede0cb","#d4bea1"]
+      ]
+    },
+    sage: {
+      accent: "#7f8b72",
+      ribbons: [
+        ["#f5f4e9","#e2e4d1","#bcc5ab"],
+        ["#eef0e3","#cfd7be","#a5b092"],
+        ["#8f9a80","#67745b","#46513f"],
+        ["#f8f2e7","#e4d6c1","#c6b093"],
+        ["#f0f2e7","#d5ddc4","#adb99a"],
+        ["#faf7ee","#e5e2d0","#bcc0a6"],
+        ["#f5f4e9","#e2e4d1","#bcc5ab"]
+      ]
+    }
+  };
+
+  var configs = [
+    { base: 168, amp: 48, w: 150, twist: 22, freq: 2.4, phase: 0.5, pal: 0, op: 0.62, blur: true, speed: 0.7 },
+    { base: 306, amp: 74, w: 208, twist: 36, freq: 2.9, phase: 2.15, pal: 1, op: 0.95, blur: false, speed: 1.0 },
+    { base: 462, amp: 100, w: 272, twist: 54, freq: 2.25, phase: 4.05, pal: 2, op: 0.96, blur: false, speed: 0.82 },
+    { base: 622, amp: 92, w: 198, twist: 38, freq: 3.1, phase: 1.2, pal: 3, op: 1, blur: false, speed: 1.12 },
+    { base: 748, amp: 62, w: 150, twist: 28, freq: 2.7, phase: 3.2, pal: 4, op: 0.82, blur: true, speed: 0.92 },
+    { base: 846, amp: 42, w: 112, twist: 20, freq: 3.3, phase: 5.1, pal: 5, op: 0.68, blur: true, speed: 1.2 },
+    { base: 962, amp: 54, w: 230, twist: 34, freq: 2.2, phase: 2.7, pal: 6, op: 0.78, blur: false, speed: 0.78 }
+  ];
+
+  var ribbonEls = [];
+  var ribbonData = [];
+  var currentPalette = "rose";
+  var targetTension = 42;
+  var smoothTension = 42;
+  var time = 0;
+  var lastFrame = 0;
+
+  var pointer = { x: 800, y: 500, strength: 0, targetX: 800, targetY: 500, targetStrength: 0 };
+
+  ribbonsEl.innerHTML = configs.map(function(c, i){
+    return '<g class="ribbon" data-i="' + i + '" opacity="' + c.op + '"' +
+      (c.blur ? ' filter="url(#depth)"' : '') + '>' +
+      '<path class="r-shadow" fill="#4c3040" opacity=".12" filter="url(#shadowBlur)"/>' +
+      '<path class="r-body" fill="url(#rg' + i + ')"/>' +
+      '<path class="r-edge" fill="none" stroke="url(#shine)" stroke-width="1.35" stroke-linecap="round"/>' +
+      '<path class="r-l1" fill="none" stroke="url(#shine)" stroke-width="1.05" stroke-linecap="round" opacity=".8"/>' +
+      '<path class="r-l2" fill="none" stroke="url(#shineSoft)" stroke-width=".9" stroke-linecap="round" opacity=".9"/>' +
+      '<path class="r-l3" fill="none" stroke="url(#shineSoft)" stroke-width=".7" stroke-linecap="round" opacity=".6"/>' +
+      '<path class="r-fold" fill="none" stroke="#4c3040" stroke-width=".8" stroke-linecap="round" opacity=".12"/>' +
+      '</g>';
+  }).join("");
+
+  var groups = Array.prototype.slice.call(ribbonsEl.querySelectorAll(".ribbon"));
+  groups.forEach(function(g, i){
+    ribbonEls.push({
+      g: g,
+      body: g.querySelector(".r-body"),
+      shadow: g.querySelector(".r-shadow"),
+      edge: g.querySelector(".r-edge"),
+      l1: g.querySelector(".r-l1"),
+      l2: g.querySelector(".r-l2"),
+      l3: g.querySelector(".r-l3"),
+      fold: g.querySelector(".r-fold")
+    });
+    ribbonData.push({ offY: 0, vel: 0, phaseJitter: (i % 3) * 0.4 });
+  });
+
+  function setPalette(name){
+    currentPalette = name;
+    var pal = palettes[name];
+    document.documentElement.style.setProperty("--accent", pal.accent);
+    palBtns.forEach(function(b){
+      b.setAttribute("aria-pressed", b.dataset.palette === name ? "true" : "false");
+    });
+    pal.ribbons.forEach(function(triple, i){
+      var grad = document.getElementById("rg" + i);
+      if(!grad) return;
+      var stops = grad.querySelectorAll("stop");
+      for(var s = 0; s < stops.length && s < triple.length; s++){
+        stops[s].setAttribute("stop-color", triple[s]);
+      }
+    });
+  }
+
+  function smoothPath(pts, close){
+    if(pts.length < 2) return "";
+    var d = "M" + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+    for(var i = 1; i < pts.length - 1; i++){
+      var mx = (pts[i].x + pts[i + 1].x) / 2;
+      var my = (pts[i].y + pts[i + 1].y) / 2;
+      d += "Q" + pts[i].x.toFixed(1) + " " + pts[i].y.toFixed(1) + " " + mx.toFixed(1) + " " + my.toFixed(1);
+    }
+    var last = pts[pts.length - 1];
+    d += "L" + last.x.toFixed(1) + " " + last.y.toFixed(1);
+    if(close) d += "Z";
+    return d;
+  }
+
+  function viewBoxPoint(clientX, clientY){
+    var rect = silk.getBoundingClientRect();
+    var scale = Math.max(rect.width / W, rect.height / H);
+    var offX = (rect.width - W * scale) / 2;
+    var offY = (rect.height - H * scale) / 2;
+    var wx = (clientX - rect.left - offX) / scale;
+    var wy = (clientY - rect.top - offY) / scale;
+    var th = -7 * Math.PI / 180;
+    var dx = wx - 800, dy = wy - 500;
+    return {
+      x: 800 + dx * Math.cos(th) - dy * Math.sin(th),
+      y: 500 + dx * Math.sin(th) + dy * Math.cos(th)
+    };
+  }
+
+  function buildRibbon(cfg, idx, t){
+    var tensionN = smoothTension / 100;
+    var k = cfg.freq * (0.62 + tensionN * 1.48);
+    var amp = cfg.amp * (1.16 - tensionN * 0.56);
+    var data = ribbonData[idx];
+    var top = [], bottom = [], shadow = [];
+    var l1 = [], l2 = [], l3 = [], fold = [], edge = [];
+    var drift = reduceMotion ? 0 : 1;
+
+    for(var i = 0; i <= STEPS; i++){
+      var x = -300 + (W + 600) * (i / STEPS);
+      var u = (x + 300) / (W + 600);
+      var phase = cfg.phase + data.phaseJitter;
+      var wave =
+        Math.sin(u * Math.PI * 2 * k + phase + t * 0.14 * cfg.speed * drift) * amp +
+        Math.sin(u * Math.PI * 2 * k * 1.93 + phase * 1.7 + t * 0.09) * amp * 0.26;
+      var baseY = cfg.base + wave + data.offY;
+      var d = x - pointer.x;
+      var influence = Math.exp(-(d * d) / (2 * 355 * 355));
+      var pull = (pointer.y - cfg.base) * 0.34 * pointer.strength;
+      pull = Math.max(-260, Math.min(260, pull));
+      baseY += influence * pull;
+
+      var hw = cfg.w * 0.5 * (0.84 + 0.16 * Math.sin(u * Math.PI * 2 * k * 0.72 + phase + t * 0.11));
+      var tw = Math.sin(u * Math.PI * 2 * k * 1.35 + phase * 1.9 + t * 0.16) * cfg.twist * (0.45 + tensionN * 0.55);
+      var yt = baseY - hw + tw * 0.55;
+      var yb = baseY + hw + tw * 0.35;
+
+      top.push({ x: x, y: yt });
+      bottom.push({ x: x, y: yb });
+      shadow.push({ x: x, y: baseY + hw * 0.65 + 16 });
+      l1.push({ x: x, y: yt + (yb - yt) * 0.2 + Math.sin(u * Math.PI * 2 * k * 2.1 + phase) * 1.6 });
+      l2.push({ x: x, y: yt + (yb - yt) * 0.46 + Math.sin(u * Math.PI * 2 * k * 2.1 + phase + 0.8) * 2.2 });
+      l3.push({ x: x, y: yt + (yb - yt) * 0.76 + Math.sin(u * Math.PI * 2 * k * 2.1 + phase + 1.6) * 1.4 });
+      fold.push({ x: x, y: yt + (yb - yt) * 0.9 });
+      edge.push({ x: x, y: yt + 0.5 });
+    }
+
+    var bodyPts = top.concat(bottom.slice().reverse());
+    return {
+      body: smoothPath(bodyPts, true),
+      shadow: smoothPath(shadow, false),
+      edge: smoothPath(edge, false),
+      l1: smoothPath(l1, false),
+      l2: smoothPath(l2, false),
+      l3: smoothPath(l3, false),
+      fold: smoothPath(fold, false)
+    };
+  }
+
+  function draw(t){
+    for(var i = 0; i < configs.length; i++){
+      var d = buildRibbon(configs[i], i, t);
+      var el = ribbonEls[i];
+      el.body.setAttribute("d", d.body);
+      el.shadow.setAttribute("d", d.shadow);
+      el.edge.setAttribute("d", d.edge);
+      el.l1.setAttribute("d", d.l1);
+      el.l2.setAttribute("d", d.l2);
+      el.l3.setAttribute("d", d.l3);
+      el.fold.setAttribute("d", d.fold);
+    }
+  }
+
+  function loop(ts){
+    if(!lastFrame) lastFrame = ts;
+    var dt = Math.min(0.04, Math.max(0, (ts - lastFrame) / 1000));
+    lastFrame = ts;
+    if(!reduceMotion) time += dt;
+
+    smoothTension += (targetTension - smoothTension) * Math.min(1, dt * 4.5);
+    pointer.x += (pointer.targetX - pointer.x) * Math.min(1, dt * 6.5);
+    pointer.y += (pointer.targetY - pointer.y) * Math.min(1, dt * 6.5);
+    pointer.strength += (pointer.targetStrength - pointer.strength) * Math.min(1, dt * 4.2);
+
+    for(var i = 0; i < ribbonData.length; i++){
+      var r = ribbonData[i];
+      var k = 19 + i * 1.4;
+      var damp = 4.6 + i * 0.12;
+      r.vel += (-r.offY * k - r.vel * damp) * dt;
+      r.offY += r.vel * dt;
+    }
+
+    draw(time);
+    requestAnimationFrame(loop);
+  }
+
+  function onPointerMove(e){
+    var p = viewBoxPoint(e.clientX, e.clientY);
+    pointer.targetX = p.x;
+    pointer.targetY = p.y;
+    pointer.targetStrength = e.buttons ? 1.3 : 1;
+  }
+
+  window.addEventListener("pointermove", onPointerMove, { passive: true });
+  window.addEventListener("pointerdown", function(e){
+    var p = viewBoxPoint(e.clientX, e.clientY);
+    pointer.targetX = p.x;
+    pointer.targetY = p.y;
+    pointer.targetStrength = 1.35;
+  }, { passive: true });
+  window.addEventListener("pointerup", function(){
+    pointer.targetStrength = 1;
+  }, { passive: true });
+  window.addEventListener("pointerleave", function(){
+    pointer.targetStrength = 0;
+  });
+
+  tension.addEventListener("input", function(){
+    targetTension = Number(tension.value);
+    tensionOut.textContent = String(targetTension).padStart(2, "0");
+  });
+
+  palBtns.forEach(function(b){
+    b.addEventListener("click", function(){
+      setPalette(b.dataset.palette);
+    });
+  });
+
+  fallBtn.addEventListener("click", function(){
+    pointer.targetStrength = 0;
+    var strength = reduceMotion ? 0.35 : 1;
+    for(var i = 0; i < ribbonData.length; i++){
+      ribbonData[i].vel += (210 + i * 44) * strength;
+    }
+    fallBtn.classList.remove("pushing");
+    void fallBtn.offsetWidth;
+    fallBtn.classList.add("pushing");
+    setTimeout(function(){ fallBtn.classList.remove("pushing"); }, 650);
+  });
+
+  window.addEventListener("keydown", function(e){
+    if(e.target && /INPUT|BUTTON/.test(e.target.tagName)) return;
+    if(e.key === "ArrowRight" || e.key === "ArrowUp"){
+      tension.value = String(Math.min(100, Number(tension.value) + 2));
+      targetTension = Number(tension.value);
+      tensionOut.textContent = String(targetTension).padStart(2, "0");
+    } else if(e.key === "ArrowLeft" || e.key === "ArrowDown"){
+      tension.value = String(Math.max(0, Number(tension.value) - 2));
+      targetTension = Number(tension.value);
+      tensionOut.textContent = String(targetTension).padStart(2, "0");
+    }
+  });
+
+  setPalette("rose");
+  tensionOut.textContent = "42";
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COMB — Cells of work</title>
+<style>
+  :root{
+    --umber:#1a0f08;
+    --umber-deep:#120a05;
+    --umber-mid:#241509;
+    --gold:#d9a441;
+    --honey:#e8bc6a;
+    --honey-soft:#f0d39a;
+    --cream:#f6ead2;
+    --cream-soft:rgba(246,234,210,.7);
+    --cream-mute:rgba(246,234,210,.44);
+    --cream-faint:rgba(246,234,210,.16);
+    --line:rgba(232,188,106,.22);
+    --line-soft:rgba(232,188,106,.12);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;
+    --hexclip:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  }
+  *{box-sizing:border-box}
+  html{background:var(--umber-deep);scrollbar-gutter:stable}
+  body{
+    margin:0;
+    min-height:100dvh;
+    color:var(--cream);
+    font-family:var(--sans);
+    background:
+      radial-gradient(1100px 720px at 50% -6%, #3a2410 0%, #241509 40%, #180e07 72%, #120a05 100%);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body.locked{overflow:hidden}
+  body::before{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:radial-gradient(rgba(232,188,106,.14) 1px, transparent 1.2px);
+    background-size:32px 32px;
+    opacity:.18;
+    -webkit-mask-image:radial-gradient(ellipse at 50% 28%, #000 0%, transparent 76%);
+    mask-image:radial-gradient(ellipse at 50% 28%, #000 0%, transparent 76%);
+  }
+  body::after{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 50% 100%, rgba(0,0,0,.45), transparent 62%);
+  }
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+  .shell{position:relative;z-index:2;width:100%;max-width:1280px;margin:0 auto;padding:0 clamp(16px,3.4vw,44px)}
+
+  .masthead{
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    padding-top:19px;
+    padding-bottom:19px;
+    border-bottom:1px solid var(--line);
+    font:500 9px/1.4 var(--mono);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--cream-mute);
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;color:var(--cream)}
+  .brand strong{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:.34em;
+    line-height:1;
+  }
+  .brand span{
+    font:400 7.5px/1 var(--mono);
+    letter-spacing:.24em;
+    color:var(--honey);
+    text-transform:uppercase;
+  }
+  .mast-mid{display:flex;align-items:center;gap:10px}
+  .mast-mid .hexdot{
+    width:11px;height:10px;
+    background:var(--honey);
+    clip-path:var(--hexclip);
+    opacity:.85;
+  }
+  .mast-right{display:flex;gap:18px;align-items:center}
+  .mast-right .status{display:flex;align-items:center;gap:7px;color:rgba(232,188,106,.7)}
+  .mast-right .status i{width:4px;height:4px;border-radius:50%;background:var(--gold)}
+
+  .hero{padding-top:clamp(42px,6.6vh,78px)}
+  .eyebrow{
+    display:flex;align-items:center;gap:10px;
+    margin:0 0 22px;
+    font:500 9px/1 var(--mono);
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--honey);
+  }
+  .eyebrow .line{width:38px;height:1px;background:var(--line);display:inline-block}
+  .headline-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 292px;
+    align-items:end;
+    gap:clamp(24px,4vw,60px);
+  }
+  h1{
+    margin:0;
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:clamp(54px,9.4vw,132px);
+    line-height:.86;
+    letter-spacing:-.055em;
+    color:var(--cream);
+    text-wrap:balance;
+  }
+  h1 em{font-style:italic;color:var(--honey);font-weight:400;letter-spacing:-.035em}
+  .headline-side{padding-bottom:10px}
+  .headline-side p{
+    margin:0;
+    font-family:var(--serif);
+    font-size:15px;
+    line-height:1.62;
+    color:var(--cream-soft);
+  }
+  .headline-side .sig{
+    display:flex;align-items:center;gap:10px;
+    margin-top:16px;padding-top:13px;
+    border-top:1px solid var(--line-soft);
+    font:400 8px/1.6 var(--mono);
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--cream-mute);
+  }
+  .headline-side .sig b{color:var(--honey);font-weight:500}
+
+  .toolbar{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:14px 20px;
+    margin-top:clamp(28px,4.4vh,42px);
+    padding-top:16px;
+    border-top:1px solid var(--line);
+  }
+  .filters{display:flex;flex-wrap:wrap;gap:7px}
+  .filter{
+    appearance:none;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:transparent;
+    color:var(--cream-mute);
+    padding:8px 15px;
+    font:500 8.5px/1 var(--mono);
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:color .2s,background .2s,border-color .2s;
+  }
+  .filter:hover{color:var(--cream);border-color:rgba(232,188,106,.5)}
+  .filter[aria-pressed="true"]{
+    background:var(--honey);
+    border-color:var(--honey);
+    color:#251506;
+  }
+  .filter:focus-visible{outline:1px solid var(--honey);outline-offset:3px}
+  .visible-count{
+    display:flex;align-items:baseline;gap:8px;
+    margin:0;
+    font:400 8.5px/1 var(--mono);
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--cream-mute);
+    white-space:nowrap;
+  }
+  .visible-count strong{
+    font-family:var(--serif);
+    font-size:24px;
+    font-weight:400;
+    letter-spacing:-.01em;
+    color:var(--cream);
+    font-variant-numeric:tabular-nums;
+  }
+  .visible-count .of{color:rgba(246,234,210,.28)}
+
+  .comb-wrap{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    padding:clamp(26px,4.6vh,48px) 0 clamp(46px,8vh,92px);
+  }
+  .comb{
+    --hex:230px;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    transition:opacity .25s;
+  }
+  .hex-row{display:flex;justify-content:center;position:relative}
+  .hex-row + .hex-row{margin-top:calc(var(--hex) * -0.2887)}
+
+  .hex{
+    appearance:none;
+    position:relative;
+    flex:none;
+    width:var(--hex);
+    height:calc(var(--hex) * 1.1547);
+    margin:0 3px;
+    padding:0;
+    border:0;
+    background:linear-gradient(155deg, rgba(217,164,65,.7), rgba(120,81,30,.5) 55%, rgba(61,40,15,.6));
+    clip-path:var(--hexclip);
+    cursor:pointer;
+    color:var(--cream);
+    text-align:left;
+    animation:hexIn .55s cubic-bezier(.2,.8,.2,1) both;
+    animation-delay:calc(var(--i,0) * 42ms);
+    transition:filter .3s;
+  }
+  .hex:hover{filter:brightness(1.08)}
+  .hex:active{filter:brightness(.96)}
+  .hex:focus-visible{outline:none;filter:drop-shadow(0 0 0.5px var(--honey)) brightness(1.05)}
+  @keyframes hexIn{
+    from{transform:translateY(16px) scale(.96)}
+    to{transform:none}
+  }
+
+  .hex-inner{
+    position:absolute;
+    inset:1.5px;
+    clip-path:var(--hexclip);
+    overflow:hidden;
+    background:
+      radial-gradient(130% 115% at 18% 4%, var(--a) 0%, rgba(0,0,0,0) 56%),
+      radial-gradient(100% 90% at 90% 100%, var(--b) 0%, rgba(0,0,0,0) 62%),
+      linear-gradient(155deg, #2a1a0d 0%, #1b1009 62%, #160d07 100%);
+    transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .hex:hover .hex-inner{transform:scale(1.018)}
+  .hex:focus-visible .hex-inner{box-shadow:inset 0 0 0 2px rgba(232,188,106,.9)}
+  .hex-inner::after{
+    content:"";
+    position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(62% 42% at 50% 58%, rgba(18,10,5,.48) 0%, rgba(18,10,5,0) 78%),
+      linear-gradient(to top, rgba(18,10,5,.56) 0%, rgba(18,10,5,.08) 54%, rgba(18,10,5,.02) 100%);
+  }
+  .hex-art{
+    position:absolute;inset:0;z-index:0;
+    color:rgba(246,234,210,.32);
+    transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .4s;
+    opacity:.9;
+  }
+  .hex-art svg{width:100%;height:100%;display:block}
+  .hex:hover .hex-art{transform:scale(1.08) rotate(1.5deg);opacity:1}
+  .hex-top{
+    position:absolute;z-index:2;
+    top:16%;left:17%;right:17%;
+    display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+    font:500 8.5px/1 var(--mono);
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:rgba(232,188,106,.9);
+  }
+  .hex-open{
+    display:inline-block;
+    font-size:11px;
+    color:rgba(246,234,210,.5);
+    transition:transform .3s,color .3s;
+  }
+  .hex:hover .hex-open{transform:translate(2px,-2px);color:var(--honey)}
+  .hex-content{
+    position:absolute;z-index:2;
+    left:13%;right:13%;top:54%;
+    transform:translateY(-50%);
+    display:block;
+    text-align:center;
+  }
+  .hex-cat{
+    display:block;
+    margin-bottom:5px;
+    font:500 8.5px/1 var(--mono);
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:rgba(246,234,210,.55);
+    text-align:center;
+  }
+  .hex-title{
+    display:block;
+    font-family:var(--serif);
+    font-size:clamp(15px,1.7vw,23px);
+    line-height:1.06;
+    letter-spacing:-.015em;
+    color:var(--cream);
+    text-wrap:balance;
+    text-align:center;
+  }
+  .empty-comb{
+    padding:60px 20px;
+    text-align:center;
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:20px;
+    color:var(--cream-mute);
+  }
+
+  .page-foot{
+    position:relative;z-index:2;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    padding-top:22px;
+    padding-bottom:32px;
+    border-top:1px solid var(--line);
+    font:400 8.5px/1.7 var(--mono);
+    letter-spacing:.17em;
+    text-transform:uppercase;
+    color:rgba(246,234,210,.34);
+  }
+  .page-foot .foot-brand{
+    display:flex;align-items:center;gap:9px;
+    color:rgba(246,234,210,.68);
+  }
+  .page-foot .foot-brand i{
+    width:10px;height:9px;background:var(--honey);clip-path:var(--hexclip);opacity:.7;
+  }
+  .page-foot a{color:rgba(246,234,210,.55);text-decoration:none;border-bottom:1px solid rgba(232,188,106,.3);transition:color .2s}
+  .page-foot a:hover{color:var(--cream)}
+
+  .overlay{
+    position:fixed;inset:0;z-index:50;
+    background:rgba(10,6,3,.6);
+    -webkit-backdrop-filter:blur(3px);
+    backdrop-filter:blur(3px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .4s;
+  }
+  .overlay.show{opacity:1;pointer-events:auto}
+
+  .panel{
+    position:fixed;
+    top:0;right:0;
+    z-index:60;
+    width:min(438px,100%);
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    background:linear-gradient(165deg,#2b1b0e 0%,#1b1009 55%,#150c06 100%);
+    border-left:1px solid rgba(232,188,106,.32);
+    box-shadow:-40px 0 90px rgba(0,0,0,.5);
+    transform:translateX(102%);
+    transition:transform .55s cubic-bezier(.16,.84,.22,1);
+    visibility:hidden;
+  }
+  .panel.open{transform:none;visibility:visible}
+  .panel-art{
+    position:relative;
+    height:206px;
+    flex:none;
+    overflow:hidden;
+    background:
+      radial-gradient(140% 150% at 16% 0%, var(--a) 0%, rgba(0,0,0,0) 60%),
+      radial-gradient(120% 130% at 92% 100%, var(--b) 0%, rgba(0,0,0,0) 64%),
+      #24150b;
+    border-bottom:1px solid rgba(232,188,106,.28);
+  }
+  .panel-art::after{
+    content:"";
+    position:absolute;inset:0;
+    background:linear-gradient(to top, rgba(18,10,5,.7), rgba(18,10,5,.05) 70%);
+  }
+  .panel-art svg{
+    position:absolute;inset:0;width:100%;height:100%;
+    color:rgba(246,234,210,.34);
+    transition:opacity .3s;
+  }
+  .panel-art .cell-label{
+    position:absolute;left:26px;bottom:22px;z-index:2;
+    font:500 8px/1 var(--mono);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:rgba(246,234,210,.7);
+  }
+  .panel-close{
+    position:absolute;top:17px;right:17px;z-index:5;
+    width:38px;height:38px;
+    display:grid;place-items:center;
+    border:1px solid rgba(246,234,210,.38);
+    border-radius:50%;
+    background:rgba(18,10,5,.62);
+    color:var(--cream);
+    cursor:pointer;
+    -webkit-backdrop-filter:blur(5px);
+    backdrop-filter:blur(5px);
+    transition:background .2s,border-color .2s,transform .2s;
+  }
+  .panel-close:hover{background:rgba(232,188,106,.16);border-color:rgba(232,188,106,.55);transform:rotate(90deg)}
+  .panel-close:focus-visible{outline:2px solid var(--honey);outline-offset:3px}
+  .panel-close svg{width:14px;height:14px;display:block}
+
+  .panel-body{
+    flex:1;
+    overflow-y:auto;
+    padding:27px 30px 30px;
+    display:flex;
+    flex-direction:column;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(232,188,106,.35) transparent;
+  }
+  .panel-body::-webkit-scrollbar{width:8px}
+  .panel-body::-webkit-scrollbar-thumb{background:rgba(232,188,106,.28);border-radius:4px}
+  .panel-kicker{
+    margin:0 0 10px;
+    font:500 8px/1 var(--mono);
+    letter-spacing:.26em;
+    text-transform:uppercase;
+    color:var(--honey);
+  }
+  .panel-title{
+    margin:0;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(34px,4vw,44px);
+    line-height:1;
+    letter-spacing:-.03em;
+    color:var(--cream);
+    text-wrap:balance;
+  }
+  .panel-year{
+    display:flex;align-items:center;gap:12px;
+    margin:15px 0 0;
+    font:400 10px/1 var(--mono);
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--cream-mute);
+  }
+  .panel-year::before{content:"";width:24px;height:1px;background:var(--line);display:inline-block}
+  .panel-year strong{font-family:var(--serif);font-size:17px;font-weight:400;letter-spacing:.05em;color:var(--honey-soft)}
+  .panel-desc{
+    margin:22px 0 0;
+    font-family:var(--serif);
+    font-size:15.5px;
+    line-height:1.7;
+    color:var(--cream-soft);
+  }
+  .panel-meta{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px 20px;
+    margin:26px 0 0;
+    padding:18px 0;
+    border-top:1px solid var(--line-soft);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .panel-meta div{min-width:0}
+  .panel-meta dt{
+    margin:0 0 5px;
+    font:500 7px/1 var(--mono);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:rgba(232,188,106,.7);
+  }
+  .panel-meta dd{
+    margin:0;
+    font-family:var(--serif);
+    font-size:13.5px;
+    line-height:1.4;
+    color:var(--cream-soft);
+  }
+  .panel-spacer{flex:1;min-height:22px}
+  .next-cell{
+    appearance:none;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    width:100%;
+    margin-top:24px;
+    padding:16px 2px;
+    border:0;
+    border-top:1px solid var(--line);
+    background:transparent;
+    color:var(--cream);
+    cursor:pointer;
+    text-align:left;
+    font:500 9px/1 var(--mono);
+    letter-spacing:.2em;
+    text-transform:uppercase;
+  }
+  .next-cell .next-label{display:flex;flex-direction:column;gap:6px}
+  .next-cell .next-label small{
+    font-family:var(--serif);
+    font-size:15px;
+    font-style:italic;
+    letter-spacing:0;
+    text-transform:none;
+    color:var(--cream-mute);
+  }
+  .next-cell .next-arrow{
+    width:42px;height:42px;flex:none;
+    display:grid;place-items:center;
+    border:1px solid var(--line);
+    border-radius:50%;
+    color:var(--honey);
+    transition:background .25s,color .25s,transform .25s;
+  }
+  .next-cell:hover .next-arrow{background:var(--honey);color:#241506;transform:translateX(3px)}
+  .next-cell:focus-visible{outline:1px solid var(--honey);outline-offset:2px}
+  .next-cell svg{width:15px;height:15px;display:block}
+
+  @media (max-width:960px){
+    .headline-row{grid-template-columns:minmax(0,1fr) 260px;gap:28px}
+  }
+  @media (max-width:760px){
+    .headline-row{grid-template-columns:1fr;gap:20px}
+    .headline-side{max-width:380px}
+    .mast-mid{display:none}
+  }
+  @media (max-width:640px){
+    .masthead{font-size:8px}
+    .mast-right .status{display:none}
+    h1{font-size:clamp(48px,14.6vw,78px)}
+    .hero{padding-top:34px}
+    .toolbar{align-items:flex-start}
+    .filters{gap:5px}
+    .filter{padding:7px 12px;font-size:8px}
+    .visible-count{margin-left:auto}
+    .visible-count strong{font-size:20px}
+    .hex-cat{font-size:7.5px;letter-spacing:.16em;margin-bottom:3px}
+    .hex-top{font-size:7.5px}
+    .hex-title{font-size:clamp(13px,3.9vw,17px)}
+    .panel{
+      width:100%;
+      height:88dvh;
+      top:auto;bottom:0;
+      border-left:0;
+      border-top:1px solid rgba(232,188,106,.36);
+      border-radius:18px 18px 0 0;
+      transform:translateY(103%);
+    }
+    .panel.open{transform:none}
+    .panel-art{height:162px;border-radius:18px 18px 0 0}
+    .panel-body{padding:22px 22px calc(26px + env(safe-area-inset-bottom))}
+    .panel-title{font-size:34px}
+    .page-foot{font-size:8px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+  }
+</style>
+</head>
+<body>
+  <header class="masthead shell">
+    <div class="brand"><strong>COMB</strong><span>Design studio</span></div>
+    <div class="mast-mid"><span class="hexdot" aria-hidden="true"></span><span>Nine cells, one colony</span></div>
+    <div class="mast-right">
+      <span>Paris · Copenhagen</span>
+      <span class="status"><i aria-hidden="true"></i>Selected 2020—2025</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero shell" aria-labelledby="page-title">
+      <p class="eyebrow"><span class="line" aria-hidden="true"></span>Portfolio · Vol. IV</p>
+      <div class="headline-row">
+        <h1 id="page-title">Cells of <em>work.</em></h1>
+        <div class="headline-side">
+          <p>An independent studio for identity, digital and interior work. Small teams, close quarters, a fondness for structure.</p>
+          <div class="sig"><span>Est. 2018</span><span>·</span><b id="sigCount">Nine</b><span>selected projects</span></div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters" role="group" aria-label="Filter projects">
+          <button class="filter" type="button" data-filter="All" aria-pressed="true">All</button>
+          <button class="filter" type="button" data-filter="Brand" aria-pressed="false">Brand</button>
+          <button class="filter" type="button" data-filter="Digital" aria-pressed="false">Digital</button>
+          <button class="filter" type="button" data-filter="Spaces" aria-pressed="false">Spaces</button>
+        </div>
+        <p class="visible-count"><strong id="visibleCount">09</strong><span class="of">/ 09</span> cells visible</p>
+      </div>
+    </section>
+
+    <section class="comb-wrap shell" aria-label="Honeycomb project index">
+      <div class="comb" id="comb"></div>
+    </section>
+  </main>
+
+  <footer class="page-foot shell">
+    <span class="foot-brand"><i aria-hidden="true"></i>COMB — a colony of nine cells</span>
+    <span>New work, slowly: <a href="mailto:hello@comb.studio">hello@comb.studio</a></span>
+    <span>© MMXXV</span>
+  </footer>
+
+  <div class="overlay" id="overlay"></div>
+
+  <aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle" aria-hidden="true">
+    <div class="panel-art" id="panelArt" aria-hidden="true">
+      <span class="cell-label" id="cellLabel">Cell 01 · Brand</span>
+      <button class="panel-close" id="panelClose" type="button" aria-label="Close project panel">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+          <path d="M3 3l10 10M13 3L3 13"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="panel-body" id="panelBody">
+      <p class="panel-kicker" id="panelKicker">Cell 01 · Brand</p>
+      <h2 class="panel-title" id="panelTitle">Hearth &amp; Hand</h2>
+      <p class="panel-year"><strong id="panelYear">2023</strong><span id="panelCategory">Brand identity</span></p>
+      <p class="panel-desc" id="panelDesc"></p>
+
+      <dl class="panel-meta">
+        <div><dt>Client</dt><dd id="panelClient"></dd></div>
+        <div><dt>Scope</dt><dd id="panelScope"></dd></div>
+        <div><dt>Year</dt><dd id="panelYearMeta"></dd></div>
+        <div><dt>Discipline</dt><dd id="panelDiscipline"></dd></div>
+      </dl>
+
+      <div class="panel-spacer"></div>
+
+      <button class="next-cell" id="nextCell" type="button">
+        <span class="next-label">Next cell<small id="nextTitle">Apiary</small></span>
+        <span class="next-arrow" aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 10h12M10 4l6 6-6 6"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </aside>
+
+<script>
+(function(){
+  "use strict";
+
+  var projects = [
+    {
+      id: "hearth",
+      num: "01",
+      title: "Hearth & Hand",
+      cat: "Brand",
+      year: "2023",
+      client: "Hearth & Hand, Paris",
+      scope: "Identity, packaging, art direction",
+      discipline: "Brand identity",
+      a: "#d79a4a", b: "#6d3c1c",
+      desc: "A slow-goods maison in the Marais, built around the warmth of the hand and the usefulness of things. We made a wordmark with the patience of a maker, a palette borrowed from beeswax and unglazed clay, and a packaging system that ages rather than wears out."
+    },
+    {
+      id: "apiary",
+      num: "02",
+      title: "Apiary",
+      cat: "Digital",
+      year: "2022",
+      client: "Apiary Parfums",
+      scope: "Digital product, e-commerce, type",
+      discipline: "Digital design",
+      a: "#e8b45c", b: "#4b2c12",
+      desc: "A commerce platform for a small-batch perfume atelier, where the entire catalogue fits on one page and every bottle is described like a place. The interface stays out of the way: quiet type, generous pauses, and a checkout that feels like writing a letter."
+    },
+    {
+      id: "goldensection",
+      num: "03",
+      title: "The Golden Section",
+      cat: "Spaces",
+      year: "2024",
+      client: "Galerie Dorée",
+      scope: "Interior, wayfinding, lighting",
+      discipline: "Spatial design",
+      a: "#c99a4e", b: "#3f2a12",
+      desc: "A gallery courtyard in the eleventh arrondissement, reorganised around a single proportion. Brass lines set into pale stone lead visitors through three rooms; the lighting follows the same rule, so the building seems to lean gently toward the work."
+    },
+    {
+      id: "combco",
+      num: "04",
+      title: "Comb & Co.",
+      cat: "Brand",
+      year: "2021",
+      client: "Comb & Co. Honey",
+      scope: "Naming, identity, packaging",
+      discipline: "Brand identity",
+      a: "#e9bd6a", b: "#5b3a17",
+      desc: "A collective of eleven beekeepers who wanted one label, not eleven. We built a modular identity that lets each jar carry its keeper’s mark while the shelf reads as a single colony. The type was drawn from the geometry of the hive."
+    },
+    {
+      id: "nectar",
+      num: "05",
+      title: "Nectar",
+      cat: "Digital",
+      year: "2025",
+      client: "Nectar Listening Club",
+      scope: "Product design, identity, motion",
+      discipline: "Digital design",
+      a: "#d9a441", b: "#6d4517",
+      desc: "A membership app for a listening club that meets in rooms with no screens. The app does the small work: a season’s programme, a seat at the table, a note when the record is about to start. Warm colour, slow motion, nothing to scroll."
+    },
+    {
+      id: "cloister",
+      num: "06",
+      title: "Cloister",
+      cat: "Spaces",
+      year: "2020",
+      client: "Hôtel Cloître",
+      scope: "Interior, furniture, wayfinding",
+      discipline: "Spatial design",
+      a: "#b98a49", b: "#33230f",
+      desc: "Eleven rooms around a stone courtyard in Arles. We kept the shadows, mended the cloister, and furnished the rooms with little more than linen, oak and a chair for looking out. The signage is set directly into the plaster."
+    },
+    {
+      id: "waxwane",
+      num: "07",
+      title: "Wax & Wane",
+      cat: "Brand",
+      year: "2024",
+      client: "Wax & Wane Atelier",
+      scope: "Strategy, identity, print",
+      discipline: "Brand identity",
+      a: "#cf9a55", b: "#4a2b13",
+      desc: "A candle atelier that measures its work in hours, not units. The identity is built on a single waning circle, printed in three inks on uncoated stock; the labels are numbered by hand, so no two burns are quite the same."
+    },
+    {
+      id: "hivemind",
+      num: "08",
+      title: "Hive Mind",
+      cat: "Digital",
+      year: "2023",
+      client: "Hive Mind Journal",
+      scope: "Editorial design, platform, tooling",
+      discipline: "Digital design",
+      a: "#e3b25d", b: "#533212",
+      desc: "An editorial platform for collected ideas, arranged like a card index rather than a feed. Readers move sideways through references, quotations and half-finished thoughts. The reading experience is deliberately unhurried; the archive is the product."
+    },
+    {
+      id: "sunroom",
+      num: "09",
+      title: "Sun Room",
+      cat: "Spaces",
+      year: "2022",
+      client: "Sun Room Boulangerie",
+      scope: "Interior, identity, signage",
+      discipline: "Spatial design",
+      a: "#e0b063", b: "#5f3b15",
+      desc: "A bakery and morning room on a corner in Copenhagen. Pale timber, honey-coloured tile and one long bench that catches the first light. The identity is set in a single serif, printed on paper bags that are meant to be kept."
+    }
+  ];
+
+  var motifs = [
+    '<g fill="none" stroke="currentColor" stroke-width="1"><circle cx="100" cy="100" r="78"/><circle cx="100" cy="100" r="55"/><circle cx="100" cy="100" r="32"/><circle cx="100" cy="100" r="4" fill="#e8bc6a" stroke="none"/></g>',
+    '<g fill="currentColor">' +
+      Array.from({ length: 36 }).map(function(_, i){
+        var x = 40 + (i % 6) * 24, y = 40 + Math.floor(i / 6) * 24;
+        return '<circle cx="' + x + '" cy="' + y + '" r="' + (i % 5 === 0 ? 2.6 : 1.2) + '"/>';
+      }).join("") + '</g>',
+    '<g fill="none" stroke="currentColor" stroke-width="1">' +
+      Array.from({ length: 10 }).map(function(_, i){
+        return '<path d="M' + (-60 + i * 30) + ' 220L' + (40 + i * 30) + ' -20"/>';
+      }).join("") + '</g>',
+    '<g fill="none" stroke="currentColor" stroke-width="1"><circle cx="100" cy="100" r="66"/><path d="M100 14v172M14 100h172"/><circle cx="100" cy="100" r="14" fill="#e8bc6a" opacity=".7" stroke="none"/></g>',
+    '<g fill="none" stroke="currentColor" stroke-width="1.1">' +
+      Array.from({ length: 7 }).map(function(_, i){
+        var y = 38 + i * 21;
+        return '<path d="M-10 ' + y + 'c35 -24 70 24 105 0s70 24 105 0 70 24 105 0"/>';
+      }).join("") + '</g>',
+    '<g fill="none" stroke="currentColor" stroke-width="1"><rect x="42" y="42" width="116" height="116" transform="rotate(0 100 100)"/><rect x="56" y="56" width="88" height="88" transform="rotate(12 100 100)"/><rect x="70" y="70" width="60" height="60" transform="rotate(24 100 100)"/><circle cx="100" cy="100" r="3" fill="#e8bc6a" stroke="none"/></g>',
+    '<g fill="none" stroke="currentColor" stroke-width="1"><path d="M100 190A90 90 0 0 1 100 10"/><path d="M100 160A60 60 0 0 1 100 40"/><path d="M100 130A30 30 0 0 1 100 70"/><path d="M100 100h84"/><circle cx="184" cy="100" r="4" fill="#e8bc6a" stroke="none"/></g>',
+    '<g fill="none" stroke="currentColor" stroke-width="1">' +
+      Array.from({ length: 20 }).map(function(_, i){
+        var a = i * Math.PI / 10;
+        return '<path d="M' + (100 + Math.cos(a) * 22) + ' ' + (100 + Math.sin(a) * 22) + 'L' + (100 + Math.cos(a) * 84) + ' ' + (100 + Math.sin(a) * 84) + '"/>';
+      }).join("") + '<circle cx="100" cy="100" r="30" fill="none" stroke="#e8bc6a" opacity=".8"/></g>',
+    '<g fill="none" stroke="currentColor" stroke-width="1"><path d="M20 100a80 80 0 0 1 160 0M50 100a50 50 0 0 1 100 0M80 100a20 20 0 0 1 40 0"/><path d="M20 130h160M35 155h130"/><circle cx="100" cy="100" r="4" fill="#e8bc6a" stroke="none"/></g>'
+  ];
+
+  var activeFilter = "All";
+  var visibleProjects = [];
+  var panelProject = null;
+  var lastTrigger = null;
+  var lastTriggerId = null;
+  var lastFocused = null;
+  var lastWidth = -1;
+
+  var comb = document.getElementById("comb");
+  var countEl = document.getElementById("visibleCount");
+  var sigCount = document.getElementById("sigCount");
+  var filters = Array.prototype.slice.call(document.querySelectorAll(".filter"));
+  var panel = document.getElementById("panel");
+  var overlay = document.getElementById("overlay");
+  var panelClose = document.getElementById("panelClose");
+  var panelArt = document.getElementById("panelArt");
+  var cellLabel = document.getElementById("cellLabel");
+  var panelKicker = document.getElementById("panelKicker");
+  var panelTitle = document.getElementById("panelTitle");
+  var panelYear = document.getElementById("panelYear");
+  var panelCategory = document.getElementById("panelCategory");
+  var panelDesc = document.getElementById("panelDesc");
+  var panelClient = document.getElementById("panelClient");
+  var panelScope = document.getElementById("panelScope");
+  var panelYearMeta = document.getElementById("panelYearMeta");
+  var panelDiscipline = document.getElementById("panelDiscipline");
+  var nextCell = document.getElementById("nextCell");
+  var nextTitle = document.getElementById("nextTitle");
+  var panelBody = document.getElementById("panelBody");
+
+  function pad(n){ return n < 10 ? "0" + n : String(n); }
+
+  function getFiltered(){
+    if (activeFilter === "All") return projects.slice();
+    return projects.filter(function(p){ return p.cat === activeFilter; });
+  }
+
+  function maxPerRow(width){
+    if (width < 530) return 2;
+    if (width < 880) return 3;
+    return 4;
+  }
+
+  function rowSizes(n, r){
+    if (n <= 0) return [];
+    if (n <= r){
+      if (n === 3 && r >= 3) return [2, 1];
+      return [n];
+    }
+    if (r >= 4 && n >= 6){
+      var rows = [];
+      var remaining = n;
+      var cap = r;
+      while (remaining > 0){
+        var take = Math.min(cap, remaining);
+        if (remaining - take === 1 && take > 1) take -= 1;
+        rows.push(take);
+        remaining -= take;
+        cap = Math.max(2, cap - 1);
+      }
+      return rows;
+    }
+    var rowsCount = Math.ceil(n / r);
+    var base = Math.floor(n / rowsCount);
+    var extra = n % rowsCount;
+    var out = [];
+    for (var i = 0; i < rowsCount; i++) out.push(base + (i < extra ? 1 : 0));
+    return out;
+  }
+
+  function cellHTML(p, index){
+    return '<button class="hex" type="button" data-id="' + p.id + '" style="--a:' + p.a + ';--b:' + p.b + ';--i:' + index + '" aria-label="Open project ' + p.title + ', ' + p.cat + ', ' + p.year + '">' +
+      '<span class="hex-inner">' +
+        '<span class="hex-art" aria-hidden="true"><svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice">' + motifs[index % motifs.length] + '</svg></span>' +
+        '<span class="hex-top"><span>' + p.num + '</span><span class="hex-open" aria-hidden="true">↗</span></span>' +
+        '<span class="hex-content"><span class="hex-cat">' + p.cat + '</span><span class="hex-title">' + p.title + '</span></span>' +
+      '</span>' +
+    '</button>';
+  }
+
+  function layout(){
+    var list = getFiltered();
+    visibleProjects = list;
+    countEl.textContent = pad(list.length);
+    sigCount.textContent = list.length === 1 ? "One" : list.length === 9 ? "Nine" : String(list.length);
+
+    if (!list.length){
+      comb.innerHTML = '<p class="empty-comb">No cells in this comb yet.</p>';
+      lastWidth = comb.parentElement.getBoundingClientRect().width;
+      return;
+    }
+
+    var width = comb.parentElement.getBoundingClientRect().width;
+    lastWidth = width;
+    var r = maxPerRow(width);
+    var margins = 6;
+    var hex = Math.min(232, Math.max(96, width / (r + 0.5) - margins));
+    comb.style.setProperty("--hex", hex + "px");
+
+    var sizes = rowSizes(list.length, r);
+    var step = hex + margins;
+    var shifts = [0];
+    for (var s = 1; s < sizes.length; s++){
+      var prevFirst = shifts[s - 1] - ((sizes[s - 1] - 1) / 2) * step;
+      var currFirst = -((sizes[s] - 1) / 2) * step;
+      var shift = prevFirst - currFirst + step / 2;
+      shift = ((shift % step) + step) % step;
+      if (shift >= step / 2) shift -= step;
+      shifts[s] = shift;
+    }
+
+    var minX = Infinity, maxX = -Infinity;
+    for (var m = 0; m < sizes.length; m++){
+      var firstCenter = shifts[m] - ((sizes[m] - 1) / 2) * step;
+      minX = Math.min(minX, firstCenter - step / 2);
+      maxX = Math.max(maxX, firstCenter + (sizes[m] - 1) * step + step / 2);
+    }
+    var centerShift = (minX + maxX) / 2;
+
+    var html = "";
+    var cursor = 0;
+    for (var i = 0; i < sizes.length; i++){
+      html += '<div class="hex-row" style="transform:translateX(' + (shifts[i] - centerShift).toFixed(2) + 'px)">';
+      for (var j = 0; j < sizes[i]; j++){
+        var p = list[cursor];
+        if (p){
+          html += cellHTML(p, cursor);
+          cursor += 1;
+        }
+      }
+      html += '</div>';
+    }
+    comb.innerHTML = html;
+  }
+
+  filters.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      activeFilter = btn.getAttribute("data-filter");
+      filters.forEach(function(other){
+        other.setAttribute("aria-pressed", other === btn ? "true" : "false");
+      });
+      closePanel(false);
+      layout();
+    });
+  });
+
+  comb.addEventListener("click", function(e){
+    var cell = e.target.closest ? e.target.closest(".hex") : null;
+    if (!cell) return;
+    openProject(cell.getAttribute("data-id"), cell);
+  });
+
+  function renderPanel(p){
+    panelProject = p;
+    panelArt.style.setProperty("--a", p.a);
+    panelArt.style.setProperty("--b", p.b);
+    var artSvg = panelArt.querySelector("svg");
+    if (artSvg) artSvg.remove();
+    var idx = projects.indexOf(p);
+    var svgWrap = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svgWrap.setAttribute("viewBox", "0 0 200 200");
+    svgWrap.setAttribute("preserveAspectRatio", "xMidYMid slice");
+    svgWrap.innerHTML = motifs[idx % motifs.length];
+    panelArt.appendChild(svgWrap);
+    panelArt.setAttribute("aria-hidden", "true");
+
+    cellLabel.textContent = "Cell " + p.num + " · " + p.cat;
+    panelKicker.textContent = "Cell " + p.num + " · " + p.cat;
+    panelTitle.textContent = p.title;
+    panelYear.textContent = p.year;
+    panelCategory.textContent = p.discipline;
+    panelDesc.textContent = p.desc;
+    panelClient.textContent = p.client;
+    panelScope.textContent = p.scope;
+    panelYearMeta.textContent = p.year;
+    panelDiscipline.textContent = p.discipline;
+
+    var idxVisible = visibleProjects.indexOf(p);
+    var next = visibleProjects[(idxVisible + 1) % visibleProjects.length];
+    nextTitle.textContent = next ? next.title : p.title;
+
+    panelBody.scrollTop = 0;
+  }
+
+  function openProject(id, trigger){
+    var p = null;
+    for (var i = 0; i < projects.length; i++){
+      if (projects[i].id === id){ p = projects[i]; break; }
+    }
+    if (!p) return;
+    lastTrigger = trigger || null;
+    lastTriggerId = p.id;
+    renderPanel(p);
+    panel.classList.add("open");
+    overlay.classList.add("show");
+    panel.setAttribute("aria-hidden", "false");
+    document.body.classList.add("locked");
+    window.setTimeout(function(){ panelClose.focus(); }, 60);
+  }
+
+  function closePanel(restoreFocus){
+    if (!panel.classList.contains("open")) return;
+    panel.classList.remove("open");
+    overlay.classList.remove("show");
+    panel.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("locked");
+    panelProject = null;
+    if (restoreFocus !== false){
+      var target = lastTrigger;
+      if (!target || !document.body.contains(target)){
+        target = lastTriggerId ? comb.querySelector('.hex[data-id="' + lastTriggerId + '"]') : null;
+      }
+      if (target && document.body.contains(target)) target.focus();
+      else if (lastFocused && document.body.contains(lastFocused)) lastFocused.focus();
+    }
+  }
+
+  panelClose.addEventListener("click", function(){ closePanel(true); });
+  overlay.addEventListener("click", function(){ closePanel(true); });
+
+  nextCell.addEventListener("click", function(){
+    if (!visibleProjects.length) return;
+    var idx = panelProject ? visibleProjects.indexOf(panelProject) : -1;
+    var next = visibleProjects[(idx + 1) % visibleProjects.length];
+    if (!next || next === panelProject) return;
+    renderPanel(next);
+    panelClose.focus();
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (!panel.classList.contains("open")) return;
+    if (e.key === "Escape"){
+      e.preventDefault();
+      closePanel(true);
+      return;
+    }
+    if (e.key === "Tab"){
+      var focusables = [panelClose, nextCell];
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first){
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last){
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
+  document.addEventListener("focusin", function(e){
+    if (panel.classList.contains("open") && !panel.contains(e.target)){
+      // The dialog button pair above handles keyboard containment; this keeps
+      // pointer-driven focus from wandering behind the overlay.
+      panelClose.focus();
+    }
+  });
+
+  window.addEventListener("resize", function(){
+    layout();
+  });
+
+  if (window.ResizeObserver){
+    var ro = new ResizeObserver(function(){
+      var w = comb.parentElement.getBoundingClientRect().width;
+      if (Math.abs(w - lastWidth) <= 1) return;
+      layout();
+    });
+    ro.observe(comb.parentElement);
+  }
+
+  layout();
+})();
+</script>
+</body>
+</html>

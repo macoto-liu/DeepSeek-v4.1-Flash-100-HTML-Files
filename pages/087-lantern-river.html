@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lantern River — Send something up.</title>
+<style>
+  :root{
+    --night:#050714;
+    --indigo:#0a0f24;
+    --indigo-2:#111a38;
+    --cream:#f4e7ca;
+    --cream-dim:rgba(244,231,202,.62);
+    --amber:#f5b969;
+    --amber-hi:#ffd79a;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  [hidden]{display:none !important}
+  body{
+    background:var(--night);
+    color:var(--cream);
+    font-family:var(--serif);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #scene{
+    position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;
+    background:
+      radial-gradient(ellipse 110% 70% at 50% 64%, #1b2748 0%, #0d1530 38%, #060a19 72%, #040610 100%);
+  }
+  /* faint star haze / grain */
+  .grain{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.5;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,.05) 0 1px, transparent 1px),
+      radial-gradient(circle at 70% 60%, rgba(255,255,255,.04) 0 1px, transparent 1px);
+    background-size:170px 190px, 230px 210px;
+    mix-blend-mode:screen;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:
+      radial-gradient(ellipse 80% 70% at 50% 40%, transparent 40%, rgba(3,5,13,.55) 100%),
+      linear-gradient(180deg, rgba(4,6,16,.55) 0%, transparent 22%, transparent 58%, rgba(3,5,13,.82) 100%);
+  }
+  .stage{
+    position:relative;z-index:3;
+    min-height:100svh;
+    display:flex;flex-direction:column;
+    padding:clamp(18px,2.6vw,34px) clamp(18px,5vw,72px) clamp(12px,2vw,22px);
+  }
+  .topbar{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+    pointer-events:none;
+  }
+  .mark{
+    display:flex;align-items:center;gap:11px;
+    font-family:var(--sans);font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--cream-dim);
+  }
+  .mark .flame{
+    width:9px;height:13px;border-radius:50% 50% 46% 46%;
+    background:radial-gradient(circle at 50% 65%, #fff3d0 0 18%, var(--amber) 55%, #d5802f 100%);
+    box-shadow:0 0 12px rgba(245,185,105,.55);
+    flex:none;
+  }
+  .count{text-align:right;pointer-events:none}
+  .count .num{
+    display:block;font-size:clamp(24px,2.4vw,32px);line-height:1;color:var(--cream);
+    font-variant-numeric:tabular-nums;letter-spacing:.01em;
+    transition:transform .25s ease;
+    transform-origin:100% 50%;
+  }
+  .count .num.pop{animation:pop .5s ease}
+  @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.14);color:var(--amber-hi)}100%{transform:scale(1)}}
+  .count .lab{
+    display:block;margin-top:7px;font-family:var(--sans);font-size:8.5px;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--cream-dim);
+  }
+
+  .hero{
+    margin-top:auto;
+    padding:0 0 clamp(20px,3.2vh,40px);
+    pointer-events:none;
+    max-width:900px;
+  }
+  .hero h1{
+    margin:0;font-weight:400;
+    font-size:clamp(42px,7vw,96px);
+    line-height:.94;letter-spacing:-.028em;
+    text-shadow:0 0 40px rgba(245,185,105,.12), 0 2px 24px rgba(0,0,0,.45);
+  }
+  .hero h1 em{font-style:italic;color:var(--amber-hi)}
+  .hero .epigraph{
+    margin:16px 0 0;font-size:clamp(12px,1vw,14px);letter-spacing:.16em;
+    text-transform:uppercase;font-family:var(--sans);color:rgba(244,231,202,.5);
+  }
+
+  .dock{
+    position:relative;
+    border-top:1px solid rgba(244,231,202,.20);
+    padding-top:clamp(14px,2vh,22px);
+  }
+  .dock::before{
+    content:"";position:absolute;top:-1px;left:0;width:min(180px,28%);height:1px;
+    background:linear-gradient(90deg,var(--amber),transparent);opacity:.6;
+  }
+  .quiet{
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    font-family:var(--sans);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(244,231,202,.48);margin-bottom:12px;
+  }
+  .quiet b{color:rgba(245,185,105,.8);font-weight:400}
+  .composer{max-width:760px}
+  .wish-form{display:flex;align-items:flex-end;gap:12px}
+  .input-wrap{flex:1;min-width:0;position:relative}
+  #wish{
+    width:100%;border:0;border-bottom:1px solid rgba(244,231,202,.36);
+    background:transparent;color:var(--cream);
+    font-family:var(--serif);font-size:clamp(16px,1.5vw,19px);
+    padding:6px 0 11px;outline:none;border-radius:0;
+    transition:border-color .25s ease;
+  }
+  #wish::placeholder{color:rgba(244,231,202,.38);font-style:italic}
+  #wish:focus{border-color:var(--amber)}
+  .input-wrap::after{
+    content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;
+    background:var(--amber);transform:scaleX(0);transform-origin:left;
+    transition:transform .3s ease;
+  }
+  .input-wrap.nudge::after{animation:nudge .5s ease}
+  @keyframes nudge{0%{transform:scaleX(0)}55%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+  .release{
+    display:inline-flex;align-items:center;gap:10px;flex:none;
+    border:1px solid rgba(245,185,105,.55);background:rgba(245,185,105,.06);
+    color:var(--amber-hi);cursor:pointer;
+    font-family:var(--sans);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;
+    padding:11px 15px 10px;border-radius:999px;
+    transition:background .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease;
+  }
+  .release .up{font-size:13px;line-height:1;transform:translateY(-1px)}
+  .release:hover{background:var(--amber);color:#20160a;border-color:var(--amber);box-shadow:0 0 26px rgba(245,185,105,.32)}
+  .release:active{transform:translateY(1px)}
+  .release:focus-visible{outline:2px solid var(--amber-hi);outline-offset:4px}
+  .foot{
+    display:flex;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;
+    margin-top:clamp(16px,2.4vh,26px);padding-top:11px;
+    border-top:1px solid rgba(244,231,202,.10);
+    font-family:var(--sans);font-size:8px;letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(244,231,202,.34);
+  }
+  .foot .amber{color:rgba(245,185,105,.5)}
+
+  /* wish card */
+  .wish-card{
+    position:fixed;z-index:20;width:min(320px,calc(100vw - 32px));
+    background:linear-gradient(165deg, rgba(28,24,26,.94), rgba(13,14,27,.96));
+    border:1px solid rgba(245,185,105,.38);
+    box-shadow:0 22px 70px rgba(0,0,0,.6), 0 0 40px rgba(245,185,105,.10);
+    padding:17px 18px 16px;
+    backdrop-filter:blur(7px);
+    -webkit-backdrop-filter:blur(7px);
+    animation:cardIn .3s ease both;
+  }
+  @keyframes cardIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  .wish-card::before{
+    content:"";position:absolute;left:18px;right:18px;top:-1px;height:1px;
+    background:linear-gradient(90deg,var(--amber),rgba(245,185,105,0));
+  }
+  .wc-top{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-family:var(--sans);font-size:8px;letter-spacing:.24em;text-transform:uppercase;
+    color:rgba(245,185,105,.72);margin-bottom:10px;
+  }
+  .wc-top .lamp{
+    width:7px;height:9px;border-radius:50% 50% 45% 45%;
+    background:var(--amber);box-shadow:0 0 10px rgba(245,185,105,.7);margin-right:7px;
+    display:inline-block;vertical-align:middle;
+  }
+  .wc-close{
+    appearance:none;border:0;background:none;color:rgba(244,231,202,.55);
+    font-family:var(--sans);font-size:15px;line-height:1;cursor:pointer;padding:2px 0 2px 8px;
+  }
+  .wc-close:hover{color:var(--cream)}
+  .wish-card p{
+    margin:0;font-size:clamp(17px,1.6vw,20px);line-height:1.38;font-style:italic;
+    color:var(--cream);letter-spacing:.005em;
+  }
+  .wc-meta{
+    margin-top:14px;padding-top:9px;border-top:1px solid rgba(244,231,202,.13);
+    font-family:var(--sans);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(244,231,202,.4);display:flex;justify-content:space-between;gap:10px;
+  }
+
+  @media (max-width:640px){
+    .stage{padding:16px 16px 12px}
+    .mark{font-size:8.5px;letter-spacing:.26em}
+    .hero h1{font-size:clamp(38px,12.6vw,56px)}
+    .hero .epigraph{font-size:10px;letter-spacing:.12em;margin-top:12px}
+    .dock{padding-top:13px}
+    .quiet{font-size:7.5px;letter-spacing:.13em;gap:4px 12px}
+    .wish-form{flex-direction:column;align-items:stretch;gap:12px}
+    .release{justify-content:center;padding:13px}
+    .foot{font-size:7px;letter-spacing:.15em}
+    .foot span:nth-child(2){display:none}
+    .count .num{font-size:24px}
+    .wish-card{left:16px !important;right:16px;top:auto !important;bottom:150px;width:auto}
+  }
+  @media (max-height:560px){
+    .hero .epigraph{display:none}
+    .hero{padding-bottom:12px}
+    .hero h1{font-size:clamp(32px,7vw,54px)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+<canvas id="scene" role="img" aria-label="A night river beneath a low city, with dozens of warm lanterns drifting upward. Click a lantern to read the wish it carries."></canvas>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<div class="stage">
+  <header class="topbar">
+    <div class="mark"><span class="flame" aria-hidden="true"></span>Lantern River</div>
+    <div class="count">
+      <span class="num" id="countNum">128</span>
+      <span class="lab">wishes released</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1>Send something<br><em>up.</em></h1>
+    <p class="epigraph">One wish, one lantern, one river.</p>
+  </section>
+
+  <div class="dock">
+    <div class="quiet">
+      <span>Click any lantern to read the wish it carries</span>
+      <span><b>Enter</b> releases &middot; nothing is stored</span>
+    </div>
+    <div class="composer">
+      <form class="wish-form" id="wishForm" autocomplete="off">
+        <div class="input-wrap" id="inputWrap">
+          <label for="wish" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Your wish</label>
+          <input id="wish" name="wish" type="text" maxlength="90" placeholder="Write your wish here&hellip;" aria-describedby="wishHint">
+          <span id="wishHint" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Type a wish, then press Release to send a lantern up.</span>
+        </div>
+        <button class="release" type="submit"><span>Release</span><span class="up" aria-hidden="true">&uarr;</span></button>
+      </form>
+    </div>
+    <footer class="foot">
+      <span>Lantern River &mdash; a quiet place, after dark</span>
+      <span class="amber">Nothing here is stored</span>
+      <span>Wishes fade by morning</span>
+    </footer>
+  </div>
+</div>
+
+<div class="wish-card" id="wishCard" hidden role="dialog" aria-modal="false" aria-labelledby="wishCardLabel">
+  <div class="wc-top">
+    <span id="wishCardLabel"><span class="lamp" aria-hidden="true"></span>A wish, adrift</span>
+    <button class="wc-close" id="wishClose" type="button" aria-label="Close wish">&times;</button>
+  </div>
+  <p id="wishText"></p>
+  <div class="wc-meta"><span id="wishNo">Lantern 001</span><span id="wishFrom">From the river</span></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById("scene");
+  var ctx = canvas.getContext("2d");
+  var countNum = document.getElementById("countNum");
+  var wishInput = document.getElementById("wish");
+  var form = document.getElementById("wishForm");
+  var inputWrap = document.getElementById("inputWrap");
+  var card = document.getElementById("wishCard");
+  var wishText = document.getElementById("wishText");
+  var wishNo = document.getElementById("wishNo");
+  var wishFrom = document.getElementById("wishFrom");
+  var closeBtn = document.getElementById("wishClose");
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var W = 0, H = 0, DPR = 1, horizon = 0;
+  var stars = [], cityFar = [], cityNear = [], ripples = [];
+  var lanterns = [];
+  var released = 128;
+  var selected = null;
+  var lastClick = 0;
+
+  var AMBIENT = [
+    "a door that opens easily",
+    "for my mother\u2019s hands to hurt less",
+    "that the house sells by spring",
+    "one more summer exactly like that one",
+    "a letter I have not sent",
+    "to be less afraid of the telephone",
+    "for the cat to forgive me",
+    "that she remembers the good year",
+    "a quieter mind, please",
+    "to finish the thing I started",
+    "for a green winter",
+    "that the money is enough",
+    "my brother, somewhere warm",
+    "a second chance at the same question",
+    "for the courage to be ordinary",
+    "that the plane lands softly",
+    "a room of my own, again",
+    "for the dog to live forever",
+    "to hear my father laugh once more",
+    "that the water stays clean",
+    "a good reason to stay",
+    "for everyone in the lifeboat",
+    "that I am wrong about myself",
+    "a slow morning, with no alarm",
+    "for the ache to ease, just a little",
+    "that the letter arrives",
+    "one honest conversation",
+    "for a light left on for me"
+  ];
+
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  var rand = mulberry32(20261017);
+
+  /* ---------- sprites ---------- */
+  function makeLanternSprite(deep){
+    var sw = 176, sh = 220;
+    var c = document.createElement("canvas");
+    c.width = sw; c.height = sh;
+    var g = c.getContext("2d");
+    var cx = sw/2, cy = sh/2;
+
+    var glow = g.createRadialGradient(cx, cy, 3, cx, cy, 86);
+    glow.addColorStop(0, "rgba(255,206,140,.55)");
+    glow.addColorStop(0.22, "rgba(255,170,90,.26)");
+    glow.addColorStop(0.55, "rgba(255,145,60,.10)");
+    glow.addColorStop(1, "rgba(255,130,40,0)");
+    g.fillStyle = glow;
+    g.beginPath(); g.arc(cx, cy, 88, 0, Math.PI*2); g.fill();
+
+    // body
+    var bw = 46, bh = 62;
+    var body = g.createLinearGradient(cx, cy - bh/2, cx, cy + bh/2);
+    if(deep){
+      body.addColorStop(0, "#ffd9a2");
+      body.addColorStop(.5, "#f6b366");
+      body.addColorStop(1, "#d9822f");
+    } else {
+      body.addColorStop(0, "#ffedc8");
+      body.addColorStop(.45, "#ffce8a");
+      body.addColorStop(1, "#e89a44");
+    }
+    g.fillStyle = body;
+    g.beginPath();
+    var bx = cx - bw/2, by = cy - bh/2;
+    g.moveTo(bx + 7, by);
+    g.lineTo(bx + bw - 7, by);
+    g.quadraticCurveTo(bx + bw, by + 6, bx + bw, by + 14);
+    g.lineTo(bx + bw - 2, by + bh - 12);
+    g.quadraticCurveTo(bx + bw - 3, by + bh, bx + bw - 13, by + bh);
+    g.lineTo(bx + 13, by + bh);
+    g.quadraticCurveTo(bx + 3, by + bh, bx + 2, by + bh - 12);
+    g.lineTo(bx, by + 14);
+    g.quadraticCurveTo(bx, by + 6, bx + 7, by);
+    g.closePath();
+    g.fill();
+
+    // paper ribs
+    g.strokeStyle = "rgba(150,86,30,.35)";
+    g.lineWidth = 1;
+    for(var i=1;i<4;i++){
+      var yy = by + (bh/4)*i;
+      g.beginPath(); g.moveTo(bx+2, yy); g.lineTo(bx+bw-2, yy); g.stroke();
+    }
+    // vertical shading
+    var side = g.createLinearGradient(bx, 0, bx+bw, 0);
+    side.addColorStop(0,"rgba(150,80,25,.22)");
+    side.addColorStop(.3,"rgba(255,255,255,.18)");
+    side.addColorStop(.55,"rgba(255,240,200,.05)");
+    side.addColorStop(1,"rgba(150,70,20,.28)");
+    g.fillStyle = side;
+    g.fillRect(bx, by, bw, bh);
+
+    // flame
+    var flame = g.createRadialGradient(cx, cy + 8, 0, cx, cy + 8, 18);
+    flame.addColorStop(0, "rgba(255,255,240,.95)");
+    flame.addColorStop(.35, "rgba(255,236,175,.75)");
+    flame.addColorStop(1, "rgba(255,180,80,0)");
+    g.fillStyle = flame;
+    g.beginPath(); g.arc(cx, cy + 8, 20, 0, Math.PI*2); g.fill();
+
+    // caps
+    g.fillStyle = "#6d4622";
+    g.fillRect(cx - 9, by - 5, 18, 5);
+    g.fillRect(cx - 9, by + bh, 18, 5);
+    g.fillStyle = "#c4893f";
+    g.fillRect(cx - 2, by - 9, 4, 5);
+
+    return c;
+  }
+  var sprites = [makeLanternSprite(false), makeLanternSprite(true)];
+
+  /* ---------- world ---------- */
+  function buildStars(){
+    var r = mulberry32(7717);
+    stars = [];
+    var n = Math.round(W * H / 14000);
+    n = Math.max(60, Math.min(230, n));
+    for(var i=0;i<n;i++){
+      stars.push({
+        x: r()*W,
+        y: r()*horizon*0.95,
+        s: r()*1.3 + .3,
+        a: r()*.55 + .12,
+        p: r()*Math.PI*2
+      });
+    }
+  }
+
+  function buildCity(){
+    var r = mulberry32(4412);
+    cityFar = []; cityNear = [];
+    var x = -30;
+    while(x < W + 40){
+      var w = 26 + r()*58;
+      var h = 24 + r()*72;
+      cityFar.push({x:x, w:w, h:h});
+      x += w + 3 + r()*7;
+    }
+    x = -40;
+    while(x < W + 50){
+      var w2 = 34 + r()*78;
+      var h2 = 18 + r()*58;
+      var wins = [];
+      var cols = Math.max(2, Math.floor(w2/14));
+      var rows = Math.max(2, Math.floor(h2/16));
+      for(var c=0;c<cols;c++){
+        for(var rr=0;rr<rows;rr++){
+          if(r() < .16){
+            wins.push({x: 7 + c*(w2-12)/cols + r()*2, y: 8 + rr*(h2-10)/rows + r()*2, w: 2 + (r()<.2?1:0)});
+          }
+        }
+      }
+      cityNear.push({x:x, w:w2, h:h2, wins:wins});
+      x += w2 + 2 + r()*10;
+    }
+  }
+
+  function buildRipples(){
+    var r = mulberry32(9921);
+    ripples = [];
+    for(var i=0;i<70;i++){
+      ripples.push({
+        x: r()*W,
+        y: horizon + 6 + r()*(H - horizon - 10),
+        len: 10 + r()*70,
+        p: r()*Math.PI*2,
+        a: .03 + r()*.06
+      });
+    }
+  }
+
+  function makeLantern(y, isMine, wish){
+    var l = {
+      x: 24 + Math.random()*(W-48),
+      y: y === undefined ? H*0.25 + Math.random()*H*0.72 : y,
+      size: 9 + Math.random()*7,
+      speed: 9 + Math.random()*13,
+      phase: Math.random()*Math.PI*2,
+      sway: 6 + Math.random()*10,
+      deep: Math.random() < .4,
+      flick: Math.random()*Math.PI*2,
+      mine: !!isMine,
+      wish: wish || AMBIENT[Math.floor(Math.random()*AMBIENT.length)],
+      no: Math.floor(1 + Math.random()*899)
+    };
+    return l;
+  }
+
+  function seedLanterns(){
+    lanterns = [];
+    var r = mulberry32(3301);
+    var n = W < 640 ? 30 : 46;
+    for(var i=0;i<n;i++){
+      var l = {
+        x: 18 + r()*(W-36),
+        y: r()*H*0.92 - H*0.05,
+        size: 8 + r()*8,
+        speed: 7 + r()*14,
+        phase: r()*Math.PI*2,
+        sway: 5 + r()*11,
+        deep: r() < .4,
+        flick: r()*Math.PI*2,
+        mine: false,
+        wish: AMBIENT[i % AMBIENT.length],
+        no: 20 + i*7
+      };
+      lanterns.push(l);
+    }
+  }
+
+  function resize(){
+    var oldW = W, oldH = H;
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    horizon = Math.round(H * 0.615);
+    buildStars();
+    buildCity();
+    buildRipples();
+    if(!lanterns.length){
+      seedLanterns();
+    } else if(oldW && oldH){
+      for(var i=0;i<lanterns.length;i++){
+        lanterns[i].x = lanterns[i].x / oldW * W;
+        lanterns[i].y = lanterns[i].y / oldH * H;
+      }
+    }
+    selected = null;
+    hideCard();
+  }
+
+  /* ---------- drawing ---------- */
+  function drawSky(t){
+    var g = ctx.createLinearGradient(0, 0, 0, horizon);
+    g.addColorStop(0, "#04060f");
+    g.addColorStop(.55, "#0a1026");
+    g.addColorStop(1, "#1b2747");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, horizon + 2);
+
+    for(var i=0;i<stars.length;i++){
+      var s = stars[i];
+      var tw = reduceMotion ? .8 : (.62 + .38*Math.sin(t*.0011 + s.p));
+      ctx.globalAlpha = s.a * tw;
+      ctx.fillStyle = "#fdf4dc";
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.s, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // horizon haze
+    var hz = ctx.createLinearGradient(0, horizon-90, 0, horizon+30);
+    hz.addColorStop(0, "rgba(95,79,120,0)");
+    hz.addColorStop(.7, "rgba(120,92,86,.10)");
+    hz.addColorStop(1, "rgba(245,185,105,.10)");
+    ctx.fillStyle = hz;
+    ctx.fillRect(0, horizon-90, W, 120);
+  }
+
+  function drawCity(){
+    ctx.fillStyle = "#0a0e20";
+    for(var i=0;i<cityFar.length;i++){
+      var b = cityFar[i];
+      ctx.fillRect(b.x, horizon - b.h, b.w, b.h + 1);
+    }
+    ctx.fillStyle = "#05070f";
+    for(var j=0;j<cityNear.length;j++){
+      var n = cityNear[j];
+      ctx.fillRect(n.x, horizon - n.h, n.w, n.h + 1);
+    }
+    // lit windows
+    ctx.fillStyle = "rgba(255,190,110,.55)";
+    for(var k=0;k<cityNear.length;k++){
+      var b2 = cityNear[k];
+      for(var w=0;w<b2.wins.length;w++){
+        var win = b2.wins[w];
+        ctx.globalAlpha = .35 + .3*Math.sin((win.x + b2.x) * 2.1);
+        ctx.fillRect(b2.x + win.x, horizon - b2.h + win.y, win.w, 2);
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // a low bank / line at the water
+    ctx.fillStyle = "rgba(4,6,14,.9)";
+    ctx.fillRect(0, horizon, W, 3);
+  }
+
+  function drawWater(t){
+    var g = ctx.createLinearGradient(0, horizon, 0, H);
+    g.addColorStop(0, "#131c38");
+    g.addColorStop(.35, "#0a1128");
+    g.addColorStop(1, "#04060f");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, horizon, W, H - horizon);
+
+    // city light spill
+    var spill = ctx.createRadialGradient(W*.5, horizon, 10, W*.5, horizon, Math.max(W,H)*.55);
+    spill.addColorStop(0, "rgba(160,120,100,.16)");
+    spill.addColorStop(.5, "rgba(90,80,100,.06)");
+    spill.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = spill;
+    ctx.fillRect(0, horizon, W, H - horizon);
+
+    // horizontal shimmer
+    ctx.lineCap = "round";
+    for(var i=0;i<ripples.length;i++){
+      var r = ripples[i];
+      var sway = reduceMotion ? 0 : Math.sin(t*.0006 + r.p) * 9;
+      ctx.globalAlpha = r.a;
+      ctx.strokeStyle = i % 5 === 0 ? "#f5b969" : "#9fb0d0";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(r.x + sway, r.y);
+      ctx.lineTo(r.x + sway + r.len, r.y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawReflections(t){
+    for(var i=0;i<lanterns.length;i++){
+      var l = lanterns[i];
+      if(l.y > horizon + 8) continue;
+      var closeness = Math.max(0, 1 - (horizon - l.y) / (H*0.7));
+      var base = 0.05 + 0.13*closeness;
+      var rx = l.x + (reduceMotion ? 0 : Math.sin(t*.0007 + l.phase)*3);
+      var top = horizon + 5;
+      var rh = 54 + l.size*6;
+
+      // soft column of light on the water
+      var vg = ctx.createLinearGradient(0, top, 0, top + rh);
+      vg.addColorStop(0, "rgba(255,200,130," + (base*1.5).toFixed(3) + ")");
+      vg.addColorStop(.32, "rgba(255,175,100," + (base*.65).toFixed(3) + ")");
+      vg.addColorStop(1, "rgba(255,150,70,0)");
+      ctx.fillStyle = vg;
+      ctx.fillRect(rx - l.size*0.62, top, l.size*1.24, rh);
+
+      // broken bands of reflected light
+      for(var b=0;b<9;b++){
+        var by = top + 4 + b*(4.5 + l.size*0.5);
+        var wob = (reduceMotion ? 0 : Math.sin(t*.0011 + l.phase + b*1.7)) * (2 + b*1.5);
+        var bw = l.size * (1.85 - b*0.13);
+        var ba = base * (1 - b/11) * 2.3;
+        if(bw < 1) continue;
+        ctx.globalAlpha = Math.max(0, ba);
+        ctx.fillStyle = b % 3 === 0 ? "rgba(255,224,178,.95)" : "rgba(255,184,110,.9)";
+        ctx.fillRect(rx - bw/2 + wob, by, bw, 1.2);
+        if(b < 4){
+          ctx.globalAlpha = Math.max(0, ba*0.5);
+          ctx.fillRect(rx - bw*0.3 + wob*1.2, by + 1.8, bw*0.6, 1);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawLantern(l, t){
+    var sway = reduceMotion ? 0 : Math.sin(t*.00065 + l.phase) * l.sway;
+    var x = l.x + sway;
+    var y = l.y;
+    var rot = reduceMotion ? 0 : Math.sin(t*.0005 + l.phase) * .09;
+    var pulse = reduceMotion ? 1 : (.9 + .1*Math.sin(t*.003 + l.flick));
+    var fade = Math.min(1, (y + 40) / 140);
+    var alpha = Math.max(0, Math.min(1, .55 + .45*fade)) * pulse;
+
+    var dw = l.size * 4.4;
+    var dh = l.size * 5.5;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(sprites[l.deep ? 1 : 0], -dw/2, -dh/2, dw, dh);
+
+    if(selected === l){
+      ctx.globalAlpha = .9;
+      ctx.strokeStyle = "rgba(255,226,180,.9)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, l.size*2.1, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.globalAlpha = .35;
+      ctx.beginPath();
+      ctx.arc(0, 0, l.size*2.8, 0, Math.PI*2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function draw(t){
+    drawSky(t);
+    drawCity();
+    drawWater(t);
+    drawReflections(t);
+
+    var sorted = lanterns.slice().sort(function(a,b){ return a.size - b.size; });
+    for(var i=0;i<sorted.length;i++){
+      drawLantern(sorted[i], t);
+    }
+  }
+
+  var last = 0;
+  function frame(t){
+    if(!last) last = t;
+    var dt = Math.min(.05, (t - last) / 1000);
+    last = t;
+
+    var speedScale = reduceMotion ? .18 : 1;
+    for(var i=0;i<lanterns.length;i++){
+      var l = lanterns[i];
+      l.y -= l.speed * speedScale * dt;
+      if(l.y < -70){
+        l.y = H + 40 + Math.random()*80;
+        l.x = 24 + Math.random()*(W-48);
+        l.size = 8 + Math.random()*8;
+        l.speed = 7 + Math.random()*14;
+        l.wish = AMBIENT[Math.floor(Math.random()*AMBIENT.length)];
+        l.deep = Math.random() < .4;
+      }
+    }
+    draw(t);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- interaction ---------- */
+  function findLantern(cx, cy){
+    var best = null, bestD = Infinity;
+    for(var i=0;i<lanterns.length;i++){
+      var l = lanterns[i];
+      var sway = reduceMotion ? 0 : Math.sin(performance.now()*.00065 + l.phase) * l.sway;
+      var dx = cx - (l.x + sway);
+      var dy = cy - l.y;
+      var d = Math.sqrt(dx*dx + dy*dy);
+      var hit = l.size * 2.6;
+      if(d < hit && d < bestD){ bestD = d; best = l; }
+    }
+    return best;
+  }
+
+  function showCard(l, clientX, clientY){
+    selected = l;
+    wishText.textContent = "\u201C" + l.wish + "\u201D";
+    wishNo.textContent = "Lantern " + String(l.no).padStart(3, "0");
+    wishFrom.textContent = l.mine ? "Released by you" : "From the river";
+    card.hidden = false;
+
+    if(window.innerWidth <= 640){
+      card.style.left = "16px";
+      card.style.top = "auto";
+      return;
+    }
+    var rect = card.getBoundingClientRect();
+    var cw = rect.width || 320, ch = rect.height || 150;
+    var left = clientX + 22;
+    var top = clientY - ch - 18;
+    if(left + cw > window.innerWidth - 14) left = clientX - cw - 22;
+    if(left < 14) left = 14;
+    if(top < 14) top = clientY + 22;
+    if(top + ch > window.innerHeight - 14) top = window.innerHeight - ch - 14;
+    card.style.left = left + "px";
+    card.style.top = top + "px";
+    card.style.bottom = "auto";
+  }
+
+  function hideCard(){
+    card.hidden = true;
+    selected = null;
+  }
+
+  canvas.addEventListener("pointerdown", function(ev){
+    var l = findLantern(ev.clientX, ev.clientY);
+    if(l){
+      lastClick = Date.now();
+      showCard(l, ev.clientX, ev.clientY);
+    } else {
+      hideCard();
+    }
+  });
+
+  closeBtn.addEventListener("click", hideCard);
+  document.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape") hideCard();
+  });
+
+  function releaseWish(text){
+    var l = makeLantern(Math.min(H*0.88, H - 130), true, text);
+    l.x = W/2 + (Math.random()-.5)*Math.min(180, W*.3);
+    l.size = 13 + Math.random()*4;
+    l.speed = 24 + Math.random()*8;
+    l.no = released + 1;
+    lanterns.push(l);
+    released += 1;
+    countNum.textContent = released;
+    countNum.classList.remove("pop");
+    void countNum.offsetWidth;
+    countNum.classList.add("pop");
+    showCard(l, Math.min(W-40, l.x), l.y - 10);
+    l.y -= 6;
+  }
+
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var text = wishInput.value.replace(/\s+/g, " ").trim();
+    if(!text){
+      inputWrap.classList.remove("nudge");
+      void inputWrap.offsetWidth;
+      inputWrap.classList.add("nudge");
+      wishInput.focus();
+      wishInput.setAttribute("placeholder", "A wish, however small\u2026");
+      return;
+    }
+    releaseWish(text);
+    wishInput.value = "";
+    wishInput.setAttribute("placeholder", "Write your wish here\u2026");
+    wishInput.blur();
+  });
+
+  // parallax-free, but clicking the sky behind the hero should still work.
+  document.querySelector(".hero").style.pointerEvents = "none";
+
+  var resizeTimer = null;
+  window.addEventListener("resize", function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resize, 120);
+  });
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

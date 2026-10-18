@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Costa Lenta — A Slow Travel Atelier</title>
+<style>
+  :root{
+    --paper:#f5eddc;
+    --paper-deep:#eee2cc;
+    --cream:#faf4e7;
+    --ink:#2c2b23;
+    --muted:#6f6a59;
+    --olive:#5f6b38;
+    --terracotta:#b4563a;
+    --sea:#2f6f86;
+    --line:rgba(44,43,35,.18);
+    --accent:#2f6f86;
+    --accent-deep:#1e4f62;
+    --accent-soft:#dfe9e5;
+    --serif:"Didot","Bodoni MT","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --hand:"Bradley Hand","Snell Roundhand","Segoe Script","Comic Sans MS",cursive;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;overflow-x:hidden;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 70% 42% at 84% 2%, rgba(224,198,151,.28), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 4% 26%, rgba(157,175,146,.14), transparent 65%),
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    pointer-events:none;
+    z-index:0;
+    opacity:.5;
+    background-image:
+      radial-gradient(rgba(80,66,40,.20) .5px,transparent .6px),
+      radial-gradient(rgba(255,255,255,.5) .5px,transparent .6px);
+    background-size:6px 6px,9px 9px;
+    background-position:0 0,3px 4px;
+    mix-blend-mode:multiply;
+  }
+  body::after{
+    content:"";
+    position:fixed;inset:0;
+    pointer-events:none;
+    z-index:0;
+    background:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(96,78,45,.10) 100%);
+  }
+  ::selection{background:var(--accent-soft);color:var(--accent-deep);}
+  a{color:inherit;}
+  button{font:inherit;color:inherit;}
+
+  .shell{position:relative;z-index:1;}
+  .wrap{width:min(1280px,calc(100% - 88px));margin:0 auto;}
+  @media (max-width:760px){.wrap{width:calc(100% - 40px);}}
+
+  /* ---------------- header ---------------- */
+  header.top{
+    padding:30px 0 18px;
+    border-bottom:1px solid var(--line);
+  }
+  .top-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:13px;
+    text-decoration:none;
+    flex:0 0 auto;
+  }
+  .brand-sun{width:34px;height:34px;display:block;color:var(--accent);transition:color .45s ease;}
+  .brand-word{
+    display:flex;align-items:baseline;gap:8px;
+    line-height:1;
+    text-transform:uppercase;
+  }
+  .brand-word b{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:1.24rem;
+    letter-spacing:.2em;
+  }
+  .brand-word i{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:1.3rem;
+    letter-spacing:.02em;
+    color:var(--accent);
+    text-transform:none;
+    transition:color .45s ease;
+  }
+  .brand-caption{
+    font-size:.4rem;
+    letter-spacing:.32em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-top:6px;
+  }
+  nav.primary{
+    display:flex;align-items:center;gap:clamp(16px,2.6vw,34px);
+    font-size:.56rem;
+    letter-spacing:.26em;
+    text-transform:uppercase;
+  }
+  nav.primary a{
+    text-decoration:none;
+    position:relative;
+    padding:6px 0;
+    color:var(--ink);
+    opacity:.72;
+    transition:opacity .2s ease,color .45s ease;
+  }
+  nav.primary a::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+    background:var(--accent);
+    transform:scaleX(0);transform-origin:left;
+    transition:transform .3s ease,background .45s ease;
+  }
+  nav.primary a:hover{opacity:1;}
+  nav.primary a:hover::after{transform:scaleX(1);}
+  .nav-cta{
+    border:1px solid var(--accent);
+    color:var(--accent-deep)!important;
+    padding:9px 17px!important;
+    opacity:1!important;
+    transition:background .3s ease,color .3s ease,border-color .45s ease!important;
+  }
+  .nav-cta::after{display:none;}
+  .nav-cta:hover{background:var(--accent);color:var(--cream)!important;}
+
+  /* ---------------- hero ---------------- */
+  .hero{
+    padding:clamp(38px,6.2vw,76px) 0 clamp(50px,7vw,86px);
+    position:relative;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);
+    gap:clamp(30px,5vw,64px);
+    align-items:center;
+  }
+  .eyebrow{
+    display:flex;align-items:center;gap:14px;
+    font-size:.56rem;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 clamp(20px,3vw,30px);
+  }
+  .eyebrow::before{
+    content:"";width:44px;height:1px;background:var(--accent);
+    transition:background .45s ease;
+  }
+  h1.display{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(3.05rem,7.1vw,6.35rem);
+    line-height:.91;
+    letter-spacing:-.028em;
+    margin:0 0 clamp(22px,3vw,30px);
+    max-width:12ch;
+    text-wrap:balance;
+  }
+  h1.display em{
+    font-style:italic;
+    color:var(--accent-deep);
+    transition:color .45s ease;
+    position:relative;
+    display:inline-block;
+  }
+  h1.display em::after{
+    content:"";
+    position:absolute;left:.02em;right:.06em;bottom:-.05em;height:.045em;
+    background:var(--accent);
+    opacity:.55;
+    transition:background .45s ease;
+  }
+  .lede{
+    max-width:44ch;
+    font-family:var(--serif);
+    font-size:clamp(1rem,1.5vw,1.14rem);
+    line-height:1.65;
+    color:#4a4839;
+    margin:0 0 clamp(24px,3.4vw,34px);
+  }
+  .hero-actions{
+    display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:12px;
+    background:var(--accent);
+    color:var(--cream);
+    text-decoration:none;
+    font-size:.58rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    padding:15px 22px;
+    border:1px solid transparent;
+    transition:background .45s ease,transform .2s ease,box-shadow .3s ease,color .45s ease;
+    box-shadow:0 8px 18px rgba(50,60,40,.08);
+  }
+  .btn svg{width:24px;height:10px;flex:0 0 auto;}
+  .btn:hover{background:var(--accent-deep);transform:translateY(-2px);box-shadow:0 12px 24px rgba(50,60,40,.16);}
+  .btn:active{transform:translateY(0);}
+  .text-link{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:.98rem;
+    color:var(--ink);
+    text-decoration:none;
+    border-bottom:1px solid var(--line);
+    padding-bottom:2px;
+    transition:border-color .3s ease,color .45s ease;
+  }
+  .text-link:hover{border-color:var(--accent);color:var(--accent-deep);}
+  .hero-note{
+    margin-top:clamp(28px,4vw,42px);
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    font-size:.49rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .hero-note .chip{
+    border:1px solid var(--line);
+    padding:6px 11px;
+    color:var(--ink);
+  }
+  .hero-note .dot{
+    width:3px;height:3px;border-radius:50%;background:var(--accent);
+    transition:background .45s ease;
+  }
+
+  /* ---------------- postcard stack ---------------- */
+  .postcard-area{
+    position:relative;
+    padding:10px 0 0;
+  }
+  .postcard-area::before{
+    content:"";
+    position:absolute;
+    top:-2%;right:-4%;
+    width:min(82%,430px);aspect-ratio:1;
+    border-radius:50%;
+    background:radial-gradient(circle at 44% 42%,var(--accent-soft),transparent 68%);
+    opacity:.7;
+    transition:background .6s ease;
+    z-index:-1;
+  }
+  .stack{
+    position:relative;
+    width:min(100%,510px);
+    margin:0 auto;
+    aspect-ratio:1 / .92;
+  }
+  .postcard{
+    position:absolute;
+    top:7%;left:7%;
+    width:86%;
+    margin:0;
+    padding:10px 10px 36px;
+    background:#fcf7ec;
+    border:0;
+    text-align:left;
+    cursor:pointer;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 18px 38px rgba(76,61,32,.20),
+      0 3px 8px rgba(76,61,32,.12);
+    transform:var(--rest);
+    transition:transform .62s cubic-bezier(.22,.75,.24,1),box-shadow .4s ease,z-index 0s,outline-color .2s ease;
+    outline:2px solid transparent;
+    outline-offset:4px;
+    will-change:transform;
+    font-family:var(--sans);
+    color:var(--ink);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .postcard .art{
+    display:block;
+    width:100%;
+    aspect-ratio:4/3;
+    overflow:hidden;
+    background:#e9ddc5;
+  }
+  .postcard svg{width:100%;height:100%;display:block;}
+  .postcard .pc-strip{
+    position:absolute;
+    left:14px;right:14px;bottom:9px;
+    display:flex;align-items:baseline;justify-content:space-between;
+    gap:10px;
+    font-size:.42rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:rgba(44,43,35,.52);
+  }
+  .postcard .pc-strip em{
+    font-family:var(--hand);
+    font-style:normal;
+    font-size:.9rem;
+    letter-spacing:.02em;
+    text-transform:none;
+    color:rgba(44,43,35,.72);
+  }
+  .postcard::after{
+    content:"";
+    position:absolute;inset:0;
+    box-shadow:inset 0 0 0 1px rgba(80,63,34,.12);
+    pointer-events:none;
+  }
+  .postcard:hover{box-shadow:0 22px 44px rgba(76,61,32,.25),0 4px 10px rgba(76,61,32,.12);}
+  .postcard:focus-visible{outline-color:var(--accent);}
+  .postcard.is-active{
+    transform:rotate(-1.1deg) translateY(-12px) scale(1.035);
+    z-index:6!important;
+    box-shadow:0 28px 55px rgba(76,61,32,.28),0 5px 12px rgba(76,61,32,.12);
+  }
+  .postcard.is-active .pc-strip{color:var(--accent-deep);}
+  .postcard.is-active::after{box-shadow:inset 0 0 0 1px rgba(80,63,34,.16),inset 0 -3px 0 var(--accent);}
+
+  .pc-caption{
+    width:min(100%,510px);
+    margin:clamp(16px,2.4vw,24px) auto 0;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:clamp(14px,2.4vw,24px);
+    padding-top:16px;
+    border-top:1px solid var(--line);
+    position:relative;
+  }
+  .pc-num{
+    font-family:var(--serif);
+    font-size:1.55rem;
+    font-style:italic;
+    line-height:1;
+    color:var(--accent);
+    transition:color .45s ease;
+    padding-top:2px;
+    white-space:nowrap;
+  }
+  .pc-num span{font-size:.62rem;font-style:normal;font-family:var(--sans);letter-spacing:.14em;color:var(--muted);}
+  .pc-text h3{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(1.22rem,2vw,1.55rem);
+    line-height:1.15;
+    margin:0 0 5px;
+    letter-spacing:-.01em;
+    transition:opacity .2s ease;
+  }
+  .pc-text p{
+    margin:0;
+    font-family:var(--serif);
+    font-size:.88rem;
+    line-height:1.55;
+    color:var(--muted);
+    max-width:38ch;
+    transition:opacity .2s ease;
+  }
+  .pc-caption .pc-dots{
+    grid-column:2;
+    display:flex;align-items:center;gap:9px;
+    margin-top:10px;
+  }
+  .pc-dots button{
+    appearance:none;border:0;padding:8px 0;background:transparent;cursor:pointer;
+    display:flex;align-items:center;
+  }
+  .pc-dots .bar{
+    display:block;width:16px;height:1px;background:var(--ink);opacity:.28;
+    transition:width .3s ease,background .45s ease,opacity .3s ease;
+  }
+  .pc-dots button.is-active .bar{width:34px;opacity:1;background:var(--accent);}
+  .pc-dots .micro{
+    font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--muted);margin-left:auto;
+  }
+  .pc-caption.is-swapping .pc-text{opacity:0;}
+
+  /* ---------------- itinerary ---------------- */
+  .itinerary{
+    padding:clamp(54px,7vw,92px) 0 clamp(58px,7vw,88px);
+    border-top:1px solid var(--line);
+    position:relative;
+  }
+  .section-head{
+    display:grid;
+    grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+    gap:clamp(20px,4vw,60px);
+    align-items:end;
+    margin-bottom:clamp(38px,5.4vw,62px);
+  }
+  .kicker{
+    display:inline-flex;align-items:center;gap:10px;
+    font-size:.5rem;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:14px;
+  }
+  .kicker::before{content:"";width:22px;height:1px;background:var(--accent);transition:background .45s ease;}
+  .section-head h2{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(2.2rem,4.6vw,3.8rem);
+    line-height:.96;
+    letter-spacing:-.02em;
+    margin:0;
+  }
+  .section-head h2 em{font-style:italic;color:var(--accent-deep);transition:color .45s ease;}
+  .section-head .aside{
+    font-family:var(--serif);
+    font-size:1rem;
+    line-height:1.65;
+    color:var(--muted);
+    max-width:46ch;
+    margin:0 0 4px;
+    justify-self:end;
+  }
+
+  .route{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr)) auto;
+    gap:clamp(20px,3.2vw,40px);
+    align-items:start;
+    padding-top:26px;
+  }
+  .route::before{
+    content:"";
+    position:absolute;
+    top:5px;left:0;right:min(24%,240px);
+    border-top:1px dashed rgba(44,43,35,.3);
+  }
+  .stop{
+    position:relative;
+    padding-top:18px;
+  }
+  .stop::before{
+    content:"";
+    position:absolute;
+    top:-27px;left:0;
+    width:11px;height:11px;
+    border-radius:50%;
+    background:var(--paper);
+    border:1px solid var(--accent);
+    transition:background .45s ease,border-color .45s ease;
+  }
+  .stop .stop-no{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:.86rem;
+    color:var(--accent);
+    transition:color .45s ease;
+    display:block;
+    margin-bottom:4px;
+  }
+  .stop .days{
+    font-size:.45rem;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--muted);
+    display:block;
+    margin-bottom:12px;
+  }
+  .stop h3{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(1.5rem,2.7vw,2.1rem);
+    line-height:1.05;
+    margin:0 0 9px;
+    letter-spacing:-.01em;
+  }
+  .stop p{
+    font-family:var(--serif);
+    font-size:.88rem;
+    line-height:1.6;
+    color:var(--muted);
+    margin:0;
+    max-width:31ch;
+  }
+  .hand{
+    display:inline-block;
+    font-family:var(--hand);
+    font-size:clamp(1rem,1.5vw,1.18rem);
+    line-height:1.1;
+    color:var(--accent-deep);
+    transform:rotate(-3deg);
+    margin-top:16px;
+    position:relative;
+    padding-left:2px;
+    transition:color .45s ease;
+  }
+  .hand::after{
+    content:"";
+    display:block;
+    width:74%;
+    height:1px;
+    margin-top:3px;
+    background:currentColor;
+    opacity:.28;
+    transform:rotate(-1deg);
+  }
+  .hand.alt{transform:rotate(2deg);}
+  .stop:nth-child(2) .hand{margin-left:8px;}
+
+  .stamp-col{
+    width:clamp(108px,12vw,142px);
+    position:relative;
+    margin-top:-14px;
+  }
+  .stamp{
+    display:block;
+    width:100%;
+    height:auto;
+    filter:drop-shadow(0 5px 9px rgba(76,61,32,.16));
+    transform:rotate(2deg);
+  }
+  .postmark{
+    display:block;
+    width:118%;
+    height:auto;
+    margin-top:-30%;
+    margin-left:-34%;
+    opacity:.55;
+    transform:rotate(-4deg);
+  }
+  .stamp-note{
+    font-family:var(--hand);
+    font-size:.92rem;
+    color:var(--muted);
+    transform:rotate(-4deg);
+    margin:4px 0 0 -6px;
+    line-height:1.2;
+  }
+
+  /* ---------------- manifesto strip ---------------- */
+  .manifesto{
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:clamp(34px,4.6vw,52px) 0;
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    gap:clamp(20px,4vw,54px);
+    align-items:center;
+  }
+  .manifesto .num{
+    font-family:var(--serif);
+    font-size:clamp(2.2rem,4vw,3.2rem);
+    font-style:italic;
+    color:var(--accent);
+    line-height:1;
+    transition:color .45s ease;
+  }
+  .manifesto p{
+    font-family:var(--serif);
+    font-size:clamp(1.12rem,2.1vw,1.6rem);
+    line-height:1.42;
+    margin:0;
+    max-width:52ch;
+    letter-spacing:-.005em;
+  }
+  .manifesto p em{font-style:italic;color:var(--accent-deep);transition:color .45s ease;}
+  .manifesto .sun-mark{width:54px;height:54px;color:var(--accent);opacity:.8;transition:color .45s ease;}
+
+  /* ---------------- footer ---------------- */
+  footer{
+    padding:clamp(48px,6.5vw,88px) 0 30px;
+    position:relative;
+  }
+  .footer-top{
+    display:grid;
+    grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+    gap:clamp(28px,5vw,70px);
+    align-items:end;
+    padding-bottom:clamp(32px,4vw,50px);
+    border-bottom:1px solid var(--line);
+  }
+  .footer-top h2{
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:clamp(2.1rem,4.8vw,3.9rem);
+    line-height:1;
+    letter-spacing:-.02em;
+    margin:0;
+  }
+  .footer-top h2 em{font-style:italic;color:var(--accent);transition:color .45s ease;}
+  .footer-side{
+    justify-self:end;
+    width:min(100%,360px);
+  }
+  .footer-side p{
+    margin:0 0 16px;
+    font-family:var(--serif);
+    font-size:.95rem;
+    line-height:1.6;
+    color:var(--muted);
+  }
+  .footer-mail{
+    display:inline-block;
+    font-family:var(--serif);
+    font-size:clamp(1.1rem,1.8vw,1.35rem);
+    text-decoration:none;
+    border-bottom:1px solid var(--accent);
+    padding-bottom:3px;
+    transition:color .3s ease,border-color .45s ease;
+  }
+  .footer-mail:hover{color:var(--accent-deep);}
+  .footer-cols{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:24px;
+    padding:clamp(24px,3vw,36px) 0 clamp(30px,4vw,44px);
+    border-bottom:1px solid var(--line);
+  }
+  .foot-block .label{
+    display:block;
+    font-size:.44rem;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+  .foot-block p, .foot-block address{
+    font-family:var(--serif);
+    font-size:.88rem;
+    line-height:1.6;
+    color:var(--ink);
+    font-style:normal;
+    margin:0;
+  }
+  .foot-block a{
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+    transition:border-color .2s ease,color .3s ease;
+  }
+  .foot-block a:hover{border-color:var(--accent);color:var(--accent-deep);}
+  .footer-bottom{
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    flex-wrap:wrap;
+    padding-top:20px;
+    font-size:.44rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .footer-bottom a{text-decoration:none;color:var(--ink);}
+  .footer-bottom a:hover{color:var(--accent-deep);}
+  .footer-watermark{
+    font-family:var(--serif);
+    font-size:clamp(3.4rem,12.5vw,10.5rem);
+    line-height:.72;
+    letter-spacing:.02em;
+    color:rgba(44,43,35,.055);
+    text-align:center;
+    user-select:none;
+    margin:clamp(30px,5vw,50px) 0 0;
+    padding-bottom:.08em;
+    line-height:1;
+    white-space:nowrap;
+  }
+
+  @media (max-width:1020px){
+    .hero-grid{grid-template-columns:1fr;gap:clamp(36px,6vw,52px);}
+    h1.display{max-width:14ch;}
+    .postcard-area{max-width:600px;width:100%;margin:0 auto;}
+    .stack{width:min(100%,480px);}
+    .pc-caption{width:min(100%,480px);}
+    .section-head{grid-template-columns:1fr;gap:16px;}
+    .section-head .aside{justify-self:start;}
+    .route{grid-template-columns:repeat(3,minmax(0,1fr));}
+    .route::before{right:0;}
+    .stamp-col{grid-column:1 / -1;width:132px;justify-self:end;margin-top:6px;}
+    .postmark{width:104%;margin-left:-30%;}
+  }
+  @media (max-width:760px){
+    header.top{padding:20px 0 14px;}
+    .brand-word b{font-size:1.02rem;letter-spacing:.16em;}
+    .brand-word i{font-size:1.06rem;}
+    .brand-caption{display:none;}
+    nav.primary{gap:14px;font-size:.5rem;}
+    nav.primary a:not(.nav-cta):not(:first-child){display:none;}
+    .hero{padding-top:34px;}
+    h1.display{font-size:clamp(2.9rem,12.4vw,4.2rem);}
+    .stack{aspect-ratio:1/.98;}
+    .postcard{top:5%;left:4%;width:92%;padding:8px 8px 30px;}
+    .postcard .pc-strip{left:11px;right:11px;bottom:7px;font-size:.36rem;}
+    .postcard .pc-strip em{font-size:.78rem;}
+    .manifesto{grid-template-columns:1fr;gap:8px;align-items:start;}
+    .manifesto .num{font-size:clamp(2.2rem,9vw,3rem);}
+    .manifesto p{max-width:100%;}
+    .manifesto .sun-mark{display:none;}
+    .footer-top{grid-template-columns:1fr;align-items:start;gap:26px;}
+    .footer-side{justify-self:start;}
+    .footer-cols{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 20px;}
+    .footer-watermark{font-size:clamp(2.6rem,15vw,5rem);}
+    .route{grid-template-columns:1fr;gap:0;padding-top:20px;}
+    .route::before{display:none;}
+    .stop{padding:24px 0 20px 26px;border-left:1px dashed rgba(44,43,35,.3);}
+    .stop::before{top:30px;left:-6px;}
+    .stop:last-of-type{border-left-color:transparent;}
+    .stop p{max-width:40ch;}
+    .stamp-col{justify-self:start;margin:6px 0 0 26px;}
+  }
+  @media (max-width:460px){
+    .hero-actions{gap:16px;}
+    .btn{padding:13px 18px;font-size:.53rem;}
+    .text-link{font-size:.9rem;}
+    .hero-note{font-size:.43rem;gap:10px;}
+    .pc-caption{grid-template-columns:1fr;gap:8px;}
+    .pc-caption .pc-dots{grid-column:1;margin-top:4px;}
+    .postcard.is-active{transform:rotate(0) translateY(-8px) scale(1.02);}
+    nav.primary a:not(.nav-cta){display:none;}
+    .footer-bottom{font-size:.39rem;letter-spacing:.18em;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    .postcard,.pc-text h3,.pc-text p,.btn,.brand-sun,.brand-word i{transition:none;}
+  }
+</style>
+</head>
+<body id="top">
+<div class="shell">
+
+  <header class="top">
+    <div class="wrap top-inner">
+      <a class="brand" href="#top" aria-label="Costa Lenta, home">
+        <svg class="brand-sun" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+          <circle cx="17" cy="17" r="6.2"/>
+          <path d="M17 1.5v4M17 28.5v4M1.5 17h4M28.5 17h4M6 6l2.9 2.9M25.1 25.1 28 28M28 6l-2.9 2.9M8.9 25.1 6 28"/>
+        </svg>
+        <span>
+          <span class="brand-word"><b>Costa</b><i>Lenta</i></span>
+          <span class="brand-caption">Slow travel atelier · Liguria</span>
+        </span>
+      </a>
+      <nav class="primary" aria-label="Main navigation">
+        <a href="#top">The atelier</a>
+        <a href="#itinerary">Itinerary</a>
+        <a href="#postcards">Postcards</a>
+        <a class="nav-cta" href="#footer">Enquire</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Slow travel atelier · Mediterranean</p>
+          <h1 class="display" id="hero-title">Take the <em>long afternoon.</em></h1>
+          <p class="lede">We make unhurried journeys along the Ligurian coast — small houses, long lunches, and enough empty hours to notice the light change. No tour buses. No early alarms.</p>
+          <div class="hero-actions">
+            <a class="btn" href="#itinerary">
+              See the itinerary
+              <svg viewBox="0 0 24 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M0 5h21M17 1l4 4-4 4"/></svg>
+            </a>
+            <a class="text-link" href="#postcards">Browse the postcards</a>
+          </div>
+          <div class="hero-note">
+            <span class="chip">08 days max</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>03 stops</span>
+            <span class="dot" aria-hidden="true"></span>
+            <span>no early alarms</span>
+          </div>
+        </div>
+
+        <div class="postcard-area" id="postcards">
+          <div class="stack" id="postcardStack">
+
+            <button class="postcard is-active" type="button" data-index="0" aria-pressed="true"
+                    aria-label="Bring the Camogli postcard to the front"
+                    style="--rest: rotate(4.6deg) translate(16px, -12px); z-index:3;">
+              <span class="art">
+                <svg viewBox="0 0 400 300" role="img" aria-label="Illustration of whitewashed houses above a blue bay">
+                  <defs>
+                    <linearGradient id="sky-a" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#f9f1df"/>
+                      <stop offset="1" stop-color="#efdfc3"/>
+                    </linearGradient>
+                    <linearGradient id="sea-a" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#5793a5"/>
+                      <stop offset="1" stop-color="#215a73"/>
+                    </linearGradient>
+                    <linearGradient id="hill-a" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#7b8150"/>
+                      <stop offset="1" stop-color="#59603a"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="400" height="300" fill="url(#sky-a)"/>
+                  <circle cx="322" cy="57" r="28" fill="#f3d49a"/>
+                  <circle cx="322" cy="57" r="38" fill="none" stroke="#eecf93" stroke-width=".8" opacity=".55"/>
+                  <path d="M0 166 L42 146 L96 158 L148 140 L206 156 L252 144 L312 160 L356 150 L400 162 L400 300 L0 300 Z" fill="#98a06f" opacity=".6"/>
+                  <rect y="158" width="400" height="92" fill="url(#sea-a)"/>
+                  <g stroke="#d9f0ea" stroke-width="1" opacity=".4" fill="none">
+                    <path d="M14 190q14-4 28 0t28 0 28 0"/>
+                    <path d="M70 205q14-4 28 0t28 0 28 0"/>
+                    <path d="M260 186q14-4 28 0t28 0 28 0"/>
+                    <path d="M296 202q14-4 28 0t28 0 28 0"/>
+                    <path d="M18 218q14-4 28 0t28 0"/>
+                  </g>
+                  <path d="M0 300 L0 188 L34 176 L72 184 L112 174 L158 186 L206 178 L258 190 L312 182 L356 192 L400 184 L400 300 Z" fill="url(#hill-a)"/>
+                  <path d="M0 300 L0 246 L54 232 L112 242 L170 230 L228 244 L288 234 L346 246 L400 236 L400 300 Z" fill="#4d5633" opacity=".55"/>
+                  <!-- houses -->
+                  <g>
+                    <rect x="76" y="146" width="52" height="42" fill="#fbf6e9"/>
+                    <path d="M72 147 L102 128 L132 147 Z" fill="#b5603f"/>
+                    <rect x="86" y="158" width="8" height="12" fill="#3f6e80"/>
+                    <rect x="104" y="158" width="8" height="12" fill="#3f6e80"/>
+                    <rect x="96" y="176" width="9" height="12" fill="#4b6b53"/>
+
+                    <rect x="136" y="134" width="62" height="50" fill="#f7f0e0"/>
+                    <path d="M131 136 L167 113 L203 136 Z" fill="#a95238"/>
+                    <rect x="147" y="146" width="9" height="13" fill="#3c6b7d"/>
+                    <rect x="164" y="146" width="9" height="13" fill="#3c6b7d"/>
+                    <rect x="181" y="146" width="9" height="13" fill="#3c6b7d"/>
+                    <rect x="162" y="167" width="11" height="17" fill="#57704f"/>
+
+                    <rect x="208" y="150" width="46" height="38" fill="#f7f1e3"/>
+                    <path d="M204 151 L231 134 L258 151 Z" fill="#c06a45"/>
+                    <rect x="218" y="161" width="7" height="10" fill="#3f6e80"/>
+                    <rect x="234" y="161" width="7" height="10" fill="#3f6e80"/>
+
+                    <rect x="86" y="190" width="56" height="46" fill="#fdf9ee"/>
+                    <path d="M82 191 L114 172 L146 191 Z" fill="#b45b3b"/>
+                    <rect x="97" y="201" width="9" height="13" fill="#3f6b7d"/>
+                    <rect x="116" y="201" width="9" height="13" fill="#3f6b7d"/>
+                    <rect x="107" y="223" width="12" height="13" fill="#4a674d"/>
+
+                    <rect x="152" y="190" width="66" height="50" fill="#fbf5e7"/>
+                    <path d="M147 191 L185 168 L223 191 Z" fill="#ab5136"/>
+                    <rect x="163" y="202" width="10" height="14" fill="#386577"/>
+                    <rect x="182" y="202" width="10" height="14" fill="#386577"/>
+                    <rect x="201" y="202" width="6" height="14" fill="#386577"/>
+                    <rect x="180" y="224" width="12" height="16" fill="#546d4a"/>
+
+                    <rect x="232" y="196" width="52" height="44" fill="#f8f2e3"/>
+                    <path d="M228 197 L258 180 L288 197 Z" fill="#bd6644"/>
+                    <rect x="243" y="208" width="8" height="12" fill="#3d697b"/>
+                    <rect x="261" y="208" width="8" height="12" fill="#3d697b"/>
+
+                    <!-- campanile -->
+                    <rect x="294" y="158" width="30" height="82" fill="#f6efdf"/>
+                    <path d="M290 159 L309 141 L328 159 Z" fill="#a85238"/>
+                    <circle cx="309" cy="170" r="6" fill="#3c6b7d"/>
+                    <rect x="303" y="184" width="12" height="11" fill="#3d697b"/>
+                    <rect x="303" y="207" width="12" height="9" fill="#3d697b"/>
+                  </g>
+                  <!-- cypress and foreground -->
+                  <g fill="#465030">
+                    <ellipse cx="58" cy="214" rx="7" ry="30"/>
+                    <ellipse cx="70" cy="228" rx="5" ry="20"/>
+                    <ellipse cx="345" cy="222" rx="7" ry="26"/>
+                  </g>
+                  <path d="M0 300 L0 268 Q38 252 76 270 T160 266 Q200 254 240 268 T330 264 Q366 258 400 272 L400 300 Z" fill="#3d4729"/>
+                  <g stroke="#7f8a53" stroke-width="1.2" opacity=".7" fill="none">
+                    <path d="M40 285q6-16 4-28M44 272q6-4 10-10M44 278q-6-3-9-9"/>
+                    <path d="M348 288q4-14 2-25M340 280q-5-3-7-9M350 276q6-2 9-8"/>
+                  </g>
+                  <rect x="0" y="0" width="400" height="300" fill="none" stroke="rgba(80,63,34,.10)"/>
+                </svg>
+              </span>
+              <span class="pc-strip"><span>Cartolina · 01</span><em>Camogli</em></span>
+            </button>
+
+            <button class="postcard" type="button" data-index="1" aria-pressed="false"
+                    aria-label="Bring the Levanto table postcard to the front"
+                    style="--rest: rotate(6.5deg) translate(26px, 12px); z-index:2;">
+              <span class="art">
+                <svg viewBox="0 0 400 300" role="img" aria-label="Illustration of lemons, olives and olive oil on a linen table">
+                  <defs>
+                    <linearGradient id="cloth-b" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#f0e5cd"/>
+                      <stop offset="1" stop-color="#e4d5b7"/>
+                    </linearGradient>
+                    <radialGradient id="plate-b" cx="50%" cy="42%" r="62%">
+                      <stop offset="0" stop-color="#fcf8ec"/>
+                      <stop offset="1" stop-color="#e8deca"/>
+                    </radialGradient>
+                    <linearGradient id="oil-b" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#d8c04a"/>
+                      <stop offset="1" stop-color="#a98a2e"/>
+                    </linearGradient>
+                    <linearGradient id="glass-b" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0" stop-color="#ffffff" stop-opacity=".65"/>
+                      <stop offset=".45" stop-color="#ffffff" stop-opacity=".16"/>
+                      <stop offset="1" stop-color="#ffffff" stop-opacity=".4"/>
+                    </linearGradient>
+                    <linearGradient id="lemon-b" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stop-color="#f3d951"/>
+                      <stop offset=".7" stop-color="#e2bf35"/>
+                      <stop offset="1" stop-color="#c9a426"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="400" height="300" fill="url(#cloth-b)"/>
+                  <g stroke="#b4563a" stroke-width=".8" opacity=".16">
+                    <path d="M0 32h400M0 78h400M0 124h400M0 170h400M0 216h400M0 262h400"/>
+                  </g>
+                  <g stroke="#8b8266" stroke-width=".7" opacity=".14">
+                    <path d="M36 0v300M92 0v300M148 0v300M204 0v300M260 0v300M316 0v300M372 0v300"/>
+                  </g>
+                  <ellipse cx="215" cy="236" rx="148" ry="40" fill="#7a6a44" opacity=".16"/>
+                  <ellipse cx="205" cy="192" rx="132" ry="66" fill="url(#plate-b)"/>
+                  <ellipse cx="205" cy="190" rx="132" ry="66" fill="none" stroke="#cbbc9f" stroke-width="1.6"/>
+                  <ellipse cx="205" cy="188" rx="108" ry="52" fill="none" stroke="#d8cbb2" stroke-width="1"/>
+                  <g>
+                    <ellipse cx="160" cy="182" rx="31" ry="22" transform="rotate(-16 160 182)" fill="url(#lemon-b)"/>
+                    <ellipse cx="152" cy="174" rx="13" ry="7" transform="rotate(-24 152 174)" fill="#f8e88a" opacity=".55"/>
+                    <path d="M188 167q10-7 20-4" stroke="#6b7136" stroke-width="2" fill="none"/>
+                    <path d="M188 167q2-12 12-16 6 10-2 17z" fill="#6d7a3b"/>
+                    <ellipse cx="222" cy="206" rx="28" ry="20" transform="rotate(12 222 206)" fill="url(#lemon-b)"/>
+                    <ellipse cx="215" cy="198" rx="11" ry="6" transform="rotate(6 215 198)" fill="#f8e88a" opacity=".5"/>
+                    <circle cx="244" cy="188" r="13" fill="#e6c53b"/>
+                    <circle cx="244" cy="188" r="9" fill="#f2df82"/>
+                    <g stroke="#d9c15a" stroke-width=".8">
+                      <path d="M244 179v18M235 188h18M238 182l12 12M250 182l-12 12"/>
+                    </g>
+                  </g>
+                  <g fill="#46522b">
+                    <ellipse cx="128" cy="210" rx="9" ry="7" transform="rotate(-18 128 210)"/>
+                    <ellipse cx="146" cy="218" rx="9" ry="7" transform="rotate(14 146 218)"/>
+                    <ellipse cx="167" cy="211" rx="8" ry="7"/>
+                    <ellipse cx="186" cy="220" rx="9" ry="7" transform="rotate(-8 186 220)"/>
+                    <ellipse cx="207" cy="212" rx="8" ry="7"/>
+                    <ellipse cx="229" cy="219" rx="8" ry="6.5"/>
+                  </g>
+                  <g fill="#7e8a4a" opacity=".75">
+                    <ellipse cx="131" cy="207" rx="3" ry="1.8"/>
+                    <ellipse cx="186" cy="217" rx="3" ry="1.8"/>
+                    <ellipse cx="229" cy="216" rx="2.5" ry="1.5"/>
+                  </g>
+                  <g>
+                    <path d="M300 86h20l4 108q1 12-14 12t-14-12z" fill="url(#glass-b)" stroke="#c9bc9e" stroke-width="1"/>
+                    <path d="M303 140h14l2 54q0 7-9 7t-9-7z" fill="url(#oil-b)" opacity=".85"/>
+                    <rect x="302" y="78" width="16" height="14" rx="2" fill="#8a7440"/>
+                    <path d="M304 104q3 26 0 50" stroke="#ffffff" stroke-width="3" opacity=".55" fill="none"/>
+                    <path d="M317 98q2 18 0 36" stroke="#ffffff" stroke-width="1.4" opacity=".35" fill="none"/>
+                  </g>
+                  <g>
+                    <ellipse cx="326" cy="216" rx="34" ry="16" fill="#d8c8a9"/>
+                    <ellipse cx="326" cy="212" rx="34" ry="15" fill="#efe4cc"/>
+                    <ellipse cx="326" cy="211" rx="26" ry="10" fill="#e2d4b8"/>
+                    <g fill="#4a5629">
+                      <circle cx="314" cy="209" r="5"/>
+                      <circle cx="325" cy="206" r="5"/>
+                      <circle cx="336" cy="210" r="5"/>
+                      <circle cx="320" cy="215" r="4.4"/>
+                      <circle cx="332" cy="216" r="4.2"/>
+                    </g>
+                  </g>
+                  <path d="M48 244q16-26 36-30M58 238q0-12-8-18M66 230q12-4 24 2" stroke="#5f6b38" stroke-width="1.3" fill="none"/>
+                  <g fill="#637039">
+                    <ellipse cx="54" cy="232" rx="8" ry="3.4" transform="rotate(-34 54 232)"/>
+                    <ellipse cx="74" cy="214" rx="8" ry="3.4" transform="rotate(22 74 214)"/>
+                    <ellipse cx="90" cy="218" rx="8" ry="3.4" transform="rotate(-10 90 218)"/>
+                    <ellipse cx="62" cy="220" rx="7" ry="3" transform="rotate(58 62 220)"/>
+                  </g>
+                  <rect x="0" y="0" width="400" height="300" fill="none" stroke="rgba(80,63,34,.10)"/>
+                </svg>
+              </span>
+              <span class="pc-strip"><span>Cartolina · 02</span><em>Levanto</em></span>
+            </button>
+
+            <button class="postcard" type="button" data-index="2" aria-pressed="false"
+                    aria-label="Bring the Cala Moresca postcard to the front"
+                    style="--rest: rotate(-11deg) translate(-24px, 26px); z-index:1;">
+              <span class="art">
+                <svg viewBox="0 0 400 300" role="img" aria-label="Illustration of a quiet swimming cove between rocks">
+                  <defs>
+                    <linearGradient id="sky-c" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#f7efdd"/>
+                      <stop offset="1" stop-color="#efe3ca"/>
+                    </linearGradient>
+                    <linearGradient id="sea-c" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="#78b8b4"/>
+                      <stop offset=".45" stop-color="#43929c"/>
+                      <stop offset="1" stop-color="#1f5f76"/>
+                    </linearGradient>
+                    <linearGradient id="rock-c" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stop-color="#8c8663"/>
+                      <stop offset="1" stop-color="#5a593e"/>
+                    </linearGradient>
+                    <linearGradient id="cliff-c" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0" stop-color="#6e6f4b"/>
+                      <stop offset="1" stop-color="#4a4d33"/>
+                    </linearGradient>
+                  </defs>
+                  <rect width="400" height="300" fill="url(#sky-c)"/>
+                  <circle cx="316" cy="62" r="26" fill="#f6dcae" opacity=".9"/>
+                  <path d="M0 116 Q70 100 140 112 T280 108 T400 118 L400 300 L0 300 Z" fill="url(#sea-c)"/>
+                  <g stroke="#dff3ed" stroke-width="1" opacity=".5" fill="none">
+                    <path d="M150 150q12-3 24 0t24 0"/>
+                    <path d="M206 170q12-3 24 0t24 0"/>
+                    <path d="M120 196q12-3 24 0t24 0"/>
+                    <path d="M250 214q12-3 24 0t24 0"/>
+                    <path d="M180 238q12-3 24 0t24 0"/>
+                  </g>
+                  <path d="M0 300 L0 82 L46 70 L82 88 L104 126 L126 176 L108 224 L92 300 Z" fill="url(#cliff-c)"/>
+                  <path d="M0 300 L0 132 L40 120 L70 148 L88 196 L70 250 L52 300 Z" fill="#4b4e33" opacity=".6"/>
+                  <path d="M0 300 L0 214 L40 208 L68 232 L58 270 L30 300 Z" fill="url(#rock-c)"/>
+                  <path d="M400 300 L400 74 L360 64 L326 84 L308 124 L318 170 L340 224 L374 300 Z" fill="url(#cliff-c)"/>
+                  <path d="M400 300 L400 132 L366 122 L340 152 L332 194 L352 246 L378 300 Z" fill="#44472e" opacity=".55"/>
+                  <path d="M400 300 L400 226 L366 220 L340 238 L350 274 L378 300 Z" fill="url(#rock-c)"/>
+                  <path d="M108 300 Q145 252 200 246 Q252 240 292 300 Z" fill="#e6d3aa"/>
+                  <path d="M118 300 Q150 266 200 260 Q246 254 282 300 Z" fill="#dcc79c"/>
+                  <g stroke="#8aa58c" stroke-width="1.4" opacity=".55">
+                    <path d="M92 260q-10-20-24-26M84 254q-6-16 2-26M96 250q10-12 10-24"/>
+                    <path d="M316 258q10-22 26-26M326 252q8-14 2-24"/>
+                  </g>
+                  <g>
+                    <path d="M212 191q16 10 34 0l-5 12h-24z" fill="#b4563a"/>
+                    <path d="M229 191v-26" stroke="#5c4b31" stroke-width="1.4"/>
+                    <path d="M230 166q14 4 16 18-12 0-16-18z" fill="#f8efda"/>
+                  </g>
+                  <g>
+                    <circle cx="165" cy="228" r="4" fill="#3a3a2e"/>
+                    <path d="M160 234q5-4 10 0" stroke="#3a3a2e" stroke-width="2" fill="none"/>
+                    <path d="M169 232l8-3M160 236l-6 2" stroke="#3a3a2e" stroke-width="1.4"/>
+                    <path d="M158 238q8 5 16 0" stroke="#cfe9e1" stroke-width="1.2" opacity=".7" fill="none"/>
+                  </g>
+                  <path d="M132 108q30 6 66 4" stroke="#eef7ef" stroke-width="1" opacity=".5" fill="none"/>
+                  <rect x="0" y="0" width="400" height="300" fill="none" stroke="rgba(80,63,34,.10)"/>
+                </svg>
+              </span>
+              <span class="pc-strip"><span>Cartolina · 03</span><em>Cala Moresca</em></span>
+            </button>
+
+          </div>
+
+          <div class="pc-caption" id="pcCaption" aria-live="polite">
+            <div class="pc-num" id="pcNum">01 <span>/ 03</span></div>
+            <div class="pc-text">
+              <h3 id="pcTitle">Camogli, Liguria</h3>
+              <p id="pcDesc">Whitewashed houses stacked above a blue bay. Mornings are for the market, afternoons for the sea.</p>
+            </div>
+            <div class="pc-dots" aria-label="Choose a postcard">
+              <button type="button" data-index="0" class="is-active" aria-label="Show postcard 1, Camogli"><span class="bar"></span></button>
+              <button type="button" data-index="1" aria-label="Show postcard 2, Levanto"><span class="bar"></span></button>
+              <button type="button" data-index="2" aria-label="Show postcard 3, Cala Moresca"><span class="bar"></span></button>
+              <span class="micro" id="pcHint">Click to shuffle</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="itinerary" id="itinerary" aria-labelledby="itinerary-title">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="kicker">The route</span>
+            <h2 id="itinerary-title">A small <em>itinerary.</em></h2>
+          </div>
+          <p class="aside">Eight days along the coast, three places to stay, and nothing you have to be on time for. Boats when the weather is kind, trains when it isn't.</p>
+        </div>
+
+        <div class="route">
+          <article class="stop">
+            <span class="stop-no">No. 01</span>
+            <span class="days">Days 01–03 · Liguria</span>
+            <h3>Camogli</h3>
+            <p>Arrive by the coast road. A room above the harbour, dinner when the fishing boats come in.</p>
+            <span class="hand">swim before breakfast</span>
+          </article>
+
+          <article class="stop">
+            <span class="stop-no">No. 02</span>
+            <span class="days">Days 04–06 · Riviera</span>
+            <h3>San Fruttuoso</h3>
+            <p>A boat, a small abbey, and a bay you can only reach on foot or by sea. Stay for the late light.</p>
+            <span class="hand alt">ask for the corner table</span>
+          </article>
+
+          <article class="stop">
+            <span class="stop-no">No. 03</span>
+            <span class="days">Days 07–08 · Gulf</span>
+            <h3>Portovenere</h3>
+            <p>Last morning: coffee on the harbour wall, a slow walk up to the church, one final swim.</p>
+            <span class="hand">stay for the light</span>
+          </article>
+
+          <div class="stamp-col" aria-label="Postage stamp and postmark">
+            <svg class="stamp" viewBox="0 0 120 144" role="img" aria-label="Illustrated postage stamp, one euro twenty-five">
+              <rect x="2" y="2" width="116" height="140" rx="2" fill="#fbf5e6" stroke="#8e7a54" stroke-width="1"/>
+              <rect x="9" y="9" width="102" height="126" fill="none" stroke="#b9a47c" stroke-width=".8" stroke-dasharray="2 3"/>
+              <rect x="16" y="16" width="88" height="78" fill="#eee2c8"/>
+              <circle cx="78" cy="40" r="13" fill="#f0cf8d"/>
+              <path d="M16 78 L38 56 L54 66 L72 48 L104 78 Z" fill="#7d8a58"/>
+              <path d="M16 94 L16 78 L42 62 L60 74 L80 56 L104 76 L104 94 Z" fill="#5f6b38" opacity=".55"/>
+              <path d="M16 94h88v-8q-22 6-44 0t-44 0z" fill="#3f7080" opacity=".75"/>
+              <text x="60" y="112" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#4b4433">COSTA LENTA</text>
+              <text x="60" y="124" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="5.2" letter-spacing="1.2" fill="#7c7058">POSTE ITALIANE</text>
+              <text x="97" y="134" text-anchor="end" font-family="Georgia, serif" font-size="10" fill="#4b4433">€1.25</text>
+              <text x="18" y="134" font-family="Helvetica, Arial, sans-serif" font-size="4.6" letter-spacing="1" fill="#8a7c60">LIGURIA</text>
+            </svg>
+            <svg class="postmark" viewBox="0 0 150 90" role="img" aria-label="Circular postmark with cancellation lines">
+              <g fill="none" stroke="#5f5a49" stroke-width="1">
+                <circle cx="42" cy="45" r="25"/>
+                <circle cx="42" cy="45" r="19" stroke-dasharray="1.5 2.5"/>
+                <path d="M66 30h78M66 38h78M66 46h78M66 54h78M66 62h78"/>
+              </g>
+              <text x="42" y="42" text-anchor="middle" font-family="Georgia, serif" font-size="6.4" fill="#5f5a49">COSTA LENTA</text>
+              <text x="42" y="50" text-anchor="middle" font-family="Georgia, serif" font-size="5.2" fill="#5f5a49">LIGURIA</text>
+              <text x="42" y="58" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="4.4" letter-spacing=".8" fill="#5f5a49">18 · VI · 2026</text>
+            </svg>
+            <p class="stamp-note">sent with<br>a little salt</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap" aria-label="Atelier note">
+      <div class="manifesto">
+        <span class="num">Slow</span>
+        <p>We believe an afternoon is a destination. Our journeys are built around <em>empty hours</em> — a table under a fig tree, a train window, a sea you can walk into without hurrying.</p>
+        <svg class="sun-mark" viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+          <circle cx="30" cy="30" r="11"/>
+          <path d="M30 2v8M30 50v8M2 30h8M50 30h8M10.2 10.2l5.7 5.7M44.1 44.1l5.7 5.7M49.8 10.2l-5.7 5.7M15.9 44.1l-5.7 5.7"/>
+        </svg>
+      </div>
+    </section>
+  </main>
+
+  <footer id="footer">
+    <div class="wrap">
+      <div class="footer-top">
+        <h2>Come for the afternoon.<br><em>Stay for the light.</em></h2>
+        <div class="footer-side">
+          <p>Tell us how much time you have and what you'd rather not do. We'll write back with a small, unhurried plan.</p>
+          <a class="footer-mail" href="#footer">ciao@costalenta.it</a>
+        </div>
+      </div>
+
+      <div class="footer-cols">
+        <div class="foot-block">
+          <span class="label">Atelier</span>
+          <address>Via dell'Arco 12<br>16032 Camogli, Liguria<br>Italy</address>
+        </div>
+        <div class="foot-block">
+          <span class="label">Hours</span>
+          <p>Tuesday – Saturday<br>10.00 – 17.00<br>By appointment in winter</p>
+        </div>
+        <div class="foot-block">
+          <span class="label">Elsewhere</span>
+          <p><a href="#postcards">Postcards</a><br><a href="#itinerary">Itinerary</a><br><a href="#top">The atelier</a></p>
+        </div>
+        <div class="foot-block">
+          <span class="label">Small print</span>
+          <p>We plan journeys for six travellers or fewer. No buses, no flags, no early starts.</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Costa Lenta · Slow travel atelier</span>
+        <span>Made slowly, on the Ligurian coast</span>
+        <a href="#top">Back to top ↑</a>
+      </div>
+
+      <p class="footer-watermark" aria-hidden="true">Costa Lenta</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".postcard"));
+  var dots = Array.prototype.slice.call(document.querySelectorAll(".pc-dots button"));
+  var caption = document.getElementById("pcCaption");
+  var numEl = document.getElementById("pcNum");
+  var titleEl = document.getElementById("pcTitle");
+  var descEl = document.getElementById("pcDesc");
+  var hintEl = document.getElementById("pcHint");
+  var root = document.documentElement;
+  var current = 0;
+  var swapTimer = null;
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var DATA = [
+    {
+      title: "Camogli, Liguria",
+      desc: "Whitewashed houses stacked above a blue bay. Mornings are for the market, afternoons for the sea.",
+      accent: "#2f6f86",
+      deep: "#1e4f62",
+      soft: "#dfe9e5",
+      hint: "Click to shuffle"
+    },
+    {
+      title: "A table in Levanto",
+      desc: "Lemons, olives, and a bottle of oil from the hill above town. Lunch has no end time.",
+      accent: "#b4563a",
+      deep: "#7c3623",
+      soft: "#f0ddcf",
+      hint: "Click to shuffle"
+    },
+    {
+      title: "Cala Moresca, Sardinia",
+      desc: "A quiet cove reached on foot. Bring a book, a towel, and no plans at all.",
+      accent: "#5d6b34",
+      deep: "#3e4a20",
+      soft: "#e4e5ce",
+      hint: "Click to shuffle"
+    }
+  ];
+
+  function pad(n){ return (n < 9 ? "0" : "") + (n + 1); }
+
+  function setAccent(d){
+    root.style.setProperty("--accent", d.accent);
+    root.style.setProperty("--accent-deep", d.deep);
+    root.style.setProperty("--accent-soft", d.soft);
+  }
+
+  function renderCaption(d, animate){
+    if (animate && !reduceMotion){
+      caption.classList.add("is-swapping");
+      window.clearTimeout(swapTimer);
+      swapTimer = window.setTimeout(function(){
+        titleEl.textContent = d.title;
+        descEl.textContent = d.desc;
+        numEl.innerHTML = pad(current) + " <span>/ 03</span>";
+        caption.classList.remove("is-swapping");
+      }, 160);
+    } else {
+      titleEl.textContent = d.title;
+      descEl.textContent = d.desc;
+      numEl.innerHTML = pad(current) + " <span>/ 03</span>";
+    }
+  }
+
+  function setCard(index, options){
+    options = options || {};
+    index = Math.max(0, Math.min(cards.length - 1, index));
+    var changed = index !== current;
+    current = index;
+
+    cards.forEach(function(card, i){
+      var active = i === index;
+      card.classList.toggle("is-active", active);
+      card.setAttribute("aria-pressed", active ? "true" : "false");
+      card.style.zIndex = active ? 6 : (i + 1);
+    });
+
+    dots.forEach(function(dot, i){
+      dot.classList.toggle("is-active", i === index);
+      dot.setAttribute("aria-current", i === index ? "true" : "false");
+    });
+
+    var d = DATA[index];
+    setAccent(d);
+    if (changed || !options.initial) renderCaption(d, changed);
+
+    if (changed && options.moveFocus){
+      // Keep focus on the newly fronted card for keyboard users.
+      cards[index].focus({ preventScroll: true });
+    }
+  }
+
+  cards.forEach(function(card){
+    card.addEventListener("click", function(){
+      var i = parseInt(card.getAttribute("data-index"), 10);
+      if (i !== current){
+        setCard(i, { moveFocus: false });
+      } else {
+        // A click on the front card shuffles to the next one.
+        setCard((current + 1) % cards.length, { moveFocus: false });
+      }
+    });
+    card.addEventListener("keydown", function(e){
+      if (e.key === "Enter" || e.key === " "){
+        e.preventDefault();
+        setCard(parseInt(card.getAttribute("data-index"), 10));
+      }
+    });
+  });
+
+  dots.forEach(function(dot){
+    dot.addEventListener("click", function(){
+      setCard(parseInt(dot.getAttribute("data-index"), 10));
+    });
+  });
+
+  // small affordance: swap the hint once a visitor has explored the stack
+  var interacted = false;
+  document.querySelector(".stack").addEventListener("click", function(){
+    if (interacted) return;
+    interacted = true;
+    if (hintEl) hintEl.textContent = "Tap to shuffle";
+  });
+
+  setCard(0, { initial: true });
+})();
+</script>
+</body>
+</html>

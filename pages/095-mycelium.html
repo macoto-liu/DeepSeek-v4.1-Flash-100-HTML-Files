@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mycelium — A Living Network</title>
+<style>
+  :root{
+    --serif:Georgia,"Iowan Old Style","Palatino Linotype","Book Antiqua",serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    --ink:#f0ecdf;
+    --muted:#a09f93;
+    --dim:#6d6f66;
+    --line:rgba(240,236,223,.14);
+    --line-soft:rgba(240,236,223,.07);
+    --panel:rgba(7,11,9,.46);
+    --accent:#66e3c5;
+    --accent-ink:#c3f8e9;
+    --accent-dim:rgba(102,227,197,.34);
+    --accent-glow:rgba(80,215,185,.12);
+  }
+  body.amber{
+    --accent:#efb163;
+    --accent-ink:#ffe3b8;
+    --accent-dim:rgba(239,177,99,.36);
+    --accent-glow:rgba(230,160,75,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;overflow:hidden;background:#040706;color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  #ground{
+    position:fixed;inset:0;width:100%;height:100%;
+    display:block;z-index:0;cursor:crosshair;touch-action:none;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 42%, transparent 34%, rgba(2,4,3,.42) 72%, rgba(2,3,3,.86) 100%),
+      linear-gradient(180deg, rgba(3,5,4,.45) 0%, transparent 22%, transparent 66%, rgba(3,5,4,.62) 100%);
+  }
+  .fade-in{animation:fadeIn 1.4s ease both}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+  .hud{
+    position:fixed;inset:0;z-index:3;
+    display:flex;flex-direction:column;
+    padding:clamp(14px,2.2vw,30px);
+    pointer-events:none;
+  }
+  .hud-top{
+    display:flex;justify-content:space-between;align-items:center;gap:20px;
+    padding-bottom:12px;border-bottom:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.23em;text-transform:uppercase;
+    color:var(--dim);
+  }
+  .brand{display:flex;align-items:center;gap:11px;color:#ded9cb;letter-spacing:.28em}
+  .brand svg{color:var(--accent);transition:color .55s ease}
+  .brand .sep{width:22px;height:1px;background:var(--line);display:inline-block}
+  .brand .sub{font-family:var(--sans);font-size:10.5px;font-style:italic;letter-spacing:.02em;text-transform:none;color:var(--dim)}
+  .top-mid{color:var(--dim)}
+  .top-live{display:flex;align-items:center;gap:8px;color:var(--muted);white-space:nowrap}
+  .top-live .dot{
+    width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none;
+    box-shadow:0 0 9px var(--accent);transition:background .55s ease,box-shadow .55s ease;
+  }
+  .top-live .dot::after{
+    content:"";position:absolute;width:5px;height:5px;border-radius:50%;
+    border:1px solid var(--accent);opacity:.7;
+    animation:rippleDot 3.2s ease-out infinite;
+  }
+  @keyframes rippleDot{0%{transform:scale(1);opacity:.6}70%,100%{transform:scale(3.4);opacity:0}}
+
+  .hud-main{
+    flex:1;min-height:0;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:clamp(20px,4vw,60px);
+    padding-top:clamp(24px,7vh,74px);
+  }
+  .title-block{max-width:700px;pointer-events:none}
+  .eyebrow{
+    margin:0 0 20px;
+    display:flex;align-items:center;gap:12px;
+    font-family:var(--mono);font-size:9px;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--accent-ink);
+    transition:color .55s ease;
+  }
+  .eyebrow::after{content:"";height:1px;width:48px;background:var(--accent-dim);transition:background .55s ease}
+  h1{
+    margin:0;
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(2.85rem,5.3vw,5.15rem);
+    line-height:.96;letter-spacing:-.032em;color:#f5f1e6;
+  }
+  h1 em{font-style:italic;color:var(--accent-ink);transition:color .55s ease}
+  .dek{
+    margin:24px 0 0;
+    max-width:47ch;
+    padding-left:16px;border-left:1px solid var(--accent-dim);
+    color:var(--muted);
+    font-size:clamp(12.5px,1.05vw,14.5px);
+    line-height:1.7;letter-spacing:.005em;
+    transition:border-color .55s ease;
+  }
+  .dek strong{color:#d9d5c7;font-weight:400}
+  .dek .seed-hint{
+    display:inline-flex;align-items:center;gap:7px;margin-top:9px;
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.19em;text-transform:uppercase;color:var(--accent-ink);
+    transition:color .55s ease;
+  }
+  .seed-hint .ring{width:6px;height:6px;border:1px solid var(--accent);border-radius:50%;display:inline-block}
+
+  .stats{
+    pointer-events:auto;
+    width:clamp(286px,24vw,330px);flex:none;
+    padding:14px 16px 13px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(12,18,15,.58),rgba(5,8,7,.62));
+    backdrop-filter:blur(16px) saturate(1.1);
+    -webkit-backdrop-filter:blur(16px) saturate(1.1);
+    box-shadow:0 24px 60px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.045);
+    position:relative;
+  }
+  .stats::before{
+    content:"";position:absolute;left:0;top:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,var(--accent-dim),transparent);
+    transition:background .55s ease;
+  }
+  .stats-head{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding-bottom:9px;border-bottom:1px solid var(--line-soft);
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.23em;text-transform:uppercase;color:var(--dim);
+  }
+  .stats-head .left{display:flex;align-items:center;gap:7px;color:var(--accent-ink);transition:color .55s ease}
+  .stats-head .left i{width:4px;height:4px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 7px var(--accent)}
+  .stats-body{display:grid;grid-template-columns:repeat(3,1fr);padding-top:11px}
+  .stat{padding:0 10px;min-width:0}
+  .stat:first-child{padding-left:0}
+  .stat:last-child{padding-right:0}
+  .stat + .stat{border-left:1px solid var(--line-soft)}
+  .stat-num{
+    font-family:var(--serif);font-size:clamp(22px,2.2vw,30px);line-height:1;
+    color:#f3eee1;font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+  }
+  .stat-label{
+    margin-top:7px;font-family:var(--mono);font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .stats-foot{
+    margin-top:11px;padding-top:8px;border-top:1px solid var(--line-soft);
+    display:flex;justify-content:space-between;gap:10px;
+    font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+  }
+  .stats-foot b{font-weight:400;color:var(--muted)}
+
+  /* ---------- bench ---------- */
+  .bench{
+    pointer-events:auto;
+    width:100%;max-width:1340px;margin:0 auto;
+    display:grid;grid-template-columns:auto minmax(130px,1fr) minmax(130px,1fr) auto;
+    align-items:center;gap:clamp(14px,2.2vw,30px);
+    padding:clamp(12px,1.5vw,16px) clamp(13px,1.8vw,20px);
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(11,17,14,.82),rgba(5,8,7,.9));
+    backdrop-filter:blur(20px) saturate(1.15);
+    -webkit-backdrop-filter:blur(20px) saturate(1.15);
+    box-shadow:0 30px 90px -32px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.055);
+    position:relative;
+  }
+  .bench::before{
+    content:"";position:absolute;left:0;right:0;top:0;height:1px;
+    background:linear-gradient(90deg,transparent,var(--accent-dim) 22%,var(--accent-dim) 78%,transparent);
+    transition:background .55s ease;
+  }
+  .bench-id{min-width:104px}
+  .bench-id .k{
+    display:flex;align-items:center;gap:7px;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent-ink);
+    transition:color .55s ease;
+  }
+  .bench-id .k::before{content:"";width:4px;height:4px;background:var(--accent);border-radius:50%;box-shadow:0 0 7px var(--accent)}
+  .bench-id .name{
+    margin-top:6px;font-family:var(--serif);font-style:italic;font-size:13px;color:var(--muted);letter-spacing:.015em;
+    white-space:nowrap;
+  }
+
+  .bench-control{min-width:0}
+  .bench-label{
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    font-family:var(--mono);font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:#a6a497;
+    margin-bottom:9px;
+  }
+  .bench-label output{
+    font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--accent-ink);
+    font-variant-numeric:tabular-nums;transition:color .55s ease;
+  }
+  input[type="range"]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:15px;background:transparent;display:block;cursor:pointer;
+    --pct:50%;
+  }
+  input[type="range"]::-webkit-slider-runnable-track{
+    height:1px;
+    background:linear-gradient(90deg,var(--accent) 0 var(--pct),rgba(240,236,223,.19) var(--pct) 100%);
+    transition:background .2s ease;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:10px;height:10px;border-radius:50%;
+    background:#f2ede0;margin-top:-4.5px;
+    box-shadow:0 0 0 4px var(--accent-glow),0 1px 5px rgba(0,0,0,.7);
+  }
+  input[type="range"]::-moz-range-track{height:1px;background:rgba(240,236,223,.19)}
+  input[type="range"]::-moz-range-progress{height:1px;background:var(--accent)}
+  input[type="range"]::-moz-range-thumb{width:10px;height:10px;border:none;border-radius:50%;background:#f2ede0;box-shadow:0 0 0 4px var(--accent-glow)}
+  input[type="range"]:focus-visible{outline:1px solid var(--accent);outline-offset:5px}
+
+  .bench-actions{display:flex;align-items:center;gap:7px;flex:none}
+  .btn{
+    appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    padding:9px 11px;min-height:34px;
+    background:transparent;border:1px solid rgba(240,236,223,.17);
+    color:#e2ddd0;font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+    cursor:pointer;transition:border-color .2s ease,color .2s ease,background .2s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--accent-dim);color:var(--accent-ink);background:var(--accent-glow)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:1px solid var(--accent);outline-offset:2px}
+  .btn svg{flex:none}
+  .btn .short{display:none}
+  .btn-palette .dots{display:flex;flex:none}
+  .btn-palette .dots i{width:8px;height:8px;border-radius:50%;border:1px solid rgba(0,0,0,.5);display:block}
+  .btn-palette .dots i:first-child{background:#66e3c5}
+  .btn-palette .dots i:last-child{background:#efb163;margin-left:-3px}
+  .btn-palette .pal-label{color:var(--accent-ink);transition:color .55s ease}
+  .btn-icon{padding:9px;width:34px}
+  .btn-icon .i-play{display:none}
+  .btn-icon.paused .i-pause{display:none}
+  .btn-icon.paused .i-play{display:block}
+
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .hud{animation:none}
+    .top-live .dot::after{animation:none;opacity:0}
+  }
+  @media (max-width:960px){
+    .stats{width:min(310px,36vw)}
+    .bench{grid-template-columns:1fr 1fr;row-gap:13px}
+    .bench-id{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline}
+    .bench-id .name{margin-top:0}
+    .bench-actions{grid-column:1/-1;justify-content:space-between}
+  }
+  @media (max-width:760px){
+    .hud{padding:14px}
+    .hud-main{flex-direction:column;padding-top:clamp(18px,4.5vh,38px);gap:18px;justify-content:flex-start}
+    .top-mid{display:none}
+    h1{font-size:clamp(2.5rem,10.5vw,3.6rem)}
+    .eyebrow{margin-bottom:15px}
+    .dek{margin-top:18px;max-width:52ch;font-size:12.5px}
+    .stats{width:100%;max-width:380px}
+    .bench{max-width:none}
+  }
+  @media (max-width:600px){
+    .hud{padding:12px}
+    .hud-top{padding-bottom:9px}
+    .brand .sub{display:none}
+    .brand .sep{display:none}
+    .brand{letter-spacing:.2em}
+    .hud-main{padding-top:18px;gap:14px}
+    h1{font-size:clamp(2.25rem,10.4vw,2.9rem);line-height:1}
+    .dek{font-size:11.5px;line-height:1.6;padding-left:11px;margin-top:14px}
+    .stats{padding:11px 12px 10px;max-width:none}
+    .stat-num{font-size:22px}
+    .stats-foot{display:none}
+    .bench{padding:11px;gap:11px 14px}
+    .bench-id .name{font-size:11.5px}
+    .bench-actions{gap:6px;justify-content:flex-start;flex-wrap:wrap}
+    .btn{padding:8px 9px;font-size:7.5px;letter-spacing:.1em;min-height:32px}
+    .btn .long{display:none}
+    .btn .short{display:inline}
+    .btn-icon{width:32px;padding:8px}
+    .btn-icon .label{display:none}
+    .btn-palette .pal-label{display:none}
+    .btn-palette{padding:8px 9px}
+    .seed-hint{font-size:7.5px}
+  }
+  @media (max-width:390px){
+    .dek{display:none}
+    .bench-label{font-size:7px;margin-bottom:6px}
+    .bench-id{display:none}
+    .bench{grid-template-columns:1fr;row-gap:10px}
+    .bench-actions{grid-column:auto;justify-content:space-between}
+    .stats{max-width:100%}
+  }
+  @media (max-height:720px) and (max-width:760px){
+    .dek{display:none}
+    .hud-main{padding-top:12px}
+    .stats-foot{display:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="ground" aria-label="Living mycelium network on a dark forest floor. Click to seed a new colony." role="img"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<div class="hud">
+  <header class="hud-top">
+    <div class="brand">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <path d="M9 2.2v5.1M9 7.3 4.7 11.1M9 7.3l4.3 3.8M4.7 11.1l-.9 4.4M4.7 11.1 1.5 13.2M13.3 11.1l.9 4.4M13.3 11.1l3.2 2.1" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        <circle cx="9" cy="2.2" r="1.2" fill="currentColor"/>
+        <circle cx="4.7" cy="11.1" r="1" fill="currentColor"/>
+        <circle cx="13.3" cy="11.1" r="1" fill="currentColor"/>
+      </svg>
+      Mycelium
+      <span class="sep" aria-hidden="true"></span>
+      <span class="sub">a subterranean study</span>
+    </div>
+    <div class="top-mid">Plate 07 · Forest floor · 18.10</div>
+    <div class="top-live"><span class="dot" aria-hidden="true"></span> Culture active</div>
+  </header>
+
+  <div class="hud-main">
+    <section class="title-block">
+      <p class="eyebrow">Beneath the litter layer</p>
+      <h1>The forest is<br>one <em>organism.</em></h1>
+      <p class="dek">A single fungus can thread through an entire hillside, trading sugar for mineral with every root it meets. Each glowing line is a hypha; where lines touch, the forest negotiates with itself.
+        <span class="seed-hint"><span class="ring" aria-hidden="true"></span> Click the ground to seed a colony</span>
+      </p>
+    </section>
+
+    <aside class="stats" aria-label="Live mycelium statistics">
+      <div class="stats-head">
+        <span class="left"><i aria-hidden="true"></i> Live census</span>
+        <span>Plot 07</span>
+      </div>
+      <div class="stats-body">
+        <div class="stat">
+          <div class="stat-num" id="statColonies">3</div>
+          <div class="stat-label">Colonies</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="statThreads">0</div>
+          <div class="stat-label">Threads</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="statNodes">0</div>
+          <div class="stat-label">Nodes</div>
+        </div>
+      </div>
+      <div class="stats-foot">
+        <span>Mycelial survey</span>
+        <span><b>Live</b> · 0.2 s</span>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="bench">
+    <div class="bench-id">
+      <div class="k">Control bench</div>
+      <div class="name">Culture 01</div>
+    </div>
+
+    <div class="bench-control">
+      <div class="bench-label">
+        <label for="growth">Growth</label>
+        <output id="growthVal" for="growth">55%</output>
+      </div>
+      <input id="growth" type="range" min="0" max="100" step="1" value="55" aria-label="Growth rate">
+    </div>
+
+    <div class="bench-control">
+      <div class="bench-label">
+        <label for="branching">Branching</label>
+        <output id="branchVal" for="branching">58%</output>
+      </div>
+      <input id="branching" type="range" min="0" max="100" step="1" value="58" aria-label="Branching frequency">
+    </div>
+
+    <div class="bench-actions">
+      <button type="button" class="btn btn-spore" id="spore" title="Release a burst of spores">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="8" cy="3" r="1.1" fill="currentColor" opacity=".9"/>
+          <circle cx="12.7" cy="6" r=".9" fill="currentColor" opacity=".7"/>
+          <circle cx="12.3" cy="11.6" r="1.1" fill="currentColor" opacity=".85"/>
+          <circle cx="5.1" cy="12.7" r=".8" fill="currentColor" opacity=".6"/>
+          <circle cx="3" cy="7.1" r="1" fill="currentColor" opacity=".8"/>
+          <circle cx="8" cy="8" r="1.4" fill="currentColor"/>
+        </svg>
+        <span class="long">Release spores</span><span class="short">Spores</span>
+      </button>
+
+      <button type="button" class="btn btn-palette" id="palette" aria-pressed="false" aria-label="Switch palette to amber" title="Switch palette">
+        <span class="dots" aria-hidden="true"><i></i><i></i></span>
+        <span class="pal-label" id="palLabel">Teal</span>
+      </button>
+
+      <button type="button" class="btn btn-icon" id="pause" aria-pressed="false" aria-label="Pause growth" title="Pause growth">
+        <svg class="i-pause" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="1.5" width="2.2" height="9" fill="currentColor"/><rect x="7.3" y="1.5" width="2.2" height="9" fill="currentColor"/></svg>
+        <svg class="i-play" width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.6 10 6l-7 4.4V1.6Z" fill="currentColor"/></svg>
+        <span class="label sr-only" id="pauseLabel">Pause</span>
+      </button>
+
+      <button type="button" class="btn btn-icon" id="reset" aria-label="Reset the network" title="Reset network">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M2.2 5.4A5.1 5.1 0 1 1 1.9 8.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M1.8 2.3v3.4h3.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="label sr-only">Reset</span>
+      </button>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById('ground');
+  var ctx = canvas.getContext('2d');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var SERIF = 'Georgia, "Iowan Old Style", "Palatino Linotype", serif';
+  var MONO = 'ui-monospace, Menlo, Consolas, monospace';
+
+  var PALETTES = {
+    teal: {
+      thread:[99, 232, 201], bright:[219, 255, 245], glow:[48, 198, 167],
+      node:[168, 255, 236], bgA:[5, 9, 8], bgB:[8, 19, 15], bgC:[3, 5, 4]
+    },
+    amber: {
+      thread:[241, 181, 99], bright:[255, 235, 197], glow:[218, 142, 58],
+      node:[255, 220, 161], bgA:[9, 7, 5], bgB:[18, 13, 8], bgC:[4, 4, 3]
+    }
+  };
+
+  var state = {
+    growth:55, branch:58, paused:false,
+    palette:0, mix:0, targetMix:0,
+    colonies:[], tips:[], edges:[], nodes:[], spores:[], pulses:[],
+    threads:0, time:0
+  };
+
+  var W = 0, H = 0, DPR = 1;
+  var texture = null;
+  var bgCtxColors = null;
+  var edgeBuckets = null;
+  var builtEdgeCount = -1;
+  var lastStats = 0;
+
+  var SEED = 20261018;
+  var rng = mulberry32(SEED);
+  var rand = function(){ return rng(); };
+
+  var cvsHalo = {}, cvsTip = {}, cvsSpore = {};
+  var glowSprites = {};
+
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+  function mix(a, b, t){ return a + (b - a) * t; }
+  function mixRGB(a, b, t){
+    return [Math.round(mix(a[0], b[0], t)), Math.round(mix(a[1], b[1], t)), Math.round(mix(a[2], b[2], t))];
+  }
+  function rgba(c, a){ return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+  function colors(){
+    var p = PALETTES.teal, q = PALETTES.amber, t = state.mix;
+    return {
+      thread: mixRGB(p.thread, q.thread, t),
+      bright: mixRGB(p.bright, q.bright, t),
+      glow: mixRGB(p.glow, q.glow, t),
+      node: mixRGB(p.node, q.node, t),
+      bgA: mixRGB(p.bgA, q.bgA, t),
+      bgB: mixRGB(p.bgB, q.bgB, t),
+      bgC: mixRGB(p.bgC, q.bgC, t)
+    };
+  }
+
+  /* ---------- sprites ---------- */
+  function makeHalo(rgb){
+    var c = document.createElement('canvas');
+    c.width = c.height = 256;
+    var g = c.getContext('2d');
+    var grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+    grad.addColorStop(0, rgba(rgb, .55));
+    grad.addColorStop(.18, rgba(rgb, .30));
+    grad.addColorStop(.48, rgba(rgb, .11));
+    grad.addColorStop(1, rgba(rgb, 0));
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 256, 256);
+    return c;
+  }
+  function makeTip(rgb, bright){
+    var c = document.createElement('canvas');
+    c.width = c.height = 64;
+    var g = c.getContext('2d');
+    var grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, rgba(bright, 1));
+    grad.addColorStop(.08, rgba(bright, .85));
+    grad.addColorStop(.24, rgba(rgb, .62));
+    grad.addColorStop(.6, rgba(rgb, .14));
+    grad.addColorStop(1, rgba(rgb, 0));
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 64, 64);
+    return c;
+  }
+  function makeSpore(rgb, bright){
+    var c = document.createElement('canvas');
+    c.width = c.height = 48;
+    var g = c.getContext('2d');
+    var grad = g.createRadialGradient(24, 24, 0, 24, 24, 24);
+    grad.addColorStop(0, rgba(bright, .95));
+    grad.addColorStop(.16, rgba(rgb, .7));
+    grad.addColorStop(.5, rgba(rgb, .16));
+    grad.addColorStop(1, rgba(rgb, 0));
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 48, 48);
+    return c;
+  }
+  function buildSprites(){
+    ['teal', 'amber'].forEach(function(key){
+      var p = PALETTES[key];
+      cvsHalo[key] = makeHalo(p.thread);
+      cvsTip[key] = makeTip(p.thread, p.bright);
+      cvsSpore[key] = makeSpore(p.thread, p.bright);
+    });
+  }
+  function drawPair(set, x, y, size, alpha){
+    var m = state.mix;
+    ctx.globalAlpha = alpha * (1 - m);
+    if (m < .995) ctx.drawImage(set.teal, x - size / 2, y - size / 2, size, size);
+    if (m > .005) {
+      ctx.globalAlpha = alpha * m;
+      ctx.drawImage(set.amber, x - size / 2, y - size / 2, size, size);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------- texture ---------- */
+  function buildTexture(){
+    texture = document.createElement('canvas');
+    texture.width = Math.max(1, Math.round(W * DPR));
+    texture.height = Math.max(1, Math.round(H * DPR));
+    var g = texture.getContext('2d');
+    g.scale(DPR, DPR);
+    g.clearRect(0, 0, W, H);
+
+    var i, x, y, r, grad;
+    for (i = 0; i < 16; i++) {
+      x = rand() * W; y = rand() * H; r = 60 + rand() * 220;
+      grad = g.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, 'rgba(128,150,124,' + (0.014 + rand() * 0.02) + ')');
+      grad.addColorStop(1, 'rgba(128,150,124,0)');
+      g.fillStyle = grad;
+      g.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    for (i = 0; i < 760; i++) {
+      x = rand() * W; y = rand() * H;
+      var a = 0.015 + rand() * 0.05;
+      var s = rand() < .86 ? 1 : 1.7;
+      g.fillStyle = 'rgba(' + (rand() < .5 ? '190,198,176' : '110,130,108') + ',' + a + ')';
+      g.fillRect(x, y, s, s);
+    }
+    g.lineWidth = 1;
+    for (i = 0; i < 13; i++) {
+      x = rand() * W; y = rand() * H;
+      g.beginPath();
+      g.moveTo(x, y);
+      g.bezierCurveTo(x + (rand() - .5) * 260, y + (rand() - .5) * 180,
+                      x + (rand() - .5) * 300, y + (rand() - .5) * 260,
+                      x + (rand() - .5) * 420, y + (rand() - .5) * 260);
+      g.strokeStyle = 'rgba(150,160,138,' + (0.012 + rand() * 0.022) + ')';
+      g.stroke();
+    }
+  }
+
+  /* ---------- simulation ---------- */
+  var SEG = 9;
+  var TIP_CAP = 86;
+
+  function seedColony(x, y, opts){
+    opts = opts || {};
+    if (state.colonies.length >= 14 && opts.spore) return null;
+    var colony = {
+      x: x, y: y,
+      phase: rand() * Math.PI * 2,
+      born: state.time,
+      small: !!opts.spore
+    };
+    state.colonies.push(colony);
+    state.nodes.push({x: x, y: y, r: 1.8, gen: 0});
+
+    if (!opts.silent) {
+      state.pulses.push({x: x, y: y, age: 0, life: 2.6, label: 'COLONY ' + String(state.colonies.length).padStart(2, '0')});
+    }
+
+    var count = opts.spore ? 2 : (3 + Math.floor(rand() * 3));
+    var startAngle = rand() * Math.PI * 2;
+    for (var i = 0; i < count; i++) {
+      var angle = startAngle + i * (Math.PI * 2 / count) + (rand() - .5) * .55;
+      state.tips.push({
+        x: x, y: y, angle: angle,
+        gen: 0, width: 1.85, speed: .78 + rand() * .5,
+        acc: rand() * SEG, age: 0, seed: rand(),
+        maxAge: 95 + rand() * 90, colony: colony, dead: false
+      });
+      state.threads++;
+    }
+    return colony;
+  }
+
+  function grow(dt){
+    var speedBase = 3.5 + state.growth * 0.32;
+    var branchProb = 0.004 + state.branch * 0.00052;
+    var tips = state.tips;
+
+    for (var i = tips.length - 1; i >= 0; i--) {
+      var t = tips[i];
+      t.age += dt;
+      if (t.age > t.maxAge) { tips.splice(i, 1); continue; }
+      t.acc += speedBase * t.speed * dt;
+      var guard = 0;
+      while (t.acc >= SEG && guard < 4) {
+        t.acc -= SEG;
+        guard++;
+        t.angle += (rand() - .5) * 0.5 * (SEG / 9) * 0.55 + Math.sin(t.age * .7 + t.seed * 7) * .03;
+        var nx = t.x + Math.cos(t.angle) * SEG;
+        var ny = t.y + Math.sin(t.angle) * SEG;
+
+        if (nx < 26) { t.angle = Math.PI - t.angle; nx = t.x + Math.cos(t.angle) * SEG; }
+        else if (nx > W - 26) { t.angle = Math.PI - t.angle; nx = t.x + Math.cos(t.angle) * SEG; }
+        if (ny < 26) { t.angle = -t.angle; ny = t.y + Math.sin(t.angle) * SEG; }
+        else if (ny > H - 26) { t.angle = -t.angle; ny = t.y + Math.sin(t.angle) * SEG; }
+
+        var midx = (t.x + nx) / 2 + Math.cos(t.angle + Math.PI / 2) * (rand() - .5) * 7;
+        var midy = (t.y + ny) / 2 + Math.sin(t.angle + Math.PI / 2) * (rand() - .5) * 7;
+        state.edges.push({x1:t.x, y1:t.y, cx:midx, cy:midy, x2:nx, y2:ny, gen:t.gen});
+        t.x = nx; t.y = ny;
+
+        if (rand() < 0.24) {
+          state.nodes.push({x:nx, y:ny, r: .6 + rand() * .9, gen:t.gen});
+        }
+        if (rand() < branchProb && tips.length < TIP_CAP && t.gen < 5) {
+          var turn = (rand() < .5 ? -1 : 1) * (0.36 + rand() * 0.6);
+          tips.push({
+            x: t.x, y: t.y, angle: t.angle + turn,
+            gen: t.gen + 1, width: Math.max(.34, t.width * .68),
+            speed: .8 + rand() * .38, acc: 0, age: 0, seed: rand(),
+            maxAge: t.maxAge * (.55 + rand() * .45), colony: t.colony, dead: false
+          });
+          state.threads++;
+          state.nodes.push({x:t.x, y:t.y, r: 1.05, gen: t.gen + 1});
+        }
+        if (t.gen >= 5 && t.width < .5) { t.dead = true; break; }
+      }
+      if (t.dead) tips.splice(i, 1);
+    }
+  }
+
+  function updateSpores(dt){
+    var keep = [];
+    for (var i = 0; i < state.spores.length; i++) {
+      var s = state.spores[i];
+      s.age += dt;
+      s.x += (s.vx + Math.sin(s.age * 1.6 + s.phase) * 5.5) * dt;
+      s.y += s.vy * dt;
+      s.vy += 5.5 * dt;
+      if (s.age > s.life) {
+        if (rand() < .3 && state.colonies.length < 12 && s.x > 50 && s.x < W - 50 && s.y > 70 && s.y < H * .78) {
+          seedColony(s.x, s.y, {spore:true});
+        }
+        continue;
+      }
+      keep.push(s);
+    }
+    state.spores = keep;
+  }
+
+  function releaseSpores(){
+    var sources = state.colonies.slice(0, 8);
+    if (!sources.length) sources = [{x:W / 2, y:H / 2}];
+    sources.forEach(function(c){
+      for (var i = 0; i < 9; i++) {
+        if (state.spores.length > 130) break;
+        var a = rand() * Math.PI * 2;
+        var rad = rand() * 18;
+        state.spores.push({
+          x: c.x + Math.cos(a) * rad,
+          y: c.y + Math.sin(a) * rad - 8,
+          vx: (rand() - .5) * 22,
+          vy: -14 - rand() * 26,
+          age: 0, life: 3.4 + rand() * 4.6,
+          phase: rand() * Math.PI * 2,
+          size: 7 + rand() * 11
+        });
+      }
+      state.pulses.push({x:c.x, y:c.y, age:0, life:1.8, label:''});
+    });
+  }
+
+  function updatePulses(dt){
+    for (var i = state.pulses.length - 1; i >= 0; i--) {
+      state.pulses[i].age += dt;
+      if (state.pulses[i].age > state.pulses[i].life) state.pulses.splice(i, 1);
+    }
+  }
+
+  /* ---------- rendering ---------- */
+  function draw(now){
+    var C = colors();
+    var t = state.time;
+
+    var grad = ctx.createRadialGradient(W * .5, H * .42, 0, W * .5, H * .46, Math.max(W, H) * .82);
+    grad.addColorStop(0, rgba(C.bgB, 1));
+    grad.addColorStop(.45, rgba(C.bgA, 1));
+    grad.addColorStop(1, rgba(C.bgC, 1));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    var low = ctx.createLinearGradient(0, H * .55, 0, H);
+    low.addColorStop(0, 'rgba(0,0,0,0)');
+    low.addColorStop(1, rgba(C.bgC, .55));
+    ctx.fillStyle = low;
+    ctx.fillRect(0, H * .4, W, H * .6);
+
+    if (texture) ctx.drawImage(texture, 0, 0, W, H);
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    // colonies
+    for (var i = 0; i < state.colonies.length; i++) {
+      var c = state.colonies[i];
+      var pulse = .5 + .5 * Math.sin(state.time * .7 + c.phase);
+      var size = 238 + pulse * 26;
+      drawPair(cvsHalo, c.x, c.y, size, .46 + pulse * .16);
+      ctx.strokeStyle = rgba(C.thread, .22);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 17 + pulse * 4, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = rgba(C.thread, .1);
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 33 + pulse * 7, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // edges
+    if (state.edges.length !== builtEdgeCount) {
+      edgeBuckets = [new Path2D(), new Path2D(), new Path2D(), new Path2D()];
+      for (var e = 0; e < state.edges.length; e++) {
+        var ed = state.edges[e];
+        var b = Math.min(3, ed.gen);
+        var path = edgeBuckets[b];
+        path.moveTo(ed.x1, ed.y1);
+        path.quadraticCurveTo(ed.cx, ed.cy, ed.x2, ed.y2);
+      }
+      builtEdgeCount = state.edges.length;
+    }
+    if (edgeBuckets) {
+      var alphas = [.62, .52, .40, .28];
+      var widths = [1.25, 1.02, .82, .62];
+      ctx.globalCompositeOperation = 'lighter';
+      for (var g2 = 0; g2 < 4; g2++) {
+        ctx.strokeStyle = rgba(C.glow, .05);
+        ctx.lineWidth = 5.5;
+        ctx.stroke(edgeBuckets[g2]);
+      }
+      for (var g3 = 0; g3 < 4; g3++) {
+        ctx.strokeStyle = rgba(C.thread, alphas[g3]);
+        ctx.lineWidth = widths[g3];
+        ctx.stroke(edgeBuckets[g3]);
+      }
+    }
+
+    // nodes
+    if (state.nodes.length) {
+      ctx.beginPath();
+      for (var n = 0; n < state.nodes.length; n++) {
+        var nd = state.nodes[n];
+        var rr = nd.r;
+        ctx.moveTo(nd.x + rr, nd.y);
+        ctx.arc(nd.x, nd.y, rr, 0, Math.PI * 2);
+      }
+      ctx.fillStyle = rgba(C.node, .55);
+      ctx.fill();
+    }
+
+    // tip glow
+    for (var q = 0; q < state.tips.length; q++) {
+      var tp = state.tips[q];
+      var tw = clamp(tp.width, .3, 2);
+      drawPair(cvsTip, tp.x, tp.y, 22 + tw * 9, .9);
+      ctx.fillStyle = rgba(C.bright, .9);
+      ctx.beginPath();
+      ctx.arc(tp.x, tp.y, .9 + tw * .3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // spores
+    for (var s = 0; s < state.spores.length; s++) {
+      var sp = state.spores[s];
+      var fade = Math.min(1, sp.age * 2) * Math.min(1, (sp.life - sp.age) * 1.2);
+      drawPair(cvsSpore, sp.x, sp.y, sp.size, .85 * clamp(fade, 0, 1));
+    }
+
+    // pulses
+    for (var p = 0; p < state.pulses.length; p++) {
+      var pu = state.pulses[p];
+      var k = pu.age / pu.life;
+      var rad = 12 + k * 92;
+      ctx.strokeStyle = rgba(C.bright, (1 - k) * .55);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(pu.x, pu.y, rad, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = rgba(C.thread, (1 - k) * .25);
+      ctx.beginPath();
+      ctx.arc(pu.x, pu.y, rad * .68, 0, Math.PI * 2);
+      ctx.stroke();
+      if (pu.label) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = (1 - k) * .8;
+        ctx.fillStyle = rgba(C.bright, 1);
+        ctx.font = '8px ' + MONO;
+        ctx.textAlign = 'center';
+        ctx.fillText(pu.label, pu.x, pu.y - rad - 8);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'lighter';
+      }
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  function updateStats(now){
+    if (now - lastStats < 180) return;
+    lastStats = now;
+    var cEl = document.getElementById('statColonies');
+    var tEl = document.getElementById('statThreads');
+    var nEl = document.getElementById('statNodes');
+    var c = String(state.colonies.length).padStart(2, '0');
+    var th = state.threads.toLocaleString('en-GB');
+    var nd = state.nodes.length.toLocaleString('en-GB');
+    if (cEl.textContent !== c) cEl.textContent = c;
+    if (tEl.textContent !== th) tEl.textContent = th;
+    if (nEl.textContent !== nd) nEl.textContent = nd;
+  }
+
+  /* ---------- loop ---------- */
+  var last = performance.now();
+  function frame(now){
+    var dt = Math.min(.06, Math.max(0, (now - last) / 1000));
+    last = now;
+
+    var diff = state.targetMix - state.mix;
+    if (Math.abs(diff) > .001) {
+      state.mix += diff * Math.min(1, dt * 4.5);
+      if (Math.abs(state.targetMix - state.mix) < .002) state.mix = state.targetMix;
+    }
+
+    if (!state.paused) {
+      state.time += dt;
+      grow(dt);
+      updateSpores(dt);
+      updatePulses(dt);
+    }
+
+    draw(now);
+    updateStats(now);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- sizing ---------- */
+  function resizeCanvas(){
+    var oldW = W, oldH = H;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    buildTexture();
+
+    if (oldW > 0 && oldH > 0 && (oldW !== W || oldH !== H)) {
+      var sx = W / oldW, sy = H / oldH;
+      function sc(p){ p.x *= sx; p.y *= sy; }
+      state.colonies.forEach(sc);
+      state.nodes.forEach(sc);
+      state.tips.forEach(sc);
+      state.spores.forEach(sc);
+      state.pulses.forEach(sc);
+      state.edges.forEach(function(e){
+        e.x1 *= sx; e.y1 *= sy; e.cx *= sx; e.cy *= sy; e.x2 *= sx; e.y2 *= sy;
+      });
+      builtEdgeCount = -1;
+    }
+  }
+
+  /* ---------- reset ---------- */
+  function resetSim(){
+    rng = mulberry32(SEED);
+    state.colonies = [];
+    state.tips = [];
+    state.edges = [];
+    state.nodes = [];
+    state.spores = [];
+    state.pulses = [];
+    state.threads = 0;
+    state.time = 0;
+    builtEdgeCount = -1;
+
+    var spots = [
+      [.22, .52],
+      [.56, .64],
+      [.79, .40]
+    ];
+    spots.forEach(function(s){
+      seedColony(s[0] * W, s[1] * H, {silent:true});
+    });
+
+    // pre-grow a composed, deterministic network
+    for (var i = 0; i < 600; i++) grow(1 / 30);
+    state.pulses = [];
+    state.spores = [];
+    builtEdgeCount = -1;
+    lastStats = 0;
+  }
+
+  /* ---------- controls ---------- */
+  var growth = document.getElementById('growth');
+  var branching = document.getElementById('branching');
+  var growthVal = document.getElementById('growthVal');
+  var branchVal = document.getElementById('branchVal');
+  var pauseBtn = document.getElementById('pause');
+  var paletteBtn = document.getElementById('palette');
+  var palLabel = document.getElementById('palLabel');
+  var sporeBtn = document.getElementById('spore');
+  var resetBtn = document.getElementById('reset');
+
+  function syncRange(el){
+    var min = parseFloat(el.min), max = parseFloat(el.max), v = parseFloat(el.value);
+    el.style.setProperty('--pct', (((v - min) / (max - min)) * 100).toFixed(1) + '%');
+  }
+  growth.addEventListener('input', function(){
+    state.growth = +growth.value;
+    growthVal.textContent = state.growth + '%';
+    syncRange(growth);
+  });
+  branching.addEventListener('input', function(){
+    state.branch = +branching.value;
+    branchVal.textContent = state.branch + '%';
+    syncRange(branching);
+  });
+  syncRange(growth);
+  syncRange(branching);
+
+  pauseBtn.addEventListener('click', function(){
+    state.paused = !state.paused;
+    pauseBtn.classList.toggle('paused', state.paused);
+    pauseBtn.setAttribute('aria-pressed', state.paused ? 'true' : 'false');
+    pauseBtn.setAttribute('aria-label', state.paused ? 'Resume growth' : 'Pause growth');
+    pauseBtn.setAttribute('title', state.paused ? 'Resume growth' : 'Pause growth');
+    document.getElementById('pauseLabel').textContent = state.paused ? 'Resume' : 'Pause';
+  });
+
+  paletteBtn.addEventListener('click', function(){
+    state.palette = state.palette === 0 ? 1 : 0;
+    state.targetMix = state.palette;
+    var amber = state.palette === 1;
+    document.body.classList.toggle('amber', amber);
+    palLabel.textContent = amber ? 'Amber' : 'Teal';
+    paletteBtn.setAttribute('aria-pressed', amber ? 'true' : 'false');
+    paletteBtn.setAttribute('aria-label', amber ? 'Switch palette to teal' : 'Switch palette to amber');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', amber ? '#0a0806' : '#050807');
+  });
+
+  sporeBtn.addEventListener('click', function(){
+    releaseSpores();
+  });
+
+  resetBtn.addEventListener('click', function(){
+    resetSim();
+    state.paused = false;
+    pauseBtn.classList.remove('paused');
+    pauseBtn.setAttribute('aria-pressed', 'false');
+    pauseBtn.setAttribute('aria-label', 'Pause growth');
+    document.getElementById('pauseLabel').textContent = 'Pause';
+  });
+
+  canvas.addEventListener('pointerdown', function(e){
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    var rect = canvas.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    if (x < 0 || y < 0 || x > W || y > H) return;
+    seedColony(x, y, {});
+  });
+
+  var resizeTimer = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resizeCanvas, 120);
+  });
+
+  /* ---------- init ---------- */
+  buildSprites();
+  resizeCanvas();
+  resetSim();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

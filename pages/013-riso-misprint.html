@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Misprint — Risograph Quarterly, Issue 09</title>
+<style>
+  :root{
+    --cream:#f2e7cf;
+    --cream-deep:#e8d9ba;
+    --paper:#f6edd8;
+    --pink:#ff4f7e;
+    --blue:#2f6fdb;
+    --ink:#171514;
+    --reg:3.6;          /* millimetres, driven by the slider */
+    --pink-x:-1;
+    --pink-y:-0.42;
+    --blue-x:1;
+    --blue-y:0.55;
+    --grain:0.5;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 700px at 12% -10%, #fbf4e2 0%, transparent 55%),
+      radial-gradient(900px 600px at 100% 100%, #e9d8b6 0%, transparent 60%),
+      var(--cream);
+    color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:clip;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:50;
+    opacity:.32;
+    mix-blend-mode:multiply;
+    background-image:
+      radial-gradient(rgba(23,21,20,.16) .55px, transparent .7px),
+      radial-gradient(rgba(23,21,20,.1) .5px, transparent .7px);
+    background-size:3px 3px, 5px 5px;
+    background-position:0 0, 2px 1px;
+  }
+  ::selection{background:var(--pink);color:var(--ink)}
+
+  .condensed{
+    font-family:"Haettenschweiler","Arial Narrow","Helvetica Neue Condensed","HelveticaNeue-CondensedBold",Impact,sans-serif;
+    font-stretch:condensed;
+    font-weight:700;
+  }
+  .mono{
+    font-family:"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+    font-size:.66rem;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+  }
+
+  .sheet{
+    max-width:1380px;
+    margin:0 auto;
+    padding:clamp(14px,2vw,26px) clamp(14px,3.2vw,46px) clamp(40px,6vw,80px);
+    position:relative;
+    z-index:1;
+    overflow-x:clip;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:12px 30px;
+    align-items:end;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:9px;
+    position:relative;
+  }
+  .masthead::after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:-9px;height:2px;background:var(--ink);
+  }
+  .masthead h1{
+    margin:0;
+    font-family:"Haettenschweiler","Arial Narrow",Impact,sans-serif;
+    font-size:clamp(1.55rem,4.4vw,3.4rem);
+    line-height:.86;
+    letter-spacing:.005em;
+    text-transform:uppercase;
+    display:flex;
+    align-items:baseline;
+    gap:.45em;
+    flex-wrap:wrap;
+  }
+  .masthead h1 .slash{color:var(--pink);font-weight:400}
+  .masthead .issue{
+    text-align:right;
+    line-height:1.35;
+    padding-bottom:2px;
+  }
+  .masthead .issue b{display:block;font-size:.74rem;letter-spacing:.16em}
+  .masthead .issue span{opacity:.65}
+  .topline{
+    display:flex;flex-wrap:wrap;gap:6px 22px;
+    justify-content:space-between;
+    padding:9px 0 0;
+    border-top:1px solid rgba(23,21,20,.28);
+    margin-top:12px;
+  }
+  .topline span{opacity:.72}
+  .topline .pink{color:var(--pink);opacity:1}
+
+  /* ---------- spread ---------- */
+  .spread{
+    margin-top:clamp(20px,3vw,38px);
+    display:grid;
+    grid-template-columns:minmax(0,1.42fr) minmax(270px,.62fr);
+    gap:clamp(20px,3vw,44px);
+    align-items:start;
+    position:relative;
+  }
+  .spread > *{min-width:0}
+  .spread::before{
+    content:"";
+    position:absolute;
+    top:-8px;bottom:-8px;
+    left:70.2%;
+    width:1px;
+    background:repeating-linear-gradient(to bottom, rgba(23,21,20,.26) 0 4px, transparent 4px 9px);
+    pointer-events:none;
+  }
+
+  /* ---------- cover ---------- */
+  .cover{
+    position:relative;
+    padding:clamp(8px,1.6vw,20px) 0 clamp(6px,1.4vw,16px);
+    min-height:clamp(480px,58vw,700px);
+  }
+  .cover-kicker{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:clamp(10px,1.4vw,16px);
+  }
+  .cover-kicker .tag{
+    background:var(--ink);color:var(--paper);
+    padding:4px 8px 3px;
+    letter-spacing:.14em;
+    transform:rotate(-1.2deg);
+  }
+  .cover-kicker .thin{
+    flex:1;height:1px;background:var(--ink);opacity:.55;
+  }
+  .cover-kicker .no{
+    color:var(--blue);
+    font-weight:700;
+    background:var(--cream);
+    padding:2px 5px;
+  }
+
+  .sun{
+    position:absolute;
+    z-index:0;
+    width:clamp(230px,40vw,480px);
+    aspect-ratio:1;
+    top:clamp(30px,5vw,72px);
+    right:clamp(-34px,-1vw,4px);
+    overflow:clip;
+    transform:rotate(var(--sun-rot, 3deg));
+    mix-blend-mode:multiply;
+    opacity:.92;
+    pointer-events:none;
+    transition:transform .25s ease;
+  }
+  .sun svg{width:100%;height:100%;display:block;overflow:hidden}
+
+  .headline-wrap{
+    position:relative;
+    z-index:2;
+    margin-top:clamp(4px,1vw,8px);
+    margin-left:clamp(-4px,-.4vw,0px);
+    width:max-content;
+    max-width:100%;
+  }
+  .misprint{
+    margin:0;
+    position:relative;
+    font-family:"Haettenschweiler","Arial Narrow",Impact,sans-serif;
+    font-size:clamp(5.4rem,16.8vw,14.2rem);
+    line-height:.72;
+    letter-spacing:-.028em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .misprint .layer{
+    display:block;
+    will-change:transform;
+  }
+  .misprint .layer.base{position:relative;z-index:5;color:transparent;-webkit-text-stroke:2.5px var(--ink)}
+  .misprint .layer.pink,
+  .misprint .layer.blue{position:absolute;inset:0;z-index:2;pointer-events:none}
+  .misprint .layer.pink{
+    color:var(--pink);
+    mix-blend-mode:multiply;
+    transform:translate(var(--pink-tx, -3.6px), var(--pink-ty, -1.5px)) rotate(-.35deg);
+  }
+  .misprint .layer.blue{
+    color:var(--blue);
+    mix-blend-mode:multiply;
+    transform:translate(var(--blue-tx, 3.6px), var(--blue-ty, 2px)) rotate(.25deg);
+    z-index:3;
+  }
+  .cover .deck{
+    max-width:min(46ch,88%);
+    margin:clamp(16px,2.4vw,26px) 0 0;
+    font-size:clamp(.88rem,1.25vw,1.02rem);
+    line-height:1.45;
+    position:relative;
+    z-index:3;
+  }
+  .cover .deck b{font-weight:700}
+  .cover .deck em{font-style:italic;color:var(--blue)}
+
+  .cover-bottom{
+    display:flex;align-items:flex-end;gap:clamp(14px,2.4vw,30px);
+    margin-top:clamp(20px,3.5vw,40px);
+    position:relative;z-index:3;
+    flex-wrap:wrap;
+  }
+  .bignum{
+    font-family:"Haettenschweiler","Arial Narrow",Impact,sans-serif;
+    font-size:clamp(4rem,9vw,7rem);
+    line-height:.7;
+    color:transparent;
+    -webkit-text-stroke:2px var(--pink);
+    transform:rotate(1.4deg);
+  }
+  .cover-bottom .micro{
+    max-width:24ch;
+    line-height:1.4;
+    border-left:2px solid var(--ink);
+    padding-left:12px;
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+
+  /* sticker */
+  .sticker{
+    position:absolute;
+    z-index:6;
+    right:clamp(0px,2vw,14px);
+    bottom:clamp(44px,7vw,84px);
+    width:clamp(132px,17vw,182px);
+    transform:rotate(-7.5deg);
+    filter:drop-shadow(4px 7px 0 rgba(23,21,20,.14));
+  }
+  .sticker .body{
+    background:var(--pink);
+    color:var(--ink);
+    padding:16px 13px 12px;
+    text-align:center;
+    box-shadow:4px 4px 0 var(--blue);
+    border:1.5px solid var(--ink);
+    position:relative;
+  }
+  .sticker .body::before{
+    content:"";
+    position:absolute;inset:5px;
+    border:1px dashed rgba(23,21,20,.55);
+    pointer-events:none;
+  }
+  .sticker .tape{
+    position:absolute;
+    top:-12px;left:50%;
+    width:64%;height:23px;
+    transform:translateX(-50%) rotate(2deg);
+    background:rgba(240,228,198,.78);
+    border-left:1px solid rgba(23,21,20,.12);
+    border-right:1px solid rgba(23,21,20,.12);
+    backdrop-filter:blur(.4px);
+  }
+  .sticker strong{
+    display:block;
+    font-family:"Haettenschweiler","Arial Narrow",Impact,sans-serif;
+    font-size:1.65rem;
+    line-height:.9;
+    text-transform:uppercase;
+    letter-spacing:.01em;
+    margin-bottom:5px;
+  }
+  .sticker span{
+    display:block;
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.55rem;
+    letter-spacing:.1em;
+    line-height:1.4;
+    text-transform:uppercase;
+  }
+
+  /* registration marks */
+  .regmark{position:absolute;width:30px;height:30px;opacity:.8;pointer-events:none;z-index:5}
+  .regmark.tr{top:0;right:0}
+  .regmark.bl{bottom:0;left:0}
+  .regmark svg{width:100%;height:100%;display:block}
+
+  /* ---------- press console ---------- */
+  .console{
+    background:var(--paper);
+    border:1.5px solid var(--ink);
+    box-shadow:5px 5px 0 rgba(23,21,20,.9);
+    padding:clamp(14px,2vw,20px);
+    position:relative;
+    transform:rotate(.4deg);
+    margin-bottom:clamp(22px,3vw,34px);
+  }
+  .console::before{
+    content:"PRESS CONSOLE";
+    position:absolute;top:-9px;left:12px;
+    background:var(--ink);color:var(--paper);
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.55rem;letter-spacing:.16em;
+    padding:2px 6px;
+  }
+  .console .readrow{
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+    margin-bottom:9px;
+  }
+  .console .readrow strong{
+    font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;
+  }
+  .console output{
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.8rem;
+    color:var(--blue);
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;
+    height:20px;
+    background:transparent;
+    margin:0 0 4px;
+    cursor:ew-resize;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:6px;
+    background:linear-gradient(90deg,var(--pink) 0%,var(--pink) 38%,rgba(23,21,20,.18) 38%,rgba(23,21,20,.18) 62%,var(--blue) 62%);
+    border:1px solid var(--ink);
+  }
+  input[type=range]::-moz-range-track{
+    height:6px;
+    background:linear-gradient(90deg,var(--pink) 0%,var(--pink) 38%,rgba(23,21,20,.18) 38%,rgba(23,21,20,.18) 62%,var(--blue) 62%);
+    border:1px solid var(--ink);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:18px;height:18px;margin-top:-6.5px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    box-shadow:2px 2px 0 var(--pink);
+    cursor:grab;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    box-shadow:2px 2px 0 var(--pink);
+    cursor:grab;
+  }
+  input[type=range]:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
+  .ticks{
+    display:flex;justify-content:space-between;
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.53rem;letter-spacing:.06em;opacity:.55;
+    margin-bottom:13px;
+  }
+  .pressbtn{
+    width:100%;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;
+    border:1.5px solid var(--ink);
+    background:var(--pink);
+    color:var(--ink);
+    padding:10px 12px;
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.68rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    cursor:pointer;
+    box-shadow:3px 3px 0 var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease, background .2s ease;
+  }
+  .pressbtn:hover{background:var(--blue);color:var(--paper)}
+  .pressbtn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+  .pressbtn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+  .pressbtn .glyph{font-size:1rem;line-height:1}
+  .runline{
+    display:flex;justify-content:space-between;
+    margin-top:12px;
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- editorial ---------- */
+  .editorial{position:relative;padding-top:2px}
+  .editorial .section-tag{
+    display:inline-block;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:3px;
+    margin-bottom:12px;
+  }
+  .editorial h2{
+    font-family:"Haettenschweiler","Arial Narrow",Impact,sans-serif;
+    font-size:clamp(1.8rem,3vw,2.6rem);
+    line-height:.88;
+    letter-spacing:.01em;
+    text-transform:uppercase;
+    margin:0 0 12px;
+  }
+  .editorial h2 span{color:var(--blue)}
+  .editorial p{
+    font-size:.92rem;
+    line-height:1.52;
+    margin:0 0 12px;
+    max-width:42ch;
+  }
+  .editorial p.dropcap::first-letter{
+    float:left;
+    font-family:"Haettenschweiler","Arial Narrow",Impact,sans-serif;
+    font-size:3.6em;
+    line-height:.74;
+    padding:4px 7px 0 0;
+    color:var(--pink);
+  }
+  .editorial p em{font-style:italic}
+  .pullquote{
+    border-top:1.5px solid var(--ink);
+    border-bottom:1.5px solid var(--ink);
+    padding:10px 0;
+    margin:18px 0;
+    font-family:"Haettenschweiler","Arial Narrow",Impact,sans-serif;
+    font-size:clamp(1.35rem,2.4vw,1.8rem);
+    line-height:.95;
+    text-transform:uppercase;
+    color:var(--blue);
+    transform:rotate(-.8deg);
+  }
+  .pullquote b{color:var(--pink);font-weight:inherit}
+  .editorial .signoff{
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+    margin-top:14px;opacity:.65;
+  }
+
+  .sidebar-note{
+    margin-top:clamp(22px,3vw,34px);
+    border-top:1px solid var(--ink);
+    padding-top:10px;
+  }
+  .sidebar-note h3{
+    margin:0 0 8px;
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .sidebar-note ol{
+    margin:0;padding-left:1.1em;
+    font-size:.8rem;line-height:1.45;
+  }
+  .sidebar-note li{margin-bottom:7px}
+  .sidebar-note li::marker{color:var(--pink);font-weight:700}
+
+  /* ---------- colophon ---------- */
+  .colophon{
+    margin-top:clamp(38px,6vw,70px);
+    border-top:3px solid var(--ink);
+    padding-top:10px;
+    display:grid;
+    grid-template-columns:1.3fr 2fr;
+    gap:clamp(18px,3vw,40px);
+    position:relative;
+  }
+  .colophon .backtitle{
+    font-family:"Haettenschweiler","Arial Narrow",Impact,sans-serif;
+    font-size:clamp(2.4rem,5.2vw,4.4rem);
+    line-height:.78;
+    text-transform:uppercase;
+    letter-spacing:-.01em;
+    color:var(--ink);
+    position:relative;
+  }
+  .colophon .backtitle span{
+    position:absolute;left:0;top:0;color:var(--pink);
+    transform:translate(2px,1.5px);
+    z-index:-1;
+  }
+  .colophon .backtitle small{
+    display:block;
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.56rem;
+    letter-spacing:.14em;
+    line-height:1.5;
+    margin-top:10px;
+    color:var(--ink);
+    opacity:.7;
+  }
+  .credits{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px 18px;
+    align-content:start;
+  }
+  .credits div{border-top:1px solid rgba(23,21,20,.35);padding-top:5px}
+  .credits dt{
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.52rem;letter-spacing:.13em;text-transform:uppercase;
+    opacity:.55;margin-bottom:2px;
+  }
+  .credits dd{margin:0;font-size:.72rem;line-height:1.35}
+  .colophon .legal{
+    grid-column:1 / -1;
+    display:flex;flex-wrap:wrap;gap:5px 26px;justify-content:space-between;
+    border-top:1px solid rgba(23,21,20,.35);
+    padding-top:8px;
+    margin-top:4px;
+    font-family:"SFMono-Regular",Menlo,monospace;
+    font-size:.53rem;letter-spacing:.06em;text-transform:uppercase;
+    opacity:.62;
+  }
+
+  .reprint-flash{animation:flash .45s ease}
+  @keyframes flash{
+    0%{box-shadow:inset 0 0 0 0 rgba(47,111,219,0)}
+    35%{box-shadow:inset 0 0 90px 20px rgba(47,111,219,.22)}
+    100%{box-shadow:inset 0 0 0 0 rgba(47,111,219,0)}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    .spread{grid-template-columns:1fr}
+    .spread::before{display:none}
+    .cover{min-height:0;padding-bottom:10px}
+    .sun{width:clamp(210px,52vw,360px);top:10px;right:-24px}
+    .editorial{padding-top:12px;border-top:1px solid rgba(23,21,20,.3)}
+    .editorial p{max-width:none}
+  }
+  @media (max-width:640px){
+    .regmark.tr{display:none}
+    .masthead{grid-template-columns:1fr;align-items:start}
+    .masthead .issue{text-align:left;display:flex;gap:16px;align-items:baseline}
+    .masthead .issue b{display:inline}
+    .topline span:nth-child(3),.topline span:nth-child(4){display:none}
+    .misprint{font-size:clamp(3.4rem,16vw,8rem)}
+    .sticker{
+      position:relative;
+      right:auto;bottom:auto;
+      margin:34px 0 0 auto;
+      width:150px;
+      transform:rotate(-5deg);
+    }
+    .cover-bottom{margin-top:22px}
+    .bignum{display:none}
+    .colophon{grid-template-columns:1fr}
+    .credits{grid-template-columns:1fr 1fr}
+    .pullquote{font-size:1.5rem}
+  }
+  @media (max-width:400px){
+    .sheet{padding-left:16px;padding-right:16px}
+    .misprint{font-size:15.5vw}
+    .cover .deck{max-width:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.001ms !important;animation-duration:.001ms !important;scroll-behavior:auto !important}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="masthead">
+    <h1><span>Risograph</span><span class="slash">/</span><span>Quarterly</span></h1>
+    <div class="issue mono">
+      <b>Issue 09</b>
+      <span>Autumn / £6 / Two inks</span>
+    </div>
+    <div class="topline mono" style="grid-column:1/-1">
+      <span>Small printing accidents, closely examined</span>
+      <span class="pink">● Fluorescent pink &amp; riso blue</span>
+      <span>Run no. <span id="runNo">0142</span></span>
+      <span>Studio 4B, Leeds</span>
+    </div>
+  </header>
+
+  <main class="spread">
+
+    <section class="cover" aria-label="Cover story">
+
+      <div class="cover-kicker mono">
+        <span class="tag">Cover story</span>
+        <span class="thin"></span>
+        <span class="no">No. 09 — 04</span>
+      </div>
+
+      <div class="sun" aria-hidden="true">
+        <svg viewBox="0 0 420 420" role="presentation">
+          <defs>
+            <pattern id="dotsPink" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
+              <circle cx="4.5" cy="4.5" r="3.15" fill="#ff4f7e"/>
+            </pattern>
+            <pattern id="dotsBlue" width="13" height="13" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
+              <circle cx="6.5" cy="6.5" r="1.85" fill="#2f6fdb"/>
+            </pattern>
+            <clipPath id="sunClip"><circle cx="210" cy="210" r="196"/></clipPath>
+          </defs>
+          <g clip-path="url(#sunClip)">
+            <circle cx="210" cy="210" r="196" fill="url(#dotsPink)"/>
+            <circle cx="210" cy="210" r="196" fill="url(#dotsBlue)" opacity=".55"/>
+            <path d="M-20 210 H440" stroke="#171514" stroke-width="1.4" opacity=".45"/>
+            <path d="M210 -20 V440" stroke="#171514" stroke-width="1.4" opacity=".45"/>
+            <circle cx="210" cy="210" r="150" fill="none" stroke="#171514" stroke-width="1" opacity=".3"/>
+            <circle cx="210" cy="210" r="92" fill="none" stroke="#ff4f7e" stroke-width="7" opacity=".65"/>
+            <circle cx="210" cy="210" r="194" fill="none" stroke="#171514" stroke-width="1.6" opacity=".45"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="headline-wrap">
+        <h2 class="misprint" aria-label="Misprint">
+          <span class="layer base" aria-hidden="true">Misprint</span>
+          <span class="layer pink" aria-hidden="true">Misprint</span>
+          <span class="layer blue" aria-hidden="true">Misprint</span>
+        </h2>
+      </div>
+
+      <p class="deck">
+        <b>Nine millimetres of drift.</b> The quarterly that celebrates the sheet
+        that moved when it shouldn’t have. Inside: <em>ghost images</em>, a
+        paper jam in four acts, and the quiet dignity of the off-cut.
+      </p>
+
+      <div class="cover-bottom">
+        <div class="bignum" aria-hidden="true">09</div>
+        <div class="micro">
+          Printed wet-on-wet<br>
+          because we could not wait<br>
+          for the ink to dry
+        </div>
+      </div>
+
+      <div class="sticker" id="sticker">
+        <div class="tape" aria-hidden="true"></div>
+        <div class="body">
+          <strong>Handle<br>with care</strong>
+          <span>Sheet-fed only<br>Do not stack<br>Ink still tacky</span>
+        </div>
+      </div>
+
+      <div class="regmark tr" aria-hidden="true">
+        <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#171514" stroke-width="1.3"/><circle cx="20" cy="20" r="5" fill="none" stroke="#171514" stroke-width="1.3"/><path d="M20 0v40M0 20h40" stroke="#171514" stroke-width="1.3"/></svg>
+      </div>
+      <div class="regmark bl" aria-hidden="true">
+        <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#171514" stroke-width="1.3"/><circle cx="20" cy="20" r="5" fill="none" stroke="#171514" stroke-width="1.3"/><path d="M20 0v40M0 20h40" stroke="#171514" stroke-width="1.3"/></svg>
+      </div>
+    </section>
+
+    <aside class="editorial" aria-label="Editorial and press controls">
+
+      <div class="console">
+        <div class="readrow">
+          <strong>Misregistration</strong>
+          <output id="mmOut" aria-live="polite">3.6 mm</output>
+        </div>
+        <input id="reg" type="range" min="0" max="100" value="50"
+               aria-label="Misregistration offset" aria-describedby="regHelp">
+        <div class="ticks" aria-hidden="true"><span>IN REGISTER</span><span>LOOSE</span><span>DISASTER</span></div>
+        <button class="pressbtn" id="reprint" type="button">
+          <span>Re-print sheet</span>
+          <span class="glyph" aria-hidden="true">↻</span>
+        </button>
+        <div class="runline">
+          <span id="regHelp">Drag to separate inks</span>
+          <span>Pass 02 / 02</span>
+        </div>
+      </div>
+
+      <span class="section-tag mono">From the editor</span>
+      <h2>A short defence<br>of the <span>off-cut</span></h2>
+
+      <p class="dropcap">Every good print shop keeps a drawer of mistakes. Not the ruined ones — those go in the bin with ceremony — but the almosts. The sheet where the blue arrived a breath early. The cover whose magenta wandered three millimetres south, as if looking for something it had dropped.</p>
+
+      <p>We print this issue in two passes, on a machine that groans like a small animal. The drum is older than most of the staff. When it is cold, it lies; when it is warm, it lies differently. We have stopped calling this error and started calling it <em>weather</em>.</p>
+
+      <blockquote class="pullquote">“The accident is<br>the only part<br><b>nobody else can print.</b>”</blockquote>
+
+      <p>So: leave the misregistration where you find it. Pull the proof, pin it up, and look at the little coloured shadow that proves a human being was standing right there, deciding when to stop.</p>
+
+      <div class="signoff">— M. Okonjo, editor<br>Leeds, 14 October</div>
+
+      <div class="sidebar-note">
+        <h3>In this issue</h3>
+        <ol>
+          <li>Ghosting: a love story in four passes</li>
+          <li>How to unjam a drum (without swearing)</li>
+          <li>Paper stocks ranked by how they fold</li>
+          <li>The wet-on-wet diary, week nine</li>
+        </ol>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="colophon">
+    <div class="backtitle">
+      <span aria-hidden="true">Colophon</span>
+      Colophon
+      <small>Risograph Quarterly<br>is set in condensed grotesques,<br>printed on 80gsm newsprint.</small>
+    </div>
+    <div class="credits">
+      <div><dt>Editor</dt><dd>Mara Okonjo</dd></div>
+      <div><dt>Design</dt><dd>Studio Four B</dd></div>
+      <div><dt>Press</dt><dd>RP 3700, drum 02</dd></div>
+      <div><dt>Inks</dt><dd>Fluorescent pink<br>Riso blue</dd></div>
+      <div><dt>Paper</dt><dd>Newsprint, 80gsm</dd></div>
+      <div><dt>Edition</dt><dd>400, hand-numbered</dd></div>
+    </div>
+    <div class="legal">
+      <span>© 2026 Risograph Quarterly. All misalignments intentional.</span>
+      <span>If this copy is in register, please return it.</span>
+      <span>risograph.quarterly / issue 09</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  var slider = document.getElementById("reg");
+  var out = document.getElementById("mmOut");
+  var reprint = document.getElementById("reprint");
+  var runNo = document.getElementById("runNo");
+  var sticker = document.getElementById("sticker");
+  var sheet = document.querySelector(".sheet");
+
+  // Base directions per ink; the slider scales them, re-print randomises them.
+  var state = {
+    pinkX: -1,
+    pinkY: -0.42,
+    blueX: 1,
+    blueY: 0.55,
+    run: 142
+  };
+
+  function offsetFor(amount) {
+    // 0–100 maps to 0–7.2 mm of drift, so at 100 the layers are clearly split.
+    return (amount / 100) * 7.2;
+  }
+
+  function paint() {
+    var reg = offsetFor(Number(slider.value));
+    root.style.setProperty("--reg", reg.toFixed(2));
+    root.style.setProperty("--pink-x", state.pinkX.toFixed(3));
+    root.style.setProperty("--pink-y", state.pinkY.toFixed(3));
+    root.style.setProperty("--blue-x", state.blueX.toFixed(3));
+    root.style.setProperty("--blue-y", state.blueY.toFixed(3));
+    root.style.setProperty("--pink-tx", (reg * state.pinkX).toFixed(2) + "px");
+    root.style.setProperty("--pink-ty", (reg * state.pinkY).toFixed(2) + "px");
+    root.style.setProperty("--blue-tx", (reg * state.blueX).toFixed(2) + "px");
+    root.style.setProperty("--blue-ty", (reg * state.blueY).toFixed(2) + "px");
+    root.style.setProperty("--sun-rot", (2 + reg * 0.55).toFixed(2) + "deg");
+    out.textContent = reg.toFixed(1) + " mm";
+  }
+
+  slider.addEventListener("input", paint);
+
+  reprint.addEventListener("click", function () {
+    state.pinkX = -0.45 - Math.random() * 1.35;
+    state.pinkY = -0.9 + Math.random() * 1.25;
+    state.blueX = 0.45 + Math.random() * 1.5;
+    state.blueY = -0.75 + Math.random() * 1.5;
+    state.run += 1;
+
+    // A tiny physical nudge of the sticker; the sheet is being handled.
+    var tilt = -7.5 + (Math.random() * 7 - 3.5);
+    sticker.style.transform = "rotate(" + tilt.toFixed(2) + "deg)";
+
+    runNo.textContent = String(state.run).padStart(4, "0");
+
+    // Toggling an animation class restarts the ink flash.
+    sheet.classList.remove("reprint-flash");
+    void sheet.offsetWidth;
+    sheet.classList.add("reprint-flash");
+
+    paint();
+  });
+
+  // Seed the console from the markup value.
+  paint();
+})();
+</script>
+</body>
+</html>

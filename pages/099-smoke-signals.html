@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smoke Signals — Say it in smoke</title>
+<style>
+  :root{
+    --room:#080605;
+    --room-2:#0d0906;
+    --ash:#e6d5c1;
+    --ash-dim:#a2917f;
+    --ash-faint:#6d6054;
+    --ember:#d47a43;
+    --ember-bright:#eda367;
+    --line:rgba(228,203,176,.16);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--room);color:var(--ash);font-family:var(--serif);
+    overflow-x:hidden;
+  }
+  .room{
+    position:relative;min-height:100svh;display:flex;flex-direction:column;overflow:hidden;
+    background:
+      radial-gradient(ellipse 75% 58% at 50% 108%, rgba(143,76,39,.26), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 50% 47%, rgba(154,112,80,.07), transparent 75%),
+      radial-gradient(ellipse 40% 50% at 12% 6%, rgba(91,75,62,.08), transparent 75%),
+      linear-gradient(180deg,#0a0705 0%,#080605 48%,#0c0805 100%);
+  }
+  .room::before{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:radial-gradient(ellipse at 50% 42%, transparent 40%, rgba(0,0,0,.45) 100%);
+  }
+  .grain{
+    position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.45;mix-blend-mode:overlay;
+    background-image:
+      repeating-radial-gradient(circle at 17% 32%, rgba(255,236,210,.055) 0 .5px, transparent .7px 4px),
+      repeating-radial-gradient(circle at 73% 61%, rgba(255,236,210,.04) 0 .5px, transparent .6px 5px);
+  }
+  canvas#smoke{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+  .skip{position:absolute;left:-9999px;top:0;background:var(--ash);color:var(--room);padding:10px 16px;z-index:20}
+  .skip:focus{left:12px;top:12px}
+
+  header{
+    position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:20px;
+    padding:24px clamp(20px,5vw,64px) 20px;border-bottom:1px solid rgba(228,203,176,.10);
+  }
+  .brand{display:flex;align-items:center;gap:14px;font-family:var(--sans);font-size:10px;
+    letter-spacing:.34em;text-transform:uppercase;color:var(--ash)}
+  .brand .flame{width:16px;height:22px;flex:none;opacity:.9}
+  .brand .sub{font-size:8px;letter-spacing:.2em;color:var(--ash-faint);border-left:1px solid var(--line);padding-left:14px}
+  .head-right{display:flex;gap:26px;font-family:var(--sans);font-size:8px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--ash-faint)}
+  .head-right .lit{color:var(--ember);letter-spacing:.18em}
+  .head-right .lit::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;
+    background:var(--ember);margin-right:7px;box-shadow:0 0 8px var(--ember);vertical-align:1px}
+
+  .stage{
+    position:relative;z-index:3;padding:clamp(28px,6vh,64px) clamp(20px,6vw,80px) 0;
+    pointer-events:none;flex:0 0 auto;
+  }
+  .eyebrow{font-family:var(--sans);font-size:9px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--ash-faint);margin:0 0 20px;display:flex;align-items:center;gap:12px}
+  .eyebrow::before{content:"";width:34px;height:1px;background:rgba(228,203,176,.3)}
+  h1{
+    font-weight:400;margin:0;font-size:clamp(3.5rem,8.6vw,7.6rem);line-height:.88;letter-spacing:-.04em;
+    color:#e9d9c4;max-width:8ch;text-shadow:0 2px 40px rgba(0,0,0,.5);
+  }
+  h1 em{font-style:italic;color:#f0e0ca}
+  h1 .dot{color:var(--ember)}
+  .lede{
+    margin:24px 0 0;max-width:340px;font-family:var(--sans);font-size:10.5px;line-height:1.9;
+    letter-spacing:.1em;color:var(--ash-dim);text-transform:uppercase;
+  }
+  .lede b{font-weight:500;color:var(--ash)}
+
+  .console{
+    position:relative;z-index:4;margin-top:auto;padding:26px clamp(20px,5vw,64px) 20px;
+    background:linear-gradient(180deg,rgba(8,6,5,0) 0%,rgba(8,6,5,.72) 24%,rgba(8,6,5,.94) 60%,#080605 100%);
+  }
+  .console-inner{width:min(1180px,100%);margin:0 auto}
+  .composer-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .composer-meta label{font-family:var(--sans);font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--ash-faint)}
+  .composer-meta .hint{font-family:var(--sans);font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:#5d5146}
+  .composer-row{display:flex;align-items:flex-end;gap:16px;border-bottom:1px solid rgba(228,203,176,.26);
+    padding-bottom:10px;transition:border-color .3s}
+  .composer-row:focus-within{border-color:rgba(237,163,103,.7)}
+  #message{
+    flex:1;min-width:0;appearance:none;background:transparent;border:0;outline:none;color:var(--ash);
+    font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(1.25rem,2.4vw,1.9rem);
+    line-height:1.2;padding:4px 0 6px;letter-spacing:-.01em;
+  }
+  #message::placeholder{color:#7d6d5d;opacity:.85;font-style:italic}
+  .burnbtn{
+    appearance:none;background:transparent;border:1px solid rgba(228,203,176,.32);color:var(--ash);
+    font-family:var(--sans);font-size:9px;letter-spacing:.24em;text-transform:uppercase;
+    padding:12px 18px 11px;display:flex;align-items:center;gap:10px;cursor:pointer;
+    transition:background .25s,border-color .25s,color .25s,transform .15s;white-space:nowrap;
+  }
+  .burnbtn svg{width:10px;height:14px;flex:none}
+  .burnbtn:hover{background:rgba(212,122,67,.14);border-color:var(--ember);color:#ffd8b4}
+  .burnbtn:active{transform:translateY(1px)}
+  .burnbtn:focus-visible,.clearbtn:focus-visible,.brand:focus-visible{outline:1px solid var(--ember);outline-offset:4px}
+
+  .console-base{display:flex;align-items:flex-end;gap:clamp(20px,4vw,54px);margin-top:22px;flex-wrap:wrap}
+  .sliders{display:flex;gap:clamp(20px,3vw,40px);flex:1;min-width:260px;max-width:560px}
+  .slider{flex:1;min-width:0}
+  .slider .slabel{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;
+    font-family:var(--sans);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--ash-faint)}
+  .slider .slabel output{font-size:8.5px;letter-spacing:.12em;color:var(--ash);text-transform:none}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:14px;background:transparent;display:block;
+    cursor:pointer;--p:50%;
+  }
+  input[type=range]:focus{outline:none}
+  input[type=range]::-webkit-slider-runnable-track{height:1px;
+    background:linear-gradient(90deg,var(--ember) 0 var(--p), rgba(228,203,176,.24) var(--p) 100%)}
+  input[type=range]::-moz-range-track{height:1px;background:rgba(228,203,176,.24)}
+  input[type=range]::-moz-range-progress{height:1px;background:var(--ember)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:9px;height:9px;background:var(--ash);
+    border-radius:50%;margin-top:-4px;border:0;box-shadow:0 0 0 3px rgba(212,122,67,.12),0 0 10px rgba(212,122,67,.35);
+    transition:box-shadow .2s;
+  }
+  input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(212,122,67,.22),0 0 14px rgba(212,122,67,.55)}
+  input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(212,122,67,.45)}
+  input[type=range]::-moz-range-thumb{width:9px;height:9px;background:var(--ash);border:0;border-radius:50%;
+    box-shadow:0 0 0 3px rgba(212,122,67,.12)}
+
+  .clearbtn{
+    appearance:none;background:none;border:0;border-bottom:1px solid rgba(228,203,176,.25);
+    color:var(--ash-dim);font-family:var(--sans);font-size:8px;letter-spacing:.22em;text-transform:uppercase;
+    padding:0 0 5px;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap;
+  }
+  .clearbtn:hover{color:var(--ember-bright);border-color:var(--ember)}
+  .burn-counter{display:flex;align-items:flex-end;gap:10px;margin-left:auto}
+  .burn-counter .num{font-family:var(--serif);font-size:34px;line-height:.8;color:var(--ash);letter-spacing:-.03em}
+  .burn-counter .blabel{font-family:var(--sans);font-size:7.5px;line-height:1.5;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ash-faint);padding-bottom:1px}
+  .console-note{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:18px;
+    padding-top:11px;border-top:1px solid rgba(228,203,176,.09);
+    font-family:var(--sans);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:#65584c}
+  .console-note .warm{color:var(--ash-faint)}
+  .status-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  @media (max-width:820px){
+    .head-right .mid{display:none}
+    .stage{padding-top:34px}
+    h1{font-size:clamp(3.2rem,12vw,5.4rem)}
+    .lede{margin-top:18px;max-width:280px;font-size:9.5px}
+    .console{padding-top:20px}
+    .burn-counter{margin-left:0}
+  }
+  @media (max-width:600px){
+    header{padding:17px 18px 14px}
+    .brand{font-size:8.5px;letter-spacing:.26em;gap:10px}
+    .brand .sub{display:none}
+    .head-right{gap:12px;font-size:7px}
+    .stage{padding:26px 18px 0}
+    .eyebrow{font-size:7.5px;margin-bottom:14px}
+    h1{font-size:clamp(2.85rem,13.6vw,4.2rem);max-width:7ch}
+    .lede{display:none}
+    .console{padding:18px 18px 15px}
+    .composer-meta .hint{display:none}
+    #message{font-size:1.2rem}
+    .burnbtn{padding:11px 13px 10px;font-size:8px;letter-spacing:.18em;gap:7px}
+    .console-base{gap:16px;margin-top:17px}
+    .sliders{max-width:none;width:100%;flex:1 1 100%}
+    .clearbtn{order:2}
+    .burn-counter{order:3;margin-left:auto;gap:8px}
+    .burn-counter .num{font-size:28px}
+    .console-note{margin-top:13px;font-size:6.8px;letter-spacing:.12em}
+    .console-note .warm{display:none}
+  }
+  @media (max-height:700px) and (min-width:700px){
+    .stage{padding-top:24px}
+    h1{font-size:clamp(3rem,6vw,4.6rem)}
+    .lede{display:none}
+    .console{padding-top:16px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .room::before,.grain{opacity:.3}
+    .burnbtn,.clearbtn{transition:none}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#message">Skip to the message field</a>
+<div class="room">
+  <canvas id="smoke" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header>
+    <div class="brand">
+      <svg class="flame" viewBox="0 0 16 22" fill="none" aria-hidden="true">
+        <path d="M8 1c2.6 4 5.6 6.3 5.6 10.4A5.6 5.6 0 0 1 8 17a5.6 5.6 0 0 1-5.6-5.6C2.4 8.9 4.1 7 5.6 4.8 6.2 7 7 8.3 8 9.2 8.9 6.5 8.4 3.8 8 1Z" stroke="#d47a43" stroke-width="1"/>
+        <path d="M8 11.4c1 1.3 1.8 2.2 1.8 3.6A1.9 1.9 0 0 1 8 16.9a1.9 1.9 0 0 1-1.8-1.9c0-1.3.9-2.3 1.8-3.6Z" fill="#d47a43" opacity=".55"/>
+      </svg>
+      <span>Smoke Signals</span>
+      <span class="sub">A transient transmission</span>
+    </div>
+    <div class="head-right">
+      <span class="mid">Est. MMXXVI · No. 099</span>
+      <span class="lit">Room open</span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <p class="eyebrow">A fleeting message</p>
+    <h1>Say it<br><em>in smoke<span class="dot">.</span></em></h1>
+    <p class="lede"><b>Words rise.</b> The room keeps them for a moment, bends them with the wind, then lets them go.</p>
+  </main>
+
+  <footer class="console">
+    <div class="console-inner">
+      <form class="composer" id="composer" autocomplete="off">
+        <div class="composer-meta">
+          <label for="message">Your message</label>
+          <span class="hint">Press enter to burn · 64 characters</span>
+        </div>
+        <div class="composer-row">
+          <input id="message" name="message" type="text" maxlength="64" placeholder="Type something worth burning…" aria-describedby="save-note">
+          <button class="burnbtn" type="submit">
+            Burn
+            <svg viewBox="0 0 10 14" fill="none" aria-hidden="true">
+              <path d="M5 .8c1.6 2.6 3.5 4.1 3.5 6.7A3.5 3.5 0 0 1 5 11a3.5 3.5 0 0 1-3.5-3.5C1.5 5.8 2.6 4.6 3.5 3.1 3.9 4.5 4.4 5.3 5 5.8 5.6 3.9 5.3 2.6 5 .8Z" stroke="currentColor" stroke-width=".9"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <div class="console-base">
+        <div class="sliders">
+          <div class="slider">
+            <div class="slabel"><label for="wind">Wind</label><output id="windOut" for="wind">east 18</output></div>
+            <input id="wind" type="range" min="-100" max="100" step="1" value="18">
+          </div>
+          <div class="slider">
+            <div class="slabel"><label for="density">Density</label><output id="densityOut" for="density">62%</output></div>
+            <input id="density" type="range" min="5" max="100" step="1" value="62">
+          </div>
+        </div>
+        <button class="clearbtn" id="clear" type="button">Clear the air</button>
+        <div class="burn-counter" aria-live="polite">
+          <span class="num" id="burnCount">00</span>
+          <span class="blabel" id="burnLabel">messages<br>burned</span>
+        </div>
+      </div>
+
+      <div class="console-note" id="save-note">
+        <span>Nothing is saved — not the words, not the smoke.</span>
+        <span class="warm">Wind and density alter the room, not the message.</span>
+      </div>
+      <p class="status-live" id="status" aria-live="polite"></p>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById("smoke");
+  var ctx = canvas.getContext("2d");
+  var input = document.getElementById("message");
+  var form = document.getElementById("composer");
+  var windInput = document.getElementById("wind");
+  var densityInput = document.getElementById("density");
+  var windOut = document.getElementById("windOut");
+  var densityOut = document.getElementById("densityOut");
+  var clearBtn = document.getElementById("clear");
+  var burnCountEl = document.getElementById("burnCount");
+  var burnLabel = document.getElementById("burnLabel");
+  var status = document.getElementById("status");
+
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var W = 0, H = 0, DPR = 1;
+  var wind = 18 / 100;
+  var density = 0.62;
+  var burned = 0;
+  var ambience = [];
+  var embers = [];
+  var messages = [];
+  var sprite = null;
+  var spriteTint = null;
+  var last = 0;
+
+  function makeSprite(inner, mid){
+    var c = document.createElement("canvas");
+    c.width = 128; c.height = 128;
+    var g = c.getContext("2d");
+    var grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grad.addColorStop(0, "rgba(" + inner + ",1)");
+    grad.addColorStop(0.35, "rgba(" + mid + ",.5)");
+    grad.addColorStop(0.7, "rgba(" + mid + ",.12)");
+    grad.addColorStop(1, "rgba(" + mid + ",0)");
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 128, 128);
+    return c;
+  }
+
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    var oldW = W, oldH = H;
+    W = Math.max(1, rect.width);
+    H = Math.max(1, rect.height);
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    if(oldW > 0 && oldH > 0 && messages.length){
+      var sx = W / oldW, sy = H / oldH;
+      messages.forEach(function(m){
+        m.parts.forEach(function(p){
+          p.ox *= sx; p.oy *= sy; p.x *= sx; p.y *= sy;
+        });
+      });
+    }
+    seedAmbience();
+    seedEmbers();
+  }
+
+  function seedAmbience(){
+    ambience = [];
+    var count = Math.round(26 + density * 16);
+    for(var i=0;i<count;i++){
+      ambience.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: 80 + Math.random() * 260,
+        alpha: 0.038 + Math.random() * 0.07,
+        vy: 5 + Math.random() * 13,
+        phase: Math.random() * Math.PI * 2,
+        stretch: 0.7 + Math.random() * 0.8,
+        threshold: Math.random()
+      });
+    }
+  }
+
+  function seedEmbers(){
+    embers = [];
+    if(reduced) return;
+    var n = 16;
+    for(var i=0;i<n;i++){
+      embers.push({
+        x: Math.random() * W,
+        y: H * 0.55 + Math.random() * H * 0.55,
+        r: 0.5 + Math.random() * 1.3,
+        vy: 4 + Math.random() * 10,
+        phase: Math.random() * 6.28,
+        alpha: 0.15 + Math.random() * 0.35
+      });
+    }
+  }
+
+  function updateWindLabel(){
+    var v = Number(windInput.value);
+    var word = "still";
+    if(v > 8) word = "east " + v;
+    else if(v < -8) word = "west " + Math.abs(v);
+    windOut.textContent = word;
+    windInput.style.setProperty("--p", ((v - (-100)) / 200 * 100) + "%");
+  }
+
+  function updateDensityLabel(){
+    var v = Number(densityInput.value);
+    density = v / 100;
+    densityOut.textContent = v + "%";
+    densityInput.style.setProperty("--p", ((v - 5) / 95 * 100) + "%");
+  }
+
+  windInput.addEventListener("input", function(){
+    wind = Number(windInput.value) / 100;
+    updateWindLabel();
+  });
+  densityInput.addEventListener("input", function(){
+    updateDensityLabel();
+    seedAmbience();
+  });
+  updateWindLabel();
+  updateDensityLabel();
+
+  function wrapText(text, maxW, fontSize){
+    ctx.save();
+    ctx.font = "italic 600 " + fontSize + 'px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif';
+    var words = text.split(/\s+/).filter(function(w){ return w.length; });
+    var lines = [];
+    var line = "";
+    for(var i=0;i<words.length;i++){
+      var test = line ? line + " " + words[i] : words[i];
+      if(ctx.measureText(test).width > maxW && line){
+        lines.push(line);
+        line = words[i];
+      } else {
+        line = test;
+      }
+    }
+    if(line) lines.push(line);
+    ctx.restore();
+    return lines.length ? lines : [text];
+  }
+
+  function makeTextCanvas(text){
+    var maxW = Math.min(W * 0.82, 1040);
+    var font = Math.max(30, Math.min(76, maxW / Math.max(7, text.length * 0.44)));
+    var lines = wrapText(text, maxW, font);
+    if(lines.length > 4){
+      font = Math.max(24, font * 0.8);
+      lines = wrapText(text, maxW, font);
+    }
+    var c = document.createElement("canvas");
+    c.width = Math.ceil(maxW);
+    c.height = Math.ceil(lines.length * font * 1.22 + font * 0.5);
+    var g = c.getContext("2d");
+    g.clearRect(0, 0, c.width, c.height);
+    g.fillStyle = "#fff";
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.font = "italic 600 " + font + 'px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif';
+    for(var i=0;i<lines.length;i++){
+      g.fillText(lines[i], c.width / 2, font * 0.62 + i * font * 1.22);
+    }
+    return {canvas:c, width:c.width, height:c.height, font:font};
+  }
+
+  function burnMessage(text, quiet){
+    text = String(text || "").replace(/\s+/g, " ").trim();
+    if(!text) return;
+    var tc = makeTextCanvas(text);
+    var off = tc.canvas.getContext("2d");
+    var data;
+    try {
+      data = off.getImageData(0, 0, tc.width, tc.height).data;
+    } catch(err){
+      return;
+    }
+    var step = density > 0.3 ? 2 : 3;
+    var worldX = (W - tc.width) / 2;
+    var worldY = H * (W < 640 ? 0.55 : 0.57) - tc.height / 2;
+    var parts = [];
+    var cap = 7000;
+
+    for(var y=0; y<tc.height; y+=step){
+      for(var x=0; x<tc.width; x+=step){
+        var idx = (y * tc.width + x) * 4 + 3;
+        if(data[idx] > 110){
+          var px = worldX + x + (Math.random() - 0.5) * step * 0.8;
+          var py = worldY + y + (Math.random() - 0.5) * step * 0.8;
+          parts.push({
+            ox: px, oy: py, x: px, y: py,
+            seed: Math.random() * 100,
+            delay: ((tc.height - y) / tc.height) * 0.5 + Math.random() * 0.35,
+            life: 10 + Math.random() * 5,
+            size: 1.25 + Math.random() * 1.5 + density * 1.1,
+            drift: (Math.random() - 0.5) * 5,
+            alpha: 0.10 + Math.random() * 0.13,
+            weight: 0.7 + Math.random() * 0.6
+          });
+          if(parts.length >= cap) break;
+        }
+      }
+      if(parts.length >= cap) break;
+    }
+
+    if(!parts.length) return;
+    messages.push({ parts:parts, born: performance.now(), clearStart:0 });
+    if(messages.length > 3){
+      messages[0].clearStart = performance.now();
+    }
+    burned++;
+    updateBurnCount();
+    if(!quiet){
+      status.textContent = "Message burned. " + burned + (burned === 1 ? " message" : " messages") + " burned so far.";
+    }
+  }
+
+  function updateBurnCount(){
+    burnCountEl.textContent = String(burned).padStart(2, "0");
+    burnLabel.innerHTML = (burned === 1 ? "message" : "messages") + "<br>burned";
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var text = input.value;
+    if(!text.trim()){ input.focus(); return; }
+    burnMessage(text);
+    input.value = "";
+    input.focus();
+  });
+
+  clearBtn.addEventListener("click", function(){
+    var now = performance.now();
+    messages.forEach(function(m){ if(!m.clearStart) m.clearStart = now; });
+    status.textContent = "The air is clear.";
+  });
+
+  function drawAmbient(t){
+    for(var i=0;i<ambience.length;i++){
+      var a = ambience[i];
+      if(a.threshold > 0.25 + density * 0.95) continue;
+      var stretch = a.stretch * (1 + density * 0.3);
+      var x = a.x + Math.sin(t * 0.12 + a.phase) * 26 + wind * 40 * Math.sin(t * 0.07 + a.phase);
+      var y = a.y;
+      ctx.globalAlpha = a.alpha * (0.55 + density * 0.8);
+      ctx.drawImage(sprite, x - a.r * 0.7, y - a.r * stretch, a.r * 1.4, a.r * 2 * stretch);
+    }
+  }
+
+  function updateAmbient(dt, t){
+    for(var i=0;i<ambience.length;i++){
+      var a = ambience[i];
+      a.y -= a.vy * dt;
+      a.x += wind * 16 * dt + Math.sin(t * 0.15 + a.phase) * 3 * dt;
+      if(a.y + a.r < -20){ a.y = H + a.r * 0.8; a.x = Math.random() * W; }
+      if(a.x < -a.r) a.x = W + a.r * 0.5;
+      if(a.x > W + a.r) a.x = -a.r * 0.5;
+    }
+  }
+
+  function drawEmbers(dt, t){
+    for(var i=0;i<embers.length;i++){
+      var e = embers[i];
+      e.y -= e.vy * dt;
+      e.x += Math.sin(t * 0.7 + e.phase) * 8 * dt + wind * 9 * dt;
+      if(e.y < -6){ e.y = H + 6; e.x = Math.random() * W; }
+      ctx.globalAlpha = e.alpha * (0.6 + 0.4 * Math.sin(t * 2 + e.phase));
+      ctx.fillStyle = "#e59a5d";
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawMessages(now, t){
+    ctx.globalCompositeOperation = "lighter";
+    var speed = reduced ? 0.3 : 1;
+    for(var i=messages.length - 1; i>=0; i--){
+      var m = messages[i];
+      var clearFade = 1;
+      if(m.clearStart){
+        clearFade = 1 - (now - m.clearStart) / 520;
+        if(clearFade <= 0){ messages.splice(i,1); continue; }
+        clearFade = Math.max(0, clearFade);
+      }
+      var bornAge = (now - m.born) / 1000;
+      if(!m.clearStart && bornAge > 21){
+        messages.splice(i, 1);
+        continue;
+      }
+      for(var j=0;j<m.parts.length;j++){
+        var p = m.parts[j];
+        var age = bornAge - p.delay;
+        if(age < 0) continue;
+        var appear = Math.min(1, age / 0.55);
+        var lift = Math.max(0, age - 2.7);
+        var rise = lift * 7 * speed + lift * lift * 1.9 * speed;
+        var bend = wind * 11 * Math.pow(lift, 1.6) * speed +
+                   Math.sin(p.oy * 0.006 + age * 0.55 + p.seed) * (1 + lift * 0.85) * 0.9 +
+                   p.drift * lift * 0.18;
+        var x = p.ox + bend;
+        var y = p.oy - rise;
+        var life = Math.max(0.001, p.life - lift * (reduced ? 0.6 : 1));
+        var fade = Math.max(0, Math.min(1, life / p.life));
+        var alpha = p.alpha * appear * fade * clearFade * (0.55 + density * 0.7) * (W < 640 ? 1.3 : 1);
+        if(alpha <= 0.004) continue;
+        var size = p.size * (1 + lift * (reduced ? 0.02 : 0.065)) * (0.7 + 0.3 * p.weight);
+        ctx.globalAlpha = Math.min(0.55, alpha);
+        var d = size * 3.8;
+        ctx.drawImage(sprite, x - d/2, y - d/2, d, d);
+      }
+    }
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  function frame(now){
+    if(!last) last = now;
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    var t = now / 1000;
+    var speed = reduced ? 0.35 : 1;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "source-over";
+    updateAmbient(dt * speed, t);
+    drawAmbient(t);
+    if(!reduced){
+      drawEmbers(dt, t);
+    }
+    drawMessages(now, t);
+    ctx.globalAlpha = 1;
+
+    requestAnimationFrame(frame);
+  }
+
+  sprite = makeSprite("255,243,226", "218,190,160");
+  resize();
+  updateBurnCount();
+  requestAnimationFrame(frame);
+
+  window.addEventListener("resize", function(){
+    window.clearTimeout(window.__smokeResize);
+    window.__smokeResize = window.setTimeout(resize, 180);
+  });
+
+  // An opening message, already half-dissolved, so the room is never empty.
+  window.setTimeout(function(){
+    burnMessage("the room remembers", true);
+    status.textContent = "One message is already in the air.";
+  }, reduced ? 100 : 900);
+})();
+</script>
+</body>
+</html>
