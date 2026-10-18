@@ -2,6 +2,8 @@
 
 One hundred self-contained HTML studies generated with **DeepSeek V4.1 Flash 1017** from the same prompts used by [MiaAI-Lab's DeepSeek-v4.1-Flash-100-HTML-Files](https://github.com/MiaAI-Lab/DeepSeek-v4.1-Flash-100-HTML-Files).
 
+**Live index:** <https://macoto-liu.github.io/DeepSeek-v4.1-Flash-100-HTML-Files/> · **Repository:** <https://github.com/macoto-liu/DeepSeek-v4.1-Flash-100-HTML-Files>
+
 ## Browse
 
 Open **[`index.html`](index.html)** for the visual index: search all one hundred pieces, preview them, open any study, and read the original prompt behind it.
